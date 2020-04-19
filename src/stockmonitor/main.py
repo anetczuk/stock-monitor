@@ -23,7 +23,6 @@
 # SOFTWARE.
 #
 
-
 import sys
 # import os
 
@@ -35,10 +34,11 @@ import datetime
 
 import stockmonitor.logger as logger
 
+from stockmonitor.dataaccess.datatype import DataType
 from stockmonitor.dataaccess.stockdata import StockAnalysis
 
 # from stockmonitor.gui.main_window import MainWindow
-#  
+#
 # from stockmonitor.gui.qt import QApplication
 # from stockmonitor.gui.sigint import setup_interrupt_handling
 
@@ -47,90 +47,125 @@ logger.configure()
 _LOGGER = logging.getLogger(__name__)
 
 
+def crisisResults( analysis ):
+    maxFromDay = datetime.date( 2020, 2, 1 )
+    maxToDay   = datetime.date( 2020, 3, 5 )
+    analysis.loadMax( DataType.MAX, maxFromDay, maxToDay)
+
+    minFromDay = datetime.date( 2020, 3, 6 )
+    minToDay   = datetime.date( 2020, 3, 22 )
+    analysis.loadMin( DataType.MIN, minFromDay, minToDay)
+
+#     analysis.loadCurr( DataType.CLOSING, offset=-1 )
+    analysis.loadCurr( DataType.CLOSING, offset=-1 )
+
+    analysis.calcBestValue( 0.6, "../tmp/out/crisis_stock_value.csv" )
+    analysis.calcBestRaise( 0.1, "../tmp/out/crisis_stock_raise.csv" )
+
+
+def weekStockResults( analysis ):
+    recentDay = analysis.getPrevValidDay()
+    startDay = recentDay - datetime.timedelta(days=8)
+#     endDay = recentDay - datetime.timedelta(days=1)
+    
+    analysis.loadMax( DataType.MAX, startDay, recentDay)
+    analysis.loadMin( DataType.MIN, startDay, recentDay)
+    analysis.loadCurr( DataType.CLOSING, day=recentDay )
+
+    analysis.calcBestValue( 0.8, "../tmp/out/week_stock_value.csv" )
+    analysis.calcBestRaise( 0.2, "../tmp/out/week_stock_raise.csv" )
+
+
+def weekVolumeResults( analysis ):
+    recentDay = analysis.getPrevValidDay()
+    startDay = recentDay - datetime.timedelta(days=8)
+#     endDay = recentDay - datetime.timedelta(days=1)
+
+    analysis.loadMax( DataType.VOLUME, startDay, recentDay)
+
+    analysis.loadCurr( DataType.VOLUME, day=recentDay )
+
+    analysis.calcBiggestRaise( 2.0, "../tmp/out/week_stock_volume.csv" )
+
+
+def dayResults( analysis ):
+    analysis.loadCurr( DataType.VOLUME, offset=-1 )
+    analysis.calcGreater( 100000, "../tmp/out/day_stock_volume.csv" )
+
+    analysis.loadCurr( DataType.TRADING, offset=-1 )
+    analysis.calcGreater( 30000, "../tmp/out/day_stock_trading.csv" )
+
+
 def runApp(args):
-    
+
     analysis = StockAnalysis()
-    
-#     maxFromDay = datetime.date( 2020, 1, 1 )
-#     maxToDay   = datetime.date( 2020, 3, 5 )
-#     analysis.loadMax(maxFromDay, maxToDay)
-#     
-#     minFromDay = datetime.date( 2020, 3, 6 )
-#     minToDay   = datetime.date( 2020, 3, 18 )
-#     analysis.loadMin(minFromDay, minToDay)
-#
-#     analysis.calcBestRaise( 0.1 )
-#     analysis.calcBestValue( 0.5 )
+    crisisResults( analysis )
+    weekStockResults( analysis )
+    weekVolumeResults( analysis )
+    dayResults( analysis )
 
-
-    maxFromDay = datetime.date( 2020, 4, 4 )
-    maxToDay   = datetime.date( 2020, 4, 8 )
-#     analysis.loadMax(maxFromDay, maxToDay)
-#     analysis.loadCurr( offset=-1 )    
-#     analysis.calcBestValue( 0.8 )
+    analysis.calcWeekend(4)
     
-#     analysis.loadMaxTurnover(maxFromDay, maxToDay)
-    analysis.loadMaxVolume(maxFromDay, maxToDay)
-    analysis.loadCurrVolume( offset=-1 )
-    analysis.calcBiggestRaise( 2.0 )
+    analysis.calcMonday(4)
+    analysis.calcFriday(4)
 
     return 0
-    
+
 #     ## GUI
 #     app = QApplication(sys.argv)
 #     app.setApplicationName("StockMonitor")
 #     app.setOrganizationName("arnet")
 #     ### app.setOrganizationDomain("www.my-org.com")
-#  
+#
 #     window = MainWindow()
 #     window.loadSettings()
-#  
+#
 #     window.show()
-#  
+#
 #     setup_interrupt_handling()
-#  
+#
 #     exitCode = app.exec_()
-#  
+#
 #     if exitCode == 0:
 #         window.saveSettings()
-#  
+#
 #     return exitCode
- 
- 
+
+
 def main():
     parser = argparse.ArgumentParser(description='Stock Monitor')
     parser.add_argument('--profile', action='store_const', const=True, default=False, help='Profile the code' )
     parser.add_argument('--pfile', action='store', default=None, help='Profile the code and output data to file' )
- 
+
     args = parser.parse_args()
- 
+
     _LOGGER.debug("\n\n")
     _LOGGER.debug("Starting the application")
     _LOGGER.debug("Logger log file: %s" % logger.log_file)
- 
+
     starttime = time.time()
     profiler = None
- 
+
     exitCode = 0
- 
+
     try:
- 
+
         profiler_outfile = args.pfile
         if args.profile is True or profiler_outfile is not None:
             print( "Starting profiler" )
             profiler = cProfile.Profile()
             profiler.enable()
- 
+
         exitCode = runApp(args)
- 
+
     # except BluetoothError as e:
     #     print "Error: ", e, " check if BT is powered on"
- 
+
     except BaseException:
         exitCode = 1
         _LOGGER.exception("Exception occurred")
         raise
- 
+
     finally:
         _LOGGER.info( "" )                    ## print new line
         if profiler is not None:
@@ -142,10 +177,10 @@ def main():
                 _LOGGER.info( "Storing profiler data to", profiler_outfile )
                 profiler.dump_stats( profiler_outfile )
                 _LOGGER.info( "pyprof2calltree -k -i", profiler_outfile )
- 
+
         timeDiff = (time.time() - starttime) * 1000.0
         _LOGGER.info( "Calculation time: {:13.8f}ms".format(timeDiff) )
- 
+
         sys.exit(exitCode)
 
 
