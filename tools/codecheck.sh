@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#set -eu
+set -u
+
 
 ## works both under bash and sh
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
@@ -31,7 +34,7 @@ if [ $exit_code -ne 0 ]; then
     exit $exit_code
 fi
 
-echo "pep8 -- no warnings found"
+echo "pycodestyle -- no warnings found"
 
 
 ## F401 'PyQt5.QtCore' imported but unused
@@ -42,7 +45,16 @@ flake8 --show-source --statistics --count --ignore=$ignore_errors $src_dir
 exit_code=$?
 
 if [ $exit_code -ne 0 ]; then
+    echo -e "\nflake8 errors found"
     exit $exit_code
 fi
 
 echo "flake8 -- no warnings found"
+
+
+pylint3 --rcfile=$SCRIPT_DIR/pylint3.config $src_dir/stockmonitor $src_dir/teststockmonitor $src_dir/*.py
+exit_code=$?
+if [ $exit_code -ne 0 ]; then
+    exit $exit_code
+fi
+echo "pylint3 -- no warnings found"
