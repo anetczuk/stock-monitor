@@ -1,0 +1,185 @@
+# MIT License
+#
+# Copyright (c) 2020 Arkadiusz Netczuk <dev.arnet@gmail.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
+import logging
+
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import QTableWidget, QTreeView
+from PyQt5.QtWidgets import QCheckBox
+from PyQt5.QtWidgets import QDialog, QMessageBox
+from PyQt5.QtWidgets import QWidget, qApp
+from PyQt5.QtGui import QIcon
+
+from . import uiloader
+from . import resources
+from . import trayicon
+from . import guistate
+
+from .widget.settingsdialog import SettingsDialog, AppSettings
+
+
+_LOGGER = logging.getLogger(__name__)
+
+
+UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
+
+
+class MainWindow( QtBaseClass ):           # type: ignore
+
+    logger: logging.Logger = None
+    toolTip = "Stock Monitor"
+
+    def __init__(self):
+        super().__init__()
+        self.ui = UiTargetClass()
+        self.ui.setupUi(self)
+
+        self.appSettings = AppSettings()
+ 
+        ## =============================
+ 
+#         undoStack = self.data.undoStack
+# 
+#         undoAction = undoStack.createUndoAction( self, "&Undo" )
+#         undoAction.setShortcuts( QtGui.QKeySequence.Undo )
+#         redoAction = undoStack.createRedoAction( self, "&Redo" )
+#         redoAction.setShortcuts( QtGui.QKeySequence.Redo )
+# 
+#         self.ui.menuEdit.insertAction( self.ui.actionUndo, undoAction )
+#         self.ui.menuEdit.removeAction( self.ui.actionUndo )
+#         self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
+#         self.ui.menuEdit.removeAction( self.ui.actionRedo )
+ 
+        ## =============================
+ 
+        self.trayIcon = trayicon.TrayIcon(self)
+        self.trayIcon.setToolTip( self.toolTip )
+        self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
+ 
+        ## === connecting signals ===
+ 
+        self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
+ 
+        self.applySettings()
+        self.trayIcon.show()
+
+        self.statusBar().showMessage("Ready", 10000)
+
+    def setStatusMessage(self, firstStatus, changeStatus: list, timeout):
+        statusBar = self.statusBar()
+        message = statusBar.currentMessage()
+        if message == firstStatus:
+            statusBar.showMessage( changeStatus[0], timeout )
+            return
+        try:
+            currIndex = changeStatus.index( message )
+            nextIndex = ( currIndex + 1 ) % len(changeStatus)
+            statusBar.showMessage( changeStatus[nextIndex], timeout )
+        except ValueError:
+            statusBar.showMessage( firstStatus, timeout )
+ 
+    ## ====================================================================
+ 
+    def setIconTheme(self, theme: trayicon.TrayIconTheme):
+        _LOGGER.debug("setting tray theme: %r", theme)
+        self._setTrayIndicator( theme )
+
+    def _setTrayIndicator(self, theme: trayicon.TrayIconTheme):
+        self._updateIconTheme( theme )
+
+    def _updateIconTheme(self, theme: trayicon.TrayIconTheme):
+        fileName = theme.value
+        iconPath = resources.get_image_path( fileName )
+        appIcon = QIcon( iconPath )
+
+        self.setWindowIcon( appIcon )
+        self.trayIcon.setIcon( appIcon )
+
+    # Override closeEvent, to intercept the window closing event
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
+        self.trayIcon.show()
+
+    def showEvent(self, _):
+        self.trayIcon.updateLabel()
+
+    def hideEvent(self, _):
+        self.trayIcon.updateLabel()
+
+    ## ====================================================================
+
+    # pylint: disable=R0201
+    def closeApplication(self):
+        ##self.close()
+        qApp.quit()
+
+    ## ====================================================================
+
+    def openSettingsDialog(self):
+        dialog = SettingsDialog( self.appSettings, self )
+        dialog.setModal( True )
+        dialog.iconThemeChanged.connect( self.setIconTheme )
+        dialogCode = dialog.exec_()
+        if dialogCode == QDialog.Rejected:
+            self.applySettings()
+            return
+        self.appSettings = dialog.appSettings
+        self.applySettings()
+ 
+    def applySettings(self):
+        self.setIconTheme( self.appSettings.trayIcon )
+
+    def loadSettings(self):
+        settings = self.getSettings()
+        self.logger.debug( "loading app state from %s", settings.fileName() )
+
+        self.appSettings.loadSettings( settings )
+        self.applySettings()
+
+        ## restore widget state and geometry
+        guistate.load_state( self, settings )
+
+
+    def saveSettings(self):
+        settings = self.getSettings()
+        self.logger.debug( "saving app state to %s", settings.fileName() )
+
+        self.appSettings.saveSettings( settings )
+
+        ## store widget state and geometry
+        guistate.save_state(self, settings)
+        
+        ## force save to file
+        settings.sync()
+
+    def getSettings(self):
+        ## store in home directory
+        orgName = qApp.organizationName()
+        appName = qApp.applicationName()
+        settings = QtCore.QSettings(QtCore.QSettings.IniFormat, QtCore.QSettings.UserScope, orgName, appName, self)
+        return settings
+
+
+MainWindow.logger = _LOGGER.getChild(MainWindow.__name__)
