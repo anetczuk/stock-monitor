@@ -31,14 +31,14 @@ from teststockmonitor.data import get_data_path
 
 
 class GpwCurrentCrawlerMock(GpwCurrentCrawler):
-    def __init__(self):
-        super().__init__()
 
     def getStockData(self):
         filePath = get_data_path( "akcje_2020-04-14_15-50.xls" )
         return filePath
 
+
 class GpwCurrentDataMock(GpwCurrentData):
+
     def __init__(self):
         super().__init__()
         self.crawler = GpwCurrentCrawlerMock()
@@ -48,6 +48,7 @@ class GpwCurrentDataMock(GpwCurrentData):
 
 
 class GpwCurrentDataTest(unittest.TestCase):
+
     def setUp(self):
         ## Called before testfunction is executed
         self.dataAccess = GpwCurrentDataMock()

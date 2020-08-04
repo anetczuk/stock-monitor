@@ -42,8 +42,10 @@ class ArchiveDataType(Enum):
     def __new__(cls):
         value = len(cls.__members__)  # note no + 1
         obj = object.__new__(cls)
+        # pylint: disable=W0212
         obj._value_ = value
         return obj
+
 
 @unique
 class CurrentDataType(Enum):
@@ -67,5 +69,6 @@ class CurrentDataType(Enum):
     def __new__(cls):
         value = len(cls.__members__)  # note no + 1
         obj = object.__new__(cls)
+        # pylint: disable=W0212
         obj._value_ = value
         return obj

@@ -38,11 +38,9 @@ import sys
 import logging
 import argparse
 
-from datetime import datetime, timedelta
+from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
-
-from PyQt5.QtWidgets import QApplication
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.mainwindow import MainWindow
 

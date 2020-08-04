@@ -24,10 +24,9 @@
 import os
 import logging
 import urllib.request
-from datetime import date
+import datetime
 
 import xlrd
-import datetime
 import pandas
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
@@ -94,11 +93,11 @@ class GpwArchiveData:
     def __init__(self):
         self.crawler = GpwArchiveCrawler()
 
-    def getData(self, dataType: ArchiveDataType, day: date):
+    def getData(self, dataType: ArchiveDataType, day: datetime.date):
         _LOGGER.debug( "getting stock data for: %s", day )
         worksheet = self.getWorksheet( day )
         if worksheet is None:
-            _LOGGER.warn("worksheet not found for day: %s", day)
+            _LOGGER.warning("worksheet not found for day: %s", day)
             return None
         _LOGGER.debug("worksheet found for day: %s", day )
         colIndex = self.getColumnIndex( dataType )
@@ -107,7 +106,7 @@ class GpwArchiveData:
         return self.extractColumn( worksheet, colIndex )
 
     ## check valid stock day starting from "day" and goind past
-    def getRecentValidDay(self, day: date):
+    def getRecentValidDay(self, day: datetime.date):
         currDay = day
         worksheet = None
         while True:
@@ -117,9 +116,9 @@ class GpwArchiveData:
             currDay -= datetime.timedelta(days=1)
         return None
 
-    def getNextValidDay(self, day: date):
+    def getNextValidDay(self, day: datetime.date):
         currDay = day
-        dayToday = date.today()
+        dayToday = datetime.date.today()
         worksheet = None
         while currDay < dayToday:
             worksheet = self.getWorksheet(currDay)
@@ -158,7 +157,7 @@ class GpwArchiveData:
             ret[ name ] = value
         return ret
 
-    def getWorksheet(self, day: date):
+    def getWorksheet(self, day: datetime.date):
 #         _LOGGER.debug( "getting data from date: %s", day )
         dataFile = self.crawler.getStockData( day )
 
@@ -241,7 +240,7 @@ class GpwCurrentData:
     def getWorksheet(self):
         dataFile = self.crawler.getStockData()
         return self.getWorksheetFromFile( dataFile )
-        
+
     def getWorksheetFromFile(self, dataFile):
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )

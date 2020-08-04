@@ -27,6 +27,8 @@ import datetime
 from datetime import date
 import calendar
 
+from typing import Dict, List
+
 import csv
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType
@@ -262,6 +264,7 @@ class StockAnalysis(object):
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
+    # pylint: disable=R0914
     def calcBestRaise(self, level, outFilePath=None):
         self.logger.info( "Calculating best raise for level: %s", level )
 
@@ -399,6 +402,7 @@ class StockAnalysis(object):
         self.logger.info( "Calculating Friday stock" )
         self._calcDayOfWeek( 4, numOfWeeks, accuracy, lastDay, outFilePath, False )
 
+    # pylint: disable=R0914
     def calcWeekend(self, numOfWeeks=1, accuracy=0.7, lastDay: date=date.today(), outFilePath=None):
         file = outFilePath
         if file is None:
@@ -458,13 +462,14 @@ class StockAnalysis(object):
             rowsList.append( [key, prevVal, nextVal, pot, currAccuracy, moneyLink] )
 
         ## sort by accuracy, then by potential
-        rowsList.sort(key=lambda x:(x[4], x[3]), reverse=True)
+        rowsList.sort(key=lambda x: (x[4], x[3]), reverse=True)
 
         for row in rowsList:
             writer.writerow( row )
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
+    # pylint: disable=R0914
     def calcVariance(self, fromDay: date, toDay: date, outFilePath=None):
         self.logger.debug( "Calculating stock variance in range: %s %s", fromDay, toDay )
 
@@ -593,8 +598,8 @@ class StockAnalysis(object):
 
         writer.writerow( ["name", "opening val", "closing val", "potential", "potential avg", "accuracy", "link"] )
 
-        raiseCounter = dict()
-        potAvg = dict()
+        raiseCounter: Dict[ str, int ]    = dict()
+        potAvg: Dict[ str, List[float] ]  = dict()
         counterMonday = lastValid
 
         for _ in range(0, numOfWeeks):
@@ -615,7 +620,7 @@ class StockAnalysis(object):
                 if diff <= 0:
                     continue
                 raiseCounter[key] = raiseCounter.get( key, 0 ) + 1
-                avgPair = potAvg.get(key, [0, 0])
+                avgPair: List[ float ] = potAvg.get(key, [0, 0])
                 avgPair[0] = avgPair[0] + diff / prevVal
                 avgPair[1] = avgPair[1] + 1
                 potAvg[ key ] = avgPair
@@ -649,7 +654,7 @@ class StockAnalysis(object):
             rowsList.append( [key, prevVal, nextVal, pot, avgVal, currAccuracy, moneyLink] )
 
         ## sort by accuracy, then by potential
-        rowsList.sort(key=lambda x:(x[5], x[3]), reverse=True)
+        rowsList.sort(key=lambda x: (x[5], x[3]), reverse=True)
 
         for row in rowsList:
             writer.writerow( row )
@@ -658,4 +663,3 @@ class StockAnalysis(object):
 
 
 StockAnalysis.logger = _LOGGER.getChild(StockAnalysis.__name__)
-

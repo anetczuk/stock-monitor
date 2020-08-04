@@ -40,9 +40,11 @@ class PandasModel( QAbstractTableModel ):
         super().__init__()
         self._data: DataFrame = data
 
+    # pylint: disable=W0613
     def rowCount(self, parent=None):
         return self._data.shape[0]
 
+    # pylint: disable=W0613
     def columnCount(self, parnet=None):
         return self._data.shape[1]
 
@@ -61,8 +63,8 @@ class PandasModel( QAbstractTableModel ):
 
 class StockTable( QTableView ):
 
-    def __init__(self, parentWidget=None):
-        super().__init__(parentWidget)
+#     def __init__(self, parentWidget=None):
+#         super().__init__(parentWidget)
 
     def setData(self, rawData: DataFrame ):
         self.setModel( PandasModel( rawData ) )

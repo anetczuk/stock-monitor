@@ -23,12 +23,9 @@
 
 import logging
 
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QDate
-from PyQt5.QtWidgets import QTableWidget, QTreeView
-from PyQt5.QtWidgets import QCheckBox
-from PyQt5.QtWidgets import QDialog, QMessageBox
-from PyQt5.QtWidgets import QWidget, qApp
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
 
 from . import uiloader
@@ -56,31 +53,31 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.setupUi(self)
 
         self.appSettings = AppSettings()
- 
+
         ## =============================
- 
+
 #         undoStack = self.data.undoStack
-# 
+#
 #         undoAction = undoStack.createUndoAction( self, "&Undo" )
 #         undoAction.setShortcuts( QtGui.QKeySequence.Undo )
 #         redoAction = undoStack.createRedoAction( self, "&Redo" )
 #         redoAction.setShortcuts( QtGui.QKeySequence.Redo )
-# 
+#
 #         self.ui.menuEdit.insertAction( self.ui.actionUndo, undoAction )
 #         self.ui.menuEdit.removeAction( self.ui.actionUndo )
 #         self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
 #         self.ui.menuEdit.removeAction( self.ui.actionRedo )
- 
+
         ## =============================
- 
+
         self.trayIcon = trayicon.TrayIcon(self)
         self.trayIcon.setToolTip( self.toolTip )
         self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
- 
+
         ## === connecting signals ===
- 
+
         self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
- 
+
         self.applySettings()
         self.trayIcon.show()
 
@@ -98,9 +95,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
             statusBar.showMessage( changeStatus[nextIndex], timeout )
         except ValueError:
             statusBar.showMessage( firstStatus, timeout )
- 
+
     ## ====================================================================
- 
+
     def setIconTheme(self, theme: trayicon.TrayIconTheme):
         _LOGGER.debug("setting tray theme: %r", theme)
         self._setTrayIndicator( theme )
@@ -147,7 +144,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
             return
         self.appSettings = dialog.appSettings
         self.applySettings()
- 
+
     def applySettings(self):
         self.setIconTheme( self.appSettings.trayIcon )
 
@@ -161,7 +158,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
         ## restore widget state and geometry
         guistate.load_state( self, settings )
 
-
     def saveSettings(self):
         settings = self.getSettings()
         self.logger.debug( "saving app state to %s", settings.fileName() )
@@ -170,7 +166,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         ## store widget state and geometry
         guistate.save_state(self, settings)
-        
+
         ## force save to file
         settings.sync()
 
