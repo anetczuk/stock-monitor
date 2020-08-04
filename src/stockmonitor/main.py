@@ -24,17 +24,15 @@
 #
 
 import sys
-# import os
+import os
 
-import time
 import argparse
 import logging
-import cProfile
 import datetime
 
 import stockmonitor.logger as logger
 
-from stockmonitor.dataaccess.datatype import DataType
+from stockmonitor.dataaccess.datatype import ArchiveDataType
 from stockmonitor.dataaccess.stockdata import StockAnalysis
 
 # from stockmonitor.gui.main_window import MainWindow
@@ -46,68 +44,108 @@ from stockmonitor.dataaccess.stockdata import StockAnalysis
 logger.configure()
 _LOGGER = logging.getLogger(__name__)
 
+script_dir = os.path.dirname(os.path.realpath(__file__))
+
+tmp_dir = script_dir + "/../../tmp/"
+
 
 def crisisResults( analysis ):
     maxFromDay = datetime.date( 2020, 2, 1 )
     maxToDay   = datetime.date( 2020, 3, 5 )
-    analysis.loadMax( DataType.MAX, maxFromDay, maxToDay)
+    analysis.loadMax( ArchiveDataType.MAX, maxFromDay, maxToDay)
 
     minFromDay = datetime.date( 2020, 3, 6 )
     minToDay   = datetime.date( 2020, 3, 22 )
-    analysis.loadMin( DataType.MIN, minFromDay, minToDay)
+    analysis.loadMin( ArchiveDataType.MIN, minFromDay, minToDay)
 
-#     analysis.loadCurr( DataType.CLOSING, offset=-1 )
-    analysis.loadCurr( DataType.CLOSING, offset=-1 )
+#     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
+    analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
 
-    analysis.calcBestValue( 0.6, "../tmp/out/crisis_stock_value.csv" )
-    analysis.calcBestRaise( 0.1, "../tmp/out/crisis_stock_raise.csv" )
+    analysis.calcBestValue( 0.6, tmp_dir + "out/crisis_stock_value.csv" )
+    analysis.calcBestRaise( 0.1, tmp_dir + "out/crisis_stock_raise.csv" )
 
 
-def weekStockResults( analysis ):
-    recentDay = analysis.getPrevValidDay()
-    startDay = recentDay - datetime.timedelta(days=8)
+def crisisResults2( analysis ):
+    recentDay = analysis.getRecentValidDay()
+    fromDay = datetime.date( 2020, 2, 1 )
+    toDay   = recentDay
+    analysis.loadMax( ArchiveDataType.MAX, fromDay, toDay)
+
+    minFromDay = datetime.date( 2020, 3, 6 )
+    minToDay   = datetime.date( 2020, 3, 22 )
+    analysis.loadMin( ArchiveDataType.MIN, fromDay, toDay)
+
+#     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
+    analysis.loadCurr( ArchiveDataType.CLOSING, day=recentDay )
+
+    analysis.calcBestValue( 999990.6, tmp_dir + "out/crisis_full_stock_value.csv" )
+    analysis.calcBestRaise( 999990.1, tmp_dir + "out/crisis_full_stock_raise.csv" )
+
+
+def weekStockResults( analysis, periodLength=8 ):
+    recentDay = analysis.getRecentValidDay()
+    startDay = recentDay - datetime.timedelta(days=periodLength)
 #     endDay = recentDay - datetime.timedelta(days=1)
-    
-    analysis.loadMax( DataType.MAX, startDay, recentDay)
-    analysis.loadMin( DataType.MIN, startDay, recentDay)
-    analysis.loadCurr( DataType.CLOSING, day=recentDay )
 
-    analysis.calcBestValue( 0.8, "../tmp/out/week_stock_value.csv" )
-    analysis.calcBestRaise( 0.2, "../tmp/out/week_stock_raise.csv" )
+    analysis.loadMax( ArchiveDataType.MAX, startDay, recentDay)
+    analysis.loadMin( ArchiveDataType.MIN, startDay, recentDay)
+    analysis.loadCurr( ArchiveDataType.CLOSING, day=recentDay )
+
+    analysis.calcBestValue( 999990.8, tmp_dir + "out/week_stock_value.csv" )
+    analysis.calcBestRaise( 999990.2, tmp_dir + "out/week_stock_raise.csv" )
 
 
 def weekVolumeResults( analysis ):
-    recentDay = analysis.getPrevValidDay()
+    recentDay = analysis.getRecentValidDay()
     startDay = recentDay - datetime.timedelta(days=8)
 #     endDay = recentDay - datetime.timedelta(days=1)
 
-    analysis.loadMax( DataType.VOLUME, startDay, recentDay)
+    analysis.loadMax( ArchiveDataType.VOLUME, startDay, recentDay)
 
-    analysis.loadCurr( DataType.VOLUME, day=recentDay )
+    analysis.loadCurr( ArchiveDataType.VOLUME, day=recentDay )
 
-    analysis.calcBiggestRaise( 2.0, "../tmp/out/week_stock_volume.csv" )
+    analysis.calcBiggestRaise( 0.01, tmp_dir + "out/week_stock_volume.csv" )
 
 
 def dayResults( analysis ):
-    analysis.loadCurr( DataType.VOLUME, offset=-1 )
-    analysis.calcGreater( 100000, "../tmp/out/day_stock_volume.csv" )
+    analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
+    analysis.calcGreater( 100000, tmp_dir + "out/day_stock_volume.csv" )
 
-    analysis.loadCurr( DataType.TRADING, offset=-1 )
-    analysis.calcGreater( 30000, "../tmp/out/day_stock_trading.csv" )
+    analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
+    analysis.calcGreater( 30000, tmp_dir + "out/day_stock_trading.csv" )
+
+def tradingResults( analysis ):
+    recentDay = analysis.getRecentValidDay( checkGiven=True )
+    startDay = recentDay - datetime.timedelta(days=6)
+    analysis.loadSum( ArchiveDataType.TRADING, startDay, recentDay)
+    analysis.calcGreatestSum( tmp_dir + "out/week_stock_trading.csv" )
+
+def variance( analysis ):
+    recentDay = analysis.getRecentValidDay( checkGiven=True )
+    startDay = recentDay - datetime.timedelta(days=6)
+    analysis.calcVariance( startDay, recentDay, tmp_dir + "out/stock_variance.csv" )
 
 
 def run_app(args):
 
     analysis = StockAnalysis()
+
     crisisResults( analysis )
-    weekStockResults( analysis )
+    crisisResults2( analysis )
+
+    weekStockResults( analysis, 5 )
+
     weekVolumeResults( analysis )
     dayResults( analysis )
 
-    analysis.calcWeekend(4)
-    
-    analysis.calcMonday(4)
-    analysis.calcFriday(4)
+#     analysis.calcWeekend(4)
+#
+#     analysis.calcMonday(4)
+#     analysis.calcFriday(4)		#TODO: fix, downloads future file
+
+    tradingResults( analysis )
+
+    variance( analysis )
 
     return 0
 

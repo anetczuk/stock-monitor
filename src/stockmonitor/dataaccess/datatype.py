@@ -25,7 +25,7 @@ from enum import Enum, unique
 
 
 @unique
-class DataType(Enum):
+class ArchiveDataType(Enum):
     DATE = ()             ## data
     NAME = ()             ## nazwa
     ISIN = ()             ## numer ISIN
@@ -35,9 +35,34 @@ class DataType(Enum):
     MIN = ()              ## kurs minimalny
     CLOSING = ()          ## kurs zamkniecia
     CHANGE = ()           ## zmiana kursu
-    VOLUME = ()           ## wolumen  
-    TRANSACTIONS = ()     ## liczba transakcji  
+    VOLUME = ()           ## wolumen
+    TRANSACTIONS = ()     ## liczba transakcji
     TRADING = ()          ## obrót, val/1k
+
+    def __new__(cls):
+        value = len(cls.__members__)  # note no + 1
+        obj = object.__new__(cls)
+        obj._value_ = value
+        return obj
+
+@unique
+class CurrentDataType(Enum):
+    NAME = ()               ## nazwa
+    SHORT = ()              ## skrot
+    CURRENCY = ()           ## waluta
+    RECENT_TRANS_TIME = ()  ## czas ostatniej transakcji
+    REFERENCE = ()          ## kurs odniesienia
+    OPENING = ()            ## kurs otwarcia
+    MIN = ()                ## kurs minimalny
+    MAX = ()                ## kurs maksymalny
+    RECENT_TRANS = ()       ## kurs ostatniej transakcji
+
+#     ISIN = ()               ## numer ISIN
+#     CLOSING = ()            ## kurs zamkniecia
+#     CHANGE = ()             ## zmiana kursu
+#     VOLUME = ()             ## wolumen
+#     TRANSACTIONS = ()       ## liczba transakcji
+#     TRADING = ()            ## obrót, val/1k
 
     def __new__(cls):
         value = len(cls.__members__)  # note no + 1
