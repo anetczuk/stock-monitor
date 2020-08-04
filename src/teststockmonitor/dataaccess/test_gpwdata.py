@@ -27,10 +27,7 @@ import unittest
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwCurrentCrawler
 from stockmonitor.dataaccess.datatype import CurrentDataType
 
-import os
-
-
-script_dir = os.path.dirname(__file__)
+from teststockmonitor.data import get_data_path
 
 
 class GpwCurrentCrawlerMock(GpwCurrentCrawler):
@@ -38,7 +35,7 @@ class GpwCurrentCrawlerMock(GpwCurrentCrawler):
         super().__init__()
 
     def getStockData(self):
-        filePath = os.path.abspath( os.path.join(script_dir, "akcje_2020-04-14_15-50.xls") )
+        filePath = get_data_path( "akcje_2020-04-14_15-50.xls" )
         return filePath
 
 class GpwCurrentDataMock(GpwCurrentData):

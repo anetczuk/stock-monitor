@@ -240,6 +240,9 @@ class GpwCurrentData:
 
     def getWorksheet(self):
         dataFile = self.crawler.getStockData()
+        return self.getWorksheetFromFile( dataFile )
+        
+    def getWorksheetFromFile(self, dataFile):
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
         return dataFrameList[0]
