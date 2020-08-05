@@ -77,8 +77,8 @@ class GpwCurrentCrawler:
         if os.path.exists( filePath ):
             return filePath
 
-        ## pattern example: https://www.gpw.pl/ajaxindex.php?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1
-        url = "https://www.gpw.pl/ajaxindex.php?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1"
+        url = ("https://www.gpw.pl/ajaxindex.php"
+               "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
         _LOGGER.debug( "grabbing data from utl: %s", url )
 
         dirPath = os.path.dirname( filePath )
@@ -246,7 +246,7 @@ class GpwCurrentData:
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
         return dataFrameList[0]
 
-    def isFileWithNoData(self, filePath):
+    def isFileWithNoData(self, _):
 #         with open( filePath ) as f:
 #             if "Brak danych dla wybranych kryteriów." in f.read():
 #                 return True

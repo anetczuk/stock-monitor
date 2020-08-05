@@ -215,7 +215,7 @@ class StockAnalysis(object):
         os.makedirs( dirPath, exist_ok=True )
 
         writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", self.listDatesToString(self.sumDate) ] )
+        writer.writerow( ["reference period:", dates_to_string(self.sumDate) ] )
         writer.writerow( [] )
 
         writer.writerow( ["name", "trading [kPLN]", "link"] )
@@ -242,7 +242,7 @@ class StockAnalysis(object):
         os.makedirs( dirPath, exist_ok=True )
 
         writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", self.listDatesToString(self.currDate) ] )
+        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
         writer.writerow( ["reference level:", level ] )
         writer.writerow( ["formula:", "reference > level"] )
         writer.writerow( [] )
@@ -275,9 +275,9 @@ class StockAnalysis(object):
         os.makedirs( dirPath, exist_ok=True )
 
         writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["max period:", self.listDatesToString(self.maxDate) ] )
-        writer.writerow( ["min period:", self.listDatesToString(self.minDate) ] )
-        writer.writerow( ["reference period:", self.listDatesToString(self.currDate) ] )
+        writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
+        writer.writerow( ["min period:", dates_to_string(self.minDate) ] )
+        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
         writer.writerow( ["reference level:", level ] )
         writer.writerow( ["formula:", "(reference - min) < (max - min) * level"] )
         writer.writerow( [] )
@@ -324,8 +324,8 @@ class StockAnalysis(object):
         os.makedirs( dirPath, exist_ok=True )
 
         writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["max period:", self.listDatesToString(self.maxDate) ] )
-        writer.writerow( ["reference period:", self.listDatesToString(self.currDate) ] )
+        writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
+        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
         writer.writerow( ["reference level:", level ] )
         writer.writerow( ["formula:", "reference < max * level"] )
         writer.writerow( [] )
@@ -366,8 +366,8 @@ class StockAnalysis(object):
         os.makedirs( dirPath, exist_ok=True )
 
         writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["max period:", self.listDatesToString(self.maxDate) ] )
-        writer.writerow( ["reference period:", self.listDatesToString(self.currDate) ] )
+        writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
+        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
         writer.writerow( ["reference level:", level ] )
         writer.writerow( ["formula:", "reference > max * level"] )
         writer.writerow( [] )
@@ -524,8 +524,9 @@ class StockAnalysis(object):
         os.makedirs( dirPath, exist_ok=True )
 
         writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", self.listDatesToString(self.sumDate) ] )
-        writer.writerow( ["formula:", "|maxVal - max(open, close)| / max(open, close) + |minVal - min(open, close)| / min(open, close)"] )
+        writer.writerow( ["reference period:", dates_to_string(self.sumDate) ] )
+        writer.writerow( ["formula:", ("|maxVal - max(open, close)| / max(open, close) + "
+                                       "|minVal - min(open, close)| / min(open, close)") ] )
         writer.writerow( [] )
 
         writer.writerow( ["name", "variance", "trading [kPLN]", "link"] )
@@ -565,15 +566,10 @@ class StockAnalysis(object):
         moneyLink = "https://www.money.pl/gielda/spolki-gpw/" + isinCode + ".html"
         return moneyLink
 
-    def listDatesToString(self, datesList):
-        output = ""
-        for d in datesList:
-            output += str(d) + " "
-        return output
-
     # ==========================================================================
 
-    def _calcDayOfWeek( self, numOfDay, numOfWeeks=1, accuracy=0.7, lastDay: date=date.today(), outFilePath=None, validDirection=True ):
+    def _calcDayOfWeek( self, numOfDay, numOfWeeks=1, accuracy=0.7, lastDay: date=date.today(),
+                        outFilePath=None, validDirection=True ):
         # ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         dayName = calendar.day_name[ numOfDay ].lower()
         file = outFilePath
@@ -663,3 +659,10 @@ class StockAnalysis(object):
 
 
 StockAnalysis.logger = _LOGGER.getChild(StockAnalysis.__name__)
+
+
+def dates_to_string(datesList):
+    output = ""
+    for d in datesList:
+        output += str(d) + " "
+    return output
