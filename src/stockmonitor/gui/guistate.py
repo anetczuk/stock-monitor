@@ -21,7 +21,7 @@
 # SOFTWARE.
 #
 
-from PyQt5.QtCore import QSettings
+from PyQt5.QtCore import QSettings, QObject
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QWidget, QSplitter, QCheckBox, QTabWidget, QTableWidget, QTreeView
 
@@ -171,7 +171,7 @@ def save_state(window: QMainWindow, settings: QSettings):
         settings.endGroup()
 
 
-def get_widget_key(widget):
+def get_widget_key(widget: QObject, suffix=None ):
     if widget is None:
         return None
     retKey = widget.objectName()
@@ -179,4 +179,6 @@ def get_widget_key(widget):
     while widget is not None:
         retKey = widget.objectName() + "-" + retKey
         widget = widget.parent()
+    if suffix is not None:
+        retKey = retKey + "-" + suffix
     return retKey
