@@ -71,15 +71,17 @@ class GpwCurrentCrawler:
 
     ## Brak danych dla wybranych kryteriów.
 
-    def getStockData(self):
-        timeNow = datetime.datetime.now()
-        filePath = tmp_dir + "data/gpw/curr/" + timeNow.strftime("%Y-%m-%d_%H-%M-%S") + ".xls"
-        if os.path.exists( filePath ):
+    def getStockData(self, forceRefresh=False):
+#         timeNow = datetime.datetime.now()
+        # filePath = tmp_dir + "data/gpw/curr/" + timeNow.strftime("%Y-%m-%d_%H-%M-%S") + ".xls"
+        filePath = tmp_dir + "data/gpw/recent_data.xls"
+        if forceRefresh is False and os.path.exists( filePath ):
+            _LOGGER.debug( "loading recent data from file[%s]", filePath )
             return filePath
 
         url = ("https://www.gpw.pl/ajaxindex.php"
                "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
-        _LOGGER.debug( "grabbing data from utl: %s", url )
+        _LOGGER.debug( "grabbing data from utl[%s] to file[%s]", url, filePath )
 
         dirPath = os.path.dirname( filePath )
         os.makedirs( dirPath, exist_ok=True )
@@ -237,8 +239,8 @@ class GpwCurrentData:
         values = worksheet.iloc[:, colIndex]
         return dict( zip(names, values) )
 
-    def getWorksheet(self):
-        dataFile = self.crawler.getStockData()
+    def getWorksheet(self, forceRefresh=False):
+        dataFile = self.crawler.getStockData( forceRefresh )
         return self.getWorksheetFromFile( dataFile )
 
     def getWorksheetFromFile(self, dataFile):
