@@ -55,7 +55,13 @@ def load_ui(uiFilename):
         raise
 
 
+## deprecated
 def load_ui_from_class_name(uiFilename):
+    ui_file = generate_ui_file_name(uiFilename)
+    return load_ui( ui_file )
+
+
+def load_ui_from_module_path(uiFilename):
     ui_file = generate_ui_file_name(uiFilename)
     return load_ui( ui_file )
 

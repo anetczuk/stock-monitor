@@ -39,7 +39,7 @@ from .widget.settingsdialog import SettingsDialog, AppSettings
 _LOGGER = logging.getLogger(__name__)
 
 
-UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
+UiTargetClass, QtBaseClass = uiloader.load_ui_from_module_path( __file__ )
 
 
 class MainWindow( QtBaseClass ):           # type: ignore
