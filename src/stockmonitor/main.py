@@ -30,15 +30,15 @@ import argparse
 import logging
 import datetime
 
+from PyQt5.QtWidgets import QApplication
+
 import stockmonitor.logger as logger
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType
 from stockmonitor.dataaccess.stockdata import StockAnalysis
 
-# from stockmonitor.gui.main_window import MainWindow
-#
-# from stockmonitor.gui.qt import QApplication
-# from stockmonitor.gui.sigint import setup_interrupt_handling
+from stockmonitor.gui.mainwindow import MainWindow
+from stockmonitor.gui.sigint import setup_interrupt_handling
 
 
 logger.configure()
@@ -128,8 +128,7 @@ def variance( analysis ):
     analysis.calcVariance( startDay, recentDay, tmp_dir + "out/stock_variance.csv" )
 
 
-def run_app( _ ):
-
+def calculate_data():
     analysis = StockAnalysis()
 
     crisis_results( analysis )
@@ -151,31 +150,37 @@ def run_app( _ ):
 
     return 0
 
-#     ## GUI
-#     app = QApplication(sys.argv)
-#     app.setApplicationName("StockMonitor")
-#     app.setOrganizationName("arnet")
-#     ### app.setOrganizationDomain("www.my-org.com")
-#
-#     window = MainWindow()
-#     window.loadSettings()
-#
-#     window.show()
-#
-#     setup_interrupt_handling()
-#
-#     exitCode = app.exec_()
-#
-#     if exitCode == 0:
-#         window.saveSettings()
-#
-#     return exitCode
+
+def run_app( args ):
+    if args.calc is True:
+        return calculate_data()
+
+    ## GUI
+    app = QApplication(sys.argv)
+    app.setApplicationName("StockMonitor")
+    app.setOrganizationName("arnet")
+    ### app.setOrganizationDomain("www.my-org.com")
+
+    window = MainWindow()
+    window.loadSettings()
+
+    window.show()
+
+    setup_interrupt_handling()
+
+    exitCode = app.exec_()
+
+    if exitCode == 0:
+        window.saveSettings()
+
+    return exitCode
 
 
 def create_parser( parser: argparse.ArgumentParser = None ):
     if parser is None:
         parser = argparse.ArgumentParser(description='Stock Monitor')
     parser.add_argument('--minimized', action='store_const', const=True, default=False, help='Start minimized' )
+    parser.add_argument('--calc', action='store_const', const=True, default=False, help='Calculate and exit' )
     return parser
 
 
