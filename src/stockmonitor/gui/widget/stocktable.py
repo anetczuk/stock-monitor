@@ -26,7 +26,8 @@ import copy
 
 from typing import Dict
 
-from PyQt5.QtCore import Qt
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtWidgets import QTableView, QTableWidgetItem, QDialog
@@ -174,10 +175,24 @@ class PandasModel( QAbstractTableModel ):
         return True
 
     def data(self, index, role=Qt.DisplayRole):
-        if index.isValid():
-            if role == Qt.DisplayRole:
-                return str(self._data.iloc[index.row(), index.column()])
+        if not index.isValid():
+            return None
+        if role == Qt.DisplayRole:
+            return str(self._data.iloc[index.row(), index.column()])
+        if role == Qt.TextAlignmentRole:
+            return Qt.AlignHCenter | Qt.AlignVCenter
         return None
+
+
+class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
+
+    def filterAcceptsRow(self, sourceRow, sourceParent: QModelIndex):
+        return True
+
+    def lessThan(self, left: QModelIndex, right: QModelIndex):
+        leftData  = self.sourceModel().data(left, QtCore.Qt.DisplayRole)
+        rightData = self.sourceModel().data(right, QtCore.Qt.DisplayRole)
+        return leftData < rightData
 
 
 class StockTable( QTableView ):
@@ -185,11 +200,19 @@ class StockTable( QTableView ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self._data = None
+        self.pandaModel = None
         self.tableSettings = TableSettings()
+        
+        self.setSortingEnabled( True )
+        
+        self.setData( DataFrame() )
 
     def setData(self, rawData: DataFrame ):
         self._data = rawData
-        self.setModel( PandasModel( rawData ) )
+        self.pandaModel = PandasModel( rawData )
+        proxyModel = TaskSortFilterProxyModel(self)
+        proxyModel.setSourceModel( self.pandaModel )
+        self.setModel( proxyModel )
         self._applySettings()
 
     def showColumnsConfiguration(self):
@@ -212,7 +235,7 @@ class StockTable( QTableView ):
 
     def setHeaderText(self, col, text):
         self.tableSettings.setHeaderText( col, text )
-        self.model().setHeaderData( col, Qt.Horizontal, text )
+        self.pandaModel.setHeaderData( col, Qt.Horizontal, text )
 
     def setColumnVisible(self, col, visible):
         self.tableSettings.setColumnVisible( col, visible )
@@ -240,7 +263,7 @@ class StockTable( QTableView ):
         settings.endGroup()
 
     def _applySettings(self):
-        tableModel = self.model()
+        tableModel = self.pandaModel
         tableModel.customHeader.clear()
         for col, text in self.tableSettings.headersTexts.items():
             tableModel.setHeaderData( col, Qt.Horizontal, text )
