@@ -246,7 +246,9 @@ class GpwCurrentData:
     def getWorksheetFromFile(self, dataFile):
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
-        return dataFrameList[0]
+        dataFrame = dataFrameList[0]
+        dataFrame.drop( dataFrame.tail(1).index, inplace=True )
+        return dataFrame
 
     def isFileWithNoData(self, _):
 #         with open( filePath ) as f:
