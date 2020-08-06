@@ -71,11 +71,12 @@ dataframe = dataAccess.getWorksheetFromFile( dataPath )
 setup_interrupt_handling()
 
 widget = StockTable()
+widget.tableSettings.setColumnVisible(0, False)
+widget.tableSettings.setHeaderText(1, "changed header")
 widget.resize( 1024, 768 )
 widget.setData( dataframe )
 widget.show()
 
-# print( "Dialog return:", dialogCode )
-# print( "Created task:", dialog.task )
+widget.showColumnsConfiguration()
 
 sys.exit( app.exec_() )
