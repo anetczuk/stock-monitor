@@ -73,10 +73,13 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.trayIcon = trayicon.TrayIcon(self)
         self.trayIcon.setToolTip( self.toolTip )
         self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
+        
+        self.ui.stockTable.refreshData( False )
 
         ## === connecting signals ===
 
         self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
+        self.ui.stockRefreshPB.clicked.connect( self.ui.stockTable.refreshData )
 
         self.applySettings()
         self.trayIcon.show()
@@ -153,6 +156,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.logger.debug( "loading app state from %s", settings.fileName() )
 
         self.appSettings.loadSettings( settings )
+        self.ui.stockTable.loadSettings( settings )
+
         self.applySettings()
 
         ## restore widget state and geometry
@@ -163,6 +168,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.logger.debug( "saving app state to %s", settings.fileName() )
 
         self.appSettings.saveSettings( settings )
+        self.ui.stockTable.saveSettings( settings )
 
         ## store widget state and geometry
         guistate.save_state(self, settings)

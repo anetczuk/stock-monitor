@@ -30,10 +30,14 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtWidgets import QTableView, QTableWidgetItem, QDialog
+from PyQt5.QtWidgets import QMenu
+from PyQt5.QtGui import QCursor
 
 from pandas import DataFrame
 
 from .. import uiloader
+from stockmonitor.dataaccess.gpwdata import GpwCurrentData
+from stockmonitor.gui import guistate
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -189,6 +193,8 @@ class StockTable( QTableView ):
         self._applySettings()
 
     def showColumnsConfiguration(self):
+        if self._data is None:
+            return
         oldSettings = copy.deepcopy( self.tableSettings )
         dialog = TableSettingsDialog( self )
         dialog.setData( self.tableSettings, self._data )
@@ -199,6 +205,11 @@ class StockTable( QTableView ):
             self.tableSettings = oldSettings
             self._applySettings()
 
+    def refreshData(self, forceRefresh=True):
+        dataAccess = GpwCurrentData()
+        dataframe = dataAccess.getWorksheet( forceRefresh )
+        self.setData( dataframe )
+
     def setHeaderText(self, col, text):
         self.tableSettings.setHeaderText( col, text )
         self.model().setHeaderData( col, Qt.Horizontal, text )
@@ -206,6 +217,27 @@ class StockTable( QTableView ):
     def setColumnVisible(self, col, visible):
         self.tableSettings.setColumnVisible( col, visible )
         self.setColumnHidden( col, not visible )
+
+    def loadSettings(self, settings):
+        settings.beginGroup( guistate.get_widget_key(self, "tablesettings") )
+ 
+        textDict = settings.value("headersTexts", None, type=dict)
+        if textDict is not None:
+            self.tableSettings.headersTexts = textDict
+            
+        visDict = settings.value("columnsVisible", None, type=dict)
+        if visDict is not None:
+            self.tableSettings.columnsVisible = visDict
+ 
+        settings.endGroup()
+        
+        self._applySettings()
+
+    def saveSettings(self, settings):
+        settings.beginGroup( guistate.get_widget_key(self, "tablesettings") )
+        settings.setValue("headersTexts", self.tableSettings.headersTexts )
+        settings.setValue("columnsVisible", self.tableSettings.columnsVisible )
+        settings.endGroup()
 
     def _applySettings(self):
         tableModel = self.model()
@@ -218,3 +250,19 @@ class StockTable( QTableView ):
             self.showColumn( col )
         for col, show in self.tableSettings.columnsVisible.items():
             self.setColumnHidden( col, not show )
+
+    def contextMenuEvent( self, event ):
+        contextMenu         = QMenu(self)
+        refreshAction       = contextMenu.addAction("Refresh data")
+        configColumnsAction = contextMenu.addAction("Configure columns")
+
+        if self._data is None:
+            configColumnsAction.setEnabled( False )
+        
+        globalPos = QCursor.pos()
+        action = contextMenu.exec_( globalPos )
+
+        if action == refreshAction:
+            self.refreshData()
+        elif action == configColumnsAction:
+            self.showColumnsConfiguration()
