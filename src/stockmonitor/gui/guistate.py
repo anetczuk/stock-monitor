@@ -23,7 +23,7 @@
 
 from PyQt5.QtCore import QSettings, QObject
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtWidgets import QWidget, QSplitter, QCheckBox, QTabWidget, QTableWidget, QTreeView
+from PyQt5.QtWidgets import QWidget, QSplitter, QCheckBox, QTabWidget, QTableWidget, QTableView, QTreeView
 
 
 def load_state(window: QMainWindow, settings: QSettings):
@@ -73,6 +73,21 @@ def load_state(window: QMainWindow, settings: QSettings):
             currIndex = int(state)
             w.setCurrentIndex( currIndex )
         settings.endGroup()
+
+    widgets = window.findChildren( QTableView )
+    for w in widgets:
+        wKey = get_widget_key(w)
+        settings.beginGroup( wKey )
+        colsNum = w.model().columnCount()
+        for c in range(0, colsNum):
+            state = settings.value( "column" + str(c) )
+            if state is not None:
+                currWidth = int(state)
+                w.setColumnWidth( c, currWidth )
+        sortColumn = settings.value( "sortColumn" )
+        sortOrder = settings.value( "sortOrder" )
+        if sortColumn is not None and sortOrder is not None:
+            w.sortByColumn( int(sortColumn), int(sortOrder) )
 
     widgets = window.findChildren( QTableWidget )
     for w in widgets:
@@ -141,6 +156,19 @@ def save_state(window: QMainWindow, settings: QSettings):
         settings.beginGroup( wKey )
         settings.setValue("currentIndex", w.currentIndex() )
         settings.endGroup()
+
+    widgets = window.findChildren( QTableView )
+    for w in widgets:
+        wKey = get_widget_key(w)
+        colsNum = w.model().columnCount()
+        settings.beginGroup( wKey )
+        for c in range(0, colsNum):
+            settings.setValue( "column" + str(c), w.columnWidth(c) )
+        header = w.horizontalHeader()
+        sortColumn = header.sortIndicatorSection()
+        settings.setValue( "sortColumn", sortColumn )
+        sortOrder = header.sortIndicatorOrder()
+        settings.setValue( "sortOrder", sortOrder )
 
     widgets = window.findChildren( QTableWidget )
     for w in widgets:
