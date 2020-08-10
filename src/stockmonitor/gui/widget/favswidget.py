@@ -108,6 +108,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         i = -1
         for key in favKeys:
             i += 1
+            self.ui.data_tabs.setTabText( i, key )
             page = self.ui.data_tabs.widget( i )
             page.setData( self.dataObject, key )
 
