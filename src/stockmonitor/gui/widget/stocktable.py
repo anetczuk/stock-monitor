@@ -23,6 +23,7 @@
 
 import logging
 import copy
+import re
 
 from typing import Dict
 
@@ -33,7 +34,7 @@ from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtWidgets import QTableView, QTableWidgetItem
-from PyQt5.QtWidgets import QMenu, QDialog
+from PyQt5.QtWidgets import QMenu
 from PyQt5.QtGui import QCursor
 
 from .. import uiloader
@@ -142,7 +143,7 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         self.setHeader.emit( row, headerText )
         showValue = tableItem.checkState() != Qt.Unchecked
         self.showColumn.emit( row, showValue )
-        
+
     def settingsRejected(self):
         ##restore old settings
         self.parentTable.setTableSettings( self.oldSettings )
@@ -197,12 +198,54 @@ class PandasModel( QAbstractTableModel ):
         return None
 
 
+def contains_string( data ):
+    if data == '-':
+        return True
+    if re.search('[a-zA-Z:]', data):
+        return True
+    return False
+
+
+def convert_float( data ):
+    value = data.strip()
+    value = value.replace(',', '.')
+    value = re.sub(r'\s+', '', value)       ## remove whitespaces
+    return float(value)
+
+
+def convert_int( data ):
+    value = data.strip()
+    value = re.sub(r'\s+', '', value)       ## remove whitespaces
+    return int(value)
+
+
 class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
 
     def lessThan(self, left: QModelIndex, right: QModelIndex):
         leftData  = self.sourceModel().data(left, QtCore.Qt.DisplayRole)
         rightData = self.sourceModel().data(right, QtCore.Qt.DisplayRole)
+        leftData, rightData  = self.convertType( leftData, rightData )
         return leftData < rightData
+
+    def convertType(self, leftData, rightData):
+        if contains_string(leftData) or contains_string(rightData):
+            return (leftData, rightData)
+
+        try:
+            left  = convert_float(leftData)
+            right = convert_float(rightData)
+            return (left, right)
+        except ValueError:
+            pass
+        try:
+            left  = convert_int(leftData)
+            right = convert_int(rightData)
+            return (left, right)
+        except ValueError:
+            pass
+
+        #print("unable to detect type:", ascii(leftData), ascii(rightData) )
+        return (leftData, rightData)
 
 
 class StockTable( QTableView ):
