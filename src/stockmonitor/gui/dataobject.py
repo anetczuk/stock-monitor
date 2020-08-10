@@ -23,7 +23,6 @@
 
 import logging
 from typing import Dict, List
-import glob
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
@@ -61,12 +60,16 @@ class FavData():
     def deleteFavGroup(self, name):
         del self.favs[name]
 
-    def addFav(self, group, item):
+    def addFav(self, group, items):
+        itemsList = list( items )
         self.addFavGroup( group )
-        self.favs[group].append( item )
+        self.favs[group] = self.favs[group] + itemsList
 
-    def deleteFav(self, group, item):
-        if group in self.favs:
+    def deleteFav(self, group, items):
+        itemsList = list( items )
+        if group not in self.favs:
+            return
+        for item in itemsList:
             self.favs[group].remove( item )
 
 
@@ -130,10 +133,12 @@ class DataObject( QObject ):
         self.undoStack.push( DeleteFavGroupCommand( self, name ) )
 
     def addFav(self, group, favItem):
-        self.undoStack.push( AddFavCommand( self, group, favItem ) )
+        itemsList = list( favItem )
+        self.undoStack.push( AddFavCommand( self, group, itemsList ) )
 
     def deleteFav(self, group, favItem):
-        self.undoStack.push( DeleteFavCommand( self, group, favItem ) )
+        itemsList = list( favItem )
+        self.undoStack.push( DeleteFavCommand( self, group, itemsList ) )
 
     def getFavStock(self, favGroup):
         stockList = self.favs.getFavs( favGroup )

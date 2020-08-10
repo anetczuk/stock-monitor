@@ -31,20 +31,20 @@ _LOGGER = logging.getLogger(__name__)
 
 class DeleteFavCommand( QUndoCommand ):
 
-    def __init__(self, dataObject, group, favItem, parentCommand=None):
+    def __init__(self, dataObject, group, favItems, parentCommand=None):
         super().__init__(parentCommand)
 
         self.dataObject = dataObject
         self.favsObj: 'FavData' = self.dataObject.favs
         self.group = group
-        self.favItem = favItem
+        self.favItems = favItems
 
-        self.setText( "Remove Fav: " + favItem )
+        self.setText( "Remove Fav: " + str(favItems) )
 
     def redo(self):
-        self.favsObj.deleteFav( self.group, self.favItem )
+        self.favsObj.deleteFav( self.group, self.favItems )
         self.dataObject.favsChanged.emit()
 
     def undo(self):
-        self.favsObj.addFav( self.group, self.favItem )
+        self.favsObj.addFav( self.group, self.favItems )
         self.dataObject.favsChanged.emit()

@@ -394,12 +394,16 @@ class StockFullTable( StockTable ):
             self.showColumnsConfiguration()
         elif action in favsActions:
             favGroup = action.data()
-            itemIndex = self.currentIndex()
-            sourceIndex = self.model().mapToSource( itemIndex )
-            dataRow = sourceIndex.row()
             dataAccess = self.dataObject.currentStockData
-            favCode = dataAccess.getShortField( dataRow )
-            self.dataObject.addFav( favGroup, favCode )
+            selection = self.selectionModel()
+            indexes = selection.selectedIndexes()
+            favCodes = []
+            for ind in indexes:
+                sourceIndex = self.model().mapToSource( ind )
+                dataRow = sourceIndex.row()
+                code = dataAccess.getShortField( dataRow )
+                favCodes.append( code )
+            self.dataObject.addFav( favGroup, favCodes )
 
 
 ## ====================================================================
@@ -438,9 +442,13 @@ class StockFavsTable( StockTable ):
         elif action == configColumnsAction:
             self.showColumnsConfiguration()
         elif action == remFavAction:
-            itemIndex = self.currentIndex()
-            sourceIndex = self.model().mapToSource( itemIndex )
-            dataRow = sourceIndex.row()
             dataAccess = self.dataObject.currentStockData
-            favCode = dataAccess.getShortFieldFromData( self._data, dataRow )
-            self.dataObject.deleteFav( self.favGroup, favCode )
+            selection = self.selectionModel()
+            indexes = selection.selectedIndexes()
+            favCodes = []
+            for ind in indexes:
+                sourceIndex = self.model().mapToSource( ind )
+                dataRow = sourceIndex.row()
+                code = dataAccess.getShortFieldFromData( self._data, dataRow )
+                favCodes.append( code )
+            self.dataObject.deleteFav( self.favGroup, favCodes )

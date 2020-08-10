@@ -31,20 +31,20 @@ _LOGGER = logging.getLogger(__name__)
 
 class AddFavCommand( QUndoCommand ):
 
-    def __init__(self, dataObject, newName, newItem, parentCommand=None):
+    def __init__(self, dataObject, newName, newItems, parentCommand=None):
         super().__init__(parentCommand)
 
         self.dataObject = dataObject
         self.favsObj: 'FavData' = self.dataObject.favs
         self.newName = newName
-        self.newItem = newItem
+        self.newItems = newItems
 
-        self.setText( "Add Fav: " + newItem )
+        self.setText( "Add Fav: " + str(newItems) )
 
     def redo(self):
-        self.favsObj.addFav( self.newName, self.newItem )
+        self.favsObj.addFav( self.newName, self.newItems )
         self.dataObject.favsChanged.emit()
 
     def undo(self):
-        self.favsObj.deleteFav( self.newName, self.newItem )
+        self.favsObj.deleteFav( self.newName, self.newItems )
         self.dataObject.favsChanged.emit()
