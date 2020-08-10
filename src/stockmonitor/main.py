@@ -162,8 +162,8 @@ def run_app( args ):
     ### app.setOrganizationDomain("www.my-org.com")
 
     window = MainWindow()
-    window.loadSettings()
     window.loadData()
+    window.loadSettings()
 
     window.show()
 

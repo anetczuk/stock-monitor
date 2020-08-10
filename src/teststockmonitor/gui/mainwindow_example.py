@@ -73,9 +73,9 @@ MainWindow.toolTip = MainWindow.toolTip + " Preview"
 window = MainWindow()
 window.disableSaving()
 window.setWindowTitle( window.windowTitle() + " Preview" )
-window.loadSettings()
 if args.loadUserData:
     window.loadData()
+window.loadSettings()
 window.show()
 
 setup_interrupt_handling()

@@ -30,8 +30,8 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
-from PyQt5.QtWidgets import QTableView, QTableWidgetItem, QDialog
-from PyQt5.QtWidgets import QMenu
+from PyQt5.QtWidgets import QTableView, QTableWidgetItem, QHeaderView
+from PyQt5.QtWidgets import QMenu, QDialog
 from PyQt5.QtGui import QCursor
 
 from pandas import DataFrame
@@ -209,6 +209,11 @@ class StockTable( QTableView ):
         self.tableSettings = TableSettings()
         
         self.setSortingEnabled( True )
+        
+        header = self.horizontalHeader()
+        header.setDefaultAlignment( Qt.AlignCenter )
+        header.setHighlightSections( False )
+        header.setStretchLastSection( True )
         
         self.setData( DataFrame() )
 
