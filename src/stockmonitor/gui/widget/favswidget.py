@@ -30,7 +30,6 @@ from PyQt5.QtWidgets import QLineEdit
 
 from .. import uiloader
 from .stocktable import StockFavsTable
-from stockmonitor.gui import guistate
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
@@ -58,7 +57,7 @@ class SinglePageWidget( QWidget ):
 
     def setData(self, dataObject, favGroup):
         self.stockData.connectData( dataObject, favGroup )
-        
+
     def loadSettings(self, settings):
         self.stockData.loadSettings( settings )
 
