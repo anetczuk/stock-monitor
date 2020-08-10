@@ -35,7 +35,7 @@ class DeleteFavCommand( QUndoCommand ):
         super().__init__(parentCommand)
 
         self.dataObject = dataObject
-        self.favsObj: FavData = self.dataObject.favs
+        self.favsObj: 'FavData' = self.dataObject.favs
         self.group = group
         self.favItem = favItem
 

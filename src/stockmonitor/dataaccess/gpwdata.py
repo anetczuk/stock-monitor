@@ -26,12 +26,13 @@ import logging
 import urllib.request
 import datetime
 
-import xlrd
+from typing import List
+
 import pandas
+from pandas.core.frame import DataFrame
+import xlrd
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
-from pandas.core.frame import DataFrame
-from typing import List
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -224,13 +225,13 @@ class GpwCurrentData:
         if colIndex is None:
             return None
         return self.extractColumn( worksheet, colIndex )
-    
+
     def getShortField(self, rowIndex: int):
         dataFrame = self.getWorksheet()
         if dataFrame is None:
             return None
         return self.getShortFieldFromData( dataFrame, rowIndex )
-    
+
     def getShortFieldFromData(self, dataFrame: DataFrame, rowIndex: int):
         colIndex = self.getColumnIndex( CurrentDataType.SHORT )
         if colIndex is None:
@@ -271,7 +272,7 @@ class GpwCurrentData:
         if self.worksheet is None or forceRefresh is True:
             self.worksheet = self.loadWorksheet( forceRefresh )
         return self.worksheet
-    
+
     def loadWorksheet(self, forceRefresh=False) -> DataFrame:
         dataFile = self.crawler.getStockData( forceRefresh )
         return self.getWorksheetFromFile( dataFile )

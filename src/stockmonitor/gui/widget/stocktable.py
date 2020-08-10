@@ -26,20 +26,18 @@ import copy
 
 from typing import Dict
 
+from pandas import DataFrame
+
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
-from PyQt5.QtWidgets import QTableView, QTableWidgetItem, QHeaderView
+from PyQt5.QtWidgets import QTableView, QTableWidgetItem
 from PyQt5.QtWidgets import QMenu, QDialog
 from PyQt5.QtGui import QCursor
 
-from pandas import DataFrame
-
 from .. import uiloader
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData
-from stockmonitor.gui import guistate
-from stockmonitor.dataaccess.datatype import CurrentDataType
+from .. import guistate
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -191,9 +189,6 @@ class PandasModel( QAbstractTableModel ):
 
 class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
 
-    def filterAcceptsRow(self, sourceRow, sourceParent: QModelIndex):
-        return True
-
     def lessThan(self, left: QModelIndex, right: QModelIndex):
         leftData  = self.sourceModel().data(left, QtCore.Qt.DisplayRole)
         rightData = self.sourceModel().data(right, QtCore.Qt.DisplayRole)
@@ -207,14 +202,14 @@ class StockTable( QTableView ):
         self._data = None
         self.pandaModel = None
         self.tableSettings = TableSettings()
-        
+
         self.setSortingEnabled( True )
-        
+
         header = self.horizontalHeader()
         header.setDefaultAlignment( Qt.AlignCenter )
         header.setHighlightSections( False )
         header.setStretchLastSection( True )
-        
+
         self.setData( DataFrame() )
 
     def setData(self, rawData: DataFrame ):
@@ -248,17 +243,17 @@ class StockTable( QTableView ):
 
     def loadSettings(self, settings):
         settings.beginGroup( guistate.get_widget_key(self, "tablesettings") )
- 
+
         textDict = settings.value("headersTexts", None, type=dict)
         if textDict is not None:
             self.tableSettings.headersTexts = textDict
-            
+
         visDict = settings.value("columnsVisible", None, type=dict)
         if visDict is not None:
             self.tableSettings.columnsVisible = visDict
- 
+
         settings.endGroup()
-        
+
         self._applySettings()
 
     def saveSettings(self, settings):
@@ -279,13 +274,13 @@ class StockTable( QTableView ):
         for col, show in self.tableSettings.columnsVisible.items():
             self.setColumnHidden( col, not show )
 
-    def contextMenuEvent( self, event ):
+    def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
         configColumnsAction = contextMenu.addAction("Configure columns")
-        
+
         if self._data is None:
             configColumnsAction.setEnabled( False )
-        
+
         globalPos = QCursor.pos()
         action = contextMenu.exec_( globalPos )
 
@@ -301,7 +296,7 @@ class StockFullTable( StockTable ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.dataObject = None
-        
+
     def connectData(self, dataObject):
         self.dataObject = dataObject
         self.dataObject.stockDataChanged.connect( self.updateData )
@@ -312,14 +307,14 @@ class StockFullTable( StockTable ):
         dataframe = dataAccess.getWorksheet( False )
         self.setData( dataframe )
 
-    def contextMenuEvent( self, event ):
+    def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
         refreshAction       = contextMenu.addAction("Refresh data")
         configColumnsAction = contextMenu.addAction("Configure columns")
-        
+
         favsActions = []
         if self.dataObject is not None:
-            favSubMenu          = contextMenu.addMenu("Add to favs");
+            favSubMenu          = contextMenu.addMenu("Add to favs")
             favGroupsList = self.dataObject.favs.favGroupsList()
             if not favGroupsList:
                 favSubMenu.setEnabled( False )
@@ -331,7 +326,7 @@ class StockFullTable( StockTable ):
 
         if self._data is None:
             configColumnsAction.setEnabled( False )
-        
+
         globalPos = QCursor.pos()
         action = contextMenu.exec_( globalPos )
 
@@ -358,7 +353,7 @@ class StockFavsTable( StockTable ):
         super().__init__(parentWidget)
         self.dataObject = None
         self.favGroup = None
-        
+
     def connectData(self, dataObject, favGroup):
         self.dataObject = dataObject
         self.favGroup = favGroup
@@ -371,12 +366,12 @@ class StockFavsTable( StockTable ):
         dataframe = self.dataObject.getFavStock( self.favGroup )
         self.setData( dataframe )
 
-    def contextMenuEvent( self, event ):
+    def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
         refreshAction       = contextMenu.addAction("Refresh data")
         configColumnsAction = contextMenu.addAction("Configure columns")
         remFavAction        = contextMenu.addAction("Remove fav")
-        
+
         globalPos = QCursor.pos()
         action = contextMenu.exec_( globalPos )
 

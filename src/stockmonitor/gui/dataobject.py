@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class FavData():
-    
+
     def __init__(self):
         self.favs: Dict[ str, List[str] ] = dict()
 
@@ -52,7 +52,7 @@ class FavData():
         return self.favs.get( group, None )
 
     def addFavGroup(self, name):
-        if not name in self.favs:
+        if name not in self.favs:
             self.favs[name] = list()
 
     def renameFavGroup(self, fromName, toName):
@@ -60,11 +60,11 @@ class FavData():
 
     def deleteFavGroup(self, name):
         del self.favs[name]
-    
+
     def addFav(self, group, item):
         self.addFavGroup( group )
         self.favs[group].append( item )
-    
+
     def deleteFav(self, group, item):
         if group in self.favs:
             self.favs[group].remove( item )
@@ -85,7 +85,7 @@ class DataObject( QObject ):
 
         self.favs = FavData()
         self.currentStockData = GpwCurrentData()
-        
+
         self.undoStack = QUndoStack(self)
 
     def store( self, outputDir ):

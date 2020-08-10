@@ -32,8 +32,7 @@ from . import uiloader
 from . import resources
 from . import trayicon
 from . import guistate
-
-from stockmonitor.gui.dataobject import DataObject
+from .dataobject import DataObject
 
 from .widget.settingsdialog import SettingsDialog, AppSettings
 
@@ -76,12 +75,12 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.trayIcon = trayicon.TrayIcon(self)
         self.trayIcon.setToolTip( self.toolTip )
         self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
-        
+
         self.ui.stockFullTable.connectData( self.data )
         self.ui.favsWidget.connectData( self.data )
 
         ## === connecting signals ===
-        
+
         self.data.favsChanged.connect( self._handleFavsChange )
 
         self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
@@ -152,14 +151,14 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.updateFavsView()
 
     ## ====================================================================
-    
+
     def _handleFavsChange(self):
         self.triggerSaveTimer()
 #         self.updateFavsView()
 
     def updateFavsView(self):
         self.ui.favsWidget.updateView()
-    
+
     ## ====================================================================
 
     def setIconTheme(self, theme: trayicon.TrayIconTheme):

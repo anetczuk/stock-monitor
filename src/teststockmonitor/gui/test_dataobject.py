@@ -39,13 +39,13 @@ class DataObjectTest(unittest.TestCase):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
         self.assertEqual( len(dataobject.favs.favs), 1 )
- 
+
         dataobject.renameFavGroup("xxx", "yyy")
         self.assertEqual( len(dataobject.favs.favs), 1 )
-        
+
         xxxFavs = dataobject.favs.getFavs( "xxx" )
         self.assertEqual( xxxFavs, None )
-        
+
         yyyFavs = dataobject.favs.getFavs( "yyy" )
         self.assertNotEqual( yyyFavs, None )
 
@@ -53,6 +53,6 @@ class DataObjectTest(unittest.TestCase):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
         self.assertEqual( len(dataobject.favs.favs), 1 )
- 
+
         dataobject.deleteFavGroup("xxx")
         self.assertEqual( len(dataobject.favs.favs), 0 )

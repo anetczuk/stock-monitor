@@ -59,7 +59,7 @@ def store_object( inputObject, outputFile ):
     outdirDir = os.path.dirname( outputFile )
     if not os.path.exists(outdirDir):
         os.makedirs(outdirDir, exist_ok=True)
-    
+
     tmpFile = outputFile + "_tmp"
     with open(tmpFile, 'wb') as fp:
         pickle.dump( inputObject, fp )

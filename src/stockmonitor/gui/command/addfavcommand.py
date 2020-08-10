@@ -35,7 +35,7 @@ class AddFavCommand( QUndoCommand ):
         super().__init__(parentCommand)
 
         self.dataObject = dataObject
-        self.favsObj: FavData = self.dataObject.favs
+        self.favsObj: 'FavData' = self.dataObject.favs
         self.newName = newName
         self.newItem = newItem
 

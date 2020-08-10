@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QWidget, QSplitter, QCheckBox, QTabWidget, QTableWidget, QTableView, QTreeView
 
 
+# pylint: disable=R0915
 def load_state(window: QMainWindow, settings: QSettings):
     settings.beginGroup( window.objectName() )
     geometry = settings.value("geometry")

@@ -24,13 +24,12 @@
 import logging
 # from datetime import datetime
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QMenu, QInputDialog
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMenu, QInputDialog
 from PyQt5.QtWidgets import QLineEdit
 
 from .. import uiloader
-from stockmonitor.gui.widget.stocktable import StockFavsTable
+from .stocktable import StockFavsTable
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
@@ -91,13 +90,13 @@ class FavsWidget( QtBaseClass ):           # type: ignore
             return
         favsObj = self.dataObject.favs
         dataDict = favsObj.favs
-        for key, value in dataDict.items():
-            self.addTab( key, value )
+        for key in dataDict.keys():
+            self.addTab( key )
 
-    def addTab(self, title, stockCodesList=None):
+    def addTab(self, favGroup):
         pageWidget = SinglePageWidget(self)
-        pageWidget.setData( self.dataObject, title )
-        self.ui.data_tabs.addTab( pageWidget, title )
+        pageWidget.setData( self.dataObject, favGroup )
+        self.ui.data_tabs.addTab( pageWidget, favGroup )
 
     def contextMenuEvent( self, event ):
         evPos     = event.pos()
