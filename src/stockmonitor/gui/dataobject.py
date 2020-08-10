@@ -99,10 +99,10 @@ class DataObject( QObject ):
         if persist.store_object( self.favs, outputFile ) is True:
             changed = True
 
-        ## backup data
-        objFiles = glob.glob( outputDir + "/*.obj" )
-        storedZipFile = outputDir + "/data.zip"
-        persist.backup_files( objFiles, storedZipFile )
+#         ## backup data
+#         objFiles = glob.glob( outputDir + "/*.obj" )
+#         storedZipFile = outputDir + "/data.zip"
+#         persist.backup_files( objFiles, storedZipFile )
 
         return changed
 
