@@ -217,6 +217,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.appSettings.loadSettings( settings )
         self.ui.stockFullTable.loadSettings( settings )
+        self.ui.favsWidget.loadSettings( settings )
 
         self.applySettings()
 
@@ -229,6 +230,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.appSettings.saveSettings( settings )
         self.ui.stockFullTable.saveSettings( settings )
+        self.ui.favsWidget.saveSettings( settings )
 
         ## store widget state and geometry
         guistate.save_state(self, settings)

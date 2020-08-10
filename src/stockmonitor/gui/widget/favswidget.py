@@ -30,6 +30,7 @@ from PyQt5.QtWidgets import QLineEdit
 
 from .. import uiloader
 from .stocktable import StockFavsTable
+from stockmonitor.gui import guistate
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
@@ -57,6 +58,12 @@ class SinglePageWidget( QWidget ):
 
     def setData(self, dataObject, favGroup):
         self.stockData.connectData( dataObject, favGroup )
+        
+    def loadSettings(self, settings):
+        self.stockData.loadSettings( settings )
+
+    def saveSettings(self, settings):
+        self.stockData.saveSettings( settings )
 
 
 class FavsWidget( QtBaseClass ):           # type: ignore
@@ -97,6 +104,18 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         pageWidget = SinglePageWidget(self)
         pageWidget.setData( self.dataObject, favGroup )
         self.ui.data_tabs.addTab( pageWidget, favGroup )
+
+    def loadSettings(self, settings):
+        tabsSize = self.ui.data_tabs.count()
+        for tabIndex in range(0, tabsSize):
+            pageWidget = self.ui.data_tabs.widget( tabIndex )
+            pageWidget.loadSettings( settings )
+
+    def saveSettings(self, settings):
+        tabsSize = self.ui.data_tabs.count()
+        for tabIndex in range(0, tabsSize):
+            pageWidget = self.ui.data_tabs.widget( tabIndex )
+            pageWidget.saveSettings( settings )
 
     def contextMenuEvent( self, event ):
         evPos     = event.pos()

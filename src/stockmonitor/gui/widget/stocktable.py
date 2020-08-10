@@ -75,12 +75,18 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
+        self.parentTable = None
+        self.oldSettings = None
+
         table = self.ui.columnsTable
         table.cellChanged.connect( self.tableCellChanged )
+        self.rejected.connect( self.settingsRejected )
 
-    def connectTable( self, widget: 'StockTable' ):
-        self.setHeader.connect( widget.setHeaderText )
-        self.showColumn.connect( widget.setColumnVisible )
+    def connectTable( self, parentTable: 'StockTable' ):
+        self.parentTable = parentTable
+        self.oldSettings = copy.deepcopy( parentTable.tableSettings )
+        self.setHeader.connect( parentTable.setHeaderText )
+        self.showColumn.connect( parentTable.setColumnVisible )
 
     def setData(self, tableSettings, rawData: DataFrame ):
         table = self.ui.columnsTable
@@ -136,6 +142,10 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         self.setHeader.emit( row, headerText )
         showValue = tableItem.checkState() != Qt.Unchecked
         self.showColumn.emit( row, showValue )
+        
+    def settingsRejected(self):
+        ##restore old settings
+        self.parentTable.setTableSettings( self.oldSettings )
 
 
 ## =========================================================
@@ -223,15 +233,10 @@ class StockTable( QTableView ):
     def showColumnsConfiguration(self):
         if self._data is None:
             return
-        oldSettings = copy.deepcopy( self.tableSettings )
         dialog = TableSettingsDialog( self )
         dialog.setData( self.tableSettings, self._data )
         dialog.connectTable( self )
-        dialogCode = dialog.exec_()
-        if dialogCode == QDialog.Rejected:
-            ##restore old settings
-            self.tableSettings = oldSettings
-            self._applySettings()
+        dialog.show()
 
     def setHeaderText(self, col, text):
         self.tableSettings.setHeaderText( col, text )
@@ -261,6 +266,10 @@ class StockTable( QTableView ):
         settings.setValue("headersTexts", self.tableSettings.headersTexts )
         settings.setValue("columnsVisible", self.tableSettings.columnsVisible )
         settings.endGroup()
+
+    def setTableSettings(self, settings):
+        self.tableSettings = settings
+        self._applySettings()
 
     def _applySettings(self):
         tableModel = self.pandaModel
