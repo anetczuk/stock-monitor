@@ -159,6 +159,11 @@ class PandasModel( QAbstractTableModel ):
         self._data: DataFrame = data
         self.customHeader: Dict[ object, str ] = dict()
 
+    def setContent(self, data):
+        self.beginResetModel()
+        self._data = data
+        self.endResetModel()
+
     # pylint: disable=W0613
     def rowCount(self, parent=None):
         if self._data is None:
@@ -253,7 +258,6 @@ class StockTable( QTableView ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self._data = None
-        self.pandaModel = None
         self.tableSettings = TableSettings()
 
         self.setSortingEnabled( True )
@@ -263,14 +267,16 @@ class StockTable( QTableView ):
         header.setHighlightSections( False )
         header.setStretchLastSection( True )
 
+        self.pandaModel = PandasModel( None )
+        proxyModel = TaskSortFilterProxyModel(self)
+        proxyModel.setSourceModel( self.pandaModel )
+        self.setModel( proxyModel )
+
         self.setData( DataFrame() )
 
     def setData(self, rawData: DataFrame ):
         self._data = rawData
-        self.pandaModel = PandasModel( rawData )
-        proxyModel = TaskSortFilterProxyModel(self)
-        proxyModel.setSourceModel( self.pandaModel )
-        self.setModel( proxyModel )
+        self.pandaModel.setContent( rawData )
         self._applySettings()
 
     def showColumnsConfiguration(self):

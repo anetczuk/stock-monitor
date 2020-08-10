@@ -90,14 +90,26 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         self.updateView()
 
     def updateView(self):
-        self.ui.data_tabs.clear()
         if self.dataObject is None:
             _LOGGER.warning("unable to update view")
+            self.ui.data_tabs.clear()
             return
         favsObj = self.dataObject.favs
         dataDict = favsObj.favs
-        for key in dataDict.keys():
-            self.addTab( key )
+        favKeys = dataDict.keys()
+        keysNum = len(favKeys)
+        tabsNum = self.ui.data_tabs.count()
+        if keysNum > tabsNum:
+            for i in range(tabsNum, keysNum):
+                self.addTab( str(i) )
+        elif tabsNum > keysNum:
+            for i in range(keysNum, tabsNum):
+                self.ui.data_tabs.removeTab( keysNum )
+        i = -1
+        for key in favKeys:
+            i += 1
+            page = self.ui.data_tabs.widget( i )
+            page.setData( self.dataObject, key )
 
     def addTab(self, favGroup):
         pageWidget = SinglePageWidget(self)
