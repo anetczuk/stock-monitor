@@ -30,6 +30,8 @@ import xlrd
 import pandas
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
+from pandas.core.frame import DataFrame
+from typing import List
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -197,6 +199,20 @@ class GpwCurrentData:
 
     def __init__(self):
         self.crawler = GpwCurrentCrawler()
+        self.worksheet: DataFrame = None
+
+    def refreshData(self):
+        self.worksheet = self.loadWorksheet( True )
+
+    def getStockData(self, stockCodesList: List[str] = None) -> DataFrame:
+        if stockCodesList is None:
+            return None
+        dataFrame = self.getWorksheet()
+        if dataFrame is None:
+            return None
+        colIndex = self.getColumnIndex( CurrentDataType.SHORT )
+        retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( stockCodesList ) ]
+        return retRows
 
     def getData(self, dataType: CurrentDataType):
 #         _LOGGER.debug( "getting max from date: %s", day )
@@ -208,6 +224,18 @@ class GpwCurrentData:
         if colIndex is None:
             return None
         return self.extractColumn( worksheet, colIndex )
+    
+    def getShortField(self, rowIndex: int):
+        dataFrame = self.getWorksheet()
+        if dataFrame is None:
+            return None
+        return self.getShortFieldFromData( dataFrame, rowIndex )
+    
+    def getShortFieldFromData(self, dataFrame: DataFrame, rowIndex: int):
+        colIndex = self.getColumnIndex( CurrentDataType.SHORT )
+        if colIndex is None:
+            return None
+        return dataFrame.iloc[rowIndex, colIndex]
 
     # ==========================================================================
 
@@ -239,11 +267,16 @@ class GpwCurrentData:
         values = worksheet.iloc[:, colIndex]
         return dict( zip(names, values) )
 
-    def getWorksheet(self, forceRefresh=False):
+    def getWorksheet(self, forceRefresh=False) -> DataFrame:
+        if self.worksheet is None or forceRefresh is True:
+            self.worksheet = self.loadWorksheet( forceRefresh )
+        return self.worksheet
+    
+    def loadWorksheet(self, forceRefresh=False) -> DataFrame:
         dataFile = self.crawler.getStockData( forceRefresh )
         return self.getWorksheetFromFile( dataFile )
 
-    def getWorksheetFromFile(self, dataFile):
+    def getWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
         dataFrame = dataFrameList[0]

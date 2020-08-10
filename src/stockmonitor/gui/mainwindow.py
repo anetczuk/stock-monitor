@@ -23,7 +23,7 @@
 
 import logging
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
@@ -32,6 +32,8 @@ from . import uiloader
 from . import resources
 from . import trayicon
 from . import guistate
+
+from stockmonitor.gui.dataobject import DataObject
 
 from .widget.settingsdialog import SettingsDialog, AppSettings
 
@@ -52,39 +54,86 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
+        self.data = DataObject( self )
         self.appSettings = AppSettings()
 
-        ## =============================
+        ## =============================================================
 
-#         undoStack = self.data.undoStack
-#
-#         undoAction = undoStack.createUndoAction( self, "&Undo" )
-#         undoAction.setShortcuts( QtGui.QKeySequence.Undo )
-#         redoAction = undoStack.createRedoAction( self, "&Redo" )
-#         redoAction.setShortcuts( QtGui.QKeySequence.Redo )
-#
-#         self.ui.menuEdit.insertAction( self.ui.actionUndo, undoAction )
-#         self.ui.menuEdit.removeAction( self.ui.actionUndo )
-#         self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
-#         self.ui.menuEdit.removeAction( self.ui.actionRedo )
+        undoStack = self.data.undoStack
 
-        ## =============================
+        undoAction = undoStack.createUndoAction( self, "&Undo" )
+        undoAction.setShortcuts( QtGui.QKeySequence.Undo )
+        redoAction = undoStack.createRedoAction( self, "&Redo" )
+        redoAction.setShortcuts( QtGui.QKeySequence.Redo )
+
+        self.ui.menuEdit.insertAction( self.ui.actionUndo, undoAction )
+        self.ui.menuEdit.removeAction( self.ui.actionUndo )
+        self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
+        self.ui.menuEdit.removeAction( self.ui.actionRedo )
+
+        ## =============================================================
 
         self.trayIcon = trayicon.TrayIcon(self)
         self.trayIcon.setToolTip( self.toolTip )
         self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
         
-        self.ui.stockTable.refreshData( False )
+        self.ui.stockFullTable.connectData( self.data )
+        self.ui.favsWidget.connectData( self.data )
 
         ## === connecting signals ===
+        
+        self.data.favsChanged.connect( self._handleFavsChange )
+
+        self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
+        self.ui.favsWidget.renameFavGrp.connect( self.data.renameFavGroup )
+        self.ui.favsWidget.removeFavGrp.connect( self.data.deleteFavGroup )
+        self.ui.favsWidget.favsChanged.connect( self.triggerSaveTimer )
 
         self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
-        self.ui.stockRefreshPB.clicked.connect( self.ui.stockTable.refreshData )
+        self.ui.stockRefreshPB.clicked.connect( self.data.refreshStockData )
 
         self.applySettings()
         self.trayIcon.show()
 
         self.statusBar().showMessage("Ready", 10000)
+
+    def loadData(self):
+        dataPath = self.getDataPath()
+        self.data.load( dataPath )
+        self.refreshView()
+
+    def triggerSaveTimer(self):
+        timeout = 30000
+        _LOGGER.info("triggering save timer with timeout %s", timeout)
+        QtCore.QTimer.singleShot( timeout, self.saveData )
+
+    def saveData(self):
+        if self._saveData():
+            self.setStatusMessage( "Data saved", [ "Data saved +", "Data saved =" ], 6000 )
+        else:
+            self.setStatusMessage( "Nothing to save", [ "Nothing to save +", "Nothing to save =" ], 6000 )
+
+    # pylint: disable=E0202
+    def _saveData(self):
+        ## having separate slot allows to monkey patch / mock "_saveData()" method
+        _LOGGER.info( "storing data" )
+        dataPath = self.getDataPath()
+        return self.data.store( dataPath )
+
+    def disableSaving(self):
+        def save_data_mock():
+            _LOGGER.info("saving data is disabled")
+        _LOGGER.info("disabling saving data")
+        self._saveData = save_data_mock           # type: ignore
+
+    def getDataPath(self):
+        settings = self.getSettings()
+        settingsDir = settings.fileName()
+        settingsDir = settingsDir[0:-4]       ## remove extension
+        settingsDir += "-data"
+        return settingsDir
+
+    ## ====================================================================
 
     def setStatusMessage(self, firstStatus, changeStatus: list, timeout):
         statusBar = self.statusBar()
@@ -99,6 +148,18 @@ class MainWindow( QtBaseClass ):           # type: ignore
         except ValueError:
             statusBar.showMessage( firstStatus, timeout )
 
+    def refreshView(self):
+        self.updateFavsView()
+
+    ## ====================================================================
+    
+    def _handleFavsChange(self):
+        self.triggerSaveTimer()
+#         self.updateFavsView()
+
+    def updateFavsView(self):
+        self.ui.favsWidget.updateView()
+    
     ## ====================================================================
 
     def setIconTheme(self, theme: trayicon.TrayIconTheme):
@@ -156,7 +217,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.logger.debug( "loading app state from %s", settings.fileName() )
 
         self.appSettings.loadSettings( settings )
-        self.ui.stockTable.loadSettings( settings )
+        self.ui.stockFullTable.loadSettings( settings )
 
         self.applySettings()
 
@@ -168,7 +229,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.logger.debug( "saving app state to %s", settings.fileName() )
 
         self.appSettings.saveSettings( settings )
-        self.ui.stockTable.saveSettings( settings )
+        self.ui.stockFullTable.saveSettings( settings )
 
         ## store widget state and geometry
         guistate.save_state(self, settings)

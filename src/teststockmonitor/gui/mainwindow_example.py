@@ -53,6 +53,7 @@ if __name__ != '__main__':
 
 
 parser = argparse.ArgumentParser(description='Stock Monitor Example')
+parser.add_argument('-lud', '--loadUserData', action='store_const', const=True, default=False, help='Load user data' )
 
 args = parser.parse_args()
 
@@ -70,8 +71,11 @@ app.setOrganizationName("arnet")
 MainWindow.toolTip = MainWindow.toolTip + " Preview"
 
 window = MainWindow()
+window.disableSaving()
 window.setWindowTitle( window.windowTitle() + " Preview" )
 window.loadSettings()
+if args.loadUserData:
+    window.loadData()
 window.show()
 
 setup_interrupt_handling()

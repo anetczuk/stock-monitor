@@ -39,7 +39,7 @@ import sys
 from PyQt5.QtWidgets import QApplication
 
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.widget.stocktable import StockTable
+from stockmonitor.gui.widget.stocktable import StockFullTable
 
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData
 
@@ -70,7 +70,7 @@ dataframe = dataAccess.getWorksheetFromFile( dataPath )
 
 setup_interrupt_handling()
 
-widget = StockTable()
+widget = StockFullTable()
 widget.tableSettings.setColumnVisible(0, False)
 widget.tableSettings.setHeaderText(1, "changed header")
 widget.resize( 1024, 768 )

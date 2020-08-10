@@ -17,6 +17,9 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
       <widget class="QWidget" name="stockTab">
        <attribute name="title">
         <string>Stock</string>
@@ -62,14 +65,31 @@
          </layout>
         </item>
         <item>
-         <widget class="StockTable" name="stockTable"/>
+         <widget class="StockFullTable" name="stockFullTable"/>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="favTab">
        <attribute name="title">
-        <string>Tab 2</string>
+        <string>Fav</string>
        </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="FavsWidget" name="favsWidget" native="true"/>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -94,6 +114,9 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
     <addaction name="actionOptions"/>
    </widget>
    <addaction name="menuFile"/>
@@ -110,12 +133,28 @@
     <string>&amp;Options</string>
    </property>
   </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>StockTable</class>
+   <class>StockFullTable</class>
    <extends>QTableView</extends>
    <header>stockmonitor.gui.widget.stocktable</header>
+  </customwidget>
+  <customwidget>
+   <class>FavsWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.favswidget</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

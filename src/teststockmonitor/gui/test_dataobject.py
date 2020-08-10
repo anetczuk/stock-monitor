@@ -21,53 +21,38 @@
 # SOFTWARE.
 #
 
-
 import unittest
 
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwCurrentCrawler
-from stockmonitor.dataaccess.datatype import CurrentDataType
-
-from teststockmonitor.data import get_data_path
+from stockmonitor.gui.dataobject import DataObject
 
 
-class GpwCurrentCrawlerMock(GpwCurrentCrawler):
-
-    def getStockData(self, forceRefresh=False):
-        filePath = get_data_path( "akcje_2020-04-14_15-50.xls" )
-        return filePath
-
-
-class GpwCurrentDataMock(GpwCurrentData):
-
-    def __init__(self):
-        super().__init__()
-        self.crawler = GpwCurrentCrawlerMock()
-
-
-## =================================================================
-
-
-class GpwCurrentDataTest(unittest.TestCase):
-
+class DataObjectTest(unittest.TestCase):
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = GpwCurrentDataMock()
+        pass
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_getData(self):
-        currData = self.dataAccess.getData( CurrentDataType.SHORT )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 393)      ## one removes, because if summary
+    def test_renameFavGrp(self):
+        dataobject = DataObject()
+        dataobject.addFavGroup("xxx")
+        self.assertEqual( len(dataobject.favs.favs), 1 )
+ 
+        dataobject.renameFavGroup("xxx", "yyy")
+        self.assertEqual( len(dataobject.favs.favs), 1 )
+        
+        xxxFavs = dataobject.favs.getFavs( "xxx" )
+        self.assertEqual( xxxFavs, None )
+        
+        yyyFavs = dataobject.favs.getFavs( "yyy" )
+        self.assertNotEqual( yyyFavs, None )
 
-    def test_getStockData_None(self):
-        currData = self.dataAccess.getStockData()
-        self.assertEqual(currData, None)
-
-    def test_getStockData(self):
-        stockList = ["11B", "ALR"]
-        currData = self.dataAccess.getStockData( stockList )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 2)
+    def test_deleteFavGrp(self):
+        dataobject = DataObject()
+        dataobject.addFavGroup("xxx")
+        self.assertEqual( len(dataobject.favs.favs), 1 )
+ 
+        dataobject.deleteFavGroup("xxx")
+        self.assertEqual( len(dataobject.favs.favs), 0 )

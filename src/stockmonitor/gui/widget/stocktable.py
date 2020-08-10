@@ -39,6 +39,7 @@ from pandas import DataFrame
 from .. import uiloader
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData
 from stockmonitor.gui import guistate
+from stockmonitor.dataaccess.datatype import CurrentDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -151,10 +152,14 @@ class PandasModel( QAbstractTableModel ):
 
     # pylint: disable=W0613
     def rowCount(self, parent=None):
+        if self._data is None:
+            return 0
         return self._data.shape[0]
 
     # pylint: disable=W0613
     def columnCount(self, parnet=None):
+        if self._data is None:
+            return 0
         return self._data.shape[1]
 
     def headerData(self, section, orientation, role):
@@ -228,11 +233,6 @@ class StockTable( QTableView ):
             self.tableSettings = oldSettings
             self._applySettings()
 
-    def refreshData(self, forceRefresh=True):
-        dataAccess = GpwCurrentData()
-        dataframe = dataAccess.getWorksheet( forceRefresh )
-        self.setData( dataframe )
-
     def setHeaderText(self, col, text):
         self.tableSettings.setHeaderText( col, text )
         self.pandaModel.setHeaderData( col, Qt.Horizontal, text )
@@ -276,8 +276,53 @@ class StockTable( QTableView ):
 
     def contextMenuEvent( self, event ):
         contextMenu         = QMenu(self)
+        configColumnsAction = contextMenu.addAction("Configure columns")
+        
+        if self._data is None:
+            configColumnsAction.setEnabled( False )
+        
+        globalPos = QCursor.pos()
+        action = contextMenu.exec_( globalPos )
+
+        if action == configColumnsAction:
+            self.showColumnsConfiguration()
+
+
+## ====================================================================
+
+
+class StockFullTable( StockTable ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.dataObject = None
+        
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.updateData()
+
+    def updateData(self):
+        dataAccess = self.dataObject.currentStockData
+        dataframe = dataAccess.getWorksheet( False )
+        self.setData( dataframe )
+
+    def contextMenuEvent( self, event ):
+        contextMenu         = QMenu(self)
         refreshAction       = contextMenu.addAction("Refresh data")
         configColumnsAction = contextMenu.addAction("Configure columns")
+        
+        favsActions = []
+        if self.dataObject is not None:
+            favSubMenu          = contextMenu.addMenu("Add to favs");
+            favGroupsList = self.dataObject.favs.favGroupsList()
+            if not favGroupsList:
+                favSubMenu.setEnabled( False )
+            else:
+                for favGroup in favGroupsList:
+                    favAction = favSubMenu.addAction( favGroup )
+                    favAction.setData( favGroup )
+                    favsActions.append( favAction )
 
         if self._data is None:
             configColumnsAction.setEnabled( False )
@@ -286,6 +331,58 @@ class StockTable( QTableView ):
         action = contextMenu.exec_( globalPos )
 
         if action == refreshAction:
-            self.refreshData()
+            self.dataObject.refreshStockData()
         elif action == configColumnsAction:
             self.showColumnsConfiguration()
+        elif action in favsActions:
+            favGroup = action.data()
+            itemIndex = self.currentIndex()
+            sourceIndex = self.model().mapToSource( itemIndex )
+            dataRow = sourceIndex.row()
+            dataAccess = self.dataObject.currentStockData
+            favCode = dataAccess.getShortField( dataRow )
+            self.dataObject.addFav( favGroup, favCode )
+
+
+## ====================================================================
+
+
+class StockFavsTable( StockTable ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.dataObject = None
+        self.favGroup = None
+        
+    def connectData(self, dataObject, favGroup):
+        self.dataObject = dataObject
+        self.favGroup = favGroup
+        if self.dataObject is None:
+            return
+        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.updateData()
+
+    def updateData(self):
+        dataframe = self.dataObject.getFavStock( self.favGroup )
+        self.setData( dataframe )
+
+    def contextMenuEvent( self, event ):
+        contextMenu         = QMenu(self)
+        refreshAction       = contextMenu.addAction("Refresh data")
+        configColumnsAction = contextMenu.addAction("Configure columns")
+        remFavAction        = contextMenu.addAction("Remove fav")
+        
+        globalPos = QCursor.pos()
+        action = contextMenu.exec_( globalPos )
+
+        if action == refreshAction:
+            self.dataObject.refreshStockData()
+        elif action == configColumnsAction:
+            self.showColumnsConfiguration()
+        elif action == remFavAction:
+            itemIndex = self.currentIndex()
+            sourceIndex = self.model().mapToSource( itemIndex )
+            dataRow = sourceIndex.row()
+            dataAccess = self.dataObject.currentStockData
+            favCode = dataAccess.getShortFieldFromData( self._data, dataRow )
+            self.dataObject.deleteFav( self.favGroup, favCode )
