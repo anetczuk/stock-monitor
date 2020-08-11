@@ -52,7 +52,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         super().__init__()
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle( self.appTitle )
 
         self.data = DataObject( self )
@@ -94,6 +94,12 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
         self.ui.stockRefreshPB.clicked.connect( self.data.refreshStockData )
 
+        self.ui.notesWidget.dataChanged.connect( self._handleNotesChange )
+
+#         self.ui.notesWidget.renameNote.connect( self.data.renameNote )
+#         self.ui.notesWidget.removeNote.connect( self.data.removeNote )
+#         self.ui.notesWidget.notesChanged.connect( self.triggerSaveTimer )
+
         self.applySettings()
         self.trayIcon.show()
 
@@ -120,6 +126,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         ## having separate slot allows to monkey patch / mock "_saveData()" method
         _LOGGER.info( "storing data" )
         dataPath = self.getDataPath()
+        self.data.notes = self.ui.notesWidget.getNotes()
         return self.data.store( dataPath )
 
     def disableSaving(self):
@@ -140,6 +147,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
     def refreshView(self):
         self._updateStockTimestamp()
         self.updateFavsView()
+        self.ui.notesWidget.setNotes( self.data.notes )
 
     def _updateStockTimestamp(self):
         timestamp = self.data.currentStockData.grabTimestamp
@@ -155,6 +163,11 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def updateFavsView(self):
         self.ui.favsWidget.updateView()
+
+    ## ====================================================================
+
+    def _handleNotesChange(self):
+        self.triggerSaveTimer()
 
     ## ====================================================================
 

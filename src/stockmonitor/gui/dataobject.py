@@ -23,6 +23,7 @@
 
 import logging
 import collections
+import glob
 from typing import Dict, List
 
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -108,23 +109,13 @@ class FavData( persist.Versionable ):
             self.favs[group] = groupList
 
 
-class DataObject( QObject ):
-
+class DataContainer():
     ## 0 - first version
     _class_version = 0
 
-    ## added, modified or removed
-    favsChanged      = pyqtSignal()
-    stockDataChanged = pyqtSignal()
-
-    def __init__(self, parent: QWidget=None):
-        super().__init__( parent )
-        self.parentWidget = parent
-
-        self.favs = FavData()
-        self.currentStockData = GpwCurrentData()
-
-        self.undoStack = QUndoStack(self)
+    def __init__(self):
+        self.favs  = FavData()
+        self.notes = { "notes": "" }        ## default notes
 
     def store( self, outputDir ):
         changed = False
@@ -137,10 +128,14 @@ class DataObject( QObject ):
         if persist.store_object( self.favs, outputFile ) is True:
             changed = True
 
-#         ## backup data
-#         objFiles = glob.glob( outputDir + "/*.obj" )
-#         storedZipFile = outputDir + "/data.zip"
-#         persist.backup_files( objFiles, storedZipFile )
+        outputFile = outputDir + "/notes.obj"
+        if persist.store_object( self.notes, outputFile ) is True:
+            changed = True
+
+        ## backup data
+        objFiles = glob.glob( outputDir + "/*.obj" )
+        storedZipFile = outputDir + "/data.zip"
+        persist.backup_files( objFiles, storedZipFile )
 
         return changed
 
@@ -155,6 +150,49 @@ class DataObject( QObject ):
         self.favs = persist.load_object( inputFile, self._class_version )
         if self.favs is None:
             self.favs = FavData()
+
+        inputFile = inputDir + "/notes.obj"
+        self.notes = persist.load_object( inputFile, self._class_version )
+        if self.notes is None:
+            self.notes = { "notes": "" }
+
+
+class DataObject( QObject ):
+
+    ## added, modified or removed
+    favsChanged      = pyqtSignal()
+    stockDataChanged = pyqtSignal()
+
+    def __init__(self, parent: QWidget=None):
+        super().__init__( parent )
+        self.parentWidget = parent
+
+        self.dataContainer = DataContainer()
+        self.currentStockData = GpwCurrentData()
+
+        self.undoStack = QUndoStack(self)
+
+    def store( self, outputDir ):
+        return self.dataContainer.store( outputDir )
+
+    def load( self, inputDir ):
+        self.dataContainer.load( inputDir )
+
+    @property
+    def favs(self):
+        return self.dataContainer.favs
+
+    @favs.setter
+    def favs(self, newData):
+        self.dataContainer.favs = newData
+
+    @property
+    def notes(self):
+        return self.dataContainer.notes
+
+    @notes.setter
+    def notes(self, newData):
+        self.dataContainer.notes = newData
 
     ## ======================================================================
 
