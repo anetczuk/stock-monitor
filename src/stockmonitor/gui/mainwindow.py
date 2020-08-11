@@ -91,14 +91,12 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.favsWidget.removeFavGrp.connect( self.data.deleteFavGroup )
         self.ui.favsWidget.favsChanged.connect( self.triggerSaveTimer )
 
-        self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
         self.ui.stockRefreshPB.clicked.connect( self.data.refreshStockData )
 
         self.ui.notesWidget.dataChanged.connect( self._handleNotesChange )
 
-#         self.ui.notesWidget.renameNote.connect( self.data.renameNote )
-#         self.ui.notesWidget.removeNote.connect( self.data.removeNote )
-#         self.ui.notesWidget.notesChanged.connect( self.triggerSaveTimer )
+        self.ui.actionSave_data.triggered.connect( self.saveData )
+        self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
 
         self.applySettings()
         self.trayIcon.show()

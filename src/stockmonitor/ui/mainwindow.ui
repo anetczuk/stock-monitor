@@ -144,6 +144,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionSave_data"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -177,6 +178,14 @@
   <action name="actionRedo">
    <property name="text">
     <string>&amp;Redo</string>
+   </property>
+  </action>
+  <action name="actionSave_data">
+   <property name="text">
+    <string>&amp;Save data</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>
