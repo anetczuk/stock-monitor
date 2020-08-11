@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="stockTab">
        <attribute name="title">
@@ -54,6 +54,20 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Last refresh:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="refreshTimeLabel">
+            <property name="text">
+             <string>None</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="stockRefreshPB">
@@ -135,12 +149,12 @@
   </action>
   <action name="actionUndo">
    <property name="text">
-    <string>Undo</string>
+    <string>&amp;Undo</string>
    </property>
   </action>
   <action name="actionRedo">
    <property name="text">
-    <string>Redo</string>
+    <string>&amp;Redo</string>
    </property>
   </action>
  </widget>

@@ -180,3 +180,4 @@ class DataObject( QObject ):
 
     def refreshStockData(self):
         self.currentStockData.refreshData()
+        self.stockDataChanged.emit()

@@ -56,13 +56,8 @@ def load_object( inputFile, codeVersion, defaultValue=None ):
 
 
 def store_object( inputObject, outputFile ):
-    outdirDir = os.path.dirname( outputFile )
-    if not os.path.exists(outdirDir):
-        os.makedirs(outdirDir, exist_ok=True)
-
     tmpFile = outputFile + "_tmp"
-    with open(tmpFile, 'wb') as fp:
-        pickle.dump( inputObject, fp )
+    store_object_simple( inputObject, tmpFile )
 
     if os.path.isfile( outputFile ) is False:
         ## output file does not exist -- rename file
@@ -80,6 +75,28 @@ def store_object( inputObject, outputFile ):
     os.remove( outputFile )
     os.rename( tmpFile, outputFile )
     return True
+
+
+def load_object_simple( inputFile, defaultValue=None ):
+    try:
+        _LOGGER.info( "loading data from: %s", inputFile )
+        with open( inputFile, 'rb') as fp:
+            return pickle.load(fp)
+    except FileNotFoundError:
+        _LOGGER.exception("failed to load")
+        return defaultValue
+    except Exception:
+        _LOGGER.exception("failed to load")
+        raise
+
+
+def store_object_simple( inputObject, outputFile ):
+    outdirDir = os.path.dirname( outputFile )
+    if not os.path.exists(outdirDir):
+        os.makedirs(outdirDir, exist_ok=True)
+
+    with open(outputFile, 'wb') as fp:
+        pickle.dump( inputObject, fp )
 
 
 def backup_files( inputFiles, outputArchive ):

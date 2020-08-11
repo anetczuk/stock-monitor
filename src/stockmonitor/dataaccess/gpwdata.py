@@ -33,6 +33,7 @@ from pandas.core.frame import DataFrame
 import xlrd
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
+from stockmonitor import persist
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -77,19 +78,23 @@ class GpwCurrentCrawler:
     def getStockData(self, forceRefresh=False):
 #         timeNow = datetime.datetime.now()
         # filePath = tmp_dir + "data/gpw/curr/" + timeNow.strftime("%Y-%m-%d_%H-%M-%S") + ".xls"
-        filePath = tmp_dir + "data/gpw/recent_data.xls"
+        filePath      = tmp_dir + "data/gpw/recent_data.xls"
+        timestampPath = tmp_dir + "data/gpw/recent_timestamp.txt"
         if forceRefresh is False and os.path.exists( filePath ):
             _LOGGER.debug( "loading recent data from file[%s]", filePath )
-            return filePath
+            return (filePath, timestampPath)
 
         url = ("https://www.gpw.pl/ajaxindex.php"
                "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
         _LOGGER.debug( "grabbing data from utl[%s] to file[%s]", url, filePath )
 
+        currTimestamp = datetime.datetime.today()
+
         dirPath = os.path.dirname( filePath )
         os.makedirs( dirPath, exist_ok=True )
         urllib.request.urlretrieve( url, filePath )
-        return filePath
+        persist.store_object_simple(currTimestamp, timestampPath)
+        return (filePath, timestampPath)
 
 
 class GpwArchiveData:
@@ -201,9 +206,10 @@ class GpwCurrentData:
     def __init__(self):
         self.crawler = GpwCurrentCrawler()
         self.worksheet: DataFrame = None
+        self.grabTimestamp: datetime.datetime = None
 
     def refreshData(self):
-        self.worksheet = self.loadWorksheet( True )
+        self.loadWorksheet( True )
 
     def getStockData(self, stockCodesList: List[str] = None) -> DataFrame:
         if stockCodesList is None:
@@ -270,12 +276,13 @@ class GpwCurrentData:
 
     def getWorksheet(self, forceRefresh=False) -> DataFrame:
         if self.worksheet is None or forceRefresh is True:
-            self.worksheet = self.loadWorksheet( forceRefresh )
+            self.loadWorksheet( forceRefresh )
         return self.worksheet
 
-    def loadWorksheet(self, forceRefresh=False) -> DataFrame:
-        dataFile = self.crawler.getStockData( forceRefresh )
-        return self.getWorksheetFromFile( dataFile )
+    def loadWorksheet(self, forceRefresh=False):
+        dataFile, timestampFile = self.crawler.getStockData( forceRefresh )
+        self.worksheet = self.getWorksheetFromFile( dataFile )
+        self.grabTimestamp = persist.load_object_simple( timestampFile, None )
 
     def getWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )

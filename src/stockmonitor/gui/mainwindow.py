@@ -82,6 +82,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         ## === connecting signals ===
 
         self.data.favsChanged.connect( self._handleFavsChange )
+        self.data.stockDataChanged.connect( self._updateStockTimestamp )
 
         self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
         self.ui.favsWidget.renameFavGrp.connect( self.data.renameFavGroup )
@@ -134,6 +135,27 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     ## ====================================================================
 
+    def refreshView(self):
+        self._updateStockTimestamp()
+        self.updateFavsView()
+
+    def _updateStockTimestamp(self):
+        timestamp = self.data.currentStockData.grabTimestamp
+        if timestamp is None:
+            self.ui.refreshTimeLabel.setText("None")
+        else:
+            dateString = timestamp.strftime( "%Y-%m-%d %H:%M:%S" )
+            self.ui.refreshTimeLabel.setText( dateString )
+
+    def _handleFavsChange(self):
+        self.triggerSaveTimer()
+#         self.updateFavsView()
+
+    def updateFavsView(self):
+        self.ui.favsWidget.updateView()
+
+    ## ====================================================================
+
     def setStatusMessage(self, firstStatus, changeStatus: list, timeout):
         statusBar = self.statusBar()
         message = statusBar.currentMessage()
@@ -146,20 +168,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
             statusBar.showMessage( changeStatus[nextIndex], timeout )
         except ValueError:
             statusBar.showMessage( firstStatus, timeout )
-
-    def refreshView(self):
-        self.updateFavsView()
-
-    ## ====================================================================
-
-    def _handleFavsChange(self):
-        self.triggerSaveTimer()
-#         self.updateFavsView()
-
-    def updateFavsView(self):
-        self.ui.favsWidget.updateView()
-
-    ## ====================================================================
 
     def setIconTheme(self, theme: trayicon.TrayIconTheme):
         _LOGGER.debug("setting tray theme: %r", theme)
