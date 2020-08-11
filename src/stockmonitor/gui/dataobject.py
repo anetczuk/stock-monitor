@@ -167,7 +167,7 @@ class DataObject( QObject ):
         super().__init__( parent )
         self.parentWidget = parent
 
-        self.dataContainer = DataContainer()
+        self.dataContainer    = DataContainer()
         self.currentStockData = GpwCurrentData()
 
         self.undoStack = QUndoStack(self)

@@ -101,7 +101,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.applySettings()
         self.trayIcon.show()
 
-        self.statusBar().showMessage("Ready", 10000)
+        self.setStatusMessage( "Ready", timeout=10000 )
 
     def loadData(self):
         dataPath = self.getDataPath()
@@ -115,9 +115,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def saveData(self):
         if self._saveData():
-            self.setStatusMessage( "Data saved", [ "Data saved +", "Data saved =" ], 6000 )
+            self.setStatusMessage( "Data saved" )
         else:
-            self.setStatusMessage( "Nothing to save", [ "Nothing to save +", "Nothing to save =" ], 6000 )
+            self.setStatusMessage( "Nothing to save" )
 
     # pylint: disable=E0202
     def _saveData(self):
@@ -149,7 +149,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def _handleStockDataChange(self):
         self._updateStockTimestamp()
-        self.setStatusMessage( "Stock data refreshed", [ "Stock data refreshed +", "Stock data refreshed =" ] )
+        self.setStatusMessage( "Stock data refreshed" )
 
     def _updateStockTimestamp(self):
         ## update stock timestamp
@@ -174,7 +174,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     ## ====================================================================
 
-    def setStatusMessage(self, firstStatus, changeStatus: list, timeout=6000):
+    def setStatusMessage(self, firstStatus, changeStatus: list=None, timeout=6000):
+        if not changeStatus:
+            changeStatus = [ firstStatus + " +", firstStatus + " =" ]
         statusBar = self.statusBar()
         message = statusBar.currentMessage()
         if message == firstStatus:
