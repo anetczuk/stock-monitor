@@ -34,7 +34,7 @@ class GpwCurrentCrawlerMock(GpwCurrentCrawler):
 
     def getStockData(self, forceRefresh=False):
         filePath = get_data_path( "akcje_2020-04-14_15-50.xls" )
-        return filePath
+        return (filePath, None)
 
 
 class GpwCurrentDataMock(GpwCurrentData):
