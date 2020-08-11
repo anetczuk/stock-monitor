@@ -97,11 +97,15 @@ class FavData( persist.Versionable ):
         self.favs[group] = self.favs[group] + itemsList
 
     def deleteFav(self, group, items):
+        _LOGGER.info( "Removing favs: %s from group %s", items, group )
         itemsList = list( items )
         if group not in self.favs:
+            _LOGGER.warning("Unable to find group")
             return
         for item in itemsList:
-            self.favs[group].remove( item )
+            groupList = self.favs[group]
+            groupList.remove( item )
+            self.favs[group] = groupList
 
 
 class DataObject( QObject ):

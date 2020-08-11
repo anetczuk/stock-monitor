@@ -397,13 +397,14 @@ class StockFullTable( StockTable ):
             dataAccess = self.dataObject.currentStockData
             selection = self.selectionModel()
             indexes = selection.selectedIndexes()
-            favCodes = []
+            favCodes = set()
             for ind in indexes:
                 sourceIndex = self.model().mapToSource( ind )
                 dataRow = sourceIndex.row()
                 code = dataAccess.getShortField( dataRow )
-                favCodes.append( code )
-            self.dataObject.addFav( favGroup, favCodes )
+                favCodes.add( code )
+            favList = list(favCodes)
+            self.dataObject.addFav( favGroup, favList )
 
 
 ## ====================================================================
@@ -445,10 +446,11 @@ class StockFavsTable( StockTable ):
             dataAccess = self.dataObject.currentStockData
             selection = self.selectionModel()
             indexes = selection.selectedIndexes()
-            favCodes = []
+            favCodes = set()
             for ind in indexes:
                 sourceIndex = self.model().mapToSource( ind )
                 dataRow = sourceIndex.row()
                 code = dataAccess.getShortFieldFromData( self._data, dataRow )
-                favCodes.append( code )
-            self.dataObject.deleteFav( self.favGroup, favCodes )
+                favCodes.add( code )
+            favList = list(favCodes)
+            self.dataObject.deleteFav( self.favGroup, favList )
