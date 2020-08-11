@@ -394,17 +394,20 @@ class StockFullTable( StockTable ):
             self.showColumnsConfiguration()
         elif action in favsActions:
             favGroup = action.data()
-            dataAccess = self.dataObject.currentStockData
-            selection = self.selectionModel()
-            indexes = selection.selectedIndexes()
-            favCodes = set()
-            for ind in indexes:
-                sourceIndex = self.model().mapToSource( ind )
-                dataRow = sourceIndex.row()
-                code = dataAccess.getShortField( dataRow )
-                favCodes.add( code )
-            favList = list(favCodes)
-            self.dataObject.addFav( favGroup, favList )
+            self._addToFav( favGroup )
+
+    def _addToFav(self, favGrp):
+        dataAccess = self.dataObject.currentStockData
+        selection = self.selectionModel()
+        indexes = selection.selectedIndexes()
+        favCodes = set()
+        for ind in indexes:
+            sourceIndex = self.model().mapToSource( ind )
+            dataRow = sourceIndex.row()
+            code = dataAccess.getShortField( dataRow )
+            favCodes.add( code )
+        favList = list(favCodes)
+        self.dataObject.addFav( favGrp, favList )
 
 
 ## ====================================================================
