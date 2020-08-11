@@ -84,7 +84,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         ## === connecting signals ===
 
         self.data.favsChanged.connect( self._handleFavsChange )
-        self.data.stockDataChanged.connect( self._updateStockTimestamp )
+        self.data.stockDataChanged.connect( self._handleStockDataChange )
 
         self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
         self.ui.favsWidget.renameFavGrp.connect( self.data.renameFavGroup )
@@ -147,7 +147,12 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.updateFavsView()
         self.ui.notesWidget.setNotes( self.data.notes )
 
+    def _handleStockDataChange(self):
+        self._updateStockTimestamp()
+        self.setStatusMessage( "Stock data refreshed", [ "Stock data refreshed +", "Stock data refreshed =" ] )
+
     def _updateStockTimestamp(self):
+        ## update stock timestamp
         timestamp = self.data.currentStockData.grabTimestamp
         if timestamp is None:
             self.ui.refreshTimeLabel.setText("None")
@@ -169,7 +174,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     ## ====================================================================
 
-    def setStatusMessage(self, firstStatus, changeStatus: list, timeout):
+    def setStatusMessage(self, firstStatus, changeStatus: list, timeout=6000):
         statusBar = self.statusBar()
         message = statusBar.currentMessage()
         if message == firstStatus:
