@@ -46,12 +46,14 @@ UiTargetClass, QtBaseClass = uiloader.load_ui_from_module_path( __file__ )
 class MainWindow( QtBaseClass ):           # type: ignore
 
     logger: logging.Logger = None
-    toolTip = "Stock Monitor"
+    appTitle = "Stock Monitor"
 
     def __init__(self):
         super().__init__()
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
+        
+        self.setWindowTitle( self.appTitle )
 
         self.data = DataObject( self )
         self.appSettings = AppSettings()
@@ -73,7 +75,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         ## =============================================================
 
         self.trayIcon = trayicon.TrayIcon(self)
-        self.trayIcon.setToolTip( self.toolTip )
+        self.trayIcon.setToolTip( self.appTitle )
         self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
 
         self.ui.stockFullTable.connectData( self.data )
