@@ -23,7 +23,7 @@
 
 import logging
 
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
@@ -53,10 +53,15 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-        self.setWindowTitle( self.appTitle )
-
         self.data = DataObject( self )
         self.appSettings = AppSettings()
+
+        self.setWindowTitle( self.appTitle )
+        
+        refreshAction = QtWidgets.QAction(self)
+        refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
+        refreshAction.triggered.connect( self.data.refreshStockData )
+        self.addAction( refreshAction )
 
         ## =============================================================
 
@@ -71,6 +76,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.menuEdit.removeAction( self.ui.actionUndo )
         self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
         self.ui.menuEdit.removeAction( self.ui.actionRedo )
+        
+        self.ui.actionSave_data.triggered.connect( self.saveData )
+        self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
 
         ## =============================================================
 
@@ -94,9 +102,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.stockRefreshPB.clicked.connect( self.data.refreshStockData )
 
         self.ui.notesWidget.dataChanged.connect( self._handleNotesChange )
-
-        self.ui.actionSave_data.triggered.connect( self.saveData )
-        self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
 
         self.applySettings()
         self.trayIcon.show()
