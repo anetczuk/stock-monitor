@@ -261,6 +261,8 @@ class StockTable( QTableView ):
         self.tableSettings = TableSettings()
 
         self.setSortingEnabled( True )
+        self.setShowGrid( True )
+        self.setAlternatingRowColors( True )
 
         header = self.horizontalHeader()
         header.setDefaultAlignment( Qt.AlignCenter )
