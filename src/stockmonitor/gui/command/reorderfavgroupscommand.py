@@ -30,23 +30,23 @@ from PyQt5.QtWidgets import QUndoCommand
 _LOGGER = logging.getLogger(__name__)
 
 
-class DeleteFavGroupCommand( QUndoCommand ):
+class ReorderFavGroupsCommand( QUndoCommand ):
 
-    def __init__(self, dataObject, favName, parentCommand=None):
+    def __init__(self, dataObject, newOrder, parentCommand=None):
         super().__init__(parentCommand)
 
         self.dataObject = dataObject
-        self.favName = favName
+        self.newOrder = newOrder
         self.prevFavs = None
 
-        self.setText( "Delete Fav Group: " + self.favName )
+        self.setText( "Reorder Fav Groups: " + str(newOrder) )
 
     def redo(self):
         favsObj = self.dataObject.favs
         self.prevFavs = copy.deepcopy( favsObj )
-        favsObj.deleteFavGroup( self.favName )
+        favsObj.reorderFavGroups( self.newOrder )
         self.dataObject.favsChanged.emit()
 
     def undo(self):
-        self.self.dataObject.favs = self.prevFavs
+        self.dataObject.favs = self.prevFavs
         self.dataObject.favsChanged.emit()

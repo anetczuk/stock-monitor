@@ -80,6 +80,9 @@ class FavsWidget( QtBaseClass ):           # type: ignore
 
         self.dataObject = None
 
+        tabBar = self.ui.data_tabs.tabBar()
+        tabBar.tabMoved.connect( self.tabMoved )
+
         self.ui.data_tabs.clear()
         self.addTab( "Favs" )
 
@@ -152,8 +155,16 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         elif action == renameAction:
             self._renameTabRequest( tabIndex )
         elif action == deleteAction:
-            noteTitle = self.ui.data_tabs.tabText( tabIndex )
-            self.removeFavGrp.emit( noteTitle )
+            favCode = self.ui.data_tabs.tabText( tabIndex )
+            self.removeFavGrp.emit( favCode )
+
+    def tabMoved(self):
+        favOrder = []
+        tabsSize = self.ui.data_tabs.count()
+        for tabIndex in range(0, tabsSize):
+            favCode = self.ui.data_tabs.tabText( tabIndex )
+            favOrder.append( favCode )
+        self.dataObject.reorderFavGroups( favOrder )
 
     def _newTabRequest( self ):
         newTitle = self._requestTabName( "Favs" )

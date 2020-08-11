@@ -22,6 +22,7 @@
 #
 
 import logging
+import collections
 from typing import Dict, List
 
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -34,15 +35,40 @@ from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
+from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class FavData():
+class FavData( persist.Versionable ):
+
+    ## 0 - first version
+    ## 1 - use ordererd dict
+    _class_version = 1
 
     def __init__(self):
-        self.favs: Dict[ str, List[str] ] = dict()
+        self.favs: Dict[ str, List[str] ] = collections.OrderedDict()
+
+    def _convertstate_(self, dict_, dictVersion_ ):
+        _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
+
+        if dictVersion_ is None:
+            dictVersion_ = -1
+
+        if dictVersion_ < 0:
+            ## nothing to do
+            dictVersion_ = 0
+
+        if dictVersion_ == 0:
+            ## use ordererd dict
+            oldDict = dict_["favs"]
+            newDict = collections.OrderedDict( oldDict )
+            dict_["favs"] = newDict
+            dictVersion_ = 1
+
+        # pylint: disable=W0201
+        self.__dict__ = dict_
 
     def favGroupsList(self):
         return self.favs.keys()
@@ -59,6 +85,11 @@ class FavData():
 
     def deleteFavGroup(self, name):
         del self.favs[name]
+
+    def reorderFavGroups(self, newOrder):
+        for item in reversed(newOrder):
+            # pylint: disable=E1101
+            self.favs.move_to_end( item, False )
 
     def addFav(self, group, items):
         itemsList = list( items )
@@ -139,6 +170,9 @@ class DataObject( QObject ):
     def deleteFav(self, group, favItem):
         itemsList = list( favItem )
         self.undoStack.push( DeleteFavCommand( self, group, itemsList ) )
+
+    def reorderFavGroups(self, newOrder):
+        self.undoStack.push( ReorderFavGroupsCommand( self, newOrder ) )
 
     def getFavStock(self, favGroup):
         stockList = self.favs.getFavs( favGroup )
