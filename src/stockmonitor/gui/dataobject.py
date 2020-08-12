@@ -160,23 +160,31 @@ class DataContainer():
 class DataObject( QObject ):
 
     ## added, modified or removed
-    favsChanged      = pyqtSignal()
-    stockDataChanged = pyqtSignal()
+    favsChanged         = pyqtSignal()
+    favsReordered       = pyqtSignal()
+    stockDataChanged    = pyqtSignal()
+    stockHeadersChanged = pyqtSignal()
 
     def __init__(self, parent: QWidget=None):
         super().__init__( parent )
         self.parentWidget = parent
 
-        self.dataContainer    = DataContainer()
-        self.currentStockData = GpwCurrentData()
+        self.dataContainer                          = DataContainer()
+        self.currentStockData                       = GpwCurrentData()
+        self.currentStockHeaders: Dict[ int, str ]  = dict()
 
         self.undoStack = QUndoStack(self)
 
     def store( self, outputDir ):
+        outputFile = outputDir + "/gpwcurrentheaders.obj"
+        persist.store_object( self.currentStockHeaders, outputFile )
         return self.dataContainer.store( outputDir )
 
     def load( self, inputDir ):
         self.dataContainer.load( inputDir )
+        inputFile = inputDir + "/gpwcurrentheaders.obj"
+        headers = persist.load_object_simple( inputFile, dict() )
+        self.setCurrentStockHeaders( headers )
 
     @property
     def favs(self):
@@ -220,6 +228,12 @@ class DataObject( QObject ):
         stockList = self.favs.getFavs( favGroup )
         return self.currentStockData.getStockData( stockList )
 
+    ## ======================================================================
+
     def refreshStockData(self):
         self.currentStockData.refreshData()
         self.stockDataChanged.emit()
+
+    def setCurrentStockHeaders(self, headersDict):
+        self.currentStockHeaders = headersDict
+        self.stockHeadersChanged.emit()

@@ -44,25 +44,6 @@ from .. import guistate
 _LOGGER = logging.getLogger(__name__)
 
 
-class TableSettings():
-
-    def __init__(self):
-        self.headersTexts: Dict[ int, str ]    = dict()
-        self.columnsVisible: Dict[ int, bool ] = dict()
-
-    def getText(self, col):
-        return self.headersTexts.get( col, None )
-
-    def isVisible(self, col):
-        return self.columnsVisible.get( col, None )
-
-    def setHeaderText(self, col, text):
-        self.headersTexts[ col ] = text
-
-    def setColumnVisible(self, col, show):
-        self.columnsVisible[ col ] = show
-
-
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_module_path( "widget/tablesettingsdialog" )
 
 
@@ -76,8 +57,10 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-        self.parentTable = None
-        self.oldSettings = None
+        self.parentTable: 'StockTable'  = None
+        
+        self.oldHeaders = None
+        self.oldColumns = None
 
         table = self.ui.columnsTable
         table.cellChanged.connect( self.tableCellChanged )
@@ -85,50 +68,50 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
 
     def connectTable( self, parentTable: 'StockTable' ):
         self.parentTable = parentTable
-        self.oldSettings = copy.deepcopy( parentTable.tableSettings )
+
+        self.oldHeaders = copy.deepcopy( parentTable.headersText )
+        self.oldColumns = copy.deepcopy( parentTable.columnsVisible )
+
         self.setHeader.connect( parentTable.setHeaderText )
         self.showColumn.connect( parentTable.setColumnVisible )
+        self.accepted.connect( parentTable.settingsAccepted )
 
-    def setData(self, tableSettings, rawData: DataFrame ):
+    def setData(self, rawData: DataFrame ):
         table = self.ui.columnsTable
-
         headerValues = rawData.columns.values
         colsNum = rawData.shape[1]
-
+ 
         table.setRowCount( colsNum )
-
-        if tableSettings is None:
-            tableSettings = TableSettings()
-
+  
         for i in range(0, colsNum):
             headerText  = headerValues[i][0]
             dataExample = rawData.iloc[0, i]
-
+ 
             ## display header
             dataItem = QTableWidgetItem()
             checkedState = Qt.Checked
-            colVisible = tableSettings.isVisible( i )
+            colVisible = self.isColumnVisible( i )
             if colVisible is not None and colVisible is False:
                 checkedState = Qt.Unchecked
             dataItem.setCheckState( checkedState )
-            userText = tableSettings.getText( i )
+            userText = self.getHeaderText( i )
             if userText is None:
                 userText = headerText
             dataItem.setData( Qt.DisplayRole, userText )
             table.setItem( i, 0, dataItem )
-
+ 
             ## data header
             dataItem = QTableWidgetItem()
             dataItem.setFlags( dataItem.flags() ^ Qt.ItemIsEditable )
             dataItem.setData( Qt.DisplayRole, headerText )
             table.setItem( i, 1, dataItem )
-
+ 
             ## data preview
             dataItem = QTableWidgetItem()
             dataItem.setFlags( dataItem.flags() ^ Qt.ItemIsEditable )
             dataItem.setData( Qt.DisplayRole, dataExample )
             table.setItem( i, 2, dataItem )
-
+ 
         table.resizeColumnsToContents()
         table.update()
 
@@ -144,9 +127,21 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         showValue = tableItem.checkState() != Qt.Unchecked
         self.showColumn.emit( row, showValue )
 
+    def getHeaderText(self, col):
+        return self.oldHeaders.get( col, None )
+ 
+    def isColumnVisible(self, col):
+        return self.oldColumns.get( col, None )
+
+    def settingsAccepted(self):
+        ##restore old settings
+        self.parentTable.setHeadersText( self.oldHeaders )
+        self.parentTable.setColumnsVisibility( self.oldColumns )
+
     def settingsRejected(self):
         ##restore old settings
-        self.parentTable.setTableSettings( self.oldSettings )
+        self.parentTable.setHeadersText( self.oldHeaders )
+        self.parentTable.setColumnsVisibility( self.oldColumns )
 
 
 ## =========================================================
@@ -156,40 +151,42 @@ class PandasModel( QAbstractTableModel ):
 
     def __init__(self, data: DataFrame):
         super().__init__()
-        self._data: DataFrame = data
-        self.customHeader: Dict[ object, str ] = dict()
+        self._rawData: DataFrame = data
+        self.customHeader: Dict[ int, str ] = dict()
 
-    def setContent(self, data):
+    def setContent(self, data: DataFrame):
         self.beginResetModel()
-        self._data = data
+        self._rawData = data
         self.endResetModel()
+
+    def setHeaders(self, headersDict, orientation=Qt.Horizontal):
+        self.customHeader = headersDict
+        colsNum = self.columnCount()
+        self.headerDataChanged.emit( orientation, 0, colsNum-1 )
 
     # pylint: disable=W0613
     def rowCount(self, parent=None):
-        if self._data is None:
+        if self._rawData is None:
             return 0
-        return self._data.shape[0]
+        return self._rawData.shape[0]
 
     # pylint: disable=W0613
     def columnCount(self, parnet=None):
-        if self._data is None:
+        if self._rawData is None:
             return 0
-        return self._data.shape[1]
+        return self._rawData.shape[1]
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            key = (section, orientation, role)
-            headerValue = self.customHeader.get( key, None )
+            headerValue = self.customHeader.get( section, None )
             if headerValue is not None:
                 return headerValue
-            colName = self._data.columns[section]
+            colName = self._rawData.columns[section]
             return colName[0]
         return None
 
-    def setHeaderData(self, section, orientation, value, role=Qt.DisplayRole):
-        # return super().setHeaderData( section, orientation, value, role )
-        key = (section, orientation, role)
-        self.customHeader[ key ] = value
+    def setHeaderData(self, section, orientation, value, _=Qt.DisplayRole):
+        self.customHeader[ section ] = value
         self.headerDataChanged.emit( orientation, section, section )
         return True
 
@@ -197,7 +194,7 @@ class PandasModel( QAbstractTableModel ):
         if not index.isValid():
             return None
         if role == Qt.DisplayRole:
-            return str(self._data.iloc[index.row(), index.column()])
+            return str(self._rawData.iloc[index.row(), index.column()])
         if role == Qt.TextAlignmentRole:
             return Qt.AlignHCenter | Qt.AlignVCenter
         return None
@@ -257,8 +254,10 @@ class StockTable( QTableView ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
-        self._data = None
-        self.tableSettings = TableSettings()
+        self.setObjectName("stocktable")
+
+        self._rawData = None
+        self.columnsVisible: Dict[ int, bool ] = dict()
 
         self.setSortingEnabled( True )
         self.setShowGrid( True )
@@ -276,69 +275,36 @@ class StockTable( QTableView ):
 
         self.setData( DataFrame() )
 
-    def setData(self, rawData: DataFrame ):
-        self._data = rawData
-        self.pandaModel.setContent( rawData )
-        self._applySettings()
-
-    def showColumnsConfiguration(self):
-        if self._data is None:
-            return
-        dialog = TableSettingsDialog( self )
-        dialog.setData( self.tableSettings, self._data )
-        dialog.connectTable( self )
-        dialog.show()
-
-    def setHeaderText(self, col, text):
-        self.tableSettings.setHeaderText( col, text )
-        self.pandaModel.setHeaderData( col, Qt.Horizontal, text )
-
-    def setColumnVisible(self, col, visible):
-        self.tableSettings.setColumnVisible( col, visible )
-        self.setColumnHidden( col, not visible )
+    @property
+    def headersText(self):
+        return self.pandaModel.customHeader
 
     def loadSettings(self, settings):
         settings.beginGroup( guistate.get_widget_key(self, "tablesettings") )
-
-        textDict = settings.value("headersTexts", None, type=dict)
-        if textDict is not None:
-            self.tableSettings.headersTexts = textDict
-
         visDict = settings.value("columnsVisible", None, type=dict)
-        if visDict is not None:
-            self.tableSettings.columnsVisible = visDict
-
+        if visDict is None:
+            visDict = dict()
         settings.endGroup()
-
-        self._applySettings()
+        self.setColumnsVisibility( visDict )
 
     def saveSettings(self, settings):
         settings.beginGroup( guistate.get_widget_key(self, "tablesettings") )
-        settings.setValue("headersTexts", self.tableSettings.headersTexts )
-        settings.setValue("columnsVisible", self.tableSettings.columnsVisible )
+        settings.setValue("columnsVisible", self.columnsVisible )
         settings.endGroup()
 
-    def setTableSettings(self, settings):
-        self.tableSettings = settings
-        self._applySettings()
-
-    def _applySettings(self):
-        tableModel = self.pandaModel
-        tableModel.customHeader.clear()
-        for col, text in self.tableSettings.headersTexts.items():
-            tableModel.setHeaderData( col, Qt.Horizontal, text )
-
-        colsCount = tableModel.columnCount()
-        for col in range(0, colsCount):
-            self.showColumn( col )
-        for col, show in self.tableSettings.columnsVisible.items():
-            self.setColumnHidden( col, not show )
+    def showColumnsConfiguration(self):
+        if self._rawData is None:
+            return
+        dialog = TableSettingsDialog( self )
+        dialog.connectTable( self )
+        dialog.setData( self._rawData )
+        dialog.show()
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
         configColumnsAction = contextMenu.addAction("Configure columns")
 
-        if self._data is None:
+        if self._rawData is None:
             configColumnsAction.setEnabled( False )
 
         globalPos = QCursor.pos()
@@ -346,6 +312,34 @@ class StockTable( QTableView ):
 
         if action == configColumnsAction:
             self.showColumnsConfiguration()
+
+    ## ===============================================
+
+    def setData(self, rawData: DataFrame ):
+        self._rawData = rawData
+        self.pandaModel.setContent( rawData )
+
+    def setHeaderText(self, col, text):
+        self.pandaModel.setHeaderData( col, Qt.Horizontal, text )
+
+    def setColumnVisible(self, col, visible):
+        self.columnsVisible[ col ] = visible
+        self.setColumnHidden( col, not visible )
+
+    def setHeadersText(self, settingsDict ):
+        self.pandaModel.setHeaders( settingsDict )
+
+    def setColumnsVisibility( self, settingsDict ):
+        self.columnsVisible = settingsDict
+        colsCount = self.pandaModel.columnCount()
+        for col in range(0, colsCount):
+            self.showColumn( col )
+        for col, show in self.columnsVisible.items():
+            self.setColumnHidden( col, not show )
+
+    def settingsAccepted(self):
+        ## do nothing -- reimplement if needed
+        pass
 
 
 ## ====================================================================
@@ -360,12 +354,17 @@ class StockFullTable( StockTable ):
     def connectData(self, dataObject):
         self.dataObject = dataObject
         self.dataObject.stockDataChanged.connect( self.updateData )
+        self.dataObject.stockHeadersChanged.connect( self.updateView )
         self.updateData()
+        self.updateView()
 
     def updateData(self):
         dataAccess = self.dataObject.currentStockData
         dataframe = dataAccess.getWorksheet( False )
         self.setData( dataframe )
+
+    def updateView(self):
+        self.setHeadersText( self.dataObject.currentStockHeaders )
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
@@ -384,7 +383,7 @@ class StockFullTable( StockTable ):
                     favAction.setData( favGroup )
                     favsActions.append( favAction )
 
-        if self._data is None:
+        if self._rawData is None:
             configColumnsAction.setEnabled( False )
 
         globalPos = QCursor.pos()
@@ -410,6 +409,9 @@ class StockFullTable( StockTable ):
             favCodes.add( code )
         favList = list(favCodes)
         self.dataObject.addFav( favGrp, favList )
+        
+    def settingsAccepted(self):
+        self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
 
 
 ## ====================================================================
@@ -428,11 +430,16 @@ class StockFavsTable( StockTable ):
         if self.dataObject is None:
             return
         self.dataObject.stockDataChanged.connect( self.updateData )
+        self.dataObject.stockHeadersChanged.connect( self.updateView )
         self.updateData()
+        self.updateView()
 
     def updateData(self):
         dataframe = self.dataObject.getFavStock( self.favGroup )
         self.setData( dataframe )
+
+    def updateView(self):
+        self.setHeadersText( self.dataObject.currentStockHeaders )
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
@@ -455,7 +462,10 @@ class StockFavsTable( StockTable ):
             for ind in indexes:
                 sourceIndex = self.model().mapToSource( ind )
                 dataRow = sourceIndex.row()
-                code = dataAccess.getShortFieldFromData( self._data, dataRow )
+                code = dataAccess.getShortFieldFromData( self._rawData, dataRow )
                 favCodes.add( code )
             favList = list(favCodes)
             self.dataObject.deleteFav( self.favGroup, favList )
+
+    def settingsAccepted(self):
+        self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )

@@ -45,8 +45,8 @@ class ReorderFavGroupsCommand( QUndoCommand ):
         favsObj = self.dataObject.favs
         self.prevFavs = copy.deepcopy( favsObj )
         favsObj.reorderFavGroups( self.newOrder )
-        self.dataObject.favsChanged.emit()
+        self.dataObject.favsReordered.emit()
 
     def undo(self):
         self.dataObject.favs = self.prevFavs
-        self.dataObject.favsChanged.emit()
+        self.dataObject.favsReordered.emit()

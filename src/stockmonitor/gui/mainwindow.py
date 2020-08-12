@@ -93,6 +93,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.data.favsChanged.connect( self._handleFavsChange )
         self.data.stockDataChanged.connect( self._handleStockDataChange )
+        self.data.stockHeadersChanged.connect( self._handleStockHeadersChange )
 
         self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
         self.ui.favsWidget.renameFavGrp.connect( self.data.renameFavGroup )
@@ -149,12 +150,17 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def refreshView(self):
         self._updateStockTimestamp()
-        self.updateFavsView()
+        self.ui.stockFullTable.updateView()
+        self.ui.favsWidget.updateView()
         self.ui.notesWidget.setNotes( self.data.notes )
 
     def _handleStockDataChange(self):
         self._updateStockTimestamp()
         self.setStatusMessage( "Stock data refreshed" )
+        
+    def _handleStockHeadersChange(self):
+        self.triggerSaveTimer()
+        self.setStatusMessage( "Stock headers changed" )
 
     def _updateStockTimestamp(self):
         ## update stock timestamp
@@ -167,10 +173,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def _handleFavsChange(self):
         self.triggerSaveTimer()
-#         self.updateFavsView()
-
-    def updateFavsView(self):
-        self.ui.favsWidget.updateView()
 
     ## ====================================================================
 

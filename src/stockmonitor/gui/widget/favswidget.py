@@ -30,6 +30,7 @@ from PyQt5.QtWidgets import QLineEdit
 
 from .. import uiloader
 from .stocktable import StockFavsTable
+from menulibre.XmlMenuElementTree import indent
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
@@ -56,6 +57,7 @@ class SinglePageWidget( QWidget ):
         vlayout.addWidget( self.stockData )
 
     def setData(self, dataObject, favGroup):
+        self.setObjectName( favGroup )
         self.stockData.connectData( dataObject, favGroup )
 
     def loadSettings(self, settings):
@@ -90,6 +92,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         self.dataObject = dataObject
         self.dataObject.stockDataChanged.connect( self.updateView )
         self.dataObject.favsChanged.connect( self.updateView )
+        self.dataObject.favsReordered.connect( self.updateOrder )
         self.updateView()
 
     def updateView(self):
@@ -100,6 +103,16 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         favsObj = self.dataObject.favs
         dataDict = favsObj.favs
         favKeys = dataDict.keys()
+        
+#         for _ in range(0, self.ui.data_tabs.count()):
+#             widget = self.ui.data_tabs.widget(0)
+#             widget.setParent( None )
+#             del widget
+#         self.ui.data_tabs.clear()
+#         
+#         for key in favKeys:
+#             self.addTab( key )
+        
         keysNum = len(favKeys)
         tabsNum = self.ui.data_tabs.count()
         if keysNum > tabsNum:
@@ -107,13 +120,33 @@ class FavsWidget( QtBaseClass ):           # type: ignore
                 self.addTab( str(i) )
         elif tabsNum > keysNum:
             for i in range(keysNum, tabsNum):
-                self.ui.data_tabs.removeTab( keysNum )
+                widget = self.ui.data_tabs.widget(0)
+                widget.setParent( None )
+                del widget
         i = -1
         for key in favKeys:
             i += 1
             self.ui.data_tabs.setTabText( i, key )
             page = self.ui.data_tabs.widget( i )
             page.setData( self.dataObject, key )
+
+    def updateOrder(self):
+        if self.dataObject is None:
+            _LOGGER.warning("unable to reorder view")
+            return
+        tabBar = self.ui.data_tabs.tabBar()
+        tabBar.tabMoved.disconnect( self.tabMoved )
+        favsObj = self.dataObject.favs
+        dataDict = favsObj.favs
+        favKeys = dataDict.keys()
+        i = -1
+        for key in favKeys:
+            i += 1
+            tabIndex = self.findTabIndex( key )
+            if tabIndex < 0:
+                continue
+            tabBar.moveTab( tabIndex, i )
+        tabBar.tabMoved.connect( self.tabMoved )
 
     def addTab(self, favGroup):
         pageWidget = SinglePageWidget(self)
@@ -131,6 +164,13 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         for tabIndex in range(0, tabsSize):
             pageWidget = self.ui.data_tabs.widget( tabIndex )
             pageWidget.saveSettings( settings )
+
+    def findTabIndex(self, tabName):
+        for ind in range(0, self.ui.data_tabs.count()):
+            tabText = self.ui.data_tabs.tabText( ind )
+            if tabText == tabName:
+                return ind
+        return -1
 
     def contextMenuEvent( self, event ):
         evPos     = event.pos()

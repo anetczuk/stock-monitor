@@ -201,7 +201,7 @@ class GpwArchiveData:
 
 
 class GpwCurrentData:
-    """Handle GPW archive data."""
+    """Handle GPW current day data."""
 
     def __init__(self):
         self.crawler = GpwCurrentCrawler()
