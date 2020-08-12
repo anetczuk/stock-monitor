@@ -299,3 +299,21 @@ class GpwCurrentData:
 #             if "Brak danych dla wybranych kryteriów." in f.read():
 #                 return True
         return False
+
+    ## ======================================================================
+
+    def getInfoLinkFromIsin(self, isin):
+        return "https://www.gpw.pl/spolka?isin=%s" % isin
+
+    def getInfoLinkFromCode(self, code):
+        isin = self.getIsinFromCode(code)
+        if isin is not None:
+            infoLink = "https://www.gpw.pl/spolka?isin=%s" % isin
+            return infoLink
+        infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % code
+        return infoLink
+
+    def getIsinFromCode(self, code):
+        if code is None:
+            return code
+        return None

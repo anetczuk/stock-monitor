@@ -36,6 +36,7 @@ from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtWidgets import QTableView, QTableWidgetItem
 from PyQt5.QtWidgets import QMenu
 from PyQt5.QtGui import QCursor
+from PyQt5.QtGui import QDesktopServices
 
 from .. import uiloader
 from .. import guistate
@@ -75,7 +76,7 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         self.setHeader.connect( parentTable.setHeaderText )
         self.showColumn.connect( parentTable.setColumnVisible )
         self.accepted.connect( parentTable.settingsAccepted )
-        
+
         self.ui.resizeColumnsPB.clicked.connect( parentTable.resizeColumnsToContents )
 
     def setData(self, rawData: DataFrame ):
@@ -265,7 +266,7 @@ class StockTable( QTableView ):
         self.columnsVisible: Dict[ int, bool ] = dict()
 
         self.setSortingEnabled( True )
-        self.setShowGrid( True )
+        self.setShowGrid( False )
         self.setAlternatingRowColors( True )
 
         header = self.horizontalHeader()
@@ -391,6 +392,8 @@ class StockFullTable( StockTable ):
         if self._rawData is None:
             configColumnsAction.setEnabled( False )
 
+        stockInfoAction = contextMenu.addAction("Stock info")
+
         globalPos = QCursor.pos()
         action = contextMenu.exec_( globalPos )
 
@@ -401,8 +404,21 @@ class StockFullTable( StockTable ):
         elif action in favsActions:
             favGroup = action.data()
             self._addToFav( favGroup )
+        elif action == stockInfoAction:
+            self._openInfo()
 
     def _addToFav(self, favGrp):
+        favList = self._getSelectedCodes()
+        self.dataObject.addFav( favGrp, favList )
+
+    def _openInfo(self):
+        dataAccess = self.dataObject.currentStockData
+        favList = self._getSelectedCodes()
+        for code in favList:
+            infoLink = dataAccess.getInfoLinkFromCode( code )
+            QDesktopServices.openUrl( QtCore.QUrl(infoLink) )
+
+    def _getSelectedCodes(self):
         dataAccess = self.dataObject.currentStockData
         selection = self.selectionModel()
         indexes = selection.selectedIndexes()
@@ -413,7 +429,7 @@ class StockFullTable( StockTable ):
             code = dataAccess.getShortField( dataRow )
             favCodes.add( code )
         favList = list(favCodes)
-        self.dataObject.addFav( favGrp, favList )
+        return favList
 
     def settingsAccepted(self):
         self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
@@ -452,6 +468,7 @@ class StockFavsTable( StockTable ):
         refreshAction       = contextMenu.addAction("Refresh data")
         configColumnsAction = contextMenu.addAction("Configure columns")
         remFavAction        = contextMenu.addAction("Remove fav")
+        stockInfoAction     = contextMenu.addAction("Stock info")
 
         globalPos = QCursor.pos()
         action = contextMenu.exec_( globalPos )
@@ -461,17 +478,30 @@ class StockFavsTable( StockTable ):
         elif action == configColumnsAction:
             self.showColumnsConfiguration()
         elif action == remFavAction:
-            dataAccess = self.dataObject.currentStockData
-            selection = self.selectionModel()
-            indexes = selection.selectedIndexes()
-            favCodes = set()
-            for ind in indexes:
-                sourceIndex = self.model().mapToSource( ind )
-                dataRow = sourceIndex.row()
-                code = dataAccess.getShortFieldFromData( self._rawData, dataRow )
-                favCodes.add( code )
-            favList = list(favCodes)
+            favList = self._getSelectedCodes()
             self.dataObject.deleteFav( self.favGroup, favList )
+        elif action == stockInfoAction:
+            self._openInfo()
+
+    def _openInfo(self):
+        dataAccess = self.dataObject.currentStockData
+        favList = self._getSelectedCodes()
+        for code in favList:
+            infoLink = dataAccess.getInfoLinkFromCode( code )
+            QDesktopServices.openUrl( QtCore.QUrl(infoLink) )
+
+    def _getSelectedCodes(self):
+        dataAccess = self.dataObject.currentStockData
+        selection = self.selectionModel()
+        indexes = selection.selectedIndexes()
+        favCodes = set()
+        for ind in indexes:
+            sourceIndex = self.model().mapToSource( ind )
+            dataRow = sourceIndex.row()
+            code = dataAccess.getShortFieldFromData( self._rawData, dataRow )
+            favCodes.add( code )
+        favList = list(favCodes)
+        return favList
 
     def settingsAccepted(self):
         self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
