@@ -75,6 +75,8 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         self.setHeader.connect( parentTable.setHeaderText )
         self.showColumn.connect( parentTable.setColumnVisible )
         self.accepted.connect( parentTable.settingsAccepted )
+        
+        self.ui.resizeColumnsPB.clicked.connect( parentTable.resizeColumnsToContents )
 
     def setData(self, rawData: DataFrame ):
         table = self.ui.columnsTable
