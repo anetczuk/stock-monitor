@@ -104,12 +104,12 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         favKeys = dataDict.keys()
 
         tabsNum = self.ui.data_tabs.count()
-        
+
         for i in reversed( range(tabsNum) ):
             tabName = self.ui.data_tabs.tabText( i )
             if tabName not in favKeys:
                 self.removeTab( i )
-        
+
         i = -1
         for favName in favKeys:
             i += 1
