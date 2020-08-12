@@ -161,7 +161,6 @@ def save_state(window: QMainWindow, settings: QSettings):
     widgets = window.findChildren( QTableView )
     for w in widgets:
         wKey = get_widget_key(w)
-        print("eeeee2:", wKey)
         colsNum = w.model().columnCount()
         settings.beginGroup( wKey )
         for c in range(0, colsNum):

@@ -85,7 +85,6 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         tabBar.tabMoved.connect( self.tabMoved )
 
         self.ui.data_tabs.clear()
-        self.addTab( "Favs" )
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
@@ -99,35 +98,27 @@ class FavsWidget( QtBaseClass ):           # type: ignore
             _LOGGER.warning("unable to update view")
             self.ui.data_tabs.clear()
             return
+        _LOGGER.info("updating view")
         favsObj = self.dataObject.favs
         dataDict = favsObj.favs
         favKeys = dataDict.keys()
 
-#         for _ in range(0, self.ui.data_tabs.count()):
-#             widget = self.ui.data_tabs.widget(0)
-#             widget.setParent( None )
-#             del widget
-#         self.ui.data_tabs.clear()
-#
-#         for key in favKeys:
-#             self.addTab( key )
-
-        keysNum = len(favKeys)
         tabsNum = self.ui.data_tabs.count()
-        if keysNum > tabsNum:
-            for i in range(tabsNum, keysNum):
-                self.addTab( str(i) )
-        elif tabsNum > keysNum:
-            for i in range(keysNum, tabsNum):
-                widget = self.ui.data_tabs.widget(0)
-                widget.setParent( None )
-                del widget
+        
+        for i in reversed( range(tabsNum) ):
+            tabName = self.ui.data_tabs.tabText( i )
+            if tabName not in favKeys:
+                self.removeTab( i )
+        
         i = -1
-        for key in favKeys:
+        for favName in favKeys:
             i += 1
-            self.ui.data_tabs.setTabText( i, key )
-            page = self.ui.data_tabs.widget( i )
-            page.setData( self.dataObject, key )
+            tabIndex = self.findTabIndex( favName )
+            if tabIndex < 0:
+                self.addTab( favName )
+                continue
+            if tabIndex != i:
+                _LOGGER.warning("unhandled case - tab moved: %s %s %s", favName, tabIndex, i)
 
     def updateOrder(self):
         if self.dataObject is None:
@@ -151,6 +142,11 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         pageWidget = SinglePageWidget(self)
         pageWidget.setData( self.dataObject, favGroup )
         self.ui.data_tabs.addTab( pageWidget, favGroup )
+
+    def removeTab(self, tabIndex):
+        widget = self.ui.data_tabs.widget( tabIndex )
+        widget.setParent( None )
+        del widget
 
     def loadSettings(self, settings):
         tabsSize = self.ui.data_tabs.count()

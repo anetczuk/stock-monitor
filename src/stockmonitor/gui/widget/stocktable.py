@@ -424,6 +424,7 @@ class StockFavsTable( StockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
+        self.setObjectName("stockfavstable")
         self.dataObject = None
         self.favGroup = None
 
