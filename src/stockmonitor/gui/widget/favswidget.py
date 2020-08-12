@@ -30,7 +30,6 @@ from PyQt5.QtWidgets import QLineEdit
 
 from .. import uiloader
 from .stocktable import StockFavsTable
-from menulibre.XmlMenuElementTree import indent
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
@@ -103,16 +102,16 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         favsObj = self.dataObject.favs
         dataDict = favsObj.favs
         favKeys = dataDict.keys()
-        
+
 #         for _ in range(0, self.ui.data_tabs.count()):
 #             widget = self.ui.data_tabs.widget(0)
 #             widget.setParent( None )
 #             del widget
 #         self.ui.data_tabs.clear()
-#         
+#
 #         for key in favKeys:
 #             self.addTab( key )
-        
+
         keysNum = len(favKeys)
         tabsNum = self.ui.data_tabs.count()
         if keysNum > tabsNum:

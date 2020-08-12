@@ -57,7 +57,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.appSettings = AppSettings()
 
         self.setWindowTitle( self.appTitle )
-        
+
         refreshAction = QtWidgets.QAction(self)
         refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
         refreshAction.triggered.connect( self.data.refreshStockData )
@@ -76,7 +76,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.menuEdit.removeAction( self.ui.actionUndo )
         self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
         self.ui.menuEdit.removeAction( self.ui.actionRedo )
-        
+
         self.ui.actionSave_data.triggered.connect( self.saveData )
         self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
 
@@ -157,7 +157,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
     def _handleStockDataChange(self):
         self._updateStockTimestamp()
         self.setStatusMessage( "Stock data refreshed" )
-        
+
     def _handleStockHeadersChange(self):
         self.triggerSaveTimer()
         self.setStatusMessage( "Stock headers changed" )

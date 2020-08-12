@@ -58,7 +58,7 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         self.ui.setupUi(self)
 
         self.parentTable: 'StockTable'  = None
-        
+
         self.oldHeaders = None
         self.oldColumns = None
 
@@ -80,13 +80,13 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         table = self.ui.columnsTable
         headerValues = rawData.columns.values
         colsNum = rawData.shape[1]
- 
+
         table.setRowCount( colsNum )
-  
+
         for i in range(0, colsNum):
             headerText  = headerValues[i][0]
             dataExample = rawData.iloc[0, i]
- 
+
             ## display header
             dataItem = QTableWidgetItem()
             checkedState = Qt.Checked
@@ -99,19 +99,19 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
                 userText = headerText
             dataItem.setData( Qt.DisplayRole, userText )
             table.setItem( i, 0, dataItem )
- 
+
             ## data header
             dataItem = QTableWidgetItem()
             dataItem.setFlags( dataItem.flags() ^ Qt.ItemIsEditable )
             dataItem.setData( Qt.DisplayRole, headerText )
             table.setItem( i, 1, dataItem )
- 
+
             ## data preview
             dataItem = QTableWidgetItem()
             dataItem.setFlags( dataItem.flags() ^ Qt.ItemIsEditable )
             dataItem.setData( Qt.DisplayRole, dataExample )
             table.setItem( i, 2, dataItem )
- 
+
         table.resizeColumnsToContents()
         table.update()
 
@@ -129,7 +129,7 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
 
     def getHeaderText(self, col):
         return self.oldHeaders.get( col, None )
- 
+
     def isColumnVisible(self, col):
         return self.oldColumns.get( col, None )
 
@@ -162,7 +162,7 @@ class PandasModel( QAbstractTableModel ):
     def setHeaders(self, headersDict, orientation=Qt.Horizontal):
         self.customHeader = headersDict
         colsNum = self.columnCount()
-        self.headerDataChanged.emit( orientation, 0, colsNum-1 )
+        self.headerDataChanged.emit( orientation, 0, colsNum - 1 )
 
     # pylint: disable=W0613
     def rowCount(self, parent=None):
@@ -409,7 +409,7 @@ class StockFullTable( StockTable ):
             favCodes.add( code )
         favList = list(favCodes)
         self.dataObject.addFav( favGrp, favList )
-        
+
     def settingsAccepted(self):
         self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
 
