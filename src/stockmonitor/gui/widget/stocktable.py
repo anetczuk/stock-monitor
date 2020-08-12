@@ -79,13 +79,16 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
     def setData(self, rawData: DataFrame ):
         table = self.ui.columnsTable
         headerValues = rawData.columns.values
+        rowsNum = rawData.shape[0]
         colsNum = rawData.shape[1]
 
         table.setRowCount( colsNum )
 
         for i in range(0, colsNum):
             headerText  = headerValues[i][0]
-            dataExample = rawData.iloc[0, i]
+            dataExample = None
+            if rowsNum > 0:
+                dataExample = rawData.iloc[0, i]
 
             ## display header
             dataItem = QTableWidgetItem()
