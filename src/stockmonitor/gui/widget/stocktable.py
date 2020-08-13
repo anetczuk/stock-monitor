@@ -374,8 +374,7 @@ class StockFullTable( StockTable ):
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
-        refreshAction       = contextMenu.addAction("Refresh data")
-        configColumnsAction = contextMenu.addAction("Configure columns")
+        stockInfoAction = contextMenu.addAction("Stock info")
 
         favsActions = []
         if self.dataObject is not None:
@@ -389,17 +388,16 @@ class StockFullTable( StockTable ):
                     favAction.setData( favGroup )
                     favsActions.append( favAction )
 
+        contextMenu.addSeparator()
+
+        configColumnsAction = contextMenu.addAction("Configure columns")
         if self._rawData is None:
             configColumnsAction.setEnabled( False )
-
-        stockInfoAction = contextMenu.addAction("Stock info")
 
         globalPos = QCursor.pos()
         action = contextMenu.exec_( globalPos )
 
-        if action == refreshAction:
-            self.dataObject.refreshStockData()
-        elif action == configColumnsAction:
+        if action == configColumnsAction:
             self.showColumnsConfiguration()
         elif action in favsActions:
             favGroup = action.data()
@@ -465,17 +463,15 @@ class StockFavsTable( StockTable ):
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
-        refreshAction       = contextMenu.addAction("Refresh data")
-        configColumnsAction = contextMenu.addAction("Configure columns")
-        remFavAction        = contextMenu.addAction("Remove fav")
         stockInfoAction     = contextMenu.addAction("Stock info")
+        remFavAction        = contextMenu.addAction("Remove fav")
+        contextMenu.addSeparator()
+        configColumnsAction = contextMenu.addAction("Configure columns")
 
         globalPos = QCursor.pos()
         action = contextMenu.exec_( globalPos )
 
-        if action == refreshAction:
-            self.dataObject.refreshStockData()
-        elif action == configColumnsAction:
+        if action == configColumnsAction:
             self.showColumnsConfiguration()
         elif action == remFavAction:
             favList = self._getSelectedCodes()
