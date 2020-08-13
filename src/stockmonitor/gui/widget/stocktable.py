@@ -76,8 +76,11 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
         self.setHeader.connect( parentTable.setHeaderText )
         self.showColumn.connect( parentTable.setColumnVisible )
         self.accepted.connect( parentTable.settingsAccepted )
+        self.rejected.connect( parentTable.settingsRejected )
 
         self.ui.resizeColumnsPB.clicked.connect( parentTable.resizeColumnsToContents )
+        
+#         self.adjustSize()
 
     def setData(self, rawData: DataFrame ):
         table = self.ui.columnsTable
@@ -139,10 +142,9 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
     def isColumnVisible(self, col):
         return self.oldColumns.get( col, None )
 
-    def settingsAccepted(self):
-        ##restore old settings
-        self.parentTable.setHeadersText( self.oldHeaders )
-        self.parentTable.setColumnsVisibility( self.oldColumns )
+#     def settingsAccepted(self):
+#         ##restore old settings
+#         pass
 
     def settingsRejected(self):
         ##restore old settings
@@ -345,6 +347,12 @@ class StockTable( QTableView ):
 
     def settingsAccepted(self):
         ## do nothing -- reimplement if needed
+        ## DO NOT REMOVE, reimplemented in inheriting classes
+        pass
+
+    def settingsRejected(self):
+        ## do nothing -- reimplement if needed
+        ## DO NOT REMOVE, reimplemented in inheriting classes
         pass
 
 
@@ -432,6 +440,9 @@ class StockFullTable( StockTable ):
     def settingsAccepted(self):
         self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
 
+    def settingsRejected(self):
+        self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
+
 
 ## ====================================================================
 
@@ -500,4 +511,7 @@ class StockFavsTable( StockTable ):
         return favList
 
     def settingsAccepted(self):
+        self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
+
+    def settingsRejected(self):
         self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
