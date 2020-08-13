@@ -106,7 +106,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         tabsNum = self.ui.data_tabs.count()
 
         for i in reversed( range(tabsNum) ):
-            tabName = self.ui.data_tabs.tabText( i )
+            tabName = self.tabText( i )
             if tabName not in favKeys:
                 self.removeTab( i )
 
@@ -162,7 +162,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
 
     def findTabIndex(self, tabName):
         for ind in range(0, self.ui.data_tabs.count()):
-            tabText = self.ui.data_tabs.tabText( ind )
+            tabText = self.tabText( ind )
             if tabText == tabName:
                 return ind
         return -1
@@ -190,14 +190,14 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         elif action == renameAction:
             self._renameTabRequest( tabIndex )
         elif action == deleteAction:
-            favCode = self.ui.data_tabs.tabText( tabIndex )
+            favCode = self.tabText( tabIndex )
             self.removeFavGrp.emit( favCode )
 
     def tabMoved(self):
         favOrder = []
         tabsSize = self.ui.data_tabs.count()
         for tabIndex in range(0, tabsSize):
-            favCode = self.ui.data_tabs.tabText( tabIndex )
+            favCode = self.tabText( tabIndex )
             favOrder.append( favCode )
         self.dataObject.reorderFavGroups( favOrder )
 
@@ -210,12 +210,17 @@ class FavsWidget( QtBaseClass ):           # type: ignore
     def _renameTabRequest( self, tabIndex ):
         if tabIndex < 0:
             return
-        oldTitle = self.ui.data_tabs.tabText( tabIndex )
+        oldTitle = self.tabText( tabIndex )
         newTitle = self._requestTabName(oldTitle)
         if not newTitle:
             # empty
             return
         self.renameFavGrp.emit( oldTitle, newTitle )
+
+    def tabText(self, index):
+        name = self.ui.data_tabs.tabText( index )
+        name = name.replace("&", "")
+        return name
 
     def _requestTabName( self, currName ):
         newText, ok = QInputDialog.getText( self,
