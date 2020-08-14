@@ -45,6 +45,7 @@ from .. import guistate
 _LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=C0301
 TableSettingsDialogUiClass, TableSettingsDialogBaseClass = uiloader.load_ui_from_module_path( "widget/tablesettingsdialog" )
 
 
@@ -79,7 +80,7 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
         self.rejected.connect( parentTable.settingsRejected )
 
         self.ui.resizeColumnsPB.clicked.connect( parentTable.resizeColumnsToContents )
-        
+
 #         self.adjustSize()
 
     def setData(self, rawData: DataFrame ):
@@ -155,6 +156,7 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
 ## =========================================================
 
 
+# pylint: disable=C0301
 TableFiltersDialogUiClass, TableFiltersDialogBaseClass = uiloader.load_ui_from_module_path( "widget/tablefiltersdialog" )
 
 
@@ -167,30 +169,30 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
 
         self.parentTable: 'StockTable'  = None
         self.oldState = None
-        
+
         self.rejected.connect( self.settingsRejected )
 
     def connectTable( self, parentTable: 'StockTable' ):
         self.parentTable = parentTable
-        
+
         model = self.parentTable.model()
         self.oldState = model.filterState()
-        
+
         self.updateColumnsCombo()
-        
+
         self.ui.conditionCB.setCurrentIndex( model.condition )
-        
+
         filterValue = model.filterRegExp().pattern()
         self.ui.valueLE.setText( filterValue )
 
         self.ui.columnCB.currentIndexChanged.connect( self.columnChanged )
         self.ui.conditionCB.currentIndexChanged.connect( self.conditionChanged )
         self.ui.valueLE.textChanged.connect( self.valueChanged )
-        
+
         self.parentTable.columnsConfigurationChanged.connect( self.updateColumnsCombo )
-        
+
         self.adjustSize()
-        
+
     def updateColumnsCombo(self):
         keyColumn = self.parentTable.model().filterKeyColumn()
         newIndex = 0
@@ -203,18 +205,18 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
                 self.ui.columnCB.addItem( str(col) + " " + text, col )
         self.ui.columnCB.setCurrentIndex( newIndex )
 
-    def columnChanged(self, index):
+    def columnChanged(self, _):
         self.updateFilter()
-    
-    def conditionChanged(self, index):
+
+    def conditionChanged(self, _):
         self.updateFilter()
-    
-    def valueChanged(self, text):
+
+    def valueChanged(self, _):
         self.updateFilter()
 
     def updateFilter(self):
         model = self.parentTable.model()
-        
+
         columnCBIndex = self.ui.columnCB.currentIndex()
         columnIndex = self.ui.columnCB.itemData( columnCBIndex )
         if columnIndex is None:
@@ -224,10 +226,10 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
             return
 
         model.setFilterKeyColumn( columnIndex )
-        
+
         conditionIndex = self.ui.conditionCB.currentIndex()
         model.setFilterCondition( conditionIndex )
-        
+
         filterText = self.ui.valueLE.text()
         model.setFilterFixedString( filterText )
 
@@ -319,7 +321,7 @@ class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
 
     def __init__(self, parentObject=None):
         super().__init__(parentObject)
-        
+
         ##  0 - greater than
         ##  1 - equal
         ##  2 - less than
@@ -332,7 +334,7 @@ class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
         leftData  = self.sourceModel().data(left, QtCore.Qt.DisplayRole)
         rightData = self.sourceModel().data(right, QtCore.Qt.DisplayRole)
         return self.valueLessThan( leftData, rightData )
-    
+
     def valueLessThan(self, leftData, rightData):
         leftData, rightData  = self.convertType( leftData, rightData )
         return leftData < rightData
