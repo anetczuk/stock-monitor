@@ -45,17 +45,17 @@ from .. import guistate
 _LOGGER = logging.getLogger(__name__)
 
 
-UiTargetClass, QtBaseClass = uiloader.load_ui_from_module_path( "widget/tablesettingsdialog" )
+TableSettingsDialogUiClass, TableSettingsDialogBaseClass = uiloader.load_ui_from_module_path( "widget/tablesettingsdialog" )
 
 
-class TableSettingsDialog(QtBaseClass):           # type: ignore
+class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignore
 
     setHeader  = pyqtSignal( int, str )
     showColumn = pyqtSignal( int, bool )
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
-        self.ui = UiTargetClass()
+        self.ui = TableSettingsDialogUiClass()
         self.ui.setupUi(self)
 
         self.parentTable: 'StockTable'  = None
@@ -155,6 +155,92 @@ class TableSettingsDialog(QtBaseClass):           # type: ignore
 ## =========================================================
 
 
+TableFiltersDialogUiClass, TableFiltersDialogBaseClass = uiloader.load_ui_from_module_path( "widget/tablefiltersdialog" )
+
+
+class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.ui = TableFiltersDialogUiClass()
+        self.ui.setupUi(self)
+
+        self.parentTable: 'StockTable'  = None
+        self.oldState = None
+        
+        self.rejected.connect( self.settingsRejected )
+
+    def connectTable( self, parentTable: 'StockTable' ):
+        self.parentTable = parentTable
+        
+        model = self.parentTable.model()
+        self.oldState = model.filterState()
+        
+        self.updateColumnsCombo()
+        
+        self.ui.conditionCB.setCurrentIndex( model.condition )
+        
+        filterValue = model.filterRegExp().pattern()
+        self.ui.valueLE.setText( filterValue )
+
+        self.ui.columnCB.currentIndexChanged.connect( self.columnChanged )
+        self.ui.conditionCB.currentIndexChanged.connect( self.conditionChanged )
+        self.ui.valueLE.textChanged.connect( self.valueChanged )
+        
+        self.parentTable.columnsConfigurationChanged.connect( self.updateColumnsCombo )
+        
+        self.adjustSize()
+        
+    def updateColumnsCombo(self):
+        keyColumn = self.parentTable.model().filterKeyColumn()
+        newIndex = 0
+        self.ui.columnCB.clear()
+        self.ui.columnCB.addItem( "None", -1 )
+        for col, text in self.parentTable.headersText.items():
+            if col == keyColumn:
+                newIndex = self.ui.columnCB.count()
+            if self.parentTable.columnsVisible[col]:
+                self.ui.columnCB.addItem( str(col) + " " + text, col )
+        self.ui.columnCB.setCurrentIndex( newIndex )
+
+    def columnChanged(self, index):
+        self.updateFilter()
+    
+    def conditionChanged(self, index):
+        self.updateFilter()
+    
+    def valueChanged(self, text):
+        self.updateFilter()
+
+    def updateFilter(self):
+        model = self.parentTable.model()
+        
+        columnCBIndex = self.ui.columnCB.currentIndex()
+        columnIndex = self.ui.columnCB.itemData( columnCBIndex )
+        if columnIndex is None:
+            return
+        if columnIndex < 0:
+            model.clearFilter()
+            return
+
+        model.setFilterKeyColumn( columnIndex )
+        
+        conditionIndex = self.ui.conditionCB.currentIndex()
+        model.setFilterCondition( conditionIndex )
+        
+        filterText = self.ui.valueLE.text()
+        model.setFilterFixedString( filterText )
+
+    def settingsAccepted(self):
+        pass
+
+    def settingsRejected(self):
+        self.parentTable.model().setFilterState( self.oldState )
+
+
+## =========================================================
+
+
 class PandasModel( QAbstractTableModel ):
 
     def __init__(self, data: DataFrame):
@@ -168,7 +254,7 @@ class PandasModel( QAbstractTableModel ):
         self.endResetModel()
 
     def setHeaders(self, headersDict, orientation=Qt.Horizontal):
-        self.customHeader = headersDict
+        self.customHeader = copy.deepcopy( headersDict )
         colsNum = self.columnCount()
         self.headerDataChanged.emit( orientation, 0, colsNum - 1 )
 
@@ -231,11 +317,60 @@ def convert_int( data ):
 
 class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
 
+    def __init__(self, parentObject=None):
+        super().__init__(parentObject)
+        
+        ##  0 - greater than
+        ##  1 - equal
+        ##  2 - less than
+        self.condition = 0
+
+    def setFilterCondition(self, condition):
+        self.condition = condition
+
     def lessThan(self, left: QModelIndex, right: QModelIndex):
         leftData  = self.sourceModel().data(left, QtCore.Qt.DisplayRole)
         rightData = self.sourceModel().data(right, QtCore.Qt.DisplayRole)
+        return self.valueLessThan( leftData, rightData )
+    
+    def valueLessThan(self, leftData, rightData):
         leftData, rightData  = self.convertType( leftData, rightData )
         return leftData < rightData
+
+    def clearFilter(self):
+        self.condition = 0
+        self.setFilterFixedString( "" )
+
+    def filterState(self):
+        filterValue = self.filterRegExp().pattern()
+        return [ self.filterKeyColumn(), self.condition, filterValue ]
+
+    def setFilterState(self, state):
+        self.setFilterKeyColumn( state[0] )
+        self.condition = state[1]
+        self.setFilterRegExp( state[2] )
+
+    def filterAcceptsRow( self, sourceRow, sourceParent ):
+        filterColumn = self.filterKeyColumn()
+        filterValue = self.filterRegExp().pattern()
+        valueIndex = self.sourceModel().index( sourceRow, filterColumn, sourceParent )
+        value = self.sourceModel().data( valueIndex )
+
+        if self.condition > 1:
+            ## less than
+            return self.valueLessThan( value, filterValue )
+        elif self.condition < 1:
+            ## greater than
+            return self.valueLessThan( filterValue, value )
+
+        ## equal
+        if self.valueLessThan( value, filterValue ):
+            return False
+        if self.valueLessThan( filterValue, value ):
+            return False
+        return True
+
+#         return super().filterAcceptsRow( sourceRow, sourceParent )
 
     def convertType(self, leftData, rightData):
         if contains_string(leftData) or contains_string(rightData):
@@ -259,6 +394,8 @@ class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
 
 
 class StockTable( QTableView ):
+
+    columnsConfigurationChanged = pyqtSignal()
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -308,6 +445,13 @@ class StockTable( QTableView ):
         dialog.setData( self._rawData )
         dialog.show()
 
+    def showFilterConfiguration(self):
+        if self._rawData is None:
+            return
+        dialog = TableFiltersDialog( self )
+        dialog.connectTable( self )
+        dialog.show()
+
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
         configColumnsAction = contextMenu.addAction("Configure columns")
@@ -329,13 +473,16 @@ class StockTable( QTableView ):
 
     def setHeaderText(self, col, text):
         self.pandaModel.setHeaderData( col, Qt.Horizontal, text )
+        self.columnsConfigurationChanged.emit()
 
     def setColumnVisible(self, col, visible):
         self.columnsVisible[ col ] = visible
         self.setColumnHidden( col, not visible )
+        self.columnsConfigurationChanged.emit()
 
     def setHeadersText(self, settingsDict ):
         self.pandaModel.setHeaders( settingsDict )
+        self.columnsConfigurationChanged.emit()
 
     def setColumnsVisibility( self, settingsDict ):
         self.columnsVisible = settingsDict
@@ -344,6 +491,7 @@ class StockTable( QTableView ):
             self.showColumn( col )
         for col, show in self.columnsVisible.items():
             self.setColumnHidden( col, not show )
+        self.columnsConfigurationChanged.emit()
 
     def settingsAccepted(self):
         ## do nothing -- reimplement if needed
@@ -398,6 +546,7 @@ class StockFullTable( StockTable ):
 
         contextMenu.addSeparator()
 
+        filterDataAction = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
         if self._rawData is None:
             configColumnsAction.setEnabled( False )
@@ -407,6 +556,8 @@ class StockFullTable( StockTable ):
 
         if action == configColumnsAction:
             self.showColumnsConfiguration()
+        elif action == filterDataAction:
+            self.showFilterConfiguration()
         elif action in favsActions:
             favGroup = action.data()
             self._addToFav( favGroup )
@@ -477,6 +628,7 @@ class StockFavsTable( StockTable ):
         stockInfoAction     = contextMenu.addAction("Stock info")
         remFavAction        = contextMenu.addAction("Remove fav")
         contextMenu.addSeparator()
+        filterDataAction = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
 
         globalPos = QCursor.pos()
@@ -484,6 +636,8 @@ class StockFavsTable( StockTable ):
 
         if action == configColumnsAction:
             self.showColumnsConfiguration()
+        elif action == filterDataAction:
+            self.showFilterConfiguration()
         elif action == remFavAction:
             favList = self._getSelectedCodes()
             self.dataObject.deleteFav( self.favGroup, favList )
