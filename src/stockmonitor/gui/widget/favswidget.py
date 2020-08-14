@@ -59,6 +59,9 @@ class SinglePageWidget( QWidget ):
         self.setObjectName( favGroup )
         self.stockData.connectData( dataObject, favGroup )
 
+    def updateView(self):
+        self.stockData.updateData()
+
     def loadSettings(self, settings):
         self.stockData.loadSettings( settings )
 
@@ -89,8 +92,10 @@ class FavsWidget( QtBaseClass ):           # type: ignore
     def connectData(self, dataObject):
         self.dataObject = dataObject
         self.dataObject.stockDataChanged.connect( self.updateView )
-        self.dataObject.favsChanged.connect( self.updateView )
+        self.dataObject.favsAdded.connect( self.updateTab )
+        self.dataObject.favsRemoved.connect( self.updateTab )
         self.dataObject.favsReordered.connect( self.updateOrder )
+        self.dataObject.favsChanged.connect( self.updateView )
         self.updateView()
 
     def updateView(self):
@@ -119,6 +124,11 @@ class FavsWidget( QtBaseClass ):           # type: ignore
                 continue
             if tabIndex != i:
                 _LOGGER.warning("unhandled case - tab moved: %s %s %s", favName, tabIndex, i)
+
+    def updateTab(self, tabName):
+        tabIndex = self.findTabIndex( tabName )
+        pageWidget: SinglePageWidget = self.ui.data_tabs.widget( tabIndex )
+        pageWidget.updateView()
 
     def updateOrder(self):
         if self.dataObject is None:

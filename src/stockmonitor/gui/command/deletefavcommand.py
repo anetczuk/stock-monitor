@@ -43,8 +43,8 @@ class DeleteFavCommand( QUndoCommand ):
 
     def redo(self):
         self.favsObj.deleteFav( self.group, self.favItems )
-        self.dataObject.favsChanged.emit()
+        self.dataObject.favsRemoved.emit( self.group )
 
     def undo(self):
         self.favsObj.addFav( self.group, self.favItems )
-        self.dataObject.favsChanged.emit()
+        self.dataObject.favsAdded.emit( self.group )

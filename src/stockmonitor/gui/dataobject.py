@@ -159,9 +159,11 @@ class DataContainer():
 
 class DataObject( QObject ):
 
-    ## added, modified or removed
-    favsChanged         = pyqtSignal()
+    favsAdded           = pyqtSignal( str )     ## emit group
+    favsRemoved         = pyqtSignal( str )     ## emit group
     favsReordered       = pyqtSignal()
+    favsChanged         = pyqtSignal()
+
     stockDataChanged    = pyqtSignal()
     stockHeadersChanged = pyqtSignal()
 
