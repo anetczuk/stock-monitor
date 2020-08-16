@@ -120,41 +120,38 @@ tmp_dir = script_dir + "/../../tmp/"
 #     startDay = recentDay - datetime.timedelta(days=6)
 #     analysis.loadSum( ArchiveDataType.TRADING, startDay, recentDay)
 #     analysis.calcGreatestSum( tmp_dir + "out/week_stock_trading.csv" )
-
-
-def variance( analysis ):
-    recentDay = analysis.getRecentValidDay( checkGiven=True )
-    startDay = recentDay - datetime.timedelta(days=6)
-    analysis.calcVariance( startDay, recentDay, tmp_dir + "out/stock_variance.csv" )
-
-
-def calculate_data():
-    analysis = StockAnalysis()
-
-#     crisis_results( analysis )
-#     crisis_results2( analysis )
-
-#     week_stock_results( analysis, 5 )
-
-#     week_volume_results( analysis )
-#     day_results( analysis )
-
-#     analysis.calcWeekend(4)
-#
-#     analysis.calcMonday(4)
-#     analysis.calcFriday(4)		#TODO: fix, downloads future file
-
-#     trading_results( analysis )
-
-    variance( analysis )
-
-    return 0
+# 
+# 
+# def variance( analysis ):
+#     recentDay = analysis.getRecentValidDay( checkGiven=True )
+#     startDay = recentDay - datetime.timedelta(days=6)
+#     analysis.calcVariance( startDay, recentDay, tmp_dir + "out/stock_variance.csv" )
+# 
+# 
+# def calculate_data():
+#     analysis = StockAnalysis()
+# 
+# #     crisis_results( analysis )
+# #     crisis_results2( analysis )
+# 
+# #     week_stock_results( analysis, 5 )
+# 
+# #     week_volume_results( analysis )
+# #     day_results( analysis )
+# 
+# #     analysis.calcWeekend(4)
+# #
+# #     analysis.calcMonday(4)
+# #     analysis.calcFriday(4)		#TODO: fix, downloads future file
+# 
+# #     trading_results( analysis )
+# 
+# #     variance( analysis )
+# 
+#     return 0
 
 
 def run_app( args ):
-    if args.calc is True:
-        return calculate_data()
-
     ## GUI
     app = QApplication(sys.argv)
     app.setApplicationName("StockMonitor")
@@ -182,7 +179,6 @@ def create_parser( parser: argparse.ArgumentParser = None ):
     if parser is None:
         parser = argparse.ArgumentParser(description='Stock Monitor')
     parser.add_argument('--minimized', action='store_const', const=True, default=False, help='Start minimized' )
-    parser.add_argument('--calc', action='store_const', const=True, default=False, help='Calculate and exit' )
     return parser
 
 
