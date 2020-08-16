@@ -40,9 +40,9 @@ logger.configure()
 _LOGGER = logging.getLogger(__name__)
 
 
-def run_app( args ):
+def run_app():
     ## GUI
-    app = QApplication( args )
+    app = QApplication( sys.argv )
     app.setApplicationName("StockMonitor")
     app.setOrganizationName("arnet")
     ### app.setOrganizationDomain("www.my-org.com")
@@ -82,7 +82,7 @@ def main( args=None ):
     exitCode = 1
 
     try:
-        exitCode = run_app(args)
+        exitCode = run_app()
 
     except BaseException:
         _LOGGER.exception("Exception occurred")
