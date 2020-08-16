@@ -40,7 +40,7 @@
         <item>
          <widget class="QTabWidget" name="toolsTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="minmaxTab">
            <attribute name="title">
@@ -69,6 +69,16 @@
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
              <widget class="VarianceWidget" name="variancewidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="dayTab">
+           <attribute name="title">
+            <string>Week Day</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="DayWidget" name="daywidget" native="true"/>
             </item>
            </layout>
           </widget>
@@ -279,6 +289,12 @@
    <class>VarianceWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.tool.variancewidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DayWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.tool.daywidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

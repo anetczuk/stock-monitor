@@ -24,18 +24,13 @@
 #
 
 import sys
-import os
 
 import argparse
 import logging
-import datetime
 
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
-
-# from stockmonitor.dataaccess.datatype import ArchiveDataType
-from stockmonitor.dataaccess.stockdata import StockAnalysis
 
 from stockmonitor.gui.mainwindow import MainWindow
 from stockmonitor.gui.sigint import setup_interrupt_handling
@@ -44,116 +39,10 @@ from stockmonitor.gui.sigint import setup_interrupt_handling
 logger.configure()
 _LOGGER = logging.getLogger(__name__)
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-
-tmp_dir = script_dir + "/../../tmp/"
-
-
-# def crisis_results( analysis ):
-#     maxFromDay = datetime.date( 2020, 2, 1 )
-#     maxToDay   = datetime.date( 2020, 3, 5 )
-#     analysis.loadMax( ArchiveDataType.MAX, maxFromDay, maxToDay)
-#
-#     minFromDay = datetime.date( 2020, 3, 6 )
-#     minToDay   = datetime.date( 2020, 3, 22 )
-#     analysis.loadMin( ArchiveDataType.MIN, minFromDay, minToDay)
-#
-# #     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
-#     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
-#
-#     analysis.calcBestValue( 0.6, tmp_dir + "out/crisis_stock_value.csv" )
-#     analysis.calcBestRaise( 0.1, tmp_dir + "out/crisis_stock_raise.csv" )
-#
-#
-# def crisis_results2( analysis ):
-#     recentDay = analysis.getRecentValidDay()
-#     fromDay   = datetime.date( 2020, 2, 1 )
-#     toDay     = recentDay
-#     analysis.loadMax( ArchiveDataType.MAX, fromDay, toDay )
-#
-#     minFromDay = datetime.date( 2020, 3, 6 )
-#     minToDay   = datetime.date( 2020, 3, 22 )
-#     analysis.loadMin( ArchiveDataType.MIN, minFromDay, minToDay )
-#
-# #     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
-#     analysis.loadCurr( ArchiveDataType.CLOSING, day=recentDay )
-#
-#     analysis.calcBestValue( 999990.6, tmp_dir + "out/crisis_full_stock_value.csv" )
-#     analysis.calcBestRaise( 999990.1, tmp_dir + "out/crisis_full_stock_raise.csv" )
-#
-#
-# def week_stock_results( analysis, periodLength=8 ):
-#     recentDay = analysis.getRecentValidDay()
-#     startDay = recentDay - datetime.timedelta(days=periodLength)
-# #     endDay = recentDay - datetime.timedelta(days=1)
-#
-#     analysis.loadMax( ArchiveDataType.MAX, startDay, recentDay)
-#     analysis.loadMin( ArchiveDataType.MIN, startDay, recentDay)
-#     analysis.loadCurr( ArchiveDataType.CLOSING, day=recentDay )
-#
-#     analysis.calcBestValue( 999990.8, tmp_dir + "out/week_stock_value.csv" )
-#     analysis.calcBestRaise( 999990.2, tmp_dir + "out/week_stock_raise.csv" )
-#
-#
-# def week_volume_results( analysis ):
-#     recentDay = analysis.getRecentValidDay()
-#     startDay = recentDay - datetime.timedelta(days=8)
-# #     endDay = recentDay - datetime.timedelta(days=1)
-#
-#     analysis.loadMax( ArchiveDataType.VOLUME, startDay, recentDay)
-#
-#     analysis.loadCurr( ArchiveDataType.VOLUME, day=recentDay )
-#
-#     analysis.calcBiggestRaise( 0.01, tmp_dir + "out/week_stock_volume.csv" )
-#
-#
-# def day_results( analysis ):
-#     analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
-#     analysis.calcGreater( 100000, tmp_dir + "out/day_stock_volume.csv" )
-#
-#     analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
-#     analysis.calcGreater( 30000, tmp_dir + "out/day_stock_trading.csv" )
-#
-#
-# def trading_results( analysis ):
-#     recentDay = analysis.getRecentValidDay( checkGiven=True )
-#     startDay = recentDay - datetime.timedelta(days=6)
-#     analysis.loadSum( ArchiveDataType.TRADING, startDay, recentDay)
-#     analysis.calcGreatestSum( tmp_dir + "out/week_stock_trading.csv" )
-# 
-# 
-# def variance( analysis ):
-#     recentDay = analysis.getRecentValidDay( checkGiven=True )
-#     startDay = recentDay - datetime.timedelta(days=6)
-#     analysis.calcVariance( startDay, recentDay, tmp_dir + "out/stock_variance.csv" )
-# 
-# 
-# def calculate_data():
-#     analysis = StockAnalysis()
-# 
-# #     crisis_results( analysis )
-# #     crisis_results2( analysis )
-# 
-# #     week_stock_results( analysis, 5 )
-# 
-# #     week_volume_results( analysis )
-# #     day_results( analysis )
-# 
-# #     analysis.calcWeekend(4)
-# #
-# #     analysis.calcMonday(4)
-# #     analysis.calcFriday(4)		#TODO: fix, downloads future file
-# 
-# #     trading_results( analysis )
-# 
-# #     variance( analysis )
-# 
-#     return 0
-
 
 def run_app( args ):
     ## GUI
-    app = QApplication(sys.argv)
+    app = QApplication( args )
     app.setApplicationName("StockMonitor")
     app.setOrganizationName("arnet")
     ### app.setOrganizationDomain("www.my-org.com")

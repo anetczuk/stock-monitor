@@ -450,16 +450,16 @@ class StockAnalysis(object):
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
-    def calcMonday(self, numOfWeeks=1, accuracy=0.7, lastDay: date=date.today(), outFilePath=None):
+    def calcMonday(self, numOfWeeks=1, lastDay: date=date.today(), outFilePath=None):
         self.logger.info( "Calculating Monday stock" )
-        self._calcDayOfWeek( 0, numOfWeeks, accuracy, lastDay, outFilePath, True )
+        return self._calcDayOfWeek( 0, numOfWeeks, lastDay, outFilePath, True )
 
-    def calcFriday(self, numOfWeeks=1, accuracy=0.7, lastDay: date=date.today(), outFilePath=None):
+    def calcFriday(self, numOfWeeks=1, lastDay: date=date.today(), outFilePath=None):
         self.logger.info( "Calculating Friday stock" )
-        self._calcDayOfWeek( 4, numOfWeeks, accuracy, lastDay, outFilePath, False )
+        return self._calcDayOfWeek( 4, numOfWeeks, lastDay, outFilePath, False )
 
     # pylint: disable=R0914
-    def calcWeekend(self, numOfWeeks=1, accuracy=0.7, lastDay: date=date.today(), outFilePath=None):
+    def calcWeekend(self, numOfWeeks=1, lastDay: date=date.today(), outFilePath=None):
         file = outFilePath
         if file is None:
             file = tmp_dir + "out/weekend_change.csv"
@@ -473,10 +473,9 @@ class StockAnalysis(object):
         writer = csv.writer(open(file, 'w'))
         writer.writerow( ["last monday:", str(lastMonday) ] )
         writer.writerow( ["num of weeks:", numOfWeeks ] )
-        writer.writerow( ["accuracy:", accuracy ] )
         writer.writerow( [] )
 
-        writer.writerow( ["name", "friday val", "monday val", "potential", "accuracy", "link"] )
+        columnsList = ["name", "friday val", "monday val", "potential", "accuracy", "link"]
 
         raiseCounter = CounterDict()
         counterMonday = lastMonday
@@ -507,8 +506,6 @@ class StockAnalysis(object):
 
         for key, val in raiseCounter.counter.items():
             currAccuracy = val / numOfWeeks
-            if currAccuracy < accuracy:
-                continue
 
             prevVal = prevValue[ key ]
             nextVal = nextValue[ key ]
@@ -520,10 +517,15 @@ class StockAnalysis(object):
         ## sort by accuracy, then by potential
         rowsList.sort(key=lambda x: (x[4], x[3]), reverse=True)
 
+        writer.writerow( columnsList )
         for row in rowsList:
             writer.writerow( row )
 
-        self.logger.debug( "Found companies: %s", len(rowsList) )
+        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+
+        self.logger.debug( "Done" )
+
+        return retDataFrame
 
     # pylint: disable=R0914
     def calcVariance(self, fromDay: date, toDay: date, outFilePath=None):
@@ -629,7 +631,7 @@ class StockAnalysis(object):
 
     # ==========================================================================
 
-    def _calcDayOfWeek( self, numOfDay, numOfWeeks=1, accuracy=0.7, lastDay: date=date.today(),
+    def _calcDayOfWeek( self, numOfDay, numOfWeeks=1, lastDay: date=date.today(),
                         outFilePath=None, validDirection=True ):
         # ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         dayName = calendar.day_name[ numOfDay ].lower()
@@ -650,10 +652,9 @@ class StockAnalysis(object):
         writer = csv.writer(open(file, 'w'))
         writer.writerow( ["last " + dayName + ":", str(lastValid) ] )
         writer.writerow( ["num of weeks:", numOfWeeks ] )
-        writer.writerow( ["accuracy:", accuracy ] )
         writer.writerow( [] )
 
-        writer.writerow( ["name", "opening val", "closing val", "potential", "potential avg", "accuracy", "link"] )
+        columnsList = ["name", "opening val", "closing val", "potential", "potential avg", "accuracy", "link"]
 
         raiseCounter: Dict[ str, int ]    = dict()
         potAvg: Dict[ str, List[float] ]  = dict()
@@ -696,8 +697,6 @@ class StockAnalysis(object):
 
         for key, val in raiseCounter.items():
             currAccuracy = val / numOfWeeks
-            if currAccuracy < accuracy:
-                continue
 
             prevVal = prevValue.get( key, 0 )
             nextVal = nextValue.get( key, 0 )
@@ -713,10 +712,15 @@ class StockAnalysis(object):
         ## sort by accuracy, then by potential
         rowsList.sort(key=lambda x: (x[5], x[3]), reverse=True)
 
+        writer.writerow( columnsList )
         for row in rowsList:
             writer.writerow( row )
 
-        self.logger.debug( "Found companies: %s", len(rowsList) )
+        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+
+        self.logger.debug( "Done" )
+
+        return retDataFrame
 
 
 StockAnalysis.logger = _LOGGER.getChild(StockAnalysis.__name__)
