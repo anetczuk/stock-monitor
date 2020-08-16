@@ -20,6 +20,56 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
+      <widget class="QWidget" name="toolsTab">
+       <attribute name="title">
+        <string>Tools</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QTabWidget" name="toolsTabWidget">
+          <widget class="QWidget" name="minmaxTab">
+           <attribute name="title">
+            <string>MinMax</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="MinMaxWidget" name="widget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_2">
+           <attribute name="title">
+            <string>Tab 2</string>
+           </attribute>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="stockTab">
        <attribute name="title">
         <string>Stock</string>
@@ -205,6 +255,12 @@
    <class>NotesWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.noteswidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MinMaxWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.tool.minmaxwidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -49,50 +49,50 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 tmp_dir = script_dir + "/../../tmp/"
 
 
-def crisis_results( analysis ):
-    maxFromDay = datetime.date( 2020, 2, 1 )
-    maxToDay   = datetime.date( 2020, 3, 5 )
-    analysis.loadMax( ArchiveDataType.MAX, maxFromDay, maxToDay)
-
-    minFromDay = datetime.date( 2020, 3, 6 )
-    minToDay   = datetime.date( 2020, 3, 22 )
-    analysis.loadMin( ArchiveDataType.MIN, minFromDay, minToDay)
-
+# def crisis_results( analysis ):
+#     maxFromDay = datetime.date( 2020, 2, 1 )
+#     maxToDay   = datetime.date( 2020, 3, 5 )
+#     analysis.loadMax( ArchiveDataType.MAX, maxFromDay, maxToDay)
+#
+#     minFromDay = datetime.date( 2020, 3, 6 )
+#     minToDay   = datetime.date( 2020, 3, 22 )
+#     analysis.loadMin( ArchiveDataType.MIN, minFromDay, minToDay)
+#
+# #     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
 #     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
-    analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
-
-    analysis.calcBestValue( 0.6, tmp_dir + "out/crisis_stock_value.csv" )
-    analysis.calcBestRaise( 0.1, tmp_dir + "out/crisis_stock_raise.csv" )
-
-
-def crisis_results2( analysis ):
-    recentDay = analysis.getRecentValidDay()
-    fromDay   = datetime.date( 2020, 2, 1 )
-    toDay     = recentDay
-    analysis.loadMax( ArchiveDataType.MAX, fromDay, toDay )
-
-    minFromDay = datetime.date( 2020, 3, 6 )
-    minToDay   = datetime.date( 2020, 3, 22 )
-    analysis.loadMin( ArchiveDataType.MIN, minFromDay, minToDay )
-
-#     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
-    analysis.loadCurr( ArchiveDataType.CLOSING, day=recentDay )
-
-    analysis.calcBestValue( 999990.6, tmp_dir + "out/crisis_full_stock_value.csv" )
-    analysis.calcBestRaise( 999990.1, tmp_dir + "out/crisis_full_stock_raise.csv" )
-
-
-def week_stock_results( analysis, periodLength=8 ):
-    recentDay = analysis.getRecentValidDay()
-    startDay = recentDay - datetime.timedelta(days=periodLength)
-#     endDay = recentDay - datetime.timedelta(days=1)
-
-    analysis.loadMax( ArchiveDataType.MAX, startDay, recentDay)
-    analysis.loadMin( ArchiveDataType.MIN, startDay, recentDay)
-    analysis.loadCurr( ArchiveDataType.CLOSING, day=recentDay )
-
-    analysis.calcBestValue( 999990.8, tmp_dir + "out/week_stock_value.csv" )
-    analysis.calcBestRaise( 999990.2, tmp_dir + "out/week_stock_raise.csv" )
+#
+#     analysis.calcBestValue( 0.6, tmp_dir + "out/crisis_stock_value.csv" )
+#     analysis.calcBestRaise( 0.1, tmp_dir + "out/crisis_stock_raise.csv" )
+#
+#
+# def crisis_results2( analysis ):
+#     recentDay = analysis.getRecentValidDay()
+#     fromDay   = datetime.date( 2020, 2, 1 )
+#     toDay     = recentDay
+#     analysis.loadMax( ArchiveDataType.MAX, fromDay, toDay )
+#
+#     minFromDay = datetime.date( 2020, 3, 6 )
+#     minToDay   = datetime.date( 2020, 3, 22 )
+#     analysis.loadMin( ArchiveDataType.MIN, minFromDay, minToDay )
+#
+# #     analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
+#     analysis.loadCurr( ArchiveDataType.CLOSING, day=recentDay )
+#
+#     analysis.calcBestValue( 999990.6, tmp_dir + "out/crisis_full_stock_value.csv" )
+#     analysis.calcBestRaise( 999990.1, tmp_dir + "out/crisis_full_stock_raise.csv" )
+#
+#
+# def week_stock_results( analysis, periodLength=8 ):
+#     recentDay = analysis.getRecentValidDay()
+#     startDay = recentDay - datetime.timedelta(days=periodLength)
+# #     endDay = recentDay - datetime.timedelta(days=1)
+#
+#     analysis.loadMax( ArchiveDataType.MAX, startDay, recentDay)
+#     analysis.loadMin( ArchiveDataType.MIN, startDay, recentDay)
+#     analysis.loadCurr( ArchiveDataType.CLOSING, day=recentDay )
+#
+#     analysis.calcBestValue( 999990.8, tmp_dir + "out/week_stock_value.csv" )
+#     analysis.calcBestRaise( 999990.2, tmp_dir + "out/week_stock_raise.csv" )
 
 
 def week_volume_results( analysis ):
@@ -131,10 +131,10 @@ def variance( analysis ):
 def calculate_data():
     analysis = StockAnalysis()
 
-    crisis_results( analysis )
-    crisis_results2( analysis )
+#     crisis_results( analysis )
+#     crisis_results2( analysis )
 
-    week_stock_results( analysis, 5 )
+#     week_stock_results( analysis, 5 )
 
     week_volume_results( analysis )
     day_results( analysis )

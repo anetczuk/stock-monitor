@@ -30,6 +30,7 @@ import calendar
 from typing import Dict, List
 
 import csv
+import pandas
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType
 from stockmonitor.dataaccess.gpwdata import GpwArchiveData
@@ -263,6 +264,51 @@ class StockAnalysis(object):
             writer.writerow( row )
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
+
+    def calcPotentials(self, outFilePath=None):
+        self.logger.info( "Calculating potential" )
+
+        if outFilePath is None:
+            outFilePath = tmp_dir + "out/output_potentials.csv"
+        dirPath = os.path.dirname( outFilePath )
+        os.makedirs( dirPath, exist_ok=True )
+
+        writer = csv.writer(open(outFilePath, 'w'))
+        writer.writerow( ["min period:", dates_to_string(self.minDate) ] )
+        writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
+        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
+        writer.writerow( ["potential:", "(max - curr) / max"] )
+        writer.writerow( ["relative:", "(max - curr) / (max - min)"] )
+        writer.writerow( [] )
+
+        columnsList = ["name", "min val", "max val", "curr val", "trading[k]", "potential", "relative", "link"]
+        rowsList = []
+
+        currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+
+        for key, currVal in self.currValue.items():
+            maxVal = self.maxValue.get( key )
+            if maxVal is None or maxVal == 0:
+                ## new stock, ignore
+                continue
+            minVal = self.minValue[ key ]
+            tradingVal = currTrading[ key ]
+            raiseVal = maxVal - currVal
+            potVal = raiseVal / maxVal
+            stockDiff = maxVal - minVal
+            relVal = raiseVal / stockDiff
+            moneyLink = self.getMoneyPlLink( key )
+            rowsList.append( [key, minVal, maxVal, currVal, tradingVal, potVal, relVal, moneyLink] )
+
+        writer.writerow( columnsList )
+        for row in rowsList:
+            writer.writerow( row )
+
+        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+
+        self.logger.debug( "Done" )
+
+        return retDataFrame
 
     # pylint: disable=R0914
     def calcBestRaise(self, level, outFilePath=None):

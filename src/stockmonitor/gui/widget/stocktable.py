@@ -92,7 +92,12 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
         table.setRowCount( colsNum )
 
         for i in range(0, colsNum):
-            headerText  = headerValues[i][0]
+            headerVal  = headerValues[i]
+            headerText = ""
+            if isinstance(headerVal, tuple):
+                headerText = headerVal[0]
+            else:
+                headerText = headerVal
             dataExample = None
             if rowsNum > 0:
                 dataExample = rawData.iloc[0, i]
@@ -278,7 +283,9 @@ class PandasModel( QAbstractTableModel ):
             if headerValue is not None:
                 return headerValue
             colName = self._rawData.columns[section]
-            return colName[0]
+            if isinstance(colName, tuple):
+                return colName[0]
+            return colName
         return None
 
     def setHeaderData(self, section, orientation, value, _=Qt.DisplayRole):
