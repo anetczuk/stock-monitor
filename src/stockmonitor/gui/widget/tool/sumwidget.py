@@ -92,5 +92,4 @@ class SumWidget(QtBaseClass):           # type: ignore
 
     def openResults(self):
         url = QUrl.fromLocalFile( self.recentOutput )
-        print("opening:", url)
         QDesktopServices.openUrl( url )
