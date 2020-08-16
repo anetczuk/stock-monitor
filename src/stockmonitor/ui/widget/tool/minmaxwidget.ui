@@ -58,7 +58,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Compare:</string>
+        <string>Compare value:</string>
        </property>
       </widget>
      </item>
@@ -96,7 +96,7 @@
      <item row="1" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QComboBox" name="compareCB"/>
+        <widget class="QComboBox" name="fieldCB"/>
        </item>
        <item>
         <spacer name="horizontalSpacer_2">

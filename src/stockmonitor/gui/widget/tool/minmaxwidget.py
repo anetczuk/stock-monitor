@@ -59,7 +59,7 @@ class MinMaxWidget(QtBaseClass):           # type: ignore
         self.ui.openPB.setEnabled( False )
 
         for value in CompareDataType:
-            self.ui.compareCB.addItem( value.name, value )
+            self.ui.fieldCB.addItem( value.name, value )
 
         self.ui.calculatePB.clicked.connect( self.calculate )
         self.ui.openPB.clicked.connect( self.openResults )
@@ -69,22 +69,22 @@ class MinMaxWidget(QtBaseClass):           # type: ignore
         toDate   = self.ui.toDE.date().toPyDate()
 
         analysis = StockAnalysis()
-        compareIndex = self.ui.compareCB.currentIndex()
-        compareValue = self.ui.compareCB.itemData( compareIndex )
-        
-        if compareValue == CompareDataType.VALUE:
+        fieldIndex = self.ui.fieldCB.currentIndex()
+        fieldValue = self.ui.fieldCB.itemData( fieldIndex )
+
+        if fieldValue == CompareDataType.VALUE:
             analysis.loadMin( ArchiveDataType.MIN, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.MAX, fromDate, toDate )
             analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
-        elif compareValue == CompareDataType.VOLUME:
+        elif fieldValue == CompareDataType.VOLUME:
             analysis.loadMin( ArchiveDataType.VOLUME, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.VOLUME, fromDate, toDate )
             analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
-        elif compareValue == CompareDataType.TRADING:
+        elif fieldValue == CompareDataType.TRADING:
             analysis.loadMin( ArchiveDataType.TRADING, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.TRADING, fromDate, toDate )
             analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
-        elif compareValue == CompareDataType.TRANSACTIONS:
+        elif fieldValue == CompareDataType.TRANSACTIONS:
             analysis.loadMin( ArchiveDataType.TRANSACTIONS, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.TRANSACTIONS, fromDate, toDate )
             analysis.loadCurr( ArchiveDataType.TRANSACTIONS, offset=-1 )

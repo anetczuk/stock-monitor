@@ -57,26 +57,10 @@ app = QApplication(sys.argv)
 app.setApplicationName("StockMonitor")
 app.setOrganizationName("arnet")
 
-# dataframe = DataFrame({'a': ['Mary', 'Jim', 'John'],
-#                        'b': [100, 200, 300],
-#                        'c': ['a', 'b', 'c']})
-
-# dataAccess = GpwCurrentData()
-# dataPath = data.get_data_path( "akcje_2020-04-14_15-50.xls" )
-# dataframe = dataAccess.getWorksheetFromFile( dataPath )
-
-# csvPath = data.get_data_root_path() + "/akcje_2020-04-14_15-50.csv"
-# dataframe.to_csv( csvPath, encoding='utf-8', index=False )
-
 setup_interrupt_handling()
 
 widget = MinMaxWidget()
-# widget.tableSettings.setColumnVisible(0, False)
-# widget.tableSettings.setHeaderText(1, "changed header")
-# widget.setData( dataframe )
 widget.resize( 1024, 768 )
 widget.show()
-
-# widget.showColumnsConfiguration()
 
 sys.exit( app.exec_() )
