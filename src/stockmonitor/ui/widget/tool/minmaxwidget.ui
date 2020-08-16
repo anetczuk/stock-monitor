@@ -96,28 +96,7 @@
      <item row="1" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QComboBox" name="compareCB">
-         <item>
-          <property name="text">
-           <string>Value</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Volume</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Trading</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Transactions</string>
-          </property>
-         </item>
-        </widget>
+        <widget class="QComboBox" name="compareCB"/>
        </item>
        <item>
         <spacer name="horizontalSpacer_2">

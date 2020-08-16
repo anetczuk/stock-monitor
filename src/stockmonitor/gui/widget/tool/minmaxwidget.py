@@ -30,7 +30,7 @@ from PyQt5.QtGui import QDesktopServices
 
 from stockmonitor.dataaccess import stockdata
 from stockmonitor.dataaccess.stockdata import StockAnalysis
-from stockmonitor.dataaccess.datatype import ArchiveDataType
+from stockmonitor.dataaccess.datatype import ArchiveDataType, CompareDataType
 
 from ... import uiloader
 
@@ -58,6 +58,9 @@ class MinMaxWidget(QtBaseClass):           # type: ignore
 
         self.ui.openPB.setEnabled( False )
 
+        for value in CompareDataType:
+            self.ui.compareCB.addItem( value.name, value )
+
         self.ui.calculatePB.clicked.connect( self.calculate )
         self.ui.openPB.clicked.connect( self.openResults )
 
@@ -66,20 +69,22 @@ class MinMaxWidget(QtBaseClass):           # type: ignore
         toDate   = self.ui.toDE.date().toPyDate()
 
         analysis = StockAnalysis()
-        compareVal = self.ui.compareCB.currentIndex()
-        if compareVal == 0:
+        compareIndex = self.ui.compareCB.currentIndex()
+        compareValue = self.ui.compareCB.itemData( compareIndex )
+        
+        if compareValue == CompareDataType.VALUE:
             analysis.loadMin( ArchiveDataType.MIN, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.MAX, fromDate, toDate )
             analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
-        elif compareVal == 1:
+        elif compareValue == CompareDataType.VOLUME:
             analysis.loadMin( ArchiveDataType.VOLUME, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.VOLUME, fromDate, toDate )
             analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
-        elif compareVal == 2:
+        elif compareValue == CompareDataType.TRADING:
             analysis.loadMin( ArchiveDataType.TRADING, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.TRADING, fromDate, toDate )
             analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
-        elif compareVal == 3:
+        elif compareValue == CompareDataType.TRANSACTIONS:
             analysis.loadMin( ArchiveDataType.TRANSACTIONS, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.TRANSACTIONS, fromDate, toDate )
             analysis.loadCurr( ArchiveDataType.TRANSACTIONS, offset=-1 )
