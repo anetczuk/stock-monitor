@@ -109,13 +109,13 @@
     </widget>
    </item>
    <item>
-    <widget class="StockTable" name="stockTable"/>
+    <widget class="ToolStockTable" name="stockTable"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>StockTable</class>
+   <class>ToolStockTable</class>
    <extends>QTableView</extends>
    <header>stockmonitor.gui.widget.stocktable</header>
   </customwidget>

@@ -238,6 +238,17 @@ class GpwCurrentData:
             return None
         return self.getShortFieldFromData( dataFrame, rowIndex )
 
+    def getShortFieldByName(self, stockName):
+        dataFrame = self.getWorksheet()
+        if dataFrame is None:
+            return None
+        nameIndex = self.getColumnIndex( CurrentDataType.NAME )
+        shortIndex = self.getColumnIndex( CurrentDataType.SHORT )
+        retRows = dataFrame.loc[ dataFrame.iloc[:, nameIndex] == stockName ]
+        if retRows.shape[0] > 0:
+            return retRows.iloc[0, shortIndex]
+        return None
+
     def getShortFieldFromData(self, dataFrame: DataFrame, rowIndex: int):
         colIndex = self.getColumnIndex( CurrentDataType.SHORT )
         if colIndex is None:

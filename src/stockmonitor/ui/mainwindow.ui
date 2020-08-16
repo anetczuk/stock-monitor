@@ -40,7 +40,7 @@
         <item>
          <widget class="QTabWidget" name="toolsTabWidget">
           <property name="currentIndex">
-           <number>3</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="minmaxTab">
            <attribute name="title">

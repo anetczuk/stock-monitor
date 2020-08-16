@@ -199,14 +199,17 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
         self.adjustSize()
 
     def updateColumnsCombo(self):
-        keyColumn = self.parentTable.model().filterKeyColumn()
+        tableModel = self.parentTable.model()
+        keyColumn = tableModel.filterKeyColumn()
         newIndex = 0
         self.ui.columnCB.clear()
         self.ui.columnCB.addItem( "None", -1 )
-        for col, text in self.parentTable.headersText.items():
+        colsNum = tableModel.columnCount()
+        for col in range(colsNum):
+            text = tableModel.headerData(col, Qt.Horizontal)
             if col == keyColumn:
                 newIndex = self.ui.columnCB.count()
-            if self.parentTable.columnsVisible[col]:
+            if self.parentTable.isColumnHidden(col) is False:
                 self.ui.columnCB.addItem( str(col) + " " + text, col )
         self.ui.columnCB.setCurrentIndex( newIndex )
 
@@ -543,7 +546,7 @@ class StockFullTable( StockTable ):
 
         favsActions = []
         if self.dataObject is not None:
-            favSubMenu          = contextMenu.addMenu("Add to favs")
+            favSubMenu    = contextMenu.addMenu("Add to favs")
             favGroupsList = self.dataObject.favs.favGroupsList()
             if not favGroupsList:
                 favSubMenu.setEnabled( False )
@@ -678,3 +681,79 @@ class StockFavsTable( StockTable ):
 
     def settingsRejected(self):
         self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
+
+
+## ====================================================================
+
+
+class ToolStockTable( StockTable ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.setObjectName("toolstocktable")
+        self.dataObject = None
+
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+
+    def contextMenuEvent( self, _ ):
+        contextMenu         = QMenu(self)
+        stockInfoAction = contextMenu.addAction("Stock info")
+
+        favsActions = []
+        if self.dataObject is not None:
+            favSubMenu    = contextMenu.addMenu("Add to favs")
+            favGroupsList = self.dataObject.favs.favGroupsList()
+            if not favGroupsList:
+                favSubMenu.setEnabled( False )
+            else:
+                for favGroup in favGroupsList:
+                    favAction = favSubMenu.addAction( favGroup )
+                    favAction.setData( favGroup )
+                    favsActions.append( favAction )
+
+        contextMenu.addSeparator()
+
+        filterDataAction = contextMenu.addAction("Filter data")
+        configColumnsAction = contextMenu.addAction("Configure columns")
+        if self._rawData is None:
+            configColumnsAction.setEnabled( False )
+
+        globalPos = QCursor.pos()
+        action = contextMenu.exec_( globalPos )
+
+        if action == configColumnsAction:
+            self.showColumnsConfiguration()
+        elif action == filterDataAction:
+            self.showFilterConfiguration()
+        elif action in favsActions:
+            favGroup = action.data()
+            self._addToFav( favGroup )
+        elif action == stockInfoAction:
+            self._openInfo()
+
+    def _addToFav(self, favGrp):
+        favList = self._getSelectedCodes()
+        self.dataObject.addFav( favGrp, favList )
+
+    def _openInfo(self):
+        dataAccess = self.dataObject.currentStockData
+        favList = self._getSelectedCodes()
+        for code in favList:
+            infoLink = dataAccess.getInfoLinkFromCode( code )
+            QDesktopServices.openUrl( QtCore.QUrl(infoLink) )
+
+    def _getSelectedCodes(self):
+        dataAccess = self.dataObject.currentStockData
+        selection = self.selectionModel()
+        indexes = selection.selectedIndexes()
+        favCodes = set()
+        for ind in indexes:
+            sourceIndex = self.model().mapToSource( ind )
+            dataRow = sourceIndex.row()
+            stockName = self._rawData.iloc[dataRow, 0]
+            code = dataAccess.getShortFieldByName( stockName )
+            if code is not None:
+                favCodes.add( code )
+        favList = list(favCodes)
+        return favList

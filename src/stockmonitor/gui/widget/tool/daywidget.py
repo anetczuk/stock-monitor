@@ -71,6 +71,9 @@ class DayWidget(QtBaseClass):           # type: ignore
         self.ui.calculatePB.clicked.connect( self.calculate )
         self.ui.openPB.clicked.connect( self.openResults )
 
+    def connectData(self, dataObject):
+        self.ui.stockTable.connectData( dataObject )
+
     def calculate(self):
         weeksNum   = self.ui.numWeeksSB.value()
         fieldIndex = self.ui.fieldCB.currentIndex()
