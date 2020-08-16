@@ -211,7 +211,7 @@ class StockAnalysis(object):
     def calcGreatestSum(self, outFilePath=None):
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_raise.csv"
+            file = tmp_dir + "out/output_sum.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -219,13 +219,17 @@ class StockAnalysis(object):
         writer.writerow( ["reference period:", dates_to_string(self.sumDate) ] )
         writer.writerow( [] )
 
-        writer.writerow( ["name", "trading [kPLN]", "link"] )
+        columnsList = ["name", "val sum", "trading[k]", "link"]
+        writer.writerow( columnsList )
 
         rowsList = []
 
+        currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+
         for key, val in self.sumValue.items():
+            tradingVal = currTrading[ key ]
             moneyLink = self.getMoneyPlLink( key )
-            rowsList.append( [key, val, moneyLink] )
+            rowsList.append( [key, val, tradingVal, moneyLink] )
 
         ## sort by trading
         rowsList.sort(key=lambda x: x[1], reverse=True)
@@ -233,7 +237,11 @@ class StockAnalysis(object):
         for row in rowsList:
             writer.writerow( row )
 
-        self.logger.debug( "Found companies: %s", len(rowsList) )
+        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+
+        self.logger.debug( "Done" )
+
+        return retDataFrame
 
     def calcGreater(self, level, outFilePath=None):
         file = outFilePath

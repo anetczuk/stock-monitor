@@ -39,6 +39,9 @@
         </property>
         <item>
          <widget class="QTabWidget" name="toolsTabWidget">
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
           <widget class="QWidget" name="minmaxTab">
            <attribute name="title">
             <string>MinMax</string>
@@ -57,14 +60,31 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="MinMaxWidget" name="widget" native="true"/>
+             <widget class="MinMaxWidget" name="minmaxwidget" native="true"/>
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_2">
+          <widget class="QWidget" name="sumTab">
            <attribute name="title">
-            <string>Tab 2</string>
+            <string>Sum</string>
            </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="SumWidget" name="sumwidget" native="true"/>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>
@@ -261,6 +281,12 @@
    <class>MinMaxWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.tool.minmaxwidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SumWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.tool.sumwidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

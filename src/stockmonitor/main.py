@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
 
-from stockmonitor.dataaccess.datatype import ArchiveDataType
+# from stockmonitor.dataaccess.datatype import ArchiveDataType
 from stockmonitor.dataaccess.stockdata import StockAnalysis
 
 from stockmonitor.gui.mainwindow import MainWindow
@@ -93,33 +93,33 @@ tmp_dir = script_dir + "/../../tmp/"
 #
 #     analysis.calcBestValue( 999990.8, tmp_dir + "out/week_stock_value.csv" )
 #     analysis.calcBestRaise( 999990.2, tmp_dir + "out/week_stock_raise.csv" )
-# 
-# 
+#
+#
 # def week_volume_results( analysis ):
 #     recentDay = analysis.getRecentValidDay()
 #     startDay = recentDay - datetime.timedelta(days=8)
 # #     endDay = recentDay - datetime.timedelta(days=1)
-# 
+#
 #     analysis.loadMax( ArchiveDataType.VOLUME, startDay, recentDay)
-# 
+#
 #     analysis.loadCurr( ArchiveDataType.VOLUME, day=recentDay )
-# 
+#
 #     analysis.calcBiggestRaise( 0.01, tmp_dir + "out/week_stock_volume.csv" )
-# 
-# 
+#
+#
 # def day_results( analysis ):
 #     analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
 #     analysis.calcGreater( 100000, tmp_dir + "out/day_stock_volume.csv" )
-# 
+#
 #     analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
 #     analysis.calcGreater( 30000, tmp_dir + "out/day_stock_trading.csv" )
-
-
-def trading_results( analysis ):
-    recentDay = analysis.getRecentValidDay( checkGiven=True )
-    startDay = recentDay - datetime.timedelta(days=6)
-    analysis.loadSum( ArchiveDataType.TRADING, startDay, recentDay)
-    analysis.calcGreatestSum( tmp_dir + "out/week_stock_trading.csv" )
+#
+#
+# def trading_results( analysis ):
+#     recentDay = analysis.getRecentValidDay( checkGiven=True )
+#     startDay = recentDay - datetime.timedelta(days=6)
+#     analysis.loadSum( ArchiveDataType.TRADING, startDay, recentDay)
+#     analysis.calcGreatestSum( tmp_dir + "out/week_stock_trading.csv" )
 
 
 def variance( analysis ):
@@ -144,7 +144,7 @@ def calculate_data():
 #     analysis.calcMonday(4)
 #     analysis.calcFriday(4)		#TODO: fix, downloads future file
 
-    trading_results( analysis )
+#     trading_results( analysis )
 
     variance( analysis )
 
