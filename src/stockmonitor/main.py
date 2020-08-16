@@ -93,26 +93,26 @@ tmp_dir = script_dir + "/../../tmp/"
 #
 #     analysis.calcBestValue( 999990.8, tmp_dir + "out/week_stock_value.csv" )
 #     analysis.calcBestRaise( 999990.2, tmp_dir + "out/week_stock_raise.csv" )
-
-
-def week_volume_results( analysis ):
-    recentDay = analysis.getRecentValidDay()
-    startDay = recentDay - datetime.timedelta(days=8)
-#     endDay = recentDay - datetime.timedelta(days=1)
-
-    analysis.loadMax( ArchiveDataType.VOLUME, startDay, recentDay)
-
-    analysis.loadCurr( ArchiveDataType.VOLUME, day=recentDay )
-
-    analysis.calcBiggestRaise( 0.01, tmp_dir + "out/week_stock_volume.csv" )
-
-
-def day_results( analysis ):
-    analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
-    analysis.calcGreater( 100000, tmp_dir + "out/day_stock_volume.csv" )
-
-    analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
-    analysis.calcGreater( 30000, tmp_dir + "out/day_stock_trading.csv" )
+# 
+# 
+# def week_volume_results( analysis ):
+#     recentDay = analysis.getRecentValidDay()
+#     startDay = recentDay - datetime.timedelta(days=8)
+# #     endDay = recentDay - datetime.timedelta(days=1)
+# 
+#     analysis.loadMax( ArchiveDataType.VOLUME, startDay, recentDay)
+# 
+#     analysis.loadCurr( ArchiveDataType.VOLUME, day=recentDay )
+# 
+#     analysis.calcBiggestRaise( 0.01, tmp_dir + "out/week_stock_volume.csv" )
+# 
+# 
+# def day_results( analysis ):
+#     analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
+#     analysis.calcGreater( 100000, tmp_dir + "out/day_stock_volume.csv" )
+# 
+#     analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
+#     analysis.calcGreater( 30000, tmp_dir + "out/day_stock_trading.csv" )
 
 
 def trading_results( analysis ):
@@ -136,8 +136,8 @@ def calculate_data():
 
 #     week_stock_results( analysis, 5 )
 
-    week_volume_results( analysis )
-    day_results( analysis )
+#     week_volume_results( analysis )
+#     day_results( analysis )
 
 #     analysis.calcWeekend(4)
 #

@@ -276,12 +276,12 @@ class StockAnalysis(object):
         writer = csv.writer(open(outFilePath, 'w'))
         writer.writerow( ["min period:", dates_to_string(self.minDate) ] )
         writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
-        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
+        writer.writerow( ["recent val date:", dates_to_string(self.currDate) ] )
         writer.writerow( ["potential:", "(max - curr) / max"] )
-        writer.writerow( ["relative:", "(max - curr) / (max - min)"] )
+        writer.writerow( ["relative:",  "(max - curr) / (max - min)"] )
         writer.writerow( [] )
 
-        columnsList = ["name", "min val", "max val", "curr val", "trading[k]", "potential", "relative", "link"]
+        columnsList = ["name", "min val", "max val", "recent val", "trading[k]", "potential", "relative", "link"]
         rowsList = []
 
         currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
@@ -296,7 +296,9 @@ class StockAnalysis(object):
             raiseVal = maxVal - currVal
             potVal = raiseVal / maxVal
             stockDiff = maxVal - minVal
-            relVal = raiseVal / stockDiff
+            relVal = 0
+            if stockDiff != 0:
+                relVal = raiseVal / stockDiff
             moneyLink = self.getMoneyPlLink( key )
             rowsList.append( [key, minVal, maxVal, currVal, tradingVal, potVal, relVal, moneyLink] )
 
