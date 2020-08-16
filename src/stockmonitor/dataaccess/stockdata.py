@@ -220,7 +220,6 @@ class StockAnalysis(object):
         writer.writerow( [] )
 
         columnsList = ["name", "val sum", "trading[k]", "link"]
-        writer.writerow( columnsList )
 
         rowsList = []
 
@@ -234,6 +233,7 @@ class StockAnalysis(object):
         ## sort by trading
         rowsList.sort(key=lambda x: x[1], reverse=True)
 
+        writer.writerow( columnsList )
         for row in rowsList:
             writer.writerow( row )
 
@@ -580,12 +580,12 @@ class StockAnalysis(object):
         os.makedirs( dirPath, exist_ok=True )
 
         writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", dates_to_string(self.sumDate) ] )
-        writer.writerow( ["formula:", ("|maxVal - max(open, close)| / max(open, close) + "
-                                       "|minVal - min(open, close)| / min(open, close)") ] )
+        writer.writerow( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
+        writer.writerow( ["variance:", ("|maxVal - max(open, close)| / max(open, close) + "
+                                        "|minVal - min(open, close)| / min(open, close)") ] )
         writer.writerow( [] )
 
-        writer.writerow( ["name", "variance", "trading [kPLN]", "link"] )
+        columnsList = ["name", "variance", "trading [kPLN]", "link"]
 
         rowsList = []
 
@@ -597,10 +597,15 @@ class StockAnalysis(object):
         ## sort by variance
         rowsList.sort(key=lambda x: x[1], reverse=True)
 
+        writer.writerow( columnsList )
         for row in rowsList:
             writer.writerow( row )
 
-        self.logger.debug( "Found companies: %s", len(rowsList) )
+        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+
+        self.logger.debug( "Done" )
+
+        return retDataFrame
 
     # ==========================================================================
 
