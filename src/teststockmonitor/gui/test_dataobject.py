@@ -35,6 +35,14 @@ class DataObjectTest(unittest.TestCase):
         ## Called after testfunction was executed
         pass
 
+    def test_addFavGroup(self):
+        dataobject = DataObject()
+        self.assertEqual( dataobject.undoStack.count(), 0 )
+        dataobject.addFavGroup("xxx")
+        self.assertEqual( dataobject.undoStack.count(), 1 )
+        dataobject.addFavGroup("xxx")
+        self.assertEqual( dataobject.undoStack.count(), 1 )
+        
     def test_renameFavGrp(self):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
@@ -56,3 +64,31 @@ class DataObjectTest(unittest.TestCase):
 
         dataobject.deleteFavGroup("xxx")
         self.assertEqual( len(dataobject.favs.favs), 0 )
+
+    def test_deleteFavGrp_duplicates(self):
+        dataobject = DataObject()
+        dataobject.addFavGroup("xxx")
+        dataobject.addFavGroup("xxx")
+        self.assertEqual( len(dataobject.favs.favs), 1 )
+
+        dataobject.deleteFavGroup("xxx")
+        self.assertEqual( len(dataobject.favs.favs), 0 )
+
+    def test_addFav_duplicates(self):
+        dataobject = DataObject()
+        dataobject.addFavGroup("xxx")
+        self.assertEqual( len(dataobject.favs.favs), 1 )
+        
+        dataobject.addFav("xxx", "aaa")
+        self.assertEqual( dataobject.undoStack.count(), 2 )
+        
+        dataobject.addFav("xxx", "aaa")
+        self.assertEqual( dataobject.undoStack.count(), 2 )
+
+    def test_addFav_duplicates_list(self):
+        dataobject = DataObject()
+        dataobject.addFav( "xxx", "aaa" )
+        self.assertEqual( dataobject.undoStack.count(), 1 )
+        
+        dataobject.addFav( "xxx", ["aaa", "bbb"] )
+        self.assertEqual( dataobject.undoStack.count(), 2 )

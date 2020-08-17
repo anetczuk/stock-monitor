@@ -71,6 +71,10 @@ class FavData( persist.Versionable ):
         # pylint: disable=W0201
         self.__dict__ = dict_
 
+    def containsGroup(self, group):
+        found = self.getFavs( group )
+        return found is not None
+
     def favGroupsList(self):
         return self.favs.keys()
 
@@ -95,7 +99,8 @@ class FavData( persist.Versionable ):
     def addFav(self, group, items):
         itemsList = list( items )
         self.addFavGroup( group )
-        self.favs[group] = self.favs[group] + itemsList
+        newSet = set( self.favs[group] + itemsList )
+        self.favs[group] = list( newSet )
 
     def deleteFav(self, group, items):
         _LOGGER.info( "Removing favs: %s from group %s", items, group )
@@ -189,24 +194,26 @@ class DataObject( QObject ):
         self.setCurrentStockHeaders( headers )
 
     @property
-    def favs(self):
+    def favs(self) -> FavData:
         return self.dataContainer.favs
 
     @favs.setter
-    def favs(self, newData):
+    def favs(self, newData: FavData):
         self.dataContainer.favs = newData
 
     @property
-    def notes(self):
+    def notes(self) -> Dict[str, str]:
         return self.dataContainer.notes
 
     @notes.setter
-    def notes(self, newData):
+    def notes(self, newData: Dict[str, str]):
         self.dataContainer.notes = newData
 
     ## ======================================================================
 
     def addFavGroup(self, name):
+        if self.favs.containsGroup( name ):
+            return
         self.undoStack.push( AddFavGroupCommand( self, name ) )
 
     def renameFavGroup(self, fromName, toName):
@@ -216,8 +223,16 @@ class DataObject( QObject ):
         self.undoStack.push( DeleteFavGroupCommand( self, name ) )
 
     def addFav(self, group, favItem):
+        favsList = self.favs.getFavs( group )
+        if favsList is None:
+            favsList = list()
+        favsSet = set( favsList )
         itemsList = list( favItem )
-        self.undoStack.push( AddFavCommand( self, group, itemsList ) )
+        itemsSet = set( itemsList )
+        diffSet = itemsSet - favsSet
+        if len(diffSet) < 1:
+            return
+        self.undoStack.push( AddFavCommand( self, group, diffSet ) )
 
     def deleteFav(self, group, favItem):
         itemsList = list( favItem )
