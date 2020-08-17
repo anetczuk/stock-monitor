@@ -24,6 +24,7 @@
 import logging
 
 from PyQt5.QtWidgets import QUndoCommand
+from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,12 +40,17 @@ class AddFavCommand( QUndoCommand ):
         self.newName = newName
         self.newItems = newItems
 
-        self.setText( "Add Fav: " + str(newItems) )
+        if self.favsObj.containsGroup( newName ) is False:
+            AddFavGroupCommand( dataObject, newName, self )
+
+        self.setText( "Add Fav: " + str(newItems) + " to Group: " + str(newName) )
 
     def redo(self):
+        super().redo()
         self.favsObj.addFav( self.newName, self.newItems )
         self.dataObject.favsAdded.emit( self.newName )
 
     def undo(self):
         self.favsObj.deleteFav( self.newName, self.newItems )
         self.dataObject.favsRemoved.emit( self.newName )
+        super().undo()

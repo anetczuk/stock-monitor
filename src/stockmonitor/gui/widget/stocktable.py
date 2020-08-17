@@ -25,7 +25,7 @@ import logging
 import copy
 import re
 
-from typing import Dict
+from typing import Dict, List
 
 from pandas import DataFrame
 
@@ -34,7 +34,8 @@ from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtWidgets import QTableView, QTableWidgetItem
-from PyQt5.QtWidgets import QMenu
+from PyQt5.QtWidgets import QMenu, QInputDialog
+from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QDesktopServices
 
@@ -519,7 +520,7 @@ class StockTable( QTableView ):
 ## ====================================================================
 
 
-class StockFullTable( StockTable ):
+class DataStockTable( StockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -527,35 +528,11 @@ class StockFullTable( StockTable ):
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
-        self.dataObject.stockDataChanged.connect( self.updateData )
-        self.dataObject.stockHeadersChanged.connect( self.updateView )
-        self.updateData()
-        self.updateView()
-
-    def updateData(self):
-        dataAccess = self.dataObject.currentStockData
-        dataframe = dataAccess.getWorksheet( False )
-        self.setData( dataframe )
-
-    def updateView(self):
-        self.setHeadersText( self.dataObject.currentStockHeaders )
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
         stockInfoAction = contextMenu.addAction("Stock info")
-
-        favsActions = []
-        if self.dataObject is not None:
-            favSubMenu    = contextMenu.addMenu("Add to favs")
-            favGroupsList = self.dataObject.favs.favGroupsList()
-            if not favGroupsList:
-                favSubMenu.setEnabled( False )
-            else:
-                for favGroup in favGroupsList:
-                    favAction = favSubMenu.addAction( favGroup )
-                    favAction.setData( favGroup )
-                    favsActions.append( favAction )
-
+        favsActions = self._addFavActions( contextMenu )
         contextMenu.addSeparator()
 
         filterDataAction = contextMenu.addAction("Filter data")
@@ -576,7 +553,32 @@ class StockFullTable( StockTable ):
         elif action == stockInfoAction:
             self._openInfo()
 
+    def _addFavActions(self, contextMenu):
+        favsActions = []
+        if self.dataObject is not None:
+            favSubMenu    = contextMenu.addMenu("Add to favs")
+            favGroupsList = self.dataObject.favs.favGroupsList()
+            for favGroup in favGroupsList:
+                favAction = favSubMenu.addAction( favGroup )
+                favAction.setData( favGroup )
+                favsActions.append( favAction )
+            newFavGroupAction = favSubMenu.addAction( "New group ..." )
+            newFavGroupAction.setData( None )
+            favsActions.append( newFavGroupAction )
+        return favsActions
+
     def _addToFav(self, favGrp):
+        if favGrp is None:
+            newText, ok = QInputDialog.getText( self,
+                                                "Rename Fav Group",
+                                                "Fav Group name:",
+                                                QLineEdit.Normal,
+                                                "Favs" )
+            if ok and newText:
+                # not empty
+                favGrp = newText
+            else:
+                return
         favList = self._getSelectedCodes()
         self.dataObject.addFav( favGrp, favList )
 
@@ -586,6 +588,36 @@ class StockFullTable( StockTable ):
         for code in favList:
             infoLink = dataAccess.getInfoLinkFromCode( code )
             QDesktopServices.openUrl( QtCore.QUrl(infoLink) )
+
+    def _getSelectedCodes(self) -> List[str]:
+        ## reimplement if needed
+        return list()
+
+
+## ====================================================================
+
+
+class StockFullTable( DataStockTable ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.setObjectName("stockfulltable")
+
+    def connectData(self, dataObject):
+        super().connectData( dataObject )
+        self.dataObject = dataObject
+        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.dataObject.stockHeadersChanged.connect( self.updateView )
+        self.updateData()
+        self.updateView()
+
+    def updateData(self):
+        dataAccess = self.dataObject.currentStockData
+        dataframe = dataAccess.getWorksheet( False )
+        self.setData( dataframe )
+
+    def updateView(self):
+        self.setHeadersText( self.dataObject.currentStockHeaders )
 
     def _getSelectedCodes(self):
         dataAccess = self.dataObject.currentStockData
@@ -686,62 +718,11 @@ class StockFavsTable( StockTable ):
 ## ====================================================================
 
 
-class ToolStockTable( StockTable ):
+class ToolStockTable( DataStockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.setObjectName("toolstocktable")
-        self.dataObject = None
-
-    def connectData(self, dataObject):
-        self.dataObject = dataObject
-
-    def contextMenuEvent( self, _ ):
-        contextMenu         = QMenu(self)
-        stockInfoAction = contextMenu.addAction("Stock info")
-
-        favsActions = []
-        if self.dataObject is not None:
-            favSubMenu    = contextMenu.addMenu("Add to favs")
-            favGroupsList = self.dataObject.favs.favGroupsList()
-            if not favGroupsList:
-                favSubMenu.setEnabled( False )
-            else:
-                for favGroup in favGroupsList:
-                    favAction = favSubMenu.addAction( favGroup )
-                    favAction.setData( favGroup )
-                    favsActions.append( favAction )
-
-        contextMenu.addSeparator()
-
-        filterDataAction = contextMenu.addAction("Filter data")
-        configColumnsAction = contextMenu.addAction("Configure columns")
-        if self._rawData is None:
-            configColumnsAction.setEnabled( False )
-
-        globalPos = QCursor.pos()
-        action = contextMenu.exec_( globalPos )
-
-        if action == configColumnsAction:
-            self.showColumnsConfiguration()
-        elif action == filterDataAction:
-            self.showFilterConfiguration()
-        elif action in favsActions:
-            favGroup = action.data()
-            self._addToFav( favGroup )
-        elif action == stockInfoAction:
-            self._openInfo()
-
-    def _addToFav(self, favGrp):
-        favList = self._getSelectedCodes()
-        self.dataObject.addFav( favGrp, favList )
-
-    def _openInfo(self):
-        dataAccess = self.dataObject.currentStockData
-        favList = self._getSelectedCodes()
-        for code in favList:
-            infoLink = dataAccess.getInfoLinkFromCode( code )
-            QDesktopServices.openUrl( QtCore.QUrl(infoLink) )
 
     def _getSelectedCodes(self):
         dataAccess = self.dataObject.currentStockData
