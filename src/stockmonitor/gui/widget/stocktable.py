@@ -27,10 +27,11 @@ import re
 
 from typing import Dict, List
 
+from urllib.parse import urlparse
 from pandas import DataFrame
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QModelIndex
+from PyQt5.QtCore import Qt, QModelIndex, QUrl
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtWidgets import QTableView, QTableWidgetItem
@@ -301,10 +302,19 @@ class PandasModel( QAbstractTableModel ):
         if not index.isValid():
             return None
         if role == Qt.DisplayRole:
-            return str(self._rawData.iloc[index.row(), index.column()])
+            rawData = self._rawData.iloc[index.row(), index.column()]
+            strData = str(rawData)
+            return strData
         if role == Qt.TextAlignmentRole:
             return Qt.AlignHCenter | Qt.AlignVCenter
         return None
+
+
+def convert_to_qurl( strData ):
+    parsed = urlparse( strData )
+    if parsed.scheme in ("http", "https"):
+        return QUrl( strData )
+    return None
 
 
 def contains_string( data ):
@@ -387,7 +397,7 @@ class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
 
     def convertType(self, leftData, rightData):
         if contains_string(leftData) or contains_string(rightData):
-            return (leftData, rightData)
+            return ( str(leftData), str(rightData) )
 
         try:
             left  = convert_float(leftData)
@@ -432,6 +442,8 @@ class StockTable( QTableView ):
         self.setModel( proxyModel )
 
         self.setData( DataFrame() )
+
+        self.doubleClicked.connect( self.linkClicked )
 
     @property
     def headersText(self):
@@ -505,6 +517,12 @@ class StockTable( QTableView ):
         for col, show in self.columnsVisible.items():
             self.setColumnHidden( col, not show )
         self.columnsConfigurationChanged.emit()
+
+    def linkClicked(self, item: QModelIndex):
+        itemData = item.data()
+        url = convert_to_qurl( itemData )
+        if url is not None:
+            QDesktopServices.openUrl( url )
 
     def settingsAccepted(self):
         ## do nothing -- reimplement if needed
