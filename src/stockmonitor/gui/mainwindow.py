@@ -90,7 +90,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.sumwidget.connectData( self.data )
         self.ui.variancewidget.connectData( self.data )
         self.ui.daywidget.connectData( self.data )
-        
+
         self.ui.stockFullTable.connectData( self.data )
         self.ui.favsWidget.connectData( self.data )
 

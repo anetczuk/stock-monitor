@@ -62,7 +62,7 @@ class VarianceWidget(QtBaseClass):           # type: ignore
 
     def connectData(self, dataObject):
         self.ui.stockTable.connectData( dataObject )
-        
+
     def calculate(self):
         fromDate = self.ui.fromDE.date().toPyDate()
         toDate   = self.ui.toDE.date().toPyDate()

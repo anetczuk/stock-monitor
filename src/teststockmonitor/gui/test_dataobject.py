@@ -42,7 +42,7 @@ class DataObjectTest(unittest.TestCase):
         self.assertEqual( dataobject.undoStack.count(), 1 )
         dataobject.addFavGroup("xxx")
         self.assertEqual( dataobject.undoStack.count(), 1 )
-        
+
     def test_renameFavGrp(self):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
@@ -78,10 +78,10 @@ class DataObjectTest(unittest.TestCase):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
         self.assertEqual( len(dataobject.favs.favs), 1 )
-        
+
         dataobject.addFav("xxx", "aaa")
         self.assertEqual( dataobject.undoStack.count(), 2 )
-        
+
         dataobject.addFav("xxx", "aaa")
         self.assertEqual( dataobject.undoStack.count(), 2 )
 
@@ -89,6 +89,6 @@ class DataObjectTest(unittest.TestCase):
         dataobject = DataObject()
         dataobject.addFav( "xxx", "aaa" )
         self.assertEqual( dataobject.undoStack.count(), 1 )
-        
+
         dataobject.addFav( "xxx", ["aaa", "bbb"] )
         self.assertEqual( dataobject.undoStack.count(), 2 )
