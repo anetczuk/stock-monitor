@@ -24,7 +24,7 @@
 import logging
 import collections
 import glob
-from typing import Dict, List
+from typing import Dict, Set
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
@@ -46,10 +46,11 @@ class FavData( persist.Versionable ):
 
     ## 0 - first version
     ## 1 - use ordererd dict
-    _class_version = 1
+    ## 2 - use favs set
+    _class_version = 2
 
     def __init__(self):
-        self.favs: Dict[ str, List[str] ] = collections.OrderedDict()
+        self.favs: Dict[ str, Set[str] ] = collections.OrderedDict()
 
     def _convertstate_(self, dict_, dictVersion_ ):
         _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
@@ -68,6 +69,14 @@ class FavData( persist.Versionable ):
             dict_["favs"] = newDict
             dictVersion_ = 1
 
+        if dictVersion_ == 1:
+            ## use ordererd dict
+            favsDict = dict_["favs"]
+            for key in favsDict.keys():
+                favsDict[key] = set( favsDict[key] )
+            dict_["favs"] = favsDict
+            dictVersion_ = 2
+
         # pylint: disable=W0201
         self.__dict__ = dict_
 
@@ -78,12 +87,12 @@ class FavData( persist.Versionable ):
     def favGroupsList(self):
         return self.favs.keys()
 
-    def getFavs(self, group):
+    def getFavs(self, group) -> Set[str]:
         return self.favs.get( group, None )
 
     def addFavGroup(self, name):
         if name not in self.favs:
-            self.favs[name] = list()
+            self.favs[name] = set()
 
     def renameFavGroup(self, fromName, toName):
         self.favs[toName] = self.favs.pop(fromName)
@@ -97,21 +106,20 @@ class FavData( persist.Versionable ):
             self.favs.move_to_end( item, False )
 
     def addFav(self, group, items):
-        itemsList = list( items )
+        itemsSet = set( items )
         self.addFavGroup( group )
-        newSet = set( self.favs[group] + itemsList )
-        self.favs[group] = list( newSet )
+        self.favs[group] = self.favs[group] | itemsSet          ## sum of sets
 
     def deleteFav(self, group, items):
         _LOGGER.info( "Removing favs: %s from group %s", items, group )
-        itemsList = list( items )
+        itemsList = set( items )
         if group not in self.favs:
             _LOGGER.warning("Unable to find group")
             return
+        groupList = self.favs[group]
         for item in itemsList:
-            groupList = self.favs[group]
             groupList.remove( item )
-            self.favs[group] = groupList
+        self.favs[group] = groupList
 
 
 class DataContainer():
@@ -223,20 +231,18 @@ class DataObject( QObject ):
         self.undoStack.push( DeleteFavGroupCommand( self, name ) )
 
     def addFav(self, group, favItem):
-        favsList = self.favs.getFavs( group )
-        if favsList is None:
-            favsList = list()
-        favsSet = set( favsList )
-        itemsList = list( favItem )
-        itemsSet = set( itemsList )
+        favsSet = self.favs.getFavs( group )
+        if favsSet is None:
+            favsSet = set()
+        itemsSet = set( favItem )
         diffSet = itemsSet - favsSet
         if len(diffSet) < 1:
             return
         self.undoStack.push( AddFavCommand( self, group, diffSet ) )
 
     def deleteFav(self, group, favItem):
-        itemsList = list( favItem )
-        self.undoStack.push( DeleteFavCommand( self, group, itemsList ) )
+        itemsSet = set( favItem )
+        self.undoStack.push( DeleteFavCommand( self, group, itemsSet ) )
 
     def reorderFavGroups(self, newOrder):
         self.undoStack.push( ReorderFavGroupsCommand( self, newOrder ) )
