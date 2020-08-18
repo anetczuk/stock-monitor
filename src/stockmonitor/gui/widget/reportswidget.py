@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable
-from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarBaseData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class ReportsTable( StockTable ):
     pass
 
 
-class ReportsWidget( QWidget ):           # type: ignore
+class ReportsWidget( QWidget ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -51,9 +51,9 @@ class ReportsWidget( QWidget ):           # type: ignore
 
         vlayout.addWidget( self.dataTable )
 
-        self.dataAccess: FinRepsCalendarBaseData = None
+        self.dataAccess: WorksheetData = None
 
-    def setDataAccess(self, dataAccess: FinRepsCalendarBaseData):
+    def setDataAccess(self, dataAccess: WorksheetData):
         self.dataAccess = dataAccess
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )

@@ -21,78 +21,18 @@
 # SOFTWARE.
 #
 
-import os
 import logging
 
-import datetime
-import abc
-import urllib
-
-import pandas
 from pandas.core.frame import DataFrame
 
-from stockmonitor import persist
 from stockmonitor.dataaccess import tmp_dir
+from stockmonitor.dataaccess.worksheetdata import WorksheetData
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class FinRepsCalendarBaseData( metaclass=abc.ABCMeta ):
-
-    def __init__(self):
-        self.worksheet: DataFrame = None
-        self.grabTimestamp: datetime.datetime = None
-
-    def refreshData(self):
-        self.loadWorksheet( True )
-
-    def getWorksheet(self, forceRefresh=False) -> DataFrame:
-        if self.worksheet is None or forceRefresh is True:
-            self.loadWorksheet( forceRefresh )
-        return self.worksheet
-
-    def loadWorksheet(self, forceRefresh=False):
-        dataFile, timestampFile = self.getDataFile( forceRefresh )
-        self.worksheet = self.getWorksheetFromFile( dataFile )
-        if timestampFile is not None:
-            self.grabTimestamp = persist.load_object_simple( timestampFile, None )
-        else:
-            self.grabTimestamp = None
-
-    def getWorksheetFromFile(self, dataFile) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile )
-        dataFrame = dataFrame[0]
-        return dataFrame
-
-    def getDataFile(self, forceRefresh=False):
-        filePath, timestampPath = self.getDataPaths()
-        if forceRefresh is False and os.path.exists( filePath ):
-            _LOGGER.debug( "loading recent data from file[%s]", filePath )
-            return (filePath, timestampPath)
-
-        url = self.getDataUrl()
-        _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
-
-        currTimestamp = datetime.datetime.today()
-
-        dirPath = os.path.dirname( filePath )
-        os.makedirs( dirPath, exist_ok=True )
-        urllib.request.urlretrieve( url, filePath )
-        persist.store_object_simple(currTimestamp, timestampPath)
-        return (filePath, timestampPath)
-
-    @abc.abstractmethod
-    def getDataPaths(self):
-        raise NotImplementedError('You need to define this method in derived class!')
-
-    @abc.abstractmethod
-    def getDataUrl(self):
-        raise NotImplementedError('You need to define this method in derived class!')
-
-
-class FinRepsCalendarData( FinRepsCalendarBaseData ):
+class FinRepsCalendarData( WorksheetData ):
 
     def getDataPaths(self):
         filePath      = tmp_dir + "data/strefa/fin_reps_cal_data.html"
@@ -105,7 +45,7 @@ class FinRepsCalendarData( FinRepsCalendarBaseData ):
         return url
 
 
-class PublishedFinRepsCalendarData( FinRepsCalendarBaseData ):
+class PublishedFinRepsCalendarData( WorksheetData ):
 
     def getWorksheetFromFile(self, dataFile) -> DataFrame:
         dataFrame = super().getWorksheetFromFile( dataFile )
