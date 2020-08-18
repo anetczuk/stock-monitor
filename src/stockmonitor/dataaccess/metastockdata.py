@@ -75,8 +75,8 @@ class MetaStockIntradayData:
 
     def getWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
-#         dataFrameList = pandas.read_csv( dataFile, thousands='', decimal=',' )
-        dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw", "max", "min", "kurs", "obrot", "unknown_2"] )
+        dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw",
+                                                      "max", "min", "kurs", "obrot", "unknown_2"] )
         dataFrame.drop( dataFrame.tail(1).index, inplace=True )
         return dataFrame
 
