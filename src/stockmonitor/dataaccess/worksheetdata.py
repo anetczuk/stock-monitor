@@ -53,13 +53,13 @@ class WorksheetData( metaclass=abc.ABCMeta ):
 
     def loadWorksheet(self, forceRefresh=False):
         dataFile, timestampFile = self.downloadData( forceRefresh )
-        self.worksheet = self.getWorksheetFromFile( dataFile )
+        self.worksheet = self.loadWorksheetFromFile( dataFile )
         if timestampFile is not None:
             self.grabTimestamp = persist.load_object_simple( timestampFile, None )
         else:
             self.grabTimestamp = None
 
-    def getWorksheetFromFile(self, dataFile) -> DataFrame:
+    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
         dataFrame = dataFrame[0]

@@ -63,7 +63,7 @@ app.setOrganizationName("arnet")
 
 dataAccess = GpwCurrentData()
 dataPath = data.get_data_path( "akcje_2020-04-14_15-50.xls" )
-dataframe = dataAccess.getWorksheetFromFile( dataPath )
+dataframe = dataAccess.loadWorksheetFromFile( dataPath )
 
 # csvPath = data.get_data_root_path() + "/akcje_2020-04-14_15-50.csv"
 # dataframe.to_csv( csvPath, encoding='utf-8', index=False )

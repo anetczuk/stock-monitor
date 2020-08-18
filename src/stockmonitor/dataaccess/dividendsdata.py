@@ -35,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class DividendsCalendarData( WorksheetData ):
 
-    def getWorksheetFromFile(self, dataFile) -> DataFrame:
+    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
         dataFrame = dataFrame[2]

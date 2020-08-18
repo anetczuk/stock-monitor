@@ -38,9 +38,9 @@ class DividendsCalendarDataTest(unittest.TestCase):
         ## Called after testfunction was executed
         pass
 
-    def test_getWorksheetFromFile(self):
+    def test_loadWorksheetFromFile(self):
         filePath = get_data_path( "dividends_cal_data.html" )
-        currData = self.dataAccess.getWorksheetFromFile( filePath )
+        currData = self.dataAccess.loadWorksheetFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 166)
 

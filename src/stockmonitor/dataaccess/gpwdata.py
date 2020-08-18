@@ -288,13 +288,13 @@ class GpwCurrentData:
 
     def loadWorksheet(self, forceRefresh=False):
         dataFile, timestampFile = self.crawler.getStockData( forceRefresh )
-        self.worksheet = self.getWorksheetFromFile( dataFile )
+        self.worksheet = self.loadWorksheetFromFile( dataFile )
         if timestampFile is not None:
             self.grabTimestamp = persist.load_object_simple( timestampFile, None )
         else:
             self.grabTimestamp = None
 
-    def getWorksheetFromFile(self, dataFile) -> DataFrame:
+    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
         dataFrame = dataFrameList[0]

@@ -54,7 +54,7 @@ class MetaStockIntradayData:
 
     def loadWorksheet(self, forceRefresh=False):
         dataFile, timestampFile = self.getDataFile( forceRefresh )
-        self.worksheet = self.getWorksheetFromFile( dataFile )
+        self.worksheet = self.loadWorksheetFromFile( dataFile )
         if timestampFile is not None:
             self.grabTimestamp = persist.load_object_simple( timestampFile, None )
         else:
@@ -78,7 +78,7 @@ class MetaStockIntradayData:
         persist.store_object_simple(currTimestamp, timestampPath)
         return (filePath, timestampPath)
 
-    def getWorksheetFromFile(self, dataFile) -> DataFrame:
+    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw",
                                                       "max", "min", "kurs", "obrot", "unknown_2"] )

@@ -47,8 +47,9 @@ class FinRepsCalendarData( WorksheetData ):
 
 class PublishedFinRepsCalendarData( WorksheetData ):
 
-    def getWorksheetFromFile(self, dataFile) -> DataFrame:
-        dataFrame = super().getWorksheetFromFile( dataFile )
+    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
+        dataFrame = super().loadWorksheetFromFile( dataFile )
+        ## convert Ticker column (remove # char)
         return dataFrame
 
     def getDataPaths(self):
