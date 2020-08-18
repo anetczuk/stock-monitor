@@ -33,6 +33,7 @@ log_file = None
 
 def get_logging_output_file():
     logDir = os.path.join(script_dir, "../../tmp")
+    logDir = os.path.abspath( logDir )
     if os.path.isdir( logDir ) is False:
         logDir = os.getcwd()
 

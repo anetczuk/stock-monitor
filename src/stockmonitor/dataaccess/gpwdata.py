@@ -34,7 +34,6 @@ import xlrd
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
-from stockmonitor import persist
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
 
 
