@@ -28,7 +28,6 @@ import datetime
 import abc
 import urllib
 
-import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor import persist
@@ -59,12 +58,6 @@ class WorksheetData( metaclass=abc.ABCMeta ):
         else:
             self.grabTimestamp = None
 
-    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile )
-        dataFrame = dataFrame[0]
-        return dataFrame
-
     def downloadData(self, forceRefresh=False):
         filePath, timestampPath = self.getDataPaths()
         if forceRefresh is False and os.path.exists( filePath ):
@@ -83,9 +76,22 @@ class WorksheetData( metaclass=abc.ABCMeta ):
         return (filePath, timestampPath)
 
     @abc.abstractmethod
+    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
     def getDataPaths(self):
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
     def getDataUrl(self):
         raise NotImplementedError('You need to define this method in derived class!')
+
+
+# class HtmlWorksheetData( WorksheetData ):
+#
+#     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+#         _LOGGER.debug( "opening workbook: %s", dataFile )
+#         dataFrame = pandas.read_html( dataFile )
+#         dataFrame = dataFrame[0]
+#         return dataFrame

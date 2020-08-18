@@ -23,6 +23,7 @@
 
 import logging
 
+import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
@@ -33,6 +34,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class FinRepsCalendarData( WorksheetData ):
+
+    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+        _LOGGER.debug( "opening workbook: %s", dataFile )
+        dataFrame = pandas.read_html( dataFile )
+        dataFrame = dataFrame[0]
+        return dataFrame
 
     def getDataPaths(self):
         filePath      = tmp_dir + "data/strefa/fin_reps_cal_data.html"
@@ -47,8 +54,10 @@ class FinRepsCalendarData( WorksheetData ):
 
 class PublishedFinRepsCalendarData( WorksheetData ):
 
-    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
-        dataFrame = super().loadWorksheetFromFile( dataFile )
+    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+        _LOGGER.debug( "opening workbook: %s", dataFile )
+        dataFrame = pandas.read_html( dataFile )
+        dataFrame = dataFrame[0]
         ## convert Ticker column (remove # char)
         return dataFrame
 

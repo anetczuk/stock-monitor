@@ -21,62 +21,20 @@
 # SOFTWARE.
 #
 
-import os
 import logging
-
-import datetime
-import urllib
 
 import pandas
 from pandas.core.frame import DataFrame
 
-from stockmonitor import persist
 from stockmonitor.dataaccess import tmp_dir
+from stockmonitor.dataaccess.worksheetdata import WorksheetData
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
 ## https://info.bossa.pl/index.jsp?layout=intraday&page=1&news_cat_id=875&dirpath=/mstock/daily/
-class MetaStockIntradayData:
-
-    def __init__(self):
-        self.worksheet: DataFrame = None
-        self.grabTimestamp: datetime.datetime = None
-
-    def refreshData(self):
-        self.loadWorksheet( True )
-
-    def getWorksheet(self, forceRefresh=False) -> DataFrame:
-        if self.worksheet is None or forceRefresh is True:
-            self.loadWorksheet( forceRefresh )
-        return self.worksheet
-
-    def loadWorksheet(self, forceRefresh=False):
-        dataFile, timestampFile = self.getDataFile( forceRefresh )
-        self.worksheet = self.loadWorksheetFromFile( dataFile )
-        if timestampFile is not None:
-            self.grabTimestamp = persist.load_object_simple( timestampFile, None )
-        else:
-            self.grabTimestamp = None
-
-    def getDataFile(self, forceRefresh=False):
-        filePath      = tmp_dir + "data/bossa/recent_intraday_data.prn"
-        timestampPath = tmp_dir + "data/bossa/recent_intraday_timestamp.txt"
-        if forceRefresh is False and os.path.exists( filePath ):
-            _LOGGER.debug( "loading recent data from file[%s]", filePath )
-            return (filePath, timestampPath)
-
-        url = "https://info.bossa.pl/pub/intraday/mstock/daily//a_cgl.prn"
-        _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
-
-        currTimestamp = datetime.datetime.today()
-
-        dirPath = os.path.dirname( filePath )
-        os.makedirs( dirPath, exist_ok=True )
-        urllib.request.urlretrieve( url, filePath )
-        persist.store_object_simple(currTimestamp, timestampPath)
-        return (filePath, timestampPath)
+class MetaStockIntradayData( WorksheetData ):
 
     def loadWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
@@ -84,6 +42,15 @@ class MetaStockIntradayData:
                                                       "max", "min", "kurs", "obrot", "unknown_2"] )
         dataFrame.drop( dataFrame.tail(1).index, inplace=True )
         return dataFrame
+
+    def getDataPaths(self):
+        filePath      = tmp_dir + "data/bossa/recent_intraday_data.prn"
+        timestampPath = tmp_dir + "data/bossa/recent_intraday_timestamp.txt"
+        return (filePath, timestampPath)
+
+    def getDataUrl(self):
+        url = "https://info.bossa.pl/pub/intraday/mstock/daily//a_cgl.prn"
+        return url
 
 
 ## https://info.bossa.pl/index.jsp?layout=mstock&page=1&news_cat_id=706&dirpath=/ciagle/mstock/sesjacgl
