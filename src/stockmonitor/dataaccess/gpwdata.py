@@ -34,7 +34,8 @@ import xlrd
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
-from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
+    BaseWorksheetData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -279,3 +280,75 @@ class GpwCurrentData( WorksheetData ):
         if code is None:
             return code
         return None
+
+
+class GpwMainIndexesData( WorksheetData ):
+
+    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+        _LOGGER.debug( "opening workbook: %s", dataFile )
+        allDataFrames = pandas.read_html( dataFile, encoding='utf-8' )
+        dataFrame = DataFrame()
+        dataFrame = dataFrame.append( allDataFrames[0] )        ## realtime indexes
+        dataFrame = dataFrame.append( allDataFrames[1] )        ## main indexes
+        return dataFrame
+
+    def getDataPaths(self):
+        filePath      = tmp_dir + "data/gpw/indexes_main_data.html"
+        timestampPath = tmp_dir + "data/gpw/indexes_main_timestamp.txt"
+        return (filePath, timestampPath)
+
+    def getDataUrl(self):
+        url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
+        return url
+
+
+class GpwMacroIndexesData( WorksheetData ):
+
+    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+        _LOGGER.debug( "opening workbook: %s", dataFile )
+        allDataFrames = pandas.read_html( dataFile, encoding='utf-8' )
+        dataFrame = allDataFrames[0]
+        return dataFrame
+
+    def getDataPaths(self):
+        filePath      = tmp_dir + "data/gpw/indexes_macro_data.html"
+        timestampPath = tmp_dir + "data/gpw/indexes_macro_timestamp.txt"
+        return (filePath, timestampPath)
+
+    def getDataUrl(self):
+        url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
+        return url
+
+
+class GpwSectorsIndexesData( WorksheetData ):
+
+    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+        _LOGGER.debug( "opening workbook: %s", dataFile )
+        allDataFrames = pandas.read_html( dataFile, encoding='utf-8' )
+        dataFrame = allDataFrames[0]
+        return dataFrame
+
+    def getDataPaths(self):
+        filePath      = tmp_dir + "data/gpw/indexes_sectors_data.html"
+        timestampPath = tmp_dir + "data/gpw/indexes_sectors_timestamp.txt"
+        return (filePath, timestampPath)
+
+    def getDataUrl(self):
+        url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
+        return url
+
+
+class GpwIndexesData( BaseWorksheetData ):
+
+    def __init__(self):
+        super().__init__()
+        self.dataList = list()
+        self.dataList.append( GpwMainIndexesData() )
+        self.dataList.append( GpwMacroIndexesData() )
+        self.dataList.append( GpwSectorsIndexesData() )
+
+    def loadWorksheet(self, forceRefresh=False):
+        self.worksheet = DataFrame()
+        for dataAccess in self.dataList:
+            dataFrame = dataAccess.getWorksheet( forceRefresh )
+            self.worksheet = self.worksheet.append( dataFrame )

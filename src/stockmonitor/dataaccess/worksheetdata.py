@@ -36,11 +36,10 @@ from stockmonitor import persist
 _LOGGER = logging.getLogger(__name__)
 
 
-class WorksheetData( metaclass=abc.ABCMeta ):
+class BaseWorksheetData( metaclass=abc.ABCMeta ):
 
     def __init__(self):
         self.worksheet: DataFrame = None
-        self.grabTimestamp: datetime.datetime = None
 
     def refreshData(self):
         self.loadWorksheet( True )
@@ -49,6 +48,17 @@ class WorksheetData( metaclass=abc.ABCMeta ):
         if self.worksheet is None or forceRefresh is True:
             self.loadWorksheet( forceRefresh )
         return self.worksheet
+
+    @abc.abstractmethod
+    def loadWorksheet(self, forceRefresh=False):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+
+class WorksheetData( BaseWorksheetData ):
+
+    def __init__(self):
+        super().__init__()
+        self.grabTimestamp: datetime.datetime = None
 
     def loadWorksheet(self, forceRefresh=False):
         dataFile, timestampFile = self.downloadData( forceRefresh )
@@ -69,10 +79,19 @@ class WorksheetData( metaclass=abc.ABCMeta ):
 
         currTimestamp = datetime.datetime.today()
 
+#         open( filePath, 'w' ).close()       ## erase file whole content
+#         for currUrl in urlList:
+#             with urllib.request.urlopen(currUrl) as response:
+#                 data = response.read().decode("utf-8")
+#                 with open( filePath, "a+") as fp:
+#                     fp.write(str(data))
+
         dirPath = os.path.dirname( filePath )
         os.makedirs( dirPath, exist_ok=True )
         urllib.request.urlretrieve( url, filePath )
+
         persist.store_object_simple(currTimestamp, timestampPath)
+
         return (filePath, timestampPath)
 
     @abc.abstractmethod
