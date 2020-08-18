@@ -522,6 +522,7 @@ class StockTable( QTableView ):
         itemData = item.data()
         url = convert_to_qurl( itemData )
         if url is not None:
+            _LOGGER.info( "opening url: %s", url )
             QDesktopServices.openUrl( url )
 
     def settingsAccepted(self):
@@ -605,7 +606,9 @@ class DataStockTable( StockTable ):
         favList = self._getSelectedCodes()
         for code in favList:
             infoLink = dataAccess.getInfoLinkFromCode( code )
-            QDesktopServices.openUrl( QtCore.QUrl(infoLink) )
+            url = QtCore.QUrl(infoLink)
+            _LOGGER.info( "opening url: %s", url )
+            QDesktopServices.openUrl( url )
 
     def _getSelectedCodes(self) -> List[str]:
         ## reimplement if needed
@@ -711,7 +714,9 @@ class StockFavsTable( StockTable ):
         favList = self._getSelectedCodes()
         for code in favList:
             infoLink = dataAccess.getInfoLinkFromCode( code )
-            QDesktopServices.openUrl( QtCore.QUrl(infoLink) )
+            url = QtCore.QUrl( infoLink )
+            _LOGGER.info( "opening url: %s", url )
+            QDesktopServices.openUrl( url )
 
     def _getSelectedCodes(self):
         dataAccess = self.dataObject.gpwCurrentData
