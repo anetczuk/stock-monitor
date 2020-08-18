@@ -29,6 +29,7 @@ from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
 
 from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
+from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 
 from . import uiloader
 from . import resources
@@ -98,6 +99,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.ui.reportswidget.setDataAccess( FinRepsCalendarData() )
         self.ui.recentrepswidget.setDataAccess( PublishedFinRepsCalendarData() )
+        self.ui.dividendswidget.setDataAccess( DividendsCalendarData() )
 
         ## ================== connecting signals ==================
 

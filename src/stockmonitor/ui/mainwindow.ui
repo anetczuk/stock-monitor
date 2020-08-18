@@ -106,7 +106,7 @@
         <item>
          <widget class="QTabWidget" name="infoTabWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="reportsTab">
            <attribute name="title">
@@ -125,6 +125,16 @@
            <layout class="QVBoxLayout" name="verticalLayout_12">
             <item>
              <widget class="ReportsWidget" name="recentrepswidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="dividendsTab">
+           <attribute name="title">
+            <string>Dividends</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_13">
+            <item>
+             <widget class="DividendsWidget" name="dividendswidget" native="true"/>
             </item>
            </layout>
           </widget>
@@ -347,6 +357,12 @@
    <class>ReportsWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.reportswidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DividendsWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.dividendswidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
