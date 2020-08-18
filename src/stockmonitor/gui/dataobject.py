@@ -170,6 +170,20 @@ class DataContainer():
             self.notes = { "notes": "" }
 
 
+class StockData():
+
+    def __init__( self, data: object = None ):
+        self.stockData                       = data
+        self.stockHeaders: Dict[ int, str ]  = dict()
+
+    @property
+    def headers(self) -> Dict[ int, str ]:
+        return self.stockHeaders
+
+    def refreshData(self):
+        self.stockData.refreshData()
+
+
 class DataObject( QObject ):
 
     favsAdded           = pyqtSignal( str )     ## emit group
@@ -184,22 +198,21 @@ class DataObject( QObject ):
         super().__init__( parent )
         self.parentWidget = parent
 
-        self.dataContainer                          = DataContainer()
-        self.currentStockData                       = GpwCurrentData()
-        self.currentStockHeaders: Dict[ int, str ]  = dict()
+        self.dataContainer  = DataContainer()
+        self.currentGpwData = StockData( GpwCurrentData() )
 
         self.undoStack = QUndoStack(self)
 
     def store( self, outputDir ):
         outputFile = outputDir + "/gpwcurrentheaders.obj"
-        persist.store_object( self.currentStockHeaders, outputFile )
+        persist.store_object( self.gpwCurrentHeaders, outputFile )
         return self.dataContainer.store( outputDir )
 
     def load( self, inputDir ):
         self.dataContainer.load( inputDir )
         inputFile = inputDir + "/gpwcurrentheaders.obj"
         headers = persist.load_object_simple( inputFile, dict() )
-        self.setCurrentStockHeaders( headers )
+        self.gpwCurrentHeaders = headers
 
     @property
     def favs(self) -> FavData:
@@ -249,14 +262,23 @@ class DataObject( QObject ):
 
     def getFavStock(self, favGroup):
         stockList = self.favs.getFavs( favGroup )
-        return self.currentStockData.getStockData( stockList )
+        return self.gpwCurrentData.getStockData( stockList )
 
     ## ======================================================================
 
     def refreshStockData(self):
-        self.currentStockData.refreshData()
+        self.currentGpwData.refreshData()
         self.stockDataChanged.emit()
 
-    def setCurrentStockHeaders(self, headersDict):
-        self.currentStockHeaders = headersDict
+    @property
+    def gpwCurrentData(self):
+        return self.currentGpwData.stockData
+
+    @property
+    def gpwCurrentHeaders(self) -> Dict[ int, str ]:
+        return self.currentGpwData.stockHeaders
+
+    @gpwCurrentHeaders.setter
+    def gpwCurrentHeaders(self, headersDict):
+        self.currentGpwData.stockHeaders = headersDict
         self.stockHeadersChanged.emit()

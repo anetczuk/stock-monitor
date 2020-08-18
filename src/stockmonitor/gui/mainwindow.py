@@ -169,7 +169,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def _updateStockTimestamp(self):
         ## update stock timestamp
-        timestamp = self.data.currentStockData.grabTimestamp
+        timestamp = self.data.gpwCurrentData.grabTimestamp
         if timestamp is None:
             self.ui.refreshTimeLabel.setText("None")
         else:

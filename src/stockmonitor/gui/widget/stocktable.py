@@ -601,7 +601,7 @@ class DataStockTable( StockTable ):
         self.dataObject.addFav( favGrp, favList )
 
     def _openInfo(self):
-        dataAccess = self.dataObject.currentStockData
+        dataAccess = self.dataObject.gpwCurrentData
         favList = self._getSelectedCodes()
         for code in favList:
             infoLink = dataAccess.getInfoLinkFromCode( code )
@@ -630,15 +630,15 @@ class StockFullTable( DataStockTable ):
         self.updateView()
 
     def updateData(self):
-        dataAccess = self.dataObject.currentStockData
+        dataAccess = self.dataObject.gpwCurrentData
         dataframe = dataAccess.getWorksheet( False )
         self.setData( dataframe )
 
     def updateView(self):
-        self.setHeadersText( self.dataObject.currentStockHeaders )
+        self.setHeadersText( self.dataObject.gpwCurrentHeaders )
 
     def _getSelectedCodes(self):
-        dataAccess = self.dataObject.currentStockData
+        dataAccess = self.dataObject.gpwCurrentData
         selection = self.selectionModel()
         indexes = selection.selectedIndexes()
         favCodes = set()
@@ -651,10 +651,10 @@ class StockFullTable( DataStockTable ):
         return favList
 
     def settingsAccepted(self):
-        self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
+        self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
 
     def settingsRejected(self):
-        self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
+        self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
 
 
 ## ====================================================================
@@ -683,7 +683,7 @@ class StockFavsTable( StockTable ):
         self.setData( dataframe )
 
     def updateView(self):
-        self.setHeadersText( self.dataObject.currentStockHeaders )
+        self.setHeadersText( self.dataObject.gpwCurrentHeaders )
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
@@ -707,14 +707,14 @@ class StockFavsTable( StockTable ):
             self._openInfo()
 
     def _openInfo(self):
-        dataAccess = self.dataObject.currentStockData
+        dataAccess = self.dataObject.gpwCurrentData
         favList = self._getSelectedCodes()
         for code in favList:
             infoLink = dataAccess.getInfoLinkFromCode( code )
             QDesktopServices.openUrl( QtCore.QUrl(infoLink) )
 
     def _getSelectedCodes(self):
-        dataAccess = self.dataObject.currentStockData
+        dataAccess = self.dataObject.gpwCurrentData
         selection = self.selectionModel()
         indexes = selection.selectedIndexes()
         favCodes = set()
@@ -727,10 +727,10 @@ class StockFavsTable( StockTable ):
         return favList
 
     def settingsAccepted(self):
-        self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
+        self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
 
     def settingsRejected(self):
-        self.dataObject.setCurrentStockHeaders( self.pandaModel.customHeader )
+        self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
 
 
 ## ====================================================================
@@ -743,7 +743,7 @@ class ToolStockTable( DataStockTable ):
         self.setObjectName("toolstocktable")
 
     def _getSelectedCodes(self):
-        dataAccess = self.dataObject.currentStockData
+        dataAccess = self.dataObject.gpwCurrentData
         selection = self.selectionModel()
         indexes = selection.selectedIndexes()
         favCodes = set()
