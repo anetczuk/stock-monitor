@@ -23,10 +23,9 @@
 
 
 import unittest
+from teststockmonitor.data import get_data_path
 
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
-
-from teststockmonitor.data import get_data_path
 
 
 class MetaStockIntradayDataTest(unittest.TestCase):
@@ -43,4 +42,4 @@ class MetaStockIntradayDataTest(unittest.TestCase):
         filePath = get_data_path( "a_cgl_intraday_2020-08-17.prn" )
         currData = self.dataAccess.getWorksheetFromFile( filePath )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 77388)      ## one removes, because if summary
+        self.assertEqual(dataLen, 77388)

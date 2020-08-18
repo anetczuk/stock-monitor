@@ -47,6 +47,11 @@ class MetaStockIntradayData:
     def refreshData(self):
         self.loadWorksheet( True )
 
+    def getWorksheet(self, forceRefresh=False) -> DataFrame:
+        if self.worksheet is None or forceRefresh is True:
+            self.loadWorksheet( forceRefresh )
+        return self.worksheet
+
     def loadWorksheet(self, forceRefresh=False):
         dataFile, timestampFile = self.getDataFile( forceRefresh )
         self.worksheet = self.getWorksheetFromFile( dataFile )

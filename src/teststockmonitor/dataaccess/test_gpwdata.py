@@ -23,11 +23,10 @@
 
 
 import unittest
+from teststockmonitor.data import get_data_path
 
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwCurrentCrawler
 from stockmonitor.dataaccess.datatype import CurrentDataType
-
-from teststockmonitor.data import get_data_path
 
 
 class GpwCurrentCrawlerMock(GpwCurrentCrawler):
