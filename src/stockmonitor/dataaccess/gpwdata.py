@@ -246,6 +246,24 @@ class GpwCurrentData( WorksheetData ):
 
     ## ======================================================================
 
+    def getInfoLinkFromIsin(self, isin):
+        return "https://www.gpw.pl/spolka?isin=%s" % isin
+
+    def getInfoLinkFromCode(self, code):
+        isin = self.getIsinFromCode(code)
+        if isin is not None:
+            infoLink = "https://www.gpw.pl/spolka?isin=%s" % isin
+            return infoLink
+        infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % code
+        return infoLink
+
+    def getIsinFromCode(self, code):
+        if code is None:
+            return code
+        return None
+
+    ## ======================================================================
+
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
@@ -262,24 +280,6 @@ class GpwCurrentData( WorksheetData ):
         url = ("https://www.gpw.pl/ajaxindex.php"
                "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
         return url
-
-    ## ======================================================================
-
-    def getInfoLinkFromIsin(self, isin):
-        return "https://www.gpw.pl/spolka?isin=%s" % isin
-
-    def getInfoLinkFromCode(self, code):
-        isin = self.getIsinFromCode(code)
-        if isin is not None:
-            infoLink = "https://www.gpw.pl/spolka?isin=%s" % isin
-            return infoLink
-        infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % code
-        return infoLink
-
-    def getIsinFromCode(self, code):
-        if code is None:
-            return code
-        return None
 
 
 class GpwMainIndexesData( WorksheetData ):
