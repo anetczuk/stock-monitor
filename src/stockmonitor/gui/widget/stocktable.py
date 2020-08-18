@@ -357,7 +357,18 @@ class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
         return self.valueLessThan( leftData, rightData )
 
     def valueLessThan(self, leftData, rightData):
-        leftData, rightData  = self.convertType( leftData, rightData )
+        leftData, rightData = self.convertType( leftData, rightData )
+
+        ## put no-data rows on bottom
+        if leftData == "-":
+            if self.sortOrder() == Qt.AscendingOrder:
+                return False
+            return True
+        if rightData == "-":
+            if self.sortOrder() == Qt.AscendingOrder:
+                return True
+            return False
+
         return leftData < rightData
 
     def clearFilter(self):
