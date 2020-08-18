@@ -32,16 +32,12 @@ import pandas
 from pandas.core.frame import DataFrame
 import xlrd
 
+from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
 from stockmonitor import persist
 
 
 _LOGGER = logging.getLogger(__name__)
-
-
-script_dir = os.path.dirname(os.path.realpath(__file__))
-
-tmp_dir = script_dir + "/../../../tmp/"
 
 
 class GpwArchiveCrawler:
