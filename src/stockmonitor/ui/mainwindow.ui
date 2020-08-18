@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -79,6 +79,52 @@
            <layout class="QVBoxLayout" name="verticalLayout_9">
             <item>
              <widget class="DayWidget" name="daywidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="infoTab">
+       <attribute name="title">
+        <string>Info</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_10">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QTabWidget" name="infoTabWidget">
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <widget class="QWidget" name="reportsTab">
+           <attribute name="title">
+            <string>Fin Reports</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_11">
+            <item>
+             <widget class="ReportsWidget" name="reportswidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="recentReportsTab">
+           <attribute name="title">
+            <string>Recent Reports</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_12">
+            <item>
+             <widget class="ReportsWidget" name="recentrepswidget" native="true"/>
             </item>
            </layout>
           </widget>
@@ -295,6 +341,12 @@
    <class>DayWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.tool.daywidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ReportsWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.reportswidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

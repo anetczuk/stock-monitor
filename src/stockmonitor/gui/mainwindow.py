@@ -28,6 +28,8 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
 
+from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
+
 from . import uiloader
 from . import resources
 from . import trayicon
@@ -94,7 +96,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.stockFullTable.connectData( self.data )
         self.ui.favsWidget.connectData( self.data )
 
-        ## === connecting signals ===
+        self.ui.reportswidget.setDataAccess( FinRepsCalendarData() )
+        self.ui.recentrepswidget.setDataAccess( PublishedFinRepsCalendarData() )
+
+        ## ================== connecting signals ==================
 
         self.data.favsChanged.connect( self._handleFavsChange )
         self.data.stockDataChanged.connect( self._handleStockDataChange )
