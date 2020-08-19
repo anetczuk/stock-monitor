@@ -204,7 +204,7 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
         keyColumn = tableModel.filterKeyColumn()
         newIndex = 0
         self.ui.columnCB.clear()
-        self.ui.columnCB.addItem( "None", -1 )
+        self.ui.columnCB.addItem( "No filtering", -1 )
         colsNum = tableModel.columnCount()
         for col in range(colsNum):
             text = tableModel.headerData(col, Qt.Horizontal)
