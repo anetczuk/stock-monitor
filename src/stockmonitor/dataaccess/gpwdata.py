@@ -167,6 +167,9 @@ class GpwArchiveData:
         return False
 
 
+## ==========================================================================
+
+
 class GpwCurrentData( WorksheetData ):
     """Handle GPW current day data."""
 
@@ -282,6 +285,9 @@ class GpwCurrentData( WorksheetData ):
         return url
 
 
+## ==========================================================================
+
+
 class GpwMainIndexesData( WorksheetData ):
 
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
@@ -352,6 +358,9 @@ class GpwIndexesData( BaseWorksheetData ):
         for dataAccess in self.dataList:
             dataFrame = dataAccess.getWorksheet( forceRefresh )
             self.worksheet = self.worksheet.append( dataFrame )
+
+
+## ==========================================================================
 
 
 ## https://www.gpw.pl/wskazniki
