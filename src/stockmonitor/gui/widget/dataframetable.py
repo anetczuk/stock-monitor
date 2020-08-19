@@ -337,7 +337,7 @@ def convert_int( data ):
     return int(value)
 
 
-class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
+class DFProxyModel( QtCore.QSortFilterProxyModel ):
 
     def __init__(self, parentObject=None):
         super().__init__(parentObject)
@@ -426,6 +426,9 @@ class TaskSortFilterProxyModel( QtCore.QSortFilterProxyModel ):
         return (leftData, rightData)
 
 
+## ===========================================================
+
+
 class DataFrameTable( QTableView ):
 
     columnsConfigurationChanged = pyqtSignal()
@@ -447,7 +450,7 @@ class DataFrameTable( QTableView ):
         header.setStretchLastSection( True )
 
         self.pandaModel = DataFrameTableModel( None )
-        proxyModel = TaskSortFilterProxyModel(self)
+        proxyModel = DFProxyModel(self)
         proxyModel.setSourceModel( self.pandaModel )
         self.setModel( proxyModel )
 
