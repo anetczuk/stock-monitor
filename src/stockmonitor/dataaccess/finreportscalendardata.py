@@ -58,7 +58,7 @@ class PublishedFinRepsCalendarData( WorksheetData ):
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
         dataFrame = dataFrame[0]
-        ## convert Ticker column (remove # char)
+        dataFrame['Ticker'] = dataFrame['Ticker'].str.replace( '#', '' )
         return dataFrame
 
     def getDataPaths(self):
