@@ -160,7 +160,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="StockTable" name="indexesTable"/>
+         <widget class="DataFrameTable" name="indexesTable"/>
         </item>
        </layout>
       </widget>
@@ -388,9 +388,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>StockTable</class>
+   <class>DataFrameTable</class>
    <extends>QTableView</extends>
-   <header>stockmonitor.gui.widget.stocktable</header>
+   <header>stockmonitor.gui.widget.dataframetable</header>
   </customwidget>
  </customwidgets>
  <resources/>

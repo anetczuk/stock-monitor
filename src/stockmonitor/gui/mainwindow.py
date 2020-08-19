@@ -31,6 +31,7 @@ from PyQt5.QtGui import QIcon
 from stockmonitor.dataaccess.gpwdata import GpwIndexesData
 from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
+from stockmonitor.gui.widget.dataframetable import DataFrameTable
 
 from . import uiloader
 from . import resources
@@ -277,6 +278,11 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.stockFullTable.loadSettings( settings )
         self.ui.favsWidget.loadSettings( settings )
 
+        widgets = self.findChildren( DataFrameTable )
+        widgetsList = guistate.sort_widgets( widgets )
+        for w, _ in widgetsList:
+            w.loadSettings( settings )
+
         self.applySettings()
 
         ## restore widget state and geometry
@@ -289,6 +295,11 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.appSettings.saveSettings( settings )
         self.ui.stockFullTable.saveSettings( settings )
         self.ui.favsWidget.saveSettings( settings )
+
+        widgets = self.findChildren( DataFrameTable )
+        widgetsList = guistate.sort_widgets( widgets )
+        for w, _ in widgetsList:
+            w.saveSettings( settings )
 
         ## store widget state and geometry
         guistate.save_state(self, settings)
