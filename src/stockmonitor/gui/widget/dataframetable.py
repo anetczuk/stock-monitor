@@ -362,11 +362,11 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         leftData, rightData = self.convertType( leftData, rightData )
 
         ## put no-data rows on bottom
-        if leftData == "-":
+        if leftData in ("-", "--", "x"):
             if self.sortOrder() == Qt.AscendingOrder:
                 return False
             return True
-        if rightData == "-":
+        if rightData in ("-", "--", "x"):
             if self.sortOrder() == Qt.AscendingOrder:
                 return True
             return False
