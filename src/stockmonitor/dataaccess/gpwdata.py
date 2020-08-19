@@ -352,3 +352,24 @@ class GpwIndexesData( BaseWorksheetData ):
         for dataAccess in self.dataList:
             dataFrame = dataAccess.getWorksheet( forceRefresh )
             self.worksheet = self.worksheet.append( dataFrame )
+
+
+## https://www.gpw.pl/wskazniki
+class GpwIndicatorsData( WorksheetData ):
+
+    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+        _LOGGER.debug( "opening workbook: %s", dataFile )
+        allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+        dataFrame = DataFrame()
+        dataFrame = dataFrame.append( allDataFrames[1] )            ## country
+        dataFrame = dataFrame.append( allDataFrames[2] )            ## foreign
+        return dataFrame
+
+    def getDataPaths(self):
+        filePath      = tmp_dir + "data/gpw/indicators_data.html"
+        timestampPath = tmp_dir + "data/gpw/indicators_timestamp.txt"
+        return (filePath, timestampPath)
+
+    def getDataUrl(self):
+        url = "https://www.gpw.pl/wskazniki"
+        return url

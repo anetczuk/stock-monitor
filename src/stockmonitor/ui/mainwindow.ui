@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -106,8 +106,18 @@
         <item>
          <widget class="QTabWidget" name="infoTabWidget">
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
+          <widget class="QWidget" name="indicatorsTab">
+           <attribute name="title">
+            <string>Indicators</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_15">
+            <item>
+             <widget class="IndicatorsWidget" name="indicatorswidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
           <widget class="QWidget" name="reportsTab">
            <attribute name="title">
             <string>Fin Reports</string>
@@ -391,6 +401,12 @@
    <class>DataFrameTable</class>
    <extends>QTableView</extends>
    <header>stockmonitor.gui.widget.dataframetable</header>
+  </customwidget>
+  <customwidget>
+   <class>IndicatorsWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.indicatorswidget</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
