@@ -65,7 +65,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         refreshAction = QtWidgets.QAction(self)
         refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
-        refreshAction.triggered.connect( self.refreshStockData )
+        refreshAction.triggered.connect( self.refreshStockDataForce )
         self.addAction( refreshAction )
 
         ## =============================================================
@@ -115,12 +115,14 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.favsWidget.removeFavGrp.connect( self.data.deleteFavGroup )
         self.ui.favsWidget.favsChanged.connect( self.triggerSaveTimer )
 
-        self.ui.stockRefreshPB.clicked.connect( self.refreshStockData )
+        self.ui.stockRefreshPB.clicked.connect( self.refreshStockDataForce )
 
         self.ui.notesWidget.dataChanged.connect( self._handleNotesChange )
 
         self.applySettings()
         self.trayIcon.show()
+
+        self.refreshStockData( False )
 
         self.setStatusMessage( "Ready", timeout=10000 )
 
@@ -165,19 +167,26 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def refreshView(self):
         self._updateStockTimestamp()
-        self.setIndexesData()
+        self.refreshStockData( False )
         self.ui.stockFullTable.updateView()
         self.ui.favsWidget.updateView()
         self.ui.notesWidget.setNotes( self.data.notes )
 
-    def refreshStockData(self):
-        self.data.refreshStockData()
-        self.setIndexesData( True )
+    def refreshStockDataForce(self):
+        self.refreshStockData( True )
 
-    def setIndexesData(self, forceRefresh=False):
+    def refreshStockData(self, forceRefresh=True):
+        if forceRefresh:
+            self.data.refreshStockData()
+
         dataAccess = GpwIndexesData()
         data = dataAccess.getWorksheet( forceRefresh )
         self.ui.indexesTable.setData( data )
+
+        self.ui.indicatorswidget.refreshData( forceRefresh )
+        self.ui.reportswidget.refreshData( forceRefresh )
+        self.ui.recentrepswidget.refreshData( forceRefresh )
+        self.ui.dividendswidget.refreshData( forceRefresh )
 
     def _handleStockDataChange(self):
         self._updateStockTimestamp()

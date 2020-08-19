@@ -54,5 +54,10 @@ class DividendsWidget( QWidget ):
 
     def setDataAccess(self, dataAccess: DividendsCalendarData):
         self.dataAccess = dataAccess
+        self.refreshData( False )
+
+    def refreshData(self, forceRefresh=True):
+        if forceRefresh:
+            self.dataAccess.refreshData()
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
