@@ -72,7 +72,7 @@ class DayWidget(QtBaseClass):           # type: ignore
         self.ui.openPB.clicked.connect( self.openResults )
 
     def connectData(self, dataObject):
-        self.ui.stockTable.connectData( dataObject )
+        self.ui.dataTable.connectData( dataObject )
 
     def calculate(self):
         weeksNum   = self.ui.numWeeksSB.value()
@@ -90,7 +90,7 @@ class DayWidget(QtBaseClass):           # type: ignore
         elif fieldValue == DaysDataType.WEEKEND:
             resultData = analysis.calcWeekend( weeksNum, outFilePath=self.recentOutput )
 
-        self.ui.stockTable.setData( resultData )
+        self.ui.dataTable.setData( resultData )
         self.ui.openPB.setEnabled( True )
 
     def openResults(self):

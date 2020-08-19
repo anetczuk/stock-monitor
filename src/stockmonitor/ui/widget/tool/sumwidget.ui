@@ -129,7 +129,7 @@
     </layout>
    </item>
    <item>
-    <widget class="ToolStockTable" name="stockTable"/>
+    <widget class="ToolStockTable" name="dataTable"/>
    </item>
   </layout>
  </widget>

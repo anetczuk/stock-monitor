@@ -65,7 +65,7 @@ class MinMaxWidget(QtBaseClass):           # type: ignore
         self.ui.openPB.clicked.connect( self.openResults )
 
     def connectData(self, dataObject):
-        self.ui.stockTable.connectData( dataObject )
+        self.ui.dataTable.connectData( dataObject )
 
     def calculate(self):
         fromDate = self.ui.fromDE.date().toPyDate()
@@ -94,7 +94,7 @@ class MinMaxWidget(QtBaseClass):           # type: ignore
 
         self.recentOutput = stockdata.tmp_dir + "out/output_potentials.csv"
         resultData = analysis.calcPotentials( self.recentOutput )
-        self.ui.stockTable.setData( resultData )
+        self.ui.dataTable.setData( resultData )
         self.ui.openPB.setEnabled( True )
 
     def openResults(self):
