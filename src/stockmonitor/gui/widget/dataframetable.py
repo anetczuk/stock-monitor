@@ -252,7 +252,7 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
 ## =========================================================
 
 
-class PandasModel( QAbstractTableModel ):
+class DataFrameTableModel( QAbstractTableModel ):
 
     def __init__(self, data: DataFrame):
         super().__init__()
@@ -446,7 +446,7 @@ class DataFrameTable( QTableView ):
         header.setHighlightSections( False )
         header.setStretchLastSection( True )
 
-        self.pandaModel = PandasModel( None )
+        self.pandaModel = DataFrameTableModel( None )
         proxyModel = TaskSortFilterProxyModel(self)
         proxyModel.setSourceModel( self.pandaModel )
         self.setModel( proxyModel )
