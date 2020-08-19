@@ -290,7 +290,7 @@ class DataFrameTableModel( QAbstractTableModel ):
             if isinstance(colName, tuple):
                 return colName[0]
             return colName
-        return None
+        return super().headerData( section, orientation, role )
 
     def setHeaderData(self, section, orientation, value, _=Qt.DisplayRole):
         self.customHeader[ section ] = value
@@ -451,6 +451,8 @@ class DataFrameTable( QTableView ):
         header.setDefaultAlignment( Qt.AlignCenter )
         header.setHighlightSections( False )
         header.setStretchLastSection( True )
+        
+        self.verticalHeader().hide()
 
         self.pandaModel = DataFrameTableModel( None )
         proxyModel = DFProxyModel(self)
@@ -501,6 +503,7 @@ class DataFrameTable( QTableView ):
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
+        filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
 
         if self._rawData is None:
@@ -509,7 +512,9 @@ class DataFrameTable( QTableView ):
         globalPos = QCursor.pos()
         action = contextMenu.exec_( globalPos )
 
-        if action == configColumnsAction:
+        if action == filterDataAction:
+            self.showFilterConfiguration()
+        elif action == configColumnsAction:
             self.showColumnsConfiguration()
 
     ## ===============================================
