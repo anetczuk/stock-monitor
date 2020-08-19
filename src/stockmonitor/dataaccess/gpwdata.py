@@ -286,7 +286,7 @@ class GpwMainIndexesData( WorksheetData ):
 
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
-        allDataFrames = pandas.read_html( dataFile, encoding='utf-8' )
+        allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = DataFrame()
         dataFrame = dataFrame.append( allDataFrames[0] )        ## realtime indexes
         dataFrame = dataFrame.append( allDataFrames[1] )        ## main indexes
@@ -306,7 +306,7 @@ class GpwMacroIndexesData( WorksheetData ):
 
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
-        allDataFrames = pandas.read_html( dataFile, encoding='utf-8' )
+        allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
         return dataFrame
 
@@ -324,7 +324,7 @@ class GpwSectorsIndexesData( WorksheetData ):
 
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
-        allDataFrames = pandas.read_html( dataFile, encoding='utf-8' )
+        allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
         return dataFrame
 

@@ -28,6 +28,7 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
 
+from stockmonitor.dataaccess.gpwdata import GpwIndexesData
 from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 
@@ -63,7 +64,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         refreshAction = QtWidgets.QAction(self)
         refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
-        refreshAction.triggered.connect( self.data.refreshStockData )
+        refreshAction.triggered.connect( self.refreshStockData )
         self.addAction( refreshAction )
 
         ## =============================================================
@@ -112,7 +113,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.favsWidget.removeFavGrp.connect( self.data.deleteFavGroup )
         self.ui.favsWidget.favsChanged.connect( self.triggerSaveTimer )
 
-        self.ui.stockRefreshPB.clicked.connect( self.data.refreshStockData )
+        self.ui.stockRefreshPB.clicked.connect( self.refreshStockData )
 
         self.ui.notesWidget.dataChanged.connect( self._handleNotesChange )
 
@@ -162,9 +163,19 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def refreshView(self):
         self._updateStockTimestamp()
+        self.setIndexesData()
         self.ui.stockFullTable.updateView()
         self.ui.favsWidget.updateView()
         self.ui.notesWidget.setNotes( self.data.notes )
+
+    def refreshStockData(self):
+        self.data.refreshStockData()
+        self.setIndexesData( True )
+
+    def setIndexesData(self, forceRefresh=False):
+        dataAccess = GpwIndexesData()
+        data = dataAccess.getWorksheet( forceRefresh )
+        self.ui.indexesTable.setData( data )
 
     def _handleStockDataChange(self):
         self._updateStockTimestamp()
