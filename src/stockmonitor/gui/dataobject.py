@@ -33,7 +33,7 @@ from stockmonitor import persist
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
 from stockmonitor.gui.command.deletefavgroupcommand import DeleteFavGroupCommand
 from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData
+from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIsinMapData
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
@@ -89,6 +89,12 @@ class FavData( persist.Versionable ):
 
     def getFavs(self, group) -> Set[str]:
         return self.favs.get( group, None )
+
+    def getFavsAll(self):
+        ret = set()
+        for val in self.favs.values():
+            ret = ret | val
+        return ret
 
     def addFavGroup(self, name):
         if name not in self.favs:
@@ -200,6 +206,7 @@ class DataObject( QObject ):
 
         self.dataContainer  = DataContainer()
         self.currentGpwData = StockData( GpwCurrentData() )
+        self.gpwIsinMap     = GpwIsinMapData()
 
         self.undoStack = QUndoStack(self)
 
@@ -268,6 +275,7 @@ class DataObject( QObject ):
 
     def refreshStockData(self):
         self.currentGpwData.refreshData()
+        self.gpwIsinMap.refreshData()
         self.stockDataChanged.emit()
 
     @property
@@ -282,3 +290,12 @@ class DataObject( QObject ):
     def gpwCurrentHeaders(self, headersDict):
         self.currentGpwData.stockHeaders = headersDict
         self.stockHeadersChanged.emit()
+
+    def getStockCode(self, rowIndex):
+        return self.currentGpwData.stockData.getShortField( rowIndex )
+
+    def getStockCodeFromIsin(self, stockIsin):
+        return self.gpwIsinMap.getStockCodeFromIsin( stockIsin )
+
+    def getStockCodeFromName(self, stockName):
+        return self.gpwIsinMap.getStockCodeFromName( stockName )

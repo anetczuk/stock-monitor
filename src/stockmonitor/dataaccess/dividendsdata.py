@@ -33,7 +33,13 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetData
 _LOGGER = logging.getLogger(__name__)
 
 
+## https://www.stockwatch.pl/dywidendy/
 class DividendsCalendarData( WorksheetData ):
+
+    def getStockName(self, rowIndex):
+        dataFrame = self.getWorksheet()
+        tickerColumn = dataFrame["Spółka"]
+        return tickerColumn.iloc[ rowIndex ]
 
     def loadWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )

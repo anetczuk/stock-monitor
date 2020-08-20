@@ -35,6 +35,11 @@ _LOGGER = logging.getLogger(__name__)
 
 class FinRepsCalendarData( WorksheetData ):
 
+    def getStockCode(self, rowIndex):
+        dataFrame = self.getWorksheet()
+        tickerColumn = dataFrame["Ticker"]
+        return tickerColumn.iloc[ rowIndex ]
+
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
@@ -53,6 +58,11 @@ class FinRepsCalendarData( WorksheetData ):
 
 
 class PublishedFinRepsCalendarData( WorksheetData ):
+
+    def getStockCode(self, rowIndex):
+        dataFrame = self.getWorksheet()
+        tickerColumn = dataFrame["Ticker"]
+        return tickerColumn.iloc[ rowIndex ]
 
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )

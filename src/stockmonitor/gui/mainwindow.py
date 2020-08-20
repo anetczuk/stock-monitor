@@ -28,9 +28,7 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
 
-from stockmonitor.dataaccess.gpwdata import GpwIndexesData, GpwIndicatorsData
-from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
-from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
+from stockmonitor.dataaccess.gpwdata import GpwIndexesData
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
 
 from . import uiloader
@@ -99,10 +97,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.stockFullTable.connectData( self.data )
         self.ui.favsWidget.connectData( self.data )
 
-        self.ui.indicatorswidget.setDataAccess( GpwIndicatorsData() )
-        self.ui.reportswidget.setDataAccess( FinRepsCalendarData() )
-        self.ui.recentrepswidget.setDataAccess( PublishedFinRepsCalendarData() )
-        self.ui.dividendswidget.setDataAccess( DividendsCalendarData() )
+        self.ui.indicatorswidget.connectData( self.data )
+        self.ui.reportswidget.connectData( self.data )
+        self.ui.recentrepswidget.connectData( self.data )
+        self.ui.dividendswidget.connectData( self.data )
 
         ## ================== connecting signals ==================
 

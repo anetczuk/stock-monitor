@@ -25,10 +25,14 @@
 import logging
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.gpwdata import GpwIndicatorsData
+from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
+from stockmonitor.gui.dataobject import DataObject
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,7 +40,30 @@ _LOGGER = logging.getLogger(__name__)
 
 class IndicatorsTable( StockTable ):
 
-    pass
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.setShowGrid( True )
+        self.setAlternatingRowColors( False )
+
+
+class IndicatorsColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataAccess: GpwIndicatorsData, dataObject: DataObject):
+        self.dataAccess = dataAccess
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
+#         return None
+
+    def background(self, index: QModelIndex ):
+        dataRow = index.row()
+        stockIsin = self.dataAccess.getStockIsin( dataRow )
+        stockCode = self.dataObject.getStockCodeFromIsin( stockIsin )
+        allFavs = self.dataObject.favs.getFavsAll()
+        if stockCode in allFavs:
+            return TableRowColorDelegate.STOCK_FAV_BGCOLOR
+        return None
 
 
 class IndicatorsWidget( QWidget ):
@@ -51,7 +78,15 @@ class IndicatorsWidget( QWidget ):
 
         vlayout.addWidget( self.dataTable )
 
-        self.dataAccess: WorksheetData = None
+        self.dataObject = None
+        self.dataAccess = GpwIndicatorsData()
+        self.refreshData( False )
+
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+
+        colorDecorator = IndicatorsColorDelegate( self.dataAccess, self.dataObject )
+        self.dataTable.setColorDelegate( colorDecorator )
 
     def setDataAccess(self, dataAccess: WorksheetData):
         self.dataAccess = dataAccess

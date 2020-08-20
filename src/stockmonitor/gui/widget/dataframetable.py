@@ -38,6 +38,7 @@ from PyQt5.QtWidgets import QTableView, QTableWidgetItem
 from PyQt5.QtWidgets import QMenu
 from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtGui import QColor
 
 from .. import uiloader
 from .. import guistate
@@ -252,12 +253,31 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
 ## =========================================================
 
 
+class TableRowColorDelegate():
+
+    STOCK_FAV_BGCOLOR = QColor( "beige" )
+
+    def foreground(self, _: QModelIndex ):
+        ## reimplement if needed
+        return None
+
+    def background(self, _: QModelIndex ):
+        ## reimplement if needed
+        return None
+
+
 class DataFrameTableModel( QAbstractTableModel ):
 
     def __init__(self, data: DataFrame):
         super().__init__()
-        self._rawData: DataFrame = data
-        self.customHeader: Dict[ int, str ] = dict()
+        self._rawData: DataFrame                   = data
+        self.customHeader: Dict[ int, str ]        = dict()
+        self.colorDelegate: TableRowColorDelegate  = None
+
+    def setColorDelegate(self, decorator: TableRowColorDelegate):
+        self.beginResetModel()
+        self.colorDelegate = decorator
+        self.endResetModel()
 
     def setContent(self, data: DataFrame):
         self.beginResetModel()
@@ -297,15 +317,23 @@ class DataFrameTableModel( QAbstractTableModel ):
         self.headerDataChanged.emit( orientation, section, section )
         return True
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index: QModelIndex, role=Qt.DisplayRole):
         if not index.isValid():
             return None
+
         if role == Qt.DisplayRole:
             rawData = self._rawData.iloc[index.row(), index.column()]
             strData = str(rawData)
             return strData
         if role == Qt.TextAlignmentRole:
             return Qt.AlignHCenter | Qt.AlignVCenter
+
+        if self.colorDelegate is not None:
+            if role == Qt.ForegroundRole:
+                return self.colorDelegate.foreground( index )
+            if role == Qt.BackgroundRole:
+                return self.colorDelegate.background( index )
+
         return None
 
 
@@ -451,7 +479,7 @@ class DataFrameTable( QTableView ):
         header.setDefaultAlignment( Qt.AlignCenter )
         header.setHighlightSections( False )
         header.setStretchLastSection( True )
-        
+
         self.verticalHeader().hide()
 
         self.pandaModel = DataFrameTableModel( None )
@@ -518,6 +546,9 @@ class DataFrameTable( QTableView ):
             self.showColumnsConfiguration()
 
     ## ===============================================
+
+    def setColorDelegate(self, decorator: TableRowColorDelegate):
+        self.pandaModel.setColorDelegate( decorator )
 
     def setData(self, rawData: DataFrame ):
         self._rawData = rawData

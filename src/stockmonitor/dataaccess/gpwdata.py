@@ -366,6 +366,11 @@ class GpwIndexesData( BaseWorksheetData ):
 ## https://www.gpw.pl/wskazniki
 class GpwIndicatorsData( WorksheetData ):
 
+    def getStockIsin(self, rowIndex):
+        dataFrame = self.getWorksheet()
+        tickerColumn = dataFrame["Kod"]
+        return tickerColumn.iloc[ rowIndex ]
+
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
@@ -381,4 +386,44 @@ class GpwIndicatorsData( WorksheetData ):
 
     def getDataUrl(self):
         url = "https://www.gpw.pl/wskazniki"
+        return url
+
+
+## ==========================================================================
+
+
+## http://infostrefa.com/infostrefa/pl/spolki
+class GpwIsinMapData( WorksheetData ):
+
+    def getStockCodeFromIsin(self, stockIsin):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["ISIN"] == stockIsin ].index.values
+        if not rowIndexes:
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["Ticker"]
+        return tickerColumn.iloc[ rowIndex ]
+
+    def getStockCodeFromName(self, stockName):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["Nazwa giełdowa"] == stockName ].index.values
+        if not rowIndexes:
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["Ticker"]
+        return tickerColumn.iloc[ rowIndex ]
+
+    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+        _LOGGER.debug( "opening workbook: %s", dataFile )
+        allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+        dataFrame = allDataFrames[1]
+        return dataFrame
+
+    def getDataPaths(self):
+        filePath      = tmp_dir + "data/gpw/isin_map_data.html"
+        timestampPath = tmp_dir + "data/gpw/isin_map_timestamp.txt"
+        return (filePath, timestampPath)
+
+    def getDataUrl(self):
+        url = "http://infostrefa.com/infostrefa/pl/spolki"
         return url

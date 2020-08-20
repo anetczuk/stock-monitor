@@ -25,10 +25,14 @@
 import logging
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
+from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
+from stockmonitor.gui.dataobject import DataObject
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,7 +40,29 @@ _LOGGER = logging.getLogger(__name__)
 
 class ReportsTable( StockTable ):
 
-    pass
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.setShowGrid( True )
+        self.setAlternatingRowColors( False )
+
+
+class ReportsColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataAccess, dataObject: DataObject):
+        self.dataAccess = dataAccess
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
+#         return None
+
+    def background(self, index: QModelIndex ):
+        dataRow = index.row()
+        stockCode = self.dataAccess.getStockCode( dataRow )
+        allFavs = self.dataObject.favs.getFavsAll()
+        if stockCode in allFavs:
+            return TableRowColorDelegate.STOCK_FAV_BGCOLOR
+        return None
 
 
 class ReportsWidget( QWidget ):
@@ -51,7 +77,48 @@ class ReportsWidget( QWidget ):
 
         vlayout.addWidget( self.dataTable )
 
-        self.dataAccess: WorksheetData = None
+        self.dataObject = None
+        self.dataAccess = FinRepsCalendarData()
+        self.refreshData( False )
+
+    def connectData(self, dataObject: DataObject):
+        self.dataObject = dataObject
+
+        colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
+        self.dataTable.setColorDelegate( colorDecorator )
+
+    def setDataAccess(self, dataAccess: WorksheetData):
+        self.dataAccess = dataAccess
+        self.refreshData( False )
+
+    def refreshData(self, forceRefresh=True):
+        if forceRefresh:
+            self.dataAccess.refreshData()
+        dataFrame = self.dataAccess.getWorksheet()
+        self.dataTable.setData( dataFrame )
+
+
+class PublishedReportsWidget( QWidget ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+
+        vlayout = QtWidgets.QVBoxLayout()
+        vlayout.setContentsMargins( 0, 0, 0, 0 )
+        self.setLayout( vlayout )
+        self.dataTable = ReportsTable(self)
+
+        vlayout.addWidget( self.dataTable )
+
+        self.dataObject = None
+        self.dataAccess = PublishedFinRepsCalendarData()
+        self.refreshData( False )
+
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+
+        colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
+        self.dataTable.setColorDelegate( colorDecorator )
 
     def setDataAccess(self, dataAccess: WorksheetData):
         self.dataAccess = dataAccess

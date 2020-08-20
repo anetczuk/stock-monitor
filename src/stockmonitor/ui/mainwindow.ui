@@ -134,7 +134,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_12">
             <item>
-             <widget class="ReportsWidget" name="recentrepswidget" native="true"/>
+             <widget class="PublishedReportsWidget" name="recentrepswidget" native="true"/>
             </item>
            </layout>
           </widget>
@@ -406,6 +406,12 @@
    <class>IndicatorsWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.indicatorswidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PublishedReportsWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.reportswidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

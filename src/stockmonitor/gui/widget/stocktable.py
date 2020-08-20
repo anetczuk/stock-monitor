@@ -26,12 +26,14 @@ import logging
 from typing import List
 
 from PyQt5 import QtCore
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QMenu, QInputDialog
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QDesktopServices
 
-from stockmonitor.gui.widget.dataframetable import DataFrameTable
+from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
+from stockmonitor.gui.dataobject import DataObject
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -126,15 +128,38 @@ class DataStockTable( StockTable ):
 ## ====================================================================
 
 
+class StockFullColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataObject: DataObject):
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
+#         return None
+
+    def background(self, index: QModelIndex ):
+        dataRow = index.row()
+        stockCode = self.dataObject.getStockCode( dataRow )
+        allFavs = self.dataObject.favs.getFavsAll()
+        if stockCode in allFavs:
+            return TableRowColorDelegate.STOCK_FAV_BGCOLOR
+        return None
+
+
 class StockFullTable( DataStockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.setObjectName("stockfulltable")
+        self.setShowGrid( True )
+        self.setAlternatingRowColors( False )
 
     def connectData(self, dataObject):
         super().connectData( dataObject )
-        self.dataObject = dataObject
+
+        colorDecorator = StockFullColorDelegate( self.dataObject )
+        self.setColorDelegate( colorDecorator )
+
         self.dataObject.stockDataChanged.connect( self.updateData )
         self.dataObject.stockHeadersChanged.connect( self.updateView )
         self.updateData()

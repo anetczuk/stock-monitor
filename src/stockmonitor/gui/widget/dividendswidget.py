@@ -24,10 +24,13 @@
 import logging
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
+from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
+from stockmonitor.gui.dataobject import DataObject
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +38,30 @@ _LOGGER = logging.getLogger(__name__)
 
 class DividendsTable( StockTable ):
 
-    pass
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.setShowGrid( True )
+        self.setAlternatingRowColors( False )
+
+
+class DividendsColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataAccess: DividendsCalendarData, dataObject: DataObject):
+        self.dataAccess = dataAccess
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
+#         return None
+
+    def background(self, index: QModelIndex ):
+        dataRow = index.row()
+        stockName = self.dataAccess.getStockName( dataRow )
+        stockCode = self.dataObject.getStockCodeFromName( stockName )
+        allFavs = self.dataObject.favs.getFavsAll()
+        if stockCode in allFavs:
+            return TableRowColorDelegate.STOCK_FAV_BGCOLOR
+        return None
 
 
 class DividendsWidget( QWidget ):
@@ -50,7 +76,15 @@ class DividendsWidget( QWidget ):
 
         vlayout.addWidget( self.dataTable )
 
-        self.dataAccess: DividendsCalendarData = None
+        self.dataObject = None
+        self.dataAccess = DividendsCalendarData()
+        self.refreshData( False )
+
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+
+        colorDecorator = DividendsColorDelegate( self.dataAccess, self.dataObject )
+        self.dataTable.setColorDelegate( colorDecorator )
 
     def setDataAccess(self, dataAccess: DividendsCalendarData):
         self.dataAccess = dataAccess

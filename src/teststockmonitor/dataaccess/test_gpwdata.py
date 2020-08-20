@@ -26,7 +26,7 @@ import unittest
 from teststockmonitor.data import get_data_path
 
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIndexesData,\
-    GpwIndicatorsData
+    GpwIndicatorsData, GpwIsinMapData
 from stockmonitor.dataaccess.datatype import CurrentDataType
 
 
@@ -82,21 +82,6 @@ class GpwIndexesDataTest(unittest.TestCase):
         dataLen = len( currData )
         self.assertEqual(dataLen, 27)
 
-#     def test_getData(self):
-#         currData = self.dataAccess.getData( CurrentDataType.SHORT )
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 393)      ## one removes, because if summary
-#
-#     def test_getStockData_None(self):
-#         currData = self.dataAccess.getStockData()
-#         self.assertEqual(currData, None)
-#
-#     def test_getStockData(self):
-#         stockList = ["11B", "ALR"]
-#         currData = self.dataAccess.getStockData( stockList )
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 2)
-
 
 class GpwIndicatorsDataTest(unittest.TestCase):
 
@@ -113,17 +98,18 @@ class GpwIndicatorsDataTest(unittest.TestCase):
         dataLen = len( currData )
         self.assertEqual(dataLen, 437)
 
-#     def test_getData(self):
-#         currData = self.dataAccess.getData( CurrentDataType.SHORT )
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 393)      ## one removes, because if summary
-#
-#     def test_getStockData_None(self):
-#         currData = self.dataAccess.getStockData()
-#         self.assertEqual(currData, None)
-#
-#     def test_getStockData(self):
-#         stockList = ["11B", "ALR"]
-#         currData = self.dataAccess.getStockData( stockList )
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 2)
+
+class GpwIsinMapDataTest(unittest.TestCase):
+
+    def setUp(self):
+        ## Called before testfunction is executed
+        self.dataAccess = GpwIsinMapData()
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_getWorksheet(self):
+        currData = self.dataAccess.getWorksheet()
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 831)
