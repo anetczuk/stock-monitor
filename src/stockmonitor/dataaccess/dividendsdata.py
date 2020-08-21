@@ -22,13 +22,12 @@
 #
 
 import logging
-
+import datetime
 import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
-import datetime
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,7 +49,7 @@ class DividendsCalendarData( WorksheetData ):
             dateObject = datetime.datetime.strptime(dateString, '%Y-%m-%d').date()
             return dateObject
         except ValueError:
-            return datetime.date(1,1,1)
+            return datetime.date( 1, 1, 1 )
 
     def loadWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
