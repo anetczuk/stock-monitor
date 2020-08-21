@@ -535,16 +535,14 @@ class DataFrameTable( QTableView ):
         filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
 
+        filterDataAction.triggered.connect( self.showFilterConfiguration )
+        configColumnsAction.triggered.connect( self.showColumnsConfiguration )
+
         if self._rawData is None:
             configColumnsAction.setEnabled( False )
 
         globalPos = QCursor.pos()
-        action = contextMenu.exec_( globalPos )
-
-        if action == filterDataAction:
-            self.showFilterConfiguration()
-        elif action == configColumnsAction:
-            self.showColumnsConfiguration()
+        contextMenu.exec_( globalPos )
 
     ## ===============================================
 

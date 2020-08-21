@@ -60,27 +60,21 @@ class DataStockTable( StockTable ):
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
-        stockInfoAction = contextMenu.addAction("Stock info")
-        favsActions = self._addFavActions( contextMenu )
+        stockInfoAction     = contextMenu.addAction("Stock info")
+        self._addFavActions( contextMenu )
         contextMenu.addSeparator()
-
-        filterDataAction = contextMenu.addAction("Filter data")
+        filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
+        
+        stockInfoAction.triggered.connect( self._openInfo )
+        filterDataAction.triggered.connect( self.showFilterConfiguration )
+        configColumnsAction.triggered.connect( self.showColumnsConfiguration )
+        
         if self._rawData is None:
             configColumnsAction.setEnabled( False )
 
         globalPos = QCursor.pos()
-        action = contextMenu.exec_( globalPos )
-
-        if action == configColumnsAction:
-            self.showColumnsConfiguration()
-        elif action == filterDataAction:
-            self.showFilterConfiguration()
-        elif action in favsActions:
-            favGroup = action.data()
-            self._addToFav( favGroup )
-        elif action == stockInfoAction:
-            self._openInfo()
+        contextMenu.exec_( globalPos )
 
     def _addFavActions(self, contextMenu):
         favsActions = []
@@ -90,13 +84,17 @@ class DataStockTable( StockTable ):
             for favGroup in favGroupsList:
                 favAction = favSubMenu.addAction( favGroup )
                 favAction.setData( favGroup )
+                favAction.triggered.connect( self._addToFavAction )
                 favsActions.append( favAction )
             newFavGroupAction = favSubMenu.addAction( "New group ..." )
             newFavGroupAction.setData( None )
+            newFavGroupAction.triggered.connect( self._addToFavAction )
             favsActions.append( newFavGroupAction )
         return favsActions
 
-    def _addToFav(self, favGrp):
+    def _addToFavAction(self):
+        parentAction = self.sender()
+        favGrp = parentAction.data()
         if favGrp is None:
             newText, ok = QInputDialog.getText( self,
                                                 "Rename Fav Group",
@@ -226,22 +224,21 @@ class StockFavsTable( StockTable ):
         stockInfoAction     = contextMenu.addAction("Stock info")
         remFavAction        = contextMenu.addAction("Remove fav")
         contextMenu.addSeparator()
-        filterDataAction = contextMenu.addAction("Filter data")
+        filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
+        
+        stockInfoAction.triggered.connect( self._openInfo )
+        remFavAction.triggered.connect( self._removeFav )
+        filterDataAction.triggered.connect( self.showFilterConfiguration )
+        configColumnsAction.triggered.connect( self.showColumnsConfiguration )
 
         globalPos = QCursor.pos()
-        action = contextMenu.exec_( globalPos )
+        contextMenu.exec_( globalPos )
 
-        if action == configColumnsAction:
-            self.showColumnsConfiguration()
-        elif action == filterDataAction:
-            self.showFilterConfiguration()
-        elif action == remFavAction:
-            favList = self._getSelectedCodes()
-            self.dataObject.deleteFav( self.favGroup, favList )
-        elif action == stockInfoAction:
-            self._openInfo()
-
+    def _removeFav(self):
+        favList = self._getSelectedCodes()
+        self.dataObject.deleteFav( self.favGroup, favList )
+    
     def _openInfo(self):
         dataAccess = self.dataObject.gpwCurrentData
         favList = self._getSelectedCodes()
