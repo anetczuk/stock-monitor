@@ -377,6 +377,7 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         ##  0 - greater than
         ##  1 - equal
         ##  2 - less than
+        ##  3 - contains
         self.condition = 0
 
     def setFilterCondition(self, condition):
@@ -421,20 +422,25 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         valueIndex = self.sourceModel().index( sourceRow, filterColumn, sourceParent )
         value = self.sourceModel().data( valueIndex )
 
-        if self.condition > 1:
-            ## less than
-            return self.valueLessThan( value, filterValue )
-        elif self.condition < 1:
+        if self.condition == 0:
             ## greater than
             return self.valueLessThan( filterValue, value )
-
-        ## equal
-        if self.valueLessThan( value, filterValue ):
-            return False
-        if self.valueLessThan( filterValue, value ):
-            return False
-        return True
-
+        elif self.condition == 1:
+            ## equal
+            if self.valueLessThan( value, filterValue ):
+                return False
+            if self.valueLessThan( filterValue, value ):
+                return False
+            return True            
+        elif self.condition == 2:
+            ## less than
+            return self.valueLessThan( value, filterValue )
+        elif self.condition == 3:
+            ## contains
+            strVal = str(value)
+            return filterValue in strVal
+        
+        return False
 #         return super().filterAcceptsRow( sourceRow, sourceParent )
 
     def convertType(self, leftData, rightData):
