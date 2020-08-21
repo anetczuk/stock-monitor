@@ -22,6 +22,7 @@
 #
 
 import logging
+import datetime
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QModelIndex
@@ -61,6 +62,10 @@ class DividendsColorDelegate( TableRowColorDelegate ):
         allFavs = self.dataObject.favs.getFavsAll()
         if stockCode in allFavs:
             return TableRowColorDelegate.STOCK_FAV_BGCOLOR
+        todayDate = datetime.date.today()
+        dateObject = self.dataAccess.getLawDate( dataRow )
+        if dateObject <= todayDate:
+            return TableRowColorDelegate.STOCK_GRAY_BGCOLOR
         return None
 
 

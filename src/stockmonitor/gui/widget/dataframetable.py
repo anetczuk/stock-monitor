@@ -256,6 +256,7 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
 class TableRowColorDelegate():
 
     STOCK_FAV_BGCOLOR = QColor( "beige" )
+    STOCK_GRAY_BGCOLOR = QColor( "#f0f0f0" )
 
     def foreground(self, _: QModelIndex ):
         ## reimplement if needed

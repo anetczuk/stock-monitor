@@ -28,6 +28,7 @@ from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+import datetime
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +41,16 @@ class DividendsCalendarData( WorksheetData ):
         dataFrame = self.getWorksheet()
         tickerColumn = dataFrame["Spółka"]
         return tickerColumn.iloc[ rowIndex ]
+
+    def getLawDate(self, rowIndex):
+        dataFrame = self.getWorksheet()
+        dateColumn = dataFrame["Notowanie bez dyw."]
+        dateString = dateColumn.iloc[ rowIndex ]
+        try:
+            dateObject = datetime.datetime.strptime(dateString, '%Y-%m-%d').date()
+            return dateObject
+        except ValueError:
+            return datetime.date(1,1,1)
 
     def loadWorksheetFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
