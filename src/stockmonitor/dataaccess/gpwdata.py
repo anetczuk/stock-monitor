@@ -170,6 +170,13 @@ class GpwArchiveData:
 ## ==========================================================================
 
 
+def cleanup_column(dataFrame, colName, substr):
+    val = dataFrame.loc[ dataFrame[ colName ].str.contains( substr ), colName ]
+    for index, value in val.items():
+        val[ index ] = value.split( substr )[0]
+    dataFrame.loc[ dataFrame[ colName ].str.contains( substr ), colName ] = val
+    
+
 class GpwCurrentData( WorksheetData ):
     """Handle GPW current day data."""
 
@@ -279,10 +286,10 @@ class GpwCurrentData( WorksheetData ):
         dataFrame.drop( dataFrame.tail(1).index, inplace=True )
 
         ## remove trash from column
-        val = dataFrame.loc[ dataFrame['Nazwa'].str.contains(" "), 'Nazwa' ]
-        for index, value in val.items():
-            val[ index ] = value.split( " ")[0]
-        dataFrame.loc[ dataFrame['Nazwa'].str.contains(" "), 'Nazwa' ] = val
+        cleanup_column( dataFrame, 'Nazwa', " " )
+        cleanup_column( dataFrame, 'Nazwa', "\t" )
+        cleanup_column( dataFrame, 'Nazwa', "\u00A0" )          ## non-breaking space
+        cleanup_column( dataFrame, 'Nazwa', "\xc2\xa0" )        ## non-breaking space
 
         return dataFrame
 
