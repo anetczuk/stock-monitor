@@ -257,6 +257,7 @@ class DataObject( QObject ):
         itemsSet = set( favItem )
         diffSet = itemsSet - favsSet
         if len(diffSet) < 1:
+            _LOGGER.warning( "nothing to add: %s input: %s", diffSet, favItem )
             return
         self.undoStack.push( AddFavCommand( self, group, diffSet ) )
 

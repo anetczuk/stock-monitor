@@ -25,7 +25,7 @@ import logging
 import copy
 import re
 
-from typing import Dict
+from typing import Dict, List
 
 from urllib.parse import urlparse
 from pandas import DataFrame
@@ -545,6 +545,16 @@ class DataFrameTable( QTableView ):
         contextMenu.exec_( globalPos )
 
     ## ===============================================
+
+    def getSelectedRows(self) -> List[int]:
+        selection = self.selectionModel()
+        indexes = selection.selectedIndexes()
+        selectedIndexees = list()
+        for ind in indexes:
+            sourceIndex = self.model().mapToSource( ind )
+            dataRow = sourceIndex.row()
+            selectedIndexees.append( dataRow )
+        return selectedIndexees
 
     def setColorDelegate(self, decorator: TableRowColorDelegate):
         self.pandaModel.setColorDelegate( decorator )

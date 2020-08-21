@@ -24,6 +24,8 @@
 
 import logging
 
+from typing import List
+
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
@@ -44,6 +46,16 @@ class ReportsTable( StockTable ):
         super().__init__(parentWidget)
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
+        
+    def _getSelectedCodes(self) -> List[str]:
+        dataAccess = self.parent().dataAccess
+        selectedRows = self.getSelectedRows()
+        favCodes = set()
+        for dataRow in selectedRows:
+            code = dataAccess.getStockCode( dataRow )
+            favCodes.add( code )
+        favList = list(favCodes)
+        return favList
 
 
 class ReportsColorDelegate( TableRowColorDelegate ):
@@ -86,6 +98,8 @@ class ReportsWidget( QWidget ):
 
         colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
         self.dataTable.setColorDelegate( colorDecorator )
+        
+        self.dataTable.connectData( self.dataObject )
 
     def setDataAccess(self, dataAccess: WorksheetData):
         self.dataAccess = dataAccess
@@ -119,6 +133,8 @@ class PublishedReportsWidget( QWidget ):
 
         colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
         self.dataTable.setColorDelegate( colorDecorator )
+        
+        self.dataTable.connectData( self.dataObject )
 
     def setDataAccess(self, dataAccess: WorksheetData):
         self.dataAccess = dataAccess

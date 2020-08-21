@@ -44,15 +44,6 @@ class StockTable( DataFrameTable ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.setObjectName("stocktable")
-
-
-## ====================================================================
-
-
-class DataStockTable( StockTable ):
-
-    def __init__(self, parentWidget=None):
-        super().__init__(parentWidget)
         self.dataObject = None
 
     def connectData(self, dataObject):
@@ -60,13 +51,14 @@ class DataStockTable( StockTable ):
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
-        stockInfoAction     = contextMenu.addAction("Stock info")
+        if self.dataObject is not None:
+            stockInfoAction     = contextMenu.addAction("Stock info")
+            stockInfoAction.triggered.connect( self._openInfo )
         self._addFavActions( contextMenu )
         contextMenu.addSeparator()
         filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
         
-        stockInfoAction.triggered.connect( self._openInfo )
         filterDataAction.triggered.connect( self.showFilterConfiguration )
         configColumnsAction.triggered.connect( self.showColumnsConfiguration )
         
@@ -110,8 +102,11 @@ class DataStockTable( StockTable ):
         self.dataObject.addFav( favGrp, favList )
 
     def _openInfo(self):
-        dataAccess = self.dataObject.gpwCurrentData
         favList = self._getSelectedCodes()
+        if not favList:
+            _LOGGER.warning( "unable to open stock info: empty codes list" )
+            return
+        dataAccess = self.dataObject.gpwCurrentData
         for code in favList:
             infoLink = dataAccess.getInfoLinkFromCode( code )
             url = QtCore.QUrl(infoLink)
@@ -144,7 +139,7 @@ class StockFullColorDelegate( TableRowColorDelegate ):
         return None
 
 
-class StockFullTable( DataStockTable ):
+class StockFullTable( StockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -173,12 +168,9 @@ class StockFullTable( DataStockTable ):
 
     def _getSelectedCodes(self):
         dataAccess = self.dataObject.gpwCurrentData
-        selection = self.selectionModel()
-        indexes = selection.selectedIndexes()
+        selectedRows = self.getSelectedRows()
         favCodes = set()
-        for ind in indexes:
-            sourceIndex = self.model().mapToSource( ind )
-            dataRow = sourceIndex.row()
+        for dataRow in selectedRows:
             code = dataAccess.getShortField( dataRow )
             favCodes.add( code )
         favList = list(favCodes)
@@ -238,24 +230,12 @@ class StockFavsTable( StockTable ):
     def _removeFav(self):
         favList = self._getSelectedCodes()
         self.dataObject.deleteFav( self.favGroup, favList )
-    
-    def _openInfo(self):
-        dataAccess = self.dataObject.gpwCurrentData
-        favList = self._getSelectedCodes()
-        for code in favList:
-            infoLink = dataAccess.getInfoLinkFromCode( code )
-            url = QtCore.QUrl( infoLink )
-            _LOGGER.info( "opening url: %s", url )
-            QDesktopServices.openUrl( url )
 
     def _getSelectedCodes(self):
         dataAccess = self.dataObject.gpwCurrentData
-        selection = self.selectionModel()
-        indexes = selection.selectedIndexes()
+        selectedRows = self.getSelectedRows()
         favCodes = set()
-        for ind in indexes:
-            sourceIndex = self.model().mapToSource( ind )
-            dataRow = sourceIndex.row()
+        for dataRow in selectedRows:
             code = dataAccess.getShortFieldFromData( self._rawData, dataRow )
             favCodes.add( code )
         favList = list(favCodes)
@@ -271,7 +251,7 @@ class StockFavsTable( StockTable ):
 ## ====================================================================
 
 
-class ToolStockTable( DataStockTable ):
+class ToolStockTable( StockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -279,12 +259,9 @@ class ToolStockTable( DataStockTable ):
 
     def _getSelectedCodes(self):
         dataAccess = self.dataObject.gpwCurrentData
-        selection = self.selectionModel()
-        indexes = selection.selectedIndexes()
+        selectedRows = self.getSelectedRows()
         favCodes = set()
-        for ind in indexes:
-            sourceIndex = self.model().mapToSource( ind )
-            dataRow = sourceIndex.row()
+        for dataRow in selectedRows:
             stockName = self._rawData.iloc[dataRow, 0]
             code = dataAccess.getShortFieldByName( stockName )
             if code is not None:

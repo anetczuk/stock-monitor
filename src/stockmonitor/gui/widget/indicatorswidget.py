@@ -23,6 +23,7 @@
 
 
 import logging
+from typing import List
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QModelIndex
@@ -44,13 +45,22 @@ class IndicatorsTable( StockTable ):
         super().__init__(parentWidget)
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
+        
+    def _getSelectedCodes(self) -> List[str]:
+        parent = self.parent()
+        selectedRows = self.getSelectedRows()
+        favCodes = set()
+        for dataRow in selectedRows:
+            code = parent.getStockCode( dataRow )
+            favCodes.add( code )
+        favList = list(favCodes)
+        return favList
 
 
 class IndicatorsColorDelegate( TableRowColorDelegate ):
 
-    def __init__(self, dataAccess: GpwIndicatorsData, dataObject: DataObject):
-        self.dataAccess = dataAccess
-        self.dataObject = dataObject
+    def __init__(self, widget: 'IndicatorsWidget'):
+        self.widget = widget
 
 #     def foreground(self, index: QModelIndex ):
 #         ## reimplement if needed
@@ -58,9 +68,8 @@ class IndicatorsColorDelegate( TableRowColorDelegate ):
 
     def background(self, index: QModelIndex ):
         dataRow = index.row()
-        stockIsin = self.dataAccess.getStockIsin( dataRow )
-        stockCode = self.dataObject.getStockCodeFromIsin( stockIsin )
-        allFavs = self.dataObject.favs.getFavsAll()
+        stockCode = self.widget.getStockCode( dataRow )
+        allFavs = self.widget.dataObject.favs.getFavsAll()
         if stockCode in allFavs:
             return TableRowColorDelegate.STOCK_FAV_BGCOLOR
         return None
@@ -85,8 +94,10 @@ class IndicatorsWidget( QWidget ):
     def connectData(self, dataObject):
         self.dataObject = dataObject
 
-        colorDecorator = IndicatorsColorDelegate( self.dataAccess, self.dataObject )
+        colorDecorator = IndicatorsColorDelegate( self )
         self.dataTable.setColorDelegate( colorDecorator )
+        
+        self.dataTable.connectData( self.dataObject )
 
     def setDataAccess(self, dataAccess: WorksheetData):
         self.dataAccess = dataAccess
@@ -97,3 +108,8 @@ class IndicatorsWidget( QWidget ):
             self.dataAccess.refreshData()
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
+        
+    def getStockCode(self, dataRow):
+        stockIsin = self.dataAccess.getStockIsin( dataRow )
+        stockCode = self.dataObject.getStockCodeFromIsin( stockIsin )
+        return stockCode

@@ -23,6 +23,7 @@
 
 import logging
 import datetime
+from typing import List
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QModelIndex
@@ -43,13 +44,22 @@ class DividendsTable( StockTable ):
         super().__init__(parentWidget)
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
+        
+    def _getSelectedCodes(self) -> List[str]:
+        parent = self.parent()
+        selectedRows = self.getSelectedRows()
+        favCodes = set()
+        for dataRow in selectedRows:
+            code = parent.getStockCode( dataRow )
+            favCodes.add( code )
+        favList = list(favCodes)
+        return favList
 
 
 class DividendsColorDelegate( TableRowColorDelegate ):
 
-    def __init__(self, dataAccess: DividendsCalendarData, dataObject: DataObject):
-        self.dataAccess = dataAccess
-        self.dataObject = dataObject
+    def __init__(self, widget: 'DividendsWidget'):
+        self.widget = widget
 
 #     def foreground(self, index: QModelIndex ):
 #         ## reimplement if needed
@@ -57,13 +67,12 @@ class DividendsColorDelegate( TableRowColorDelegate ):
 
     def background(self, index: QModelIndex ):
         dataRow = index.row()
-        stockName = self.dataAccess.getStockName( dataRow )
-        stockCode = self.dataObject.getStockCodeFromName( stockName )
-        allFavs = self.dataObject.favs.getFavsAll()
+        stockCode = self.widget.getStockCode( dataRow )
+        allFavs = self.widget.dataObject.favs.getFavsAll()
         if stockCode in allFavs:
             return TableRowColorDelegate.STOCK_FAV_BGCOLOR
         todayDate = datetime.date.today()
-        dateObject = self.dataAccess.getLawDate( dataRow )
+        dateObject = self.widget.dataAccess.getLawDate( dataRow )
         if dateObject <= todayDate:
             return TableRowColorDelegate.STOCK_GRAY_BGCOLOR
         return None
@@ -88,8 +97,10 @@ class DividendsWidget( QWidget ):
     def connectData(self, dataObject):
         self.dataObject = dataObject
 
-        colorDecorator = DividendsColorDelegate( self.dataAccess, self.dataObject )
+        colorDecorator = DividendsColorDelegate( self )
         self.dataTable.setColorDelegate( colorDecorator )
+        
+        self.dataTable.connectData( self.dataObject )
 
     def setDataAccess(self, dataAccess: DividendsCalendarData):
         self.dataAccess = dataAccess
@@ -100,3 +111,8 @@ class DividendsWidget( QWidget ):
             self.dataAccess.refreshData()
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
+        
+    def getStockCode(self, dataRow):
+        stockName = self.dataAccess.getStockName( dataRow )
+        stockCode = self.dataObject.getStockCodeFromName( stockName )
+        return stockCode
