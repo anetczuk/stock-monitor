@@ -271,7 +271,19 @@ class GpwCurrentData( WorksheetData ):
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
         dataFrame = dataFrameList[0]
+        
+        ## flatten multi level header (column names)
+        dataFrame.columns = dataFrame.columns.get_level_values(0)
+        
+        ## drop last row containing summary
         dataFrame.drop( dataFrame.tail(1).index, inplace=True )
+   
+        ## remove trash from column     
+        val = dataFrame.loc[ dataFrame['Nazwa'].str.contains(" "), 'Nazwa' ]
+        for index, value in val.items():
+            val[ index ] = value.split( " ")[0]
+        dataFrame.loc[ dataFrame['Nazwa'].str.contains(" "), 'Nazwa' ] = val
+        
         return dataFrame
 
     def getDataPaths(self):
