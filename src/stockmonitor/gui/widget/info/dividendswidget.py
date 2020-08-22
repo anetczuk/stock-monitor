@@ -44,7 +44,7 @@ class DividendsTable( StockTable ):
         super().__init__(parentWidget)
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
-        
+
     def _getSelectedCodes(self) -> List[str]:
         parent = self.parent()
         selectedRows = self.getSelectedRows()
@@ -90,16 +90,16 @@ class DividendsWidget( QWidget ):
 
         vlayout.addWidget( self.dataTable )
 
-        self.dataObject = None
+        self.dataObject: DataObject = None
         self.dataAccess = DividendsCalendarData()
         self.refreshData( False )
 
-    def connectData(self, dataObject):
+    def connectData(self, dataObject: DataObject):
         self.dataObject = dataObject
 
         colorDecorator = DividendsColorDelegate( self )
         self.dataTable.setColorDelegate( colorDecorator )
-        
+
         self.dataTable.connectData( self.dataObject )
 
     def setDataAccess(self, dataAccess: DividendsCalendarData):
@@ -111,7 +111,7 @@ class DividendsWidget( QWidget ):
             self.dataAccess.refreshData()
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
-        
+
     def getStockCode(self, dataRow):
         stockName = self.dataAccess.getStockName( dataRow )
         stockCode = self.dataObject.getStockCodeFromName( stockName )

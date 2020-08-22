@@ -388,13 +388,13 @@
   <customwidget>
    <class>ReportsWidget</class>
    <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.reportswidget</header>
+   <header>stockmonitor.gui.widget.info.reportswidget</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>DividendsWidget</class>
    <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.dividendswidget</header>
+   <header>stockmonitor.gui.widget.info.dividendswidget</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -405,13 +405,13 @@
   <customwidget>
    <class>IndicatorsWidget</class>
    <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.indicatorswidget</header>
+   <header>stockmonitor.gui.widget.info.indicatorswidget</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PublishedReportsWidget</class>
    <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.reportswidget</header>
+   <header>stockmonitor.gui.widget.info.reportswidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

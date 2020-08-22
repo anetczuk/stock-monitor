@@ -431,7 +431,7 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
                 return False
             if self.valueLessThan( filterValue, value ):
                 return False
-            return True            
+            return True
         elif self.condition == 2:
             ## less than
             return self.valueLessThan( value, filterValue )
@@ -439,7 +439,7 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
             ## contains
             strVal = str(value)
             return filterValue in strVal
-        
+
         return False
 #         return super().filterAcceptsRow( sourceRow, sourceParent )
 

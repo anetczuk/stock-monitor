@@ -58,10 +58,10 @@ class StockTable( DataFrameTable ):
         contextMenu.addSeparator()
         filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
-        
+
         filterDataAction.triggered.connect( self.showFilterConfiguration )
         configColumnsAction.triggered.connect( self.showColumnsConfiguration )
-        
+
         if self._rawData is None:
             configColumnsAction.setEnabled( False )
 
@@ -194,6 +194,7 @@ class StockFavsTable( StockTable ):
         self.dataObject = None
         self.favGroup = None
 
+    # pylint: disable=W0221
     def connectData(self, dataObject, favGroup):
         self.dataObject = dataObject
         self.favGroup = favGroup
@@ -218,7 +219,7 @@ class StockFavsTable( StockTable ):
         contextMenu.addSeparator()
         filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
-        
+
         stockInfoAction.triggered.connect( self._openInfo )
         remFavAction.triggered.connect( self._removeFav )
         filterDataAction.triggered.connect( self.showFilterConfiguration )

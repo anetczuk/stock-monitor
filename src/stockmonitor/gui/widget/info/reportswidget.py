@@ -46,7 +46,7 @@ class ReportsTable( StockTable ):
         super().__init__(parentWidget)
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
-        
+
     def _getSelectedCodes(self) -> List[str]:
         dataAccess = self.parent().dataAccess
         selectedRows = self.getSelectedRows()
@@ -98,7 +98,7 @@ class ReportsWidget( QWidget ):
 
         colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
         self.dataTable.setColorDelegate( colorDecorator )
-        
+
         self.dataTable.connectData( self.dataObject )
 
     def setDataAccess(self, dataAccess: WorksheetData):
@@ -133,7 +133,7 @@ class PublishedReportsWidget( QWidget ):
 
         colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
         self.dataTable.setColorDelegate( colorDecorator )
-        
+
         self.dataTable.connectData( self.dataObject )
 
     def setDataAccess(self, dataAccess: WorksheetData):

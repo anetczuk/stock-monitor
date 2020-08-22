@@ -175,7 +175,7 @@ def cleanup_column(dataFrame, colName, substr):
     for index, value in val.items():
         val[ index ] = value.split( substr )[0]
     dataFrame.loc[ dataFrame[ colName ].str.contains( substr ), colName ] = val
-    
+
 
 class GpwCurrentData( WorksheetData ):
     """Handle GPW current day data."""
