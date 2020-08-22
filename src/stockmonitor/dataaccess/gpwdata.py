@@ -41,37 +41,8 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwArchiveCrawler:
-    """Download archive data from GPW webpage."""
-
-    def __init__(self):
-        pass
-
-    ## Brak danych dla wybranych kryteriów.
-
-    def getStockData(self, day):
-        filePath = tmp_dir + "data/gpw/arch/" + day.strftime("%Y-%m-%d") + ".xls"
-        if os.path.exists( filePath ):
-            return filePath
-
-        ## pattern example: https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=15-01-2020
-        url = "https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=" + day.strftime("%d-%m-%Y")
-        _LOGGER.debug( "grabbing data from utl: %s", url )
-
-        dirPath = os.path.dirname( filePath )
-        os.makedirs( dirPath, exist_ok=True )
-        urllib.request.urlretrieve( url, filePath )
-        return filePath
-
-    def sourceLink(self):
-        return "https://www.gpw.pl/archiwum-notowan"
-
-
 class GpwArchiveData:
     """Handle GPW archive data."""
-
-    def __init__(self):
-        self.crawler = GpwArchiveCrawler()
 
     def getData(self, dataType: ArchiveDataType, day: datetime.date):
         _LOGGER.debug( "getting stock data for: %s", day )
@@ -139,7 +110,7 @@ class GpwArchiveData:
 
     def getWorksheet(self, day: datetime.date):
 #         _LOGGER.debug( "getting data from date: %s", day )
-        dataFile = self.crawler.getStockData( day )
+        dataFile = self.downloadData( day )
 
         try:
 #             _LOGGER.debug( "opening file: %s", os.path.abspath(dataFile) )
@@ -163,6 +134,20 @@ class GpwArchiveData:
             return None
         return None
 
+    def downloadData(self, day):
+        filePath = tmp_dir + "data/gpw/arch/" + day.strftime("%Y-%m-%d") + ".xls"
+        if os.path.exists( filePath ):
+            return filePath
+
+        ## pattern example: https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=15-01-2020
+        url = "https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=" + day.strftime("%d-%m-%Y")
+        _LOGGER.debug( "grabbing data from utl: %s", url )
+
+        dirPath = os.path.dirname( filePath )
+        os.makedirs( dirPath, exist_ok=True )
+        urllib.request.urlretrieve( url, filePath )
+        return filePath
+
     def isFileWithNoData(self, filePath):
         with open( filePath ) as f:
             if "Brak danych dla wybranych kryteriów." in f.read():
@@ -170,7 +155,7 @@ class GpwArchiveData:
         return False
 
     def sourceLink(self):
-        return self.crawler.sourceLink()
+        return "https://www.gpw.pl/archiwum-notowan"
 
 
 ## ==========================================================================
