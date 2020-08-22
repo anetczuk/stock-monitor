@@ -82,15 +82,29 @@ class ReportsWidget( QWidget ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
 
+        self.dataObject = None
+        self.dataAccess = FinRepsCalendarData()
+
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.setContentsMargins( 0, 0, 0, 0 )
         self.setLayout( vlayout )
         self.dataTable = ReportsTable(self)
-
         vlayout.addWidget( self.dataTable )
 
-        self.dataObject = None
-        self.dataAccess = FinRepsCalendarData()
+        hlayout = QtWidgets.QHBoxLayout()
+        sourceText = QtWidgets.QLabel(self)
+        sourceText.setText("Source:")
+        hlayout.addWidget( sourceText )
+        
+        sourceLabel = QtWidgets.QLabel(self)
+        sourceLabel.setOpenExternalLinks(True)
+        sourceUrl = self.dataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        sourceLabel.setText( htmlText )
+        hlayout.addWidget( sourceLabel, 1 )
+
+        vlayout.addLayout( hlayout )
+
         self.refreshData( False )
 
     def connectData(self, dataObject: DataObject):
@@ -117,6 +131,9 @@ class PublishedReportsWidget( QWidget ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
 
+        self.dataObject = None
+        self.dataAccess = PublishedFinRepsCalendarData()
+
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.setContentsMargins( 0, 0, 0, 0 )
         self.setLayout( vlayout )
@@ -124,8 +141,20 @@ class PublishedReportsWidget( QWidget ):
 
         vlayout.addWidget( self.dataTable )
 
-        self.dataObject = None
-        self.dataAccess = PublishedFinRepsCalendarData()
+        hlayout = QtWidgets.QHBoxLayout()
+        sourceText = QtWidgets.QLabel(self)
+        sourceText.setText("Source:")
+        hlayout.addWidget( sourceText )
+        
+        sourceLabel = QtWidgets.QLabel(self)
+        sourceLabel.setOpenExternalLinks(True)
+        sourceUrl = self.dataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        sourceLabel.setText( htmlText )
+        hlayout.addWidget( sourceLabel, 1 )
+
+        vlayout.addLayout( hlayout )
+        
         self.refreshData( False )
 
     def connectData(self, dataObject):

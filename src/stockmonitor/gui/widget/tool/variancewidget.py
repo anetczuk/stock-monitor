@@ -25,7 +25,7 @@
 import logging
 import datetime
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
 from stockmonitor.dataaccess import stockdata
@@ -56,6 +56,13 @@ class VarianceWidget(QtBaseClass):           # type: ignore
         self.ui.toDE.setDate( toDate )
 
         self.ui.openPB.setEnabled( False )
+
+        analysis = StockAnalysis()
+        self.ui.sourceLabel.setTextInteractionFlags( Qt.TextBrowserInteraction )
+        self.ui.sourceLabel.setOpenExternalLinks(True)
+        sourceUrl = analysis.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.ui.sourceLabel.setText( htmlText )
 
         self.ui.calculatePB.clicked.connect( self.calculate )
         self.ui.openPB.clicked.connect( self.openResults )

@@ -54,7 +54,10 @@ class FinRepsCalendarData( WorksheetData ):
     def getDataUrl(self):
         url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
                "?sort=asc&order=Data%20publikacji" )
-        return url
+        return url    
+
+    def sourceLink(self):
+        return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
 
 
 class PublishedFinRepsCalendarData( WorksheetData ):
@@ -80,3 +83,6 @@ class PublishedFinRepsCalendarData( WorksheetData ):
         url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
                "?sort=desc&order=Data%20publikacji" )
         return url
+
+    def sourceLink(self):
+        return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"

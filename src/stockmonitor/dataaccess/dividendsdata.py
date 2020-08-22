@@ -66,3 +66,6 @@ class DividendsCalendarData( WorksheetData ):
     def getDataUrl(self):
         url = "https://www.stockwatch.pl/dywidendy/"
         return url
+
+    def sourceLink(self):
+        return self.getDataUrl()

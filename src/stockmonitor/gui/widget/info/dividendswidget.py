@@ -83,15 +83,29 @@ class DividendsWidget( QWidget ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
 
+        self.dataObject: DataObject = None
+        self.dataAccess = DividendsCalendarData()
+
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.setContentsMargins( 0, 0, 0, 0 )
         self.setLayout( vlayout )
         self.dataTable = DividendsTable(self)
-
         vlayout.addWidget( self.dataTable )
+        
+        hlayout = QtWidgets.QHBoxLayout()
+        sourceText = QtWidgets.QLabel(self)
+        sourceText.setText("Source:")
+        hlayout.addWidget( sourceText )
+        
+        sourceLabel = QtWidgets.QLabel(self)
+        sourceLabel.setOpenExternalLinks(True)
+        sourceUrl = self.dataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        sourceLabel.setText( htmlText )
+        hlayout.addWidget( sourceLabel, 1 )
 
-        self.dataObject: DataObject = None
-        self.dataAccess = DividendsCalendarData()
+        vlayout.addLayout( hlayout )
+        
         self.refreshData( False )
 
     def connectData(self, dataObject: DataObject):

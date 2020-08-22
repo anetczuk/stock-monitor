@@ -25,7 +25,7 @@
 import logging
 from enum import unique, Enum
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
 from stockmonitor.dataaccess import stockdata
@@ -67,6 +67,13 @@ class DayWidget(QtBaseClass):           # type: ignore
 
         for value in DaysDataType:
             self.ui.fieldCB.addItem( value.name, value )
+
+        analysis = StockAnalysis()
+        self.ui.sourceLabel.setTextInteractionFlags( Qt.TextBrowserInteraction )
+        self.ui.sourceLabel.setOpenExternalLinks(True)
+        sourceUrl = analysis.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.ui.sourceLabel.setText( htmlText )
 
         self.ui.calculatePB.clicked.connect( self.calculate )
         self.ui.openPB.clicked.connect( self.openResults )

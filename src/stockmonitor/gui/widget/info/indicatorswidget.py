@@ -26,7 +26,7 @@ import logging
 from typing import List
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QModelIndex
+from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable
@@ -80,15 +80,29 @@ class IndicatorsWidget( QWidget ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
 
+        self.dataObject: DataObject = None
+        self.dataAccess = GpwIndicatorsData()
+
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.setContentsMargins( 0, 0, 0, 0 )
         self.setLayout( vlayout )
         self.dataTable = IndicatorsTable(self)
-
         vlayout.addWidget( self.dataTable )
 
-        self.dataObject: DataObject = None
-        self.dataAccess = GpwIndicatorsData()
+        hlayout = QtWidgets.QHBoxLayout()
+        sourceText = QtWidgets.QLabel(self)
+        sourceText.setText("Source:")
+        hlayout.addWidget( sourceText )
+        
+        sourceLabel = QtWidgets.QLabel(self)
+        sourceLabel.setOpenExternalLinks(True)
+        sourceUrl = self.dataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        sourceLabel.setText( htmlText )
+        hlayout.addWidget( sourceLabel, 1 )
+        
+        vlayout.addLayout( hlayout )
+
         self.refreshData( False )
 
     def connectData(self, dataObject: DataObject):

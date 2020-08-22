@@ -63,6 +63,9 @@ class GpwArchiveCrawler:
         urllib.request.urlretrieve( url, filePath )
         return filePath
 
+    def sourceLink(self):
+        return "https://www.gpw.pl/archiwum-notowan"
+
 
 class GpwArchiveData:
     """Handle GPW archive data."""
@@ -165,6 +168,9 @@ class GpwArchiveData:
             if "Brak danych dla wybranych kryteriów." in f.read():
                 return True
         return False
+
+    def sourceLink(self):
+        return self.crawler.sourceLink()
 
 
 ## ==========================================================================
@@ -303,6 +309,9 @@ class GpwCurrentData( WorksheetData ):
                "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
         return url
 
+    def sourceLink(self):
+        return "https://www.gpw.pl/akcje"
+
 
 ## ==========================================================================
 
@@ -378,6 +387,9 @@ class GpwIndexesData( BaseWorksheetData ):
             dataFrame = dataAccess.getWorksheet( forceRefresh )
             self.worksheet = self.worksheet.append( dataFrame )
 
+    def sourceLink(self):
+        return "https://gpwbenchmark.pl/notowania"
+
 
 ## ==========================================================================
 
@@ -406,6 +418,9 @@ class GpwIndicatorsData( WorksheetData ):
     def getDataUrl(self):
         url = "https://www.gpw.pl/wskazniki"
         return url
+    
+    def sourceLink(self):
+        return self.getDataUrl()
 
 
 ## ==========================================================================

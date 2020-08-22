@@ -102,6 +102,11 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.recentrepswidget.connectData( self.data )
         self.ui.dividendswidget.connectData( self.data )
 
+        self.ui.stockSourceLabel.setOpenExternalLinks(True)
+        sourceUrl = self.data.currentGpwData.stockData.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.ui.stockSourceLabel.setText( htmlText )
+
         ## ================== connecting signals ==================
 
         self.data.favsChanged.connect( self._handleFavsChange )
@@ -180,6 +185,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         dataAccess = GpwIndexesData()
         data = dataAccess.getWorksheet( forceRefresh )
         self.ui.indexesTable.setData( data )
+        self.ui.indexesSourceLabel.setOpenExternalLinks(True)
+        sourceUrl = dataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.ui.indexesSourceLabel.setText( htmlText )
 
         self.ui.indicatorswidget.refreshData( forceRefresh )
         self.ui.reportswidget.refreshData( forceRefresh )

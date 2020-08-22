@@ -64,6 +64,9 @@ class StockData(object):
         validDay = self.getRecentValidDay(day)
         return self.dataProvider.getData( ArchiveDataType.ISIN, validDay )
 
+    def sourceLink(self):
+        return self.dataProvider.sourceLink()
+
 
 StockData.logger = _LOGGER.getChild(StockData.__name__)
 
@@ -161,6 +164,9 @@ class StockAnalysis(object):
         self.sumDate   = None
         self.currValue = None
         self.currDate  = None
+
+    def sourceLink(self):
+        return self.data.sourceLink()
 
     def loadMin(self, dataType: ArchiveDataType, fromDay: date, toDay: date):
         self.logger.debug( "Calculating min in range: %s %s", fromDay, toDay )
