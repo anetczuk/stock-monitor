@@ -403,7 +403,7 @@ class GpwIndicatorsData( WorksheetData ):
     def getDataUrl(self):
         url = "https://www.gpw.pl/wskazniki"
         return url
-    
+
     def sourceLink(self):
         return self.getDataUrl()
 

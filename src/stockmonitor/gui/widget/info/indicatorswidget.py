@@ -26,12 +26,10 @@ import logging
 from typing import List
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QModelIndex
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable
-from stockmonitor.dataaccess.worksheetdata import WorksheetData
-from stockmonitor.dataaccess.gpwdata import GpwIndicatorsData
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.dataobject import DataObject
 
@@ -81,7 +79,7 @@ class IndicatorsWidget( QWidget ):
         super().__init__(parentWidget)
 
         self.dataObject: DataObject = None
-        self.dataAccess = GpwIndicatorsData()
+        self.dataAccess = None
 
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.setContentsMargins( 0, 0, 0, 0 )
@@ -93,33 +91,29 @@ class IndicatorsWidget( QWidget ):
         sourceText = QtWidgets.QLabel(self)
         sourceText.setText("Source:")
         hlayout.addWidget( sourceText )
-        
-        sourceLabel = QtWidgets.QLabel(self)
-        sourceLabel.setOpenExternalLinks(True)
-        sourceUrl = self.dataAccess.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        sourceLabel.setText( htmlText )
-        hlayout.addWidget( sourceLabel, 1 )
-        
-        vlayout.addLayout( hlayout )
 
-        self.refreshData( False )
+        self.sourceLabel = QtWidgets.QLabel(self)
+        self.sourceLabel.setOpenExternalLinks(True)
+        hlayout.addWidget( self.sourceLabel, 1 )
+
+        vlayout.addLayout( hlayout )
 
     def connectData(self, dataObject: DataObject):
         self.dataObject = dataObject
+        self.dataAccess = self.dataObject.gpwIndicatorsData
+
+        sourceUrl = self.dataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.sourceLabel.setText( htmlText )
 
         colorDecorator = IndicatorsColorDelegate( self )
         self.dataTable.setColorDelegate( colorDecorator )
 
         self.dataTable.connectData( self.dataObject )
 
-    def setDataAccess(self, dataAccess: WorksheetData):
-        self.dataAccess = dataAccess
-        self.refreshData( False )
+        self.refreshData()
 
-    def refreshData(self, forceRefresh=True):
-        if forceRefresh:
-            self.dataAccess.refreshData()
+    def refreshData(self):
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
 

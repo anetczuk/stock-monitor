@@ -112,4 +112,4 @@ class GpwIsinMapDataTest(unittest.TestCase):
     def test_getWorksheet(self):
         currData = self.dataAccess.getWorksheet()
         dataLen = len( currData )
-        self.assertEqual(dataLen, 831)
+        self.assertEqual(dataLen, 827)

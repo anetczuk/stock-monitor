@@ -25,21 +25,49 @@ import logging
 import collections
 import glob
 from typing import Dict, Set
+import threading
 
 from PyQt5.QtCore import QObject, pyqtSignal
+# from PyQt5.QtCore import QFutureWatcher
 from PyQt5.QtWidgets import QWidget, QUndoStack
 
 from stockmonitor import persist
+from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIsinMapData
+from stockmonitor.dataaccess.gpwdata import GpwIndexesData
+from stockmonitor.dataaccess.gpwdata import GpwIndicatorsData
+from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
+from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
+
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
 from stockmonitor.gui.command.deletefavgroupcommand import DeleteFavGroupCommand
 from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIsinMapData
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class ThreadList():
+
+    def __init__(self):
+        self.threads = list()
+
+    def append(self, thread):
+        self.threads.append( thread )
+
+    def appendStart(self, thread):
+        thread.start()
+        self.threads.append( thread )
+
+    def start(self):
+        for thr in self.threads:
+            thr.start()
+
+    def join(self):
+        for thr in self.threads:
+            thr.join()
 
 
 class FavData( persist.Versionable ):
@@ -186,8 +214,8 @@ class StockData():
     def headers(self) -> Dict[ int, str ]:
         return self.stockHeaders
 
-    def refreshData(self):
-        self.stockData.refreshData()
+    def refreshData(self, forceRefresh=True):
+        self.stockData.refreshData( forceRefresh )
 
 
 class DataObject( QObject ):
@@ -204,9 +232,16 @@ class DataObject( QObject ):
         super().__init__( parent )
         self.parentWidget = parent
 
-        self.dataContainer  = DataContainer()
-        self.currentGpwData = StockData( GpwCurrentData() )
-        self.gpwIsinMap     = GpwIsinMapData()
+        self.dataContainer      = DataContainer()
+        self.currentGpwData     = StockData( GpwCurrentData() )
+        self.gpwIndexesData     = GpwIndexesData()
+        self.gpwIndicatorsData  = GpwIndicatorsData()
+        self.gpwDividendsData   = DividendsCalendarData()
+
+        self.gpwReportsData     = FinRepsCalendarData()
+        self.gpwPubReportsData  = PublishedFinRepsCalendarData()
+
+        self.gpwIsinMap         = GpwIsinMapData()
 
         self.undoStack = QUndoStack(self)
 
@@ -274,9 +309,19 @@ class DataObject( QObject ):
 
     ## ======================================================================
 
-    def refreshStockData(self):
-        self.currentGpwData.refreshData()
-        self.gpwIsinMap.refreshData()
+    def refreshStockData(self, forceRefresh=True):
+        threads = ThreadList()
+
+        threads.appendStart( threading.Thread( target=self.currentGpwData.refreshData, args=[forceRefresh] ) )
+        threads.appendStart( threading.Thread( target=self.gpwIndexesData.refreshData, args=[forceRefresh] ) )
+        threads.appendStart( threading.Thread( target=self.gpwIndicatorsData.refreshData, args=[forceRefresh] ) )
+        threads.appendStart( threading.Thread( target=self.gpwDividendsData.refreshData, args=[forceRefresh] ) )
+        threads.appendStart( threading.Thread( target=self.gpwReportsData.refreshData, args=[forceRefresh] ) )
+        threads.appendStart( threading.Thread( target=self.gpwPubReportsData.refreshData, args=[forceRefresh] ) )
+        threads.appendStart( threading.Thread( target=self.gpwIsinMap.refreshData, args=[forceRefresh] ) )
+
+        threads.join()
+
         self.stockDataChanged.emit()
 
     @property

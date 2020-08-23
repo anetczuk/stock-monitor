@@ -22,13 +22,13 @@
 #
 
 import logging
+import datetime
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
 
-from stockmonitor.dataaccess.gpwdata import GpwIndexesData
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
 
 from . import uiloader
@@ -102,6 +102,12 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.recentrepswidget.connectData( self.data )
         self.ui.dividendswidget.connectData( self.data )
 
+        self.ui.indexesSourceLabel.setOpenExternalLinks(True)
+        indexesDataAccess = self.data.gpwIndexesData
+        sourceUrl = indexesDataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.ui.indexesSourceLabel.setText( htmlText )
+
         self.ui.stockSourceLabel.setOpenExternalLinks(True)
         sourceUrl = self.data.currentGpwData.stockData.sourceLink()
         htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
@@ -124,8 +130,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.applySettings()
         self.trayIcon.show()
-
-        self.refreshStockData( False )
 
         self.setStatusMessage( "Ready", timeout=10000 )
 
@@ -172,28 +176,27 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self._updateStockTimestamp()
         self.refreshStockData( False )
         self.ui.stockFullTable.updateView()
-        self.ui.favsWidget.updateView()
         self.ui.notesWidget.setNotes( self.data.notes )
 
     def refreshStockDataForce(self):
         self.refreshStockData( True )
 
     def refreshStockData(self, forceRefresh=True):
-        if forceRefresh:
-            self.data.refreshStockData()
+        startTime = datetime.datetime.now()
 
-        dataAccess = GpwIndexesData()
-        data = dataAccess.getWorksheet( forceRefresh )
+        self.data.refreshStockData( forceRefresh )
+
+        data = self.data.gpwIndexesData.getWorksheet()
         self.ui.indexesTable.setData( data )
-        self.ui.indexesSourceLabel.setOpenExternalLinks(True)
-        sourceUrl = dataAccess.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.ui.indexesSourceLabel.setText( htmlText )
 
-        self.ui.indicatorswidget.refreshData( forceRefresh )
-        self.ui.reportswidget.refreshData( forceRefresh )
-        self.ui.recentrepswidget.refreshData( forceRefresh )
-        self.ui.dividendswidget.refreshData( forceRefresh )
+        self.ui.indicatorswidget.refreshData()
+        self.ui.reportswidget.refreshData()
+        self.ui.recentrepswidget.refreshData()
+        self.ui.dividendswidget.refreshData()
+
+        endTime = datetime.datetime.now()
+        timeDiff = endTime - startTime
+        _LOGGER.info( "refresh time: %s", timeDiff )
 
     def _handleStockDataChange(self):
         self._updateStockTimestamp()

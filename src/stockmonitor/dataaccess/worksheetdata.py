@@ -41,8 +41,8 @@ class BaseWorksheetData( metaclass=abc.ABCMeta ):
     def __init__(self):
         self.worksheet: DataFrame = None
 
-    def refreshData(self):
-        self.loadWorksheet( True )
+    def refreshData(self, forceRefresh=True):
+        self.loadWorksheet( forceRefresh )
 
     def getWorksheet(self, forceRefresh=False) -> DataFrame:
         if self.worksheet is None or forceRefresh is True:
@@ -61,18 +61,19 @@ class WorksheetData( BaseWorksheetData ):
         self.grabTimestamp: datetime.datetime = None
 
     def loadWorksheet(self, forceRefresh=False):
-        dataFile, timestampFile = self.downloadData( forceRefresh )
-        self.worksheet = self.loadWorksheetFromFile( dataFile )
-        if timestampFile is not None:
-            self.grabTimestamp = persist.load_object_simple( timestampFile, None )
+        dataPath, timestampPath = self.getDataPaths()
+        if forceRefresh is True or not os.path.exists( dataPath ):
+            self.downloadData()
+
+        _LOGGER.debug( "loading recent data from file[%s]", dataPath )
+        self.worksheet = self.loadWorksheetFromFile( dataPath )
+        if timestampPath is not None:
+            self.grabTimestamp = persist.load_object_simple( timestampPath, None )
         else:
             self.grabTimestamp = None
 
-    def downloadData(self, forceRefresh=False):
+    def downloadData(self):
         filePath, timestampPath = self.getDataPaths()
-        if forceRefresh is False and os.path.exists( filePath ):
-            _LOGGER.debug( "loading recent data from file[%s]", filePath )
-            return (filePath, timestampPath)
 
         url = self.getDataUrl()
         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
@@ -91,8 +92,6 @@ class WorksheetData( BaseWorksheetData ):
         urllib.request.urlretrieve( url, filePath )
 
         persist.store_object_simple(currTimestamp, timestampPath)
-
-        return (filePath, timestampPath)
 
     @abc.abstractmethod
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:

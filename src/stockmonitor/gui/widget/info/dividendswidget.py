@@ -30,7 +30,6 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable
-from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.dataobject import DataObject
 
@@ -84,45 +83,41 @@ class DividendsWidget( QWidget ):
         super().__init__(parentWidget)
 
         self.dataObject: DataObject = None
-        self.dataAccess = DividendsCalendarData()
+        self.dataAccess = None
 
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.setContentsMargins( 0, 0, 0, 0 )
         self.setLayout( vlayout )
         self.dataTable = DividendsTable(self)
         vlayout.addWidget( self.dataTable )
-        
+
         hlayout = QtWidgets.QHBoxLayout()
         sourceText = QtWidgets.QLabel(self)
         sourceText.setText("Source:")
         hlayout.addWidget( sourceText )
-        
-        sourceLabel = QtWidgets.QLabel(self)
-        sourceLabel.setOpenExternalLinks(True)
-        sourceUrl = self.dataAccess.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        sourceLabel.setText( htmlText )
-        hlayout.addWidget( sourceLabel, 1 )
+
+        self.sourceLabel = QtWidgets.QLabel(self)
+        self.sourceLabel.setOpenExternalLinks(True)
+        hlayout.addWidget( self.sourceLabel, 1 )
 
         vlayout.addLayout( hlayout )
-        
-        self.refreshData( False )
 
     def connectData(self, dataObject: DataObject):
         self.dataObject = dataObject
+        self.dataAccess = self.dataObject.gpwDividendsData
+
+        sourceUrl = self.dataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.sourceLabel.setText( htmlText )
 
         colorDecorator = DividendsColorDelegate( self )
         self.dataTable.setColorDelegate( colorDecorator )
 
         self.dataTable.connectData( self.dataObject )
 
-    def setDataAccess(self, dataAccess: DividendsCalendarData):
-        self.dataAccess = dataAccess
-        self.refreshData( False )
+        self.refreshData()
 
-    def refreshData(self, forceRefresh=True):
-        if forceRefresh:
-            self.dataAccess.refreshData()
+    def refreshData(self):
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
 
