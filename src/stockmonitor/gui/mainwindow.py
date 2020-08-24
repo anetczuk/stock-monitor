@@ -22,7 +22,7 @@
 #
 
 import logging
-import datetime
+# import datetime
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog
@@ -116,7 +116,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         ## ================== connecting signals ==================
 
         self.data.favsChanged.connect( self._handleFavsChange )
-        self.data.stockDataChanged.connect( self._handleStockDataChange )
+        self.data.stockDataChanged.connect( self._updateStockViews )
         self.data.stockHeadersChanged.connect( self._handleStockHeadersChange )
 
         self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
@@ -134,8 +134,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.setStatusMessage( "Ready", timeout=10000 )
 
     def loadData(self):
+        """Load user related data (e.g. favs, notes)."""
         dataPath = self.getDataPath()
         self.data.load( dataPath )
+        self.data.loadDownloadedStocks()
         self.refreshView()
 
     def triggerSaveTimer(self):
@@ -173,18 +175,18 @@ class MainWindow( QtBaseClass ):           # type: ignore
     ## ====================================================================
 
     def refreshView(self):
-        self._updateStockTimestamp()
-        self.refreshStockData( False )
+        self._updateStockViews()
+        self.ui.stockFullTable.updateData()
         self.ui.stockFullTable.updateView()
+        self.ui.favsWidget.updateView()
         self.ui.notesWidget.setNotes( self.data.notes )
 
     def refreshStockDataForce(self):
-        self.refreshStockData( True )
+        self.data.refreshStockData( True )
 
-    def refreshStockData(self, forceRefresh=True):
-        startTime = datetime.datetime.now()
-
-        self.data.refreshStockData( forceRefresh )
+    def _updateStockViews(self):
+        _LOGGER.info( "handling stock change" )
+        self._updateStockTimestamp()
 
         data = self.data.gpwIndexesData.getWorksheet()
         self.ui.indexesTable.setData( data )
@@ -194,12 +196,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.recentrepswidget.refreshData()
         self.ui.dividendswidget.refreshData()
 
-        endTime = datetime.datetime.now()
-        timeDiff = endTime - startTime
-        _LOGGER.info( "refresh time: %s", timeDiff )
-
-    def _handleStockDataChange(self):
-        self._updateStockTimestamp()
         self.setStatusMessage( "Stock data refreshed" )
 
     def _handleStockHeadersChange(self):
@@ -291,6 +287,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.setIconTheme( self.appSettings.trayIcon )
 
     def loadSettings(self):
+        """Load Qt related settings (e.g. layouts, sizes)."""
         settings = self.getSettings()
         self.logger.debug( "loading app state from %s", settings.fileName() )
 

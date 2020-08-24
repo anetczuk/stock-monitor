@@ -113,8 +113,6 @@ class ReportsWidget( QWidget ):
 
         self.dataTable.connectData( self.dataObject )
 
-        self.refreshData()
-
     def refreshData(self):
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
@@ -158,8 +156,6 @@ class PublishedReportsWidget( QWidget ):
         self.dataTable.setColorDelegate( colorDecorator )
 
         self.dataTable.connectData( self.dataObject )
-
-        self.refreshData()
 
     def refreshData(self):
         dataFrame = self.dataAccess.getWorksheet()

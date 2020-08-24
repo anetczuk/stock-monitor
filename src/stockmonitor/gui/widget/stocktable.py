@@ -155,7 +155,6 @@ class StockFullTable( StockTable ):
 
         self.dataObject.stockDataChanged.connect( self.updateData )
         self.dataObject.stockHeadersChanged.connect( self.updateView )
-        self.updateData()
         self.updateView()
 
     def updateData(self):

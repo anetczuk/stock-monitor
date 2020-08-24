@@ -25,10 +25,8 @@ import logging
 import collections
 import glob
 from typing import Dict, Set
-import threading
 
 from PyQt5.QtCore import QObject, pyqtSignal
-# from PyQt5.QtCore import QFutureWatcher
 from PyQt5.QtWidgets import QWidget, QUndoStack
 
 from stockmonitor import persist
@@ -38,6 +36,7 @@ from stockmonitor.dataaccess.gpwdata import GpwIndicatorsData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
 
+import stockmonitor.gui.threadlist as threadlist
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
 from stockmonitor.gui.command.deletefavgroupcommand import DeleteFavGroupCommand
 from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
@@ -49,25 +48,7 @@ from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCom
 _LOGGER = logging.getLogger(__name__)
 
 
-class ThreadList():
-
-    def __init__(self):
-        self.threads = list()
-
-    def append(self, thread):
-        self.threads.append( thread )
-
-    def appendStart(self, thread):
-        thread.start()
-        self.threads.append( thread )
-
-    def start(self):
-        for thr in self.threads:
-            thr.start()
-
-    def join(self):
-        for thr in self.threads:
-            thr.join()
+## ============================================================
 
 
 class FavData( persist.Versionable ):
@@ -232,7 +213,7 @@ class DataObject( QObject ):
         super().__init__( parent )
         self.parentWidget = parent
 
-        self.dataContainer      = DataContainer()
+        self.dataContainer      = DataContainer()                   ## user data
         self.currentGpwData     = StockData( GpwCurrentData() )
         self.gpwIndexesData     = GpwIndexesData()
         self.gpwIndicatorsData  = GpwIndicatorsData()
@@ -254,7 +235,8 @@ class DataObject( QObject ):
         self.dataContainer.load( inputDir )
         inputFile = inputDir + "/gpwcurrentheaders.obj"
         headers = persist.load_object_simple( inputFile, dict() )
-        self.gpwCurrentHeaders = headers
+        self.currentGpwData.stockHeaders = headers
+        #self.gpwCurrentHeaders = headers
 
     @property
     def favs(self) -> FavData:
@@ -309,20 +291,35 @@ class DataObject( QObject ):
 
     ## ======================================================================
 
+    def loadDownloadedStocks(self):
+        stockList = self.stockRefreshList()
+        for func, args in stockList:
+            func( *args )
+
     def refreshStockData(self, forceRefresh=True):
-        threads = ThreadList()
+        threads = threadlist.QThreadList( self )
 
-        threads.appendStart( threading.Thread( target=self.currentGpwData.refreshData, args=[forceRefresh] ) )
-        threads.appendStart( threading.Thread( target=self.gpwIndexesData.refreshData, args=[forceRefresh] ) )
-        threads.appendStart( threading.Thread( target=self.gpwIndicatorsData.refreshData, args=[forceRefresh] ) )
-        threads.appendStart( threading.Thread( target=self.gpwDividendsData.refreshData, args=[forceRefresh] ) )
-        threads.appendStart( threading.Thread( target=self.gpwReportsData.refreshData, args=[forceRefresh] ) )
-        threads.appendStart( threading.Thread( target=self.gpwPubReportsData.refreshData, args=[forceRefresh] ) )
-        threads.appendStart( threading.Thread( target=self.gpwIsinMap.refreshData, args=[forceRefresh] ) )
+        threads.finished.connect( threads.deleteLater )
+        threads.finished.connect( self.stockDataChanged )
 
-        threads.join()
+#         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
 
-        self.stockDataChanged.emit()
+        stockList = self.stockRefreshList( forceRefresh )
+        for func, args in stockList:
+            threads.appendFunction( func, args )
+
+        threads.start()
+
+    def stockRefreshList(self, forceRefresh=False):
+        retList = []
+        retList.append( (self.currentGpwData.refreshData, [forceRefresh] ) )
+        retList.append( (self.gpwIndexesData.refreshData, [forceRefresh] ) )
+        retList.append( (self.gpwIndicatorsData.refreshData, [forceRefresh] ) )
+        retList.append( (self.gpwDividendsData.refreshData, [forceRefresh] ) )
+        retList.append( (self.gpwReportsData.refreshData, [forceRefresh] ) )
+        retList.append( (self.gpwPubReportsData.refreshData, [forceRefresh] ) )
+        retList.append( (self.gpwIsinMap.refreshData, [forceRefresh] ) )
+        return retList
 
     @property
     def gpwCurrentData(self):

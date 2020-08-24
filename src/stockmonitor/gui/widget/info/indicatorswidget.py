@@ -111,8 +111,6 @@ class IndicatorsWidget( QWidget ):
 
         self.dataTable.connectData( self.dataObject )
 
-        self.refreshData()
-
     def refreshData(self):
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )

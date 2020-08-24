@@ -62,8 +62,11 @@ class WorksheetData( BaseWorksheetData ):
 
     def loadWorksheet(self, forceRefresh=False):
         dataPath, timestampPath = self.getDataPaths()
-        if forceRefresh is True or not os.path.exists( dataPath ):
+        if forceRefresh is True:
             self.downloadData()
+
+        if not os.path.exists( dataPath ):
+            return
 
         _LOGGER.debug( "loading recent data from file[%s]", dataPath )
         self.worksheet = self.loadWorksheetFromFile( dataPath )
