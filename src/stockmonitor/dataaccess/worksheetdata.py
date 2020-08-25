@@ -36,6 +36,12 @@ from stockmonitor import persist
 _LOGGER = logging.getLogger(__name__)
 
 
+def download_content( url, outputPath ):
+    dirPath = os.path.dirname( outputPath )
+    os.makedirs( dirPath, exist_ok=True )
+    urllib.request.urlretrieve( url, outputPath )
+
+
 class BaseWorksheetData( metaclass=abc.ABCMeta ):
 
     def __init__(self):
@@ -82,18 +88,7 @@ class WorksheetData( BaseWorksheetData ):
         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
 
         currTimestamp = datetime.datetime.today()
-
-#         open( filePath, 'w' ).close()       ## erase file whole content
-#         for currUrl in urlList:
-#             with urllib.request.urlopen(currUrl) as response:
-#                 data = response.read().decode("utf-8")
-#                 with open( filePath, "a+") as fp:
-#                     fp.write(str(data))
-
-        dirPath = os.path.dirname( filePath )
-        os.makedirs( dirPath, exist_ok=True )
-        urllib.request.urlretrieve( url, filePath )
-
+        download_content( url, filePath )
         persist.store_object_simple(currTimestamp, timestampPath)
 
     @abc.abstractmethod

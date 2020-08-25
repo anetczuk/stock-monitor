@@ -23,6 +23,7 @@
 
 import logging
 import threading
+import datetime
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
@@ -116,5 +117,92 @@ class QThreadList( QtCore.QObject ):
         #_LOGGER.info( "thread finished" )
         self.finishCounter += 1
         if self.finishCounter == len( self.threads ):
-            _LOGGER.info( "all threads finished" )
-            self.finished.emit()
+            self._computingFinished()
+
+    def _computingFinished(self):
+        _LOGGER.info( "all threads finished" )
+        self.finished.emit()
+
+
+class QThreadMeasuredList( QThreadList ):
+
+    def __init__(self, parent=None):
+        super().__init__( parent )
+        self.startTime = None
+
+    def start(self):
+        self.startTime = datetime.datetime.now()
+        super().start()
+
+    def _computingFinished(self):
+        super()._computingFinished()
+        endTime = datetime.datetime.now()
+        diffTime = endTime - self.startTime
+        _LOGGER.info( "computation time: %s", diffTime )
+
+
+## ====================================================================
+
+
+class SerialList( QtCore.QObject ):
+
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__( parent )
+        self.commandsList = list()
+        self.startTime = None
+
+    def appendFunction(self, function, args=None):
+        self.commandsList.append( (function, args) )
+
+    def start(self):
+        self.startTime = datetime.datetime.now()
+        _LOGGER.info( "starting computation" )
+        for func, args in self.commandsList:
+            if func is not None:
+                func( *args )
+        self.finished.emit()
+        endTime = datetime.datetime.now()
+        diffTime = endTime - self.startTime
+        _LOGGER.info( "computation time: %s", diffTime )
+
+    def join(self):
+        pass
+
+
+## ====================================================================
+
+
+# class ProcessList( QtCore.QObject ):
+#
+#     finished = QtCore.pyqtSignal()
+#
+#     def __init__(self, parent=None):
+#         super().__init__( parent )
+#         self.threads = list()
+#         self.finishCounter = 0
+#
+#     def appendFunction(self, function, args=None):
+#         worker = ThreadWorker( function, args, self )
+#         worker.thread.finished.connect( self._threadFinished )
+#         self.threads.append( worker )
+#
+#     def start(self):
+#         _LOGGER.info( "starting threads" )
+#         for thr in self.threads:
+#             thr.start()
+#
+#     def join(self):
+#         for thr in self.threads:
+#             thr.wait()
+#
+#     def _threadFinished(self):
+#         #_LOGGER.info( "thread finished" )
+#         self.finishCounter += 1
+#         if self.finishCounter == len( self.threads ):
+#             self._computingFinished()
+#
+#     def _computingFinished(self):
+#         _LOGGER.info( "all threads finished" )
+#         self.finished.emit()

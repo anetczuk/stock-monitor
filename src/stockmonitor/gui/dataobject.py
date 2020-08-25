@@ -25,7 +25,11 @@ import logging
 import collections
 import glob
 from typing import Dict, Set
+# from multiprocessing import Process, Queue
+# from multiprocessing import Pool
+# import functools
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
 
@@ -198,6 +202,30 @@ class StockData():
     def refreshData(self, forceRefresh=True):
         self.stockData.refreshData( forceRefresh )
 
+    def loadWorksheet(self, forceRefresh=False):
+        self.stockData.loadWorksheet( forceRefresh )
+
+    def downloadData(self):
+        self.stockData.downloadData()
+
+
+def instance_download_data(obj):
+    """Wrapper/alias for object.
+
+    Alias for instance method that allows the method to be called in a
+    multiprocessing pool
+    """
+    obj.downloadData()
+    return
+
+
+def heavy_comp( limit ):
+    _LOGGER.info( "computing: %s", limit )
+    fact = 1
+    for i in range( 1, limit + 1 ):
+        fact = fact * i
+    return fact
+
 
 class DataObject( QObject ):
 
@@ -297,12 +325,44 @@ class DataObject( QObject ):
             func( *args )
 
     def refreshStockData(self, forceRefresh=True):
-        threads = threadlist.QThreadList( self )
+# #         stockList = self.stockDownloadList()
+# #         for func in stockList:
+# #             func()
+#
+#
+#         pool = Pool()
+#         stockList = self.stockProviderList()
+#         for stock in stockList:
+#             stock.downloadData()
+# #             bound_instance_downloadData = functools.partial(instance_download_data, stock)
+# #             pool.apply_async( bound_instance_downloadData )
+#
+#         # cleanup
+#         pool.close()
+#         pool.join()
+#
+#         for stock in stockList:
+#             stock.loadWorksheet()
+#
+# #         stockList = self.stockProviderList()
+# #         for stock in stockList:
+# #             stock.downloadData()
+# #
+# #         for stock in stockList:
+# #             stock.loadWorksheet()
+#
+#         self.stockDataChanged.emit()
+
+
+#         threads = threadlist.QThreadList( self )
+        threads = threadlist.QThreadMeasuredList( self )
+#         threads = threadlist.SerialList( self )
 
         threads.finished.connect( threads.deleteLater )
-        threads.finished.connect( self.stockDataChanged )
+        threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
 
 #         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
+#         threads.appendFunction( heavy_comp, [300000] )
 
         stockList = self.stockRefreshList( forceRefresh )
         for func, args in stockList:
@@ -311,14 +371,28 @@ class DataObject( QObject ):
         threads.start()
 
     def stockRefreshList(self, forceRefresh=False):
+        stockList = self.stockProviderList()
         retList = []
-        retList.append( (self.currentGpwData.refreshData, [forceRefresh] ) )
-        retList.append( (self.gpwIndexesData.refreshData, [forceRefresh] ) )
-        retList.append( (self.gpwIndicatorsData.refreshData, [forceRefresh] ) )
-        retList.append( (self.gpwDividendsData.refreshData, [forceRefresh] ) )
-        retList.append( (self.gpwReportsData.refreshData, [forceRefresh] ) )
-        retList.append( (self.gpwPubReportsData.refreshData, [forceRefresh] ) )
-        retList.append( (self.gpwIsinMap.refreshData, [forceRefresh] ) )
+        for stock in stockList:
+            retList.append( (stock.refreshData, [forceRefresh] ) )
+        return retList
+
+    def stockDownloadList(self):
+        stockList = self.stockProviderList()
+        retList = []
+        for stock in stockList:
+            retList.append( stock.downloadData )
+        return retList
+
+    def stockProviderList(self):
+        retList = []
+        retList.append( self.currentGpwData )
+        retList.append( self.gpwIndexesData )
+        retList.append( self.gpwIndicatorsData )
+        retList.append( self.gpwDividendsData )
+        retList.append( self.gpwReportsData )
+        retList.append( self.gpwPubReportsData )
+        retList.append( self.gpwIsinMap )
         return retList
 
     @property

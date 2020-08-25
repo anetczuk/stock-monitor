@@ -372,6 +372,10 @@ class GpwIndexesData( BaseWorksheetData ):
             dataFrame = dataAccess.getWorksheet( forceRefresh )
             self.worksheet = self.worksheet.append( dataFrame )
 
+    def downloadData(self):
+        for dataAccess in self.dataList:
+            dataAccess.downloadData()
+
     def sourceLink(self):
         return "https://gpwbenchmark.pl/notowania"
 
