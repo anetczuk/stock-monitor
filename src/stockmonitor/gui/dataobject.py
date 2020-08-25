@@ -137,7 +137,7 @@ class FavData( persist.Versionable ):
         self.favs[group] = groupList
 
 
-class DataContainer():
+class UserContainer():
     ## 0 - first version
     _class_version = 0
 
@@ -213,7 +213,7 @@ class DataObject( QObject ):
         super().__init__( parent )
         self.parentWidget = parent
 
-        self.dataContainer      = DataContainer()                   ## user data
+        self.userContainer      = UserContainer()                   ## user data
         self.currentGpwData     = StockData( GpwCurrentData() )
         self.gpwIndexesData     = GpwIndexesData()
         self.gpwIndicatorsData  = GpwIndicatorsData()
@@ -229,10 +229,10 @@ class DataObject( QObject ):
     def store( self, outputDir ):
         outputFile = outputDir + "/gpwcurrentheaders.obj"
         persist.store_object( self.gpwCurrentHeaders, outputFile )
-        return self.dataContainer.store( outputDir )
+        return self.userContainer.store( outputDir )
 
     def load( self, inputDir ):
-        self.dataContainer.load( inputDir )
+        self.userContainer.load( inputDir )
         inputFile = inputDir + "/gpwcurrentheaders.obj"
         headers = persist.load_object_simple( inputFile, dict() )
         self.currentGpwData.stockHeaders = headers
@@ -240,19 +240,19 @@ class DataObject( QObject ):
 
     @property
     def favs(self) -> FavData:
-        return self.dataContainer.favs
+        return self.userContainer.favs
 
     @favs.setter
     def favs(self, newData: FavData):
-        self.dataContainer.favs = newData
+        self.userContainer.favs = newData
 
     @property
     def notes(self) -> Dict[str, str]:
-        return self.dataContainer.notes
+        return self.userContainer.notes
 
     @notes.setter
     def notes(self, newData: Dict[str, str]):
-        self.dataContainer.notes = newData
+        self.userContainer.notes = newData
 
     ## ======================================================================
 
