@@ -85,19 +85,19 @@ class MinMaxWidget(QtBaseClass):           # type: ignore
         if fieldValue == CompareDataType.VALUE:
             analysis.loadMin( ArchiveDataType.MIN, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.MAX, fromDate, toDate )
-            analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
+            analysis.loadCurr( ArchiveDataType.CLOSING )
         elif fieldValue == CompareDataType.VOLUME:
             analysis.loadMin( ArchiveDataType.VOLUME, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.VOLUME, fromDate, toDate )
-            analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
+            analysis.loadCurr( ArchiveDataType.VOLUME )
         elif fieldValue == CompareDataType.TRADING:
             analysis.loadMin( ArchiveDataType.TRADING, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.TRADING, fromDate, toDate )
-            analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
+            analysis.loadCurr( ArchiveDataType.TRADING )
         elif fieldValue == CompareDataType.TRANSACTIONS:
             analysis.loadMin( ArchiveDataType.TRANSACTIONS, fromDate, toDate )
             analysis.loadMax( ArchiveDataType.TRANSACTIONS, fromDate, toDate )
-            analysis.loadCurr( ArchiveDataType.TRANSACTIONS, offset=-1 )
+            analysis.loadCurr( ArchiveDataType.TRANSACTIONS )
 
         self.recentOutput = stockdata.tmp_dir + "out/output_potentials.csv"
         resultData = analysis.calcPotentials( self.recentOutput )

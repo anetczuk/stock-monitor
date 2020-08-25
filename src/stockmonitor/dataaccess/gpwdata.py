@@ -56,7 +56,7 @@ class GpwArchiveData:
             return None
         return self.extractColumn( worksheet, colIndex )
 
-    ## check valid stock day starting from "day" and goind past
+    ## check valid stock day starting from "day" and going past
     def getRecentValidDay(self, day: datetime.date):
         currDay = day
         worksheet = None

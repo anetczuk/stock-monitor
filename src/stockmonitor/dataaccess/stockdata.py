@@ -169,7 +169,12 @@ class StockAnalysis(object):
         return self.data.sourceLink()
 
     def loadMin(self, dataType: ArchiveDataType, fromDay: date, toDay: date):
-        self.logger.debug( "Calculating min in range: %s %s", fromDay, toDay )
+        nowDate = datetime.datetime.now().date()
+        if fromDay >= nowDate:
+            fromDay = nowDate - datetime.timedelta(days=1)
+        if toDay >= nowDate:
+            toDay = nowDate - datetime.timedelta(days=1)
+        self.logger.debug( "Loading min in range: %s %s", fromDay, toDay )
         currDate = fromDay
         ret = StockDict()
         while currDate <= toDay:
@@ -180,7 +185,12 @@ class StockAnalysis(object):
         self.minDate  = [fromDay, toDay]
 
     def loadMax(self, dataType: ArchiveDataType, fromDay: date, toDay: date):
-        self.logger.debug( "Calculating max in range: %s %s", fromDay, toDay )
+        nowDate = datetime.datetime.now().date()
+        if fromDay >= nowDate:
+            fromDay = nowDate - datetime.timedelta(days=1)
+        if toDay >= nowDate:
+            toDay = nowDate - datetime.timedelta(days=1)
+        self.logger.debug( "Loading max in range: %s %s", fromDay, toDay )
         currDate = fromDay
         ret = StockDict()
         while currDate <= toDay:
@@ -191,7 +201,12 @@ class StockAnalysis(object):
         self.maxDate  = [fromDay, toDay]
 
     def loadSum(self, dataType: ArchiveDataType, fromDay: date, toDay: date):
-        self.logger.debug( "Calculating sum in range: %s %s", fromDay, toDay )
+        nowDate = datetime.datetime.now().date()
+        if fromDay >= nowDate:
+            fromDay = nowDate - datetime.timedelta(days=1)
+        if toDay >= nowDate:
+            toDay = nowDate - datetime.timedelta(days=1)
+        self.logger.debug( "Loading sum in range: %s %s", fromDay, toDay )
         currDate = fromDay
         ret = StockDict()
         while currDate <= toDay:
@@ -202,9 +217,14 @@ class StockAnalysis(object):
         self.sumValue = ret.stock
         self.sumDate  = [fromDay, toDay]
 
-    def loadCurr(self, dataType: ArchiveDataType, day: date=date.today(), offset=0):
-        currDay = day + datetime.timedelta(days=offset)
+    def loadCurr(self, dataType: ArchiveDataType, day: date=date.today(), offset=-1):
+        _LOGGER.debug( "Loading current: %s %s %s", dataType, day, offset )
+        currDay  = day + datetime.timedelta(days=offset)
+        nowDate = datetime.datetime.now().date()
+        if currDay >= nowDate:
+            currDay = nowDate - datetime.timedelta(days=1)
         validDay = self.data.getRecentValidDay( currDay )
+        _LOGGER.debug( "valid day: %s", validDay )
         self.currValue = self.data.getData( dataType, validDay )
         self.currDate  = [validDay]
 

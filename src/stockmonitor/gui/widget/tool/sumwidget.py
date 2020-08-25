@@ -84,16 +84,16 @@ class SumWidget(QtBaseClass):           # type: ignore
 
         if fieldValue == CompareDataType.VALUE:
             analysis.loadSum( ArchiveDataType.MAX, fromDate, toDate)
-            analysis.loadCurr( ArchiveDataType.CLOSING, offset=-1 )
+            analysis.loadCurr( ArchiveDataType.CLOSING )
         elif fieldValue == CompareDataType.VOLUME:
             analysis.loadSum( ArchiveDataType.VOLUME, fromDate, toDate)
-            analysis.loadCurr( ArchiveDataType.VOLUME, offset=-1 )
+            analysis.loadCurr( ArchiveDataType.VOLUME )
         elif fieldValue == CompareDataType.TRADING:
             analysis.loadSum( ArchiveDataType.TRADING, fromDate, toDate)
-            analysis.loadCurr( ArchiveDataType.TRADING, offset=-1 )
+            analysis.loadCurr( ArchiveDataType.TRADING )
         elif fieldValue == CompareDataType.TRANSACTIONS:
             analysis.loadSum( ArchiveDataType.TRANSACTIONS, fromDate, toDate)
-            analysis.loadCurr( ArchiveDataType.TRANSACTIONS, offset=-1 )
+            analysis.loadCurr( ArchiveDataType.TRANSACTIONS )
 
         self.recentOutput = stockdata.tmp_dir + "out/output_sum.csv"
         resultData = analysis.calcGreatestSum( self.recentOutput )
