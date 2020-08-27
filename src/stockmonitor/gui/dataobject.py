@@ -184,7 +184,8 @@ class WalletData( persist.Versionable ):
                 currValue  += amount * unit_price
 
             if currAmount == 0:
-                return None
+                return (0, 0)
+
             currUnitPrice = currValue / currAmount
             return ( currAmount, currUnitPrice )
 
@@ -197,7 +198,7 @@ class WalletData( persist.Versionable ):
                 stockAmount += item[0]
 
             if stockAmount <= 0:
-                return None
+                return (0, 0)
 
             currAmount = 0
             currValue  = 0
@@ -492,24 +493,34 @@ class DataObject( QObject ):
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
-#         for code, amount, buy_unit_price in wallet.items():
         for code, transactions in wallet.stockList.items():
             transState = transactions.calc2()
-            if transState is None:
-                continue
             amount, buy_unit_price = transState
             codeRow = currentStock.getRowByTicker( code )
+            
             if codeRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", code )
                 rowsList.append( ["-", code, amount, "-", buy_unit_price, "-", "-", "-", "-"] )
                 continue
-#             print( "aaa:", codeRow )
+            
             stockName = codeRow["Nazwa"]
-            currUnitValue = float( codeRow.iloc[currUnitValueIndex] )
+            currUnitValueRaw = codeRow.iloc[currUnitValueIndex]
+            currUnitValue = 0
+            if currUnitValueRaw != "-":
+                currUnitValue = float( currUnitValueRaw )
+
+            if amount == 0:
+                totalProfit = transactions.transactionsSum()
+                totalProfit = round( totalProfit, 2 )
+                rowsList.append( [stockName, code, amount, "-", "-", "-", "-", "-", totalProfit] )
+                continue
+                
             currValue = currUnitValue * amount
             buyValue  = buy_unit_price * amount
             profit    = currValue - buyValue
-            profitPnt = profit / buyValue * 100.0
+            profitPnt = 0
+            if buyValue != 0:
+                profitPnt = profit / buyValue * 100.0
             
             totalProfit = transactions.transactionsSum() + currValue
             
@@ -517,6 +528,7 @@ class DataObject( QObject ):
             profitPnt      = round( profitPnt, 2 )
             profit         = round( profit, 2 )
             currValue      = round( currValue, 2 )
+            totalProfit    = round( totalProfit, 2 )
 
             rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price, 
                               profitPnt, profit, currValue, totalProfit] )
