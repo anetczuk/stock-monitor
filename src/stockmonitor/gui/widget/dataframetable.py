@@ -481,6 +481,12 @@ class DataFrameTable( QTableView ):
 
         self.doubleClicked.connect( self.linkClicked )
 
+    def addProxyModel(self, nextProxyModel):
+        sinkModel   = self.model()
+        sourceModel = sinkModel.sourceModel()
+        nextProxyModel.setSourceModel( sourceModel )
+        sinkModel.setSourceModel( nextProxyModel )
+
     @property
     def headersText(self):
         return self.pandaModel.customHeader

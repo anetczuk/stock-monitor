@@ -52,6 +52,7 @@ from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
+from _datetime import timedelta
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -154,12 +155,25 @@ class WalletData( persist.Versionable ):
             ## amount, unit_price
             self.transactions: List[ Tuple[int, float, datetime] ] = list()
 
+        def size(self):
+            return len( self.transactions )
+
         def clear(self):
             self.transactions.clear()
 
-        def add(self, amount, unitPrice, transTime=None):
-            self.transactions.append( (amount, unitPrice, transTime) )
-            self.sort()
+        def add(self, amount, unitPrice, transTime=None, joinSimilar=True):
+            if joinSimilar is False:
+                self.transactions.append( (amount, unitPrice, transTime) )
+                self.sort()
+                return
+            similarIndex = self._findSimilar( unitPrice, transTime )
+            if similarIndex < 0:
+                self.transactions.append( (amount, unitPrice, transTime) )
+                self.sort()
+                return
+            similar = self.transactions[ similarIndex ]
+            newAmount = similar[0] + amount
+            self.transactions[ similarIndex ] = ( newAmount, similar[1], similar[2] )
 
         def sort(self):
             ## sort by date -- recent date first
@@ -167,11 +181,17 @@ class WalletData( persist.Versionable ):
             self.transactions.sort( key=compare, reverse=True )
 #             self.transactions.sort(key=lambda x: (x[2] in None, x[2]), reverse=True)
 
-        def transactionsSum(self):
-            sum = 0
+        def transactionsProfit(self, considerCommission=True):
+            profitValue = 0
             for amount, unit_price, _ in self.transactions:
-                sum += amount * unit_price
-            return -sum
+                ## positive amount: buy  -- decrease transactions sum 
+                ## negative amount: sell -- increase transactions sum 
+                currValue = amount * unit_price
+                profitValue -= currValue
+                if considerCommission:
+                    commission = broker_commission( currValue )
+                    profitValue -= commission
+            return profitValue
 
         def calc(self):
             ## Buy value raises then current unit price rises
@@ -231,6 +251,16 @@ class WalletData( persist.Versionable ):
             if date2 is None:
                 return -1
             return date1 < date2
+        
+        def _findSimilar(self, unit_price, trans_date):
+            for i in range( len( self.transactions ) ):
+                item = self.transactions[i]
+                if item[1] != unit_price:
+                    continue
+                diff = item[2] - trans_date
+                if diff < timedelta( minutes=5 ):
+                    return i
+            return -1
 
     ## 0 - first version
     ## 1 - dict instead of list
@@ -269,6 +299,9 @@ class WalletData( persist.Versionable ):
 
     def clear(self):
         self.stockList.clear()
+        
+    def transactions(self, code):
+        return self.stockList.get( code, None )
 
     def items(self) -> List[ Tuple[str, int, float] ]:
         ret = list()
@@ -281,12 +314,12 @@ class WalletData( persist.Versionable ):
                 ret.append( (key, val[0], val[1]) )
         return ret
 
-    def add( self, code, amount, unit_price, transTime: datetime=datetime.today() ):
+    def add( self, code, amount, unit_price, transTime: datetime=datetime.today(), joinSimilar=True ):
         transactions = self.stockList.get( code, None )
         if transactions is None:
             transactions = self.History()
             self.stockList[ code ] = transactions
-        transactions.add( amount, unit_price, transTime )
+        transactions.add( amount, unit_price, transTime, joinSimilar )
 
 
 class UserContainer():
@@ -510,7 +543,7 @@ class DataObject( QObject ):
                 currUnitValue = float( currUnitValueRaw )
 
             if amount == 0:
-                totalProfit = transactions.transactionsSum()
+                totalProfit = transactions.transactionsProfit()
                 totalProfit = round( totalProfit, 2 )
                 rowsList.append( [stockName, code, amount, "-", "-", "-", "-", "-", totalProfit] )
                 continue
@@ -522,7 +555,8 @@ class DataObject( QObject ):
             if buyValue != 0:
                 profitPnt = profit / buyValue * 100.0
             
-            totalProfit = transactions.transactionsSum() + currValue
+            commission = broker_commission( currValue )
+            totalProfit = transactions.transactionsProfit() + currValue - commission
             
             buy_unit_price = round( buy_unit_price, 4 )
             profitPnt      = round( profitPnt, 2 )
@@ -546,6 +580,8 @@ class DataObject( QObject ):
             oper       = row['k_s']
             amount     = row['amount']
             unit_price = row['unit_price']
+            
+#             print("raw row:", transTime, stockName, oper, amount, unit_price)
 
             dateObject = None
             try:
@@ -556,7 +592,7 @@ class DataObject( QObject ):
 
             code = self.getStockCodeFromName( stockName )
             if code is None:
-                _LOGGER.warning( "could not find stock code for name: %s", stockName )
+                _LOGGER.warning( "could not find stock code for name: >%s<", stockName )
                 continue
 
             if oper == "K":
@@ -665,3 +701,15 @@ class DataObject( QObject ):
 
     def getStockCodeFromName(self, stockName):
         return self.gpwIsinMap.getStockCodeFromName( stockName )
+
+
+def broker_commission( value ):
+    ## always returns positive value
+    if value > 0.0:
+        commission = value * 0.0039
+        commission = max( commission,  3.0 )
+        return commission
+    else:
+        commission = value * 0.0039
+        commission = -min( commission, -3.0 )
+        return commission

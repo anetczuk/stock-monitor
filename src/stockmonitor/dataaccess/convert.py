@@ -36,6 +36,8 @@ def convert_int( data ):
 
 
 def convert_float( data ):
+    if isinstance( data, float ):
+        return data
     value = data.strip()
     value = value.replace(',', '.')
     value = re.sub(r'\s+', '', value)       ## remove whitespaces

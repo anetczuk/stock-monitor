@@ -45,11 +45,28 @@ class WalletDataTest(unittest.TestCase):
         dataobject.add( "xxx", 1, 10.0 )
         self.assertEqual( dataobject.size(), 1 )
 
+        self.assertEqual( dataobject.transactions("xxx").size(), 2 )
+        
         items = dataobject.items()
         code, amount, unit_price = items[0]
         self.assertEqual( code, "xxx" )
         self.assertEqual( amount, 2 )
         self.assertEqual( unit_price, 15.0 )
+
+    def test_add_buy_similar(self):
+        dataobject = WalletData()
+        self.assertEqual( dataobject.size(), 0 )
+
+        dataobject.add( "xxx", 1, 20.0 )
+        dataobject.add( "xxx", 3, 20.0 )
+
+        self.assertEqual( dataobject.transactions("xxx").size(), 1 )
+
+        items = dataobject.items()
+        code, amount, unit_price = items[0]
+        self.assertEqual( code, "xxx" )
+        self.assertEqual( amount, 4 )
+        self.assertEqual( unit_price, 20.0 )
 
     def test_add_sell_1(self):
         dataobject = WalletData()

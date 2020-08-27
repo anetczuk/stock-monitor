@@ -25,6 +25,7 @@ import logging
 
 import pandas
 
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMenu, QFileDialog
 from PyQt5.QtGui import QCursor
 
@@ -38,6 +39,30 @@ from .stocktable import StockTable
 _LOGGER = logging.getLogger(__name__)
 
 
+
+class WalletProxyModel( QtCore.QSortFilterProxyModel ):
+
+    def __init__(self, parentObject=None):
+        super().__init__(parentObject)
+
+        self._includeSoldOut = False
+
+    def includeSoldOut(self, state=True):
+        self._includeSoldOut = state
+        self.invalidateFilter()
+
+    def filterAcceptsRow( self, sourceRow, sourceParent ):
+        if self._includeSoldOut:
+            return True
+
+        valueIndex = self.sourceModel().index( sourceRow, 2, sourceParent )
+        rawValue = self.sourceModel().data( valueIndex, QtCore.Qt.UserRole )
+        return rawValue > 0
+
+
+## =================================================================
+    
+    
 class WalletStockTable( StockTable ):
 
     def __init__(self, parentWidget=None):
@@ -73,6 +98,7 @@ class WalletStockTable( StockTable ):
             return
         dataPath = filePath[0]
         importedData = import_mb_transactions( dataPath )
+#         importedData = import_mb_orders( dataPath )
 #         print("data:\n", importedData)
         self.dataObject.importWalletTransactions( importedData )
 
@@ -100,6 +126,11 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         self.ui.setupUi(self)
 
         self.dataObject = None
+        
+        self.soldOutFilter = WalletProxyModel()
+        self.ui.walletTable.addProxyModel( self.soldOutFilter )
+        
+        self.ui.soldOutCB.stateChanged.connect( self._handleSoldOut )
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
@@ -119,13 +150,27 @@ class WalletWidget( QtBaseClass ):           # type: ignore
             self.ui.walletTable.clear()
             return
         self.ui.walletTable.setData( stock )
+        
+    def _handleSoldOut(self):
+        incluideSoldOut = self.ui.soldOutCB.isChecked()
+        self.soldOutFilter.includeSoldOut( incluideSoldOut )
 
 
 def import_mb_transactions( dataPath ):
+    ## imported transaction values are not affected by borker's commission
+    ## real sell profit is transaction value decreased by broker's commission
+    ## real buy cost is transaction value increased by broker's commission
+    ## broker commission: greater of 3PLN and 0.39%
+    
     _LOGGER.debug( "opening transactions: %s", dataPath )
     dataFrame = pandas.read_csv( dataPath, names=["trans_time", "name", "stock_id", "k_s", "amount",
                                                   "unit_price", "unit_currency", "price", "currency"],
                                  sep=';', decimal=',', thousands=' ' )
+    
+    #### fix names to match GPW names
+    ## XTRADEBDM -> XTB
+    ## CELONPHARMA -> CLNPHARMA
+    dataFrame["name"].replace({"XTRADEBDM": "XTB", "CELONPHARMA": "CLNPHARMA"}, inplace=True)
     
     dataFrame['amount'] = dataFrame['amount'].apply( convert_int )
 
