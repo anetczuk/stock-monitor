@@ -167,6 +167,12 @@ class WalletData( persist.Versionable ):
             self.transactions.sort( key=compare, reverse=True )
 #             self.transactions.sort(key=lambda x: (x[2] in None, x[2]), reverse=True)
 
+        def transactionsSum(self):
+            sum = 0
+            for amount, unit_price, _ in self.transactions:
+                sum += amount * unit_price
+            return -sum
+
         def calc(self):
             ## Buy value raises then current unit price rises
             ## Sell value raises then current unit price decreases
@@ -479,18 +485,23 @@ class DataObject( QObject ):
         return self.gpwCurrentData.getStockData( stockList )
 
     def getWalletStock(self):
-        columnsList = ["Nazwa", "Ticker", "Liczba", "Kurs", "Średni kurs nabycia", "Zysk %", "Zysk", "Wartość"]
+        columnsList = ["Nazwa", "Ticker", "Liczba", "Kurs", "Średni kurs nabycia", "Zysk %", "Zysk", "Wartość", "Zysk całkowity"]
 
         wallet = self.wallet
         currentStock: GpwCurrentData = self.currentGpwData.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
-        for code, amount, buy_unit_price in wallet.items():
+#         for code, amount, buy_unit_price in wallet.items():
+        for code, transactions in wallet.stockList.items():
+            transState = transactions.calc2()
+            if transState is None:
+                continue
+            amount, buy_unit_price = transState
             codeRow = currentStock.getRowByTicker( code )
             if codeRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", code )
-                rowsList.append( ["-", code, amount, "-", buy_unit_price, "-", "-", "-"] )
+                rowsList.append( ["-", code, amount, "-", buy_unit_price, "-", "-", "-", "-"] )
                 continue
 #             print( "aaa:", codeRow )
             stockName = codeRow["Nazwa"]
@@ -500,13 +511,15 @@ class DataObject( QObject ):
             profit    = currValue - buyValue
             profitPnt = profit / buyValue * 100.0
             
+            totalProfit = transactions.transactionsSum() + currValue
+            
             buy_unit_price = round( buy_unit_price, 4 )
             profitPnt      = round( profitPnt, 2 )
             profit         = round( profit, 2 )
             currValue      = round( currValue, 2 )
 
             rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price, 
-                              profitPnt, profit, currValue] )
+                              profitPnt, profit, currValue, totalProfit] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
