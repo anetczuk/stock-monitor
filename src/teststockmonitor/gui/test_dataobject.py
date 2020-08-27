@@ -46,7 +46,7 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( dataobject.size(), 1 )
 
         self.assertEqual( dataobject.transactions("xxx").size(), 2 )
-        
+
         items = dataobject.items()
         code, amount, unit_price = items[0]
         self.assertEqual( code, "xxx" )

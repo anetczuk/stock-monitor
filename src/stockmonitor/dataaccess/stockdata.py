@@ -727,16 +727,16 @@ class StockAnalysis(object):
             prevVal = prevValue.get( key, 0 )
             nextVal = nextValue.get( key, 0 )
             diff = nextVal - prevVal
-            pot = 0
+            pot = 0.0
             if prevVal != 0:
                 pot = diff / prevVal
             avgPair = potAvg.get(key, [0, 0])
             avgVal = avgPair[0] / avgPair[1]
             moneyLink = self.getMoneyPlLink( key )
-            
+
             pot    = round( pot, 4 )
             avgVal = round( avgVal, 4 )
-            
+
             rowsList.append( [key, prevVal, nextVal, pot, avgVal, currAccuracy, moneyLink] )
 
         ## sort by accuracy, then by potential

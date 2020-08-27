@@ -482,7 +482,7 @@ class DataFrameTable( QTableView ):
         self.setData( DataFrame() )
 
         self.doubleClicked.connect( self.linkClicked )
-        
+
         self.installEventFilter( self )
 
     def addProxyModel(self, nextProxyModel):
@@ -603,7 +603,7 @@ class DataFrameTable( QTableView ):
         ## do nothing -- reimplement if needed
         ## DO NOT REMOVE, reimplemented in inheriting classes
         pass
-    
+
     def eventFilter(self, source, event):
         if event.type() == QtCore.QEvent.KeyPress:
             if event.matches(QtGui.QKeySequence.Copy):
@@ -626,5 +626,4 @@ class DataFrameTable( QTableView ):
             table[row][column] = index.data()
         stream = io.StringIO()
         csv.writer(stream).writerows(table)
-        QtWidgets.qApp.clipboard().setText(stream.getvalue()) 
-            
+        QtWidgets.qApp.clipboard().setText(stream.getvalue())

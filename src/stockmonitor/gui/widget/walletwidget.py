@@ -39,7 +39,6 @@ from .stocktable import StockTable
 _LOGGER = logging.getLogger(__name__)
 
 
-
 class WalletProxyModel( QtCore.QSortFilterProxyModel ):
 
     def __init__(self, parentObject=None):
@@ -61,8 +60,8 @@ class WalletProxyModel( QtCore.QSortFilterProxyModel ):
 
 
 ## =================================================================
-    
-    
+
+
 class WalletStockTable( StockTable ):
 
     def __init__(self, parentWidget=None):
@@ -126,10 +125,10 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         self.ui.setupUi(self)
 
         self.dataObject = None
-        
+
         self.soldOutFilter = WalletProxyModel()
         self.ui.walletTable.addProxyModel( self.soldOutFilter )
-        
+
         self.ui.soldOutCB.stateChanged.connect( self._handleSoldOut )
 
     def connectData(self, dataObject):
@@ -150,7 +149,7 @@ class WalletWidget( QtBaseClass ):           # type: ignore
             self.ui.walletTable.clear()
             return
         self.ui.walletTable.setData( stock )
-        
+
     def _handleSoldOut(self):
         incluideSoldOut = self.ui.soldOutCB.isChecked()
         self.soldOutFilter.includeSoldOut( incluideSoldOut )
@@ -161,20 +160,20 @@ def import_mb_transactions( dataPath ):
     ## real sell profit is transaction value decreased by broker's commission
     ## real buy cost is transaction value increased by broker's commission
     ## broker commission: greater of 3PLN and 0.39%
-    
+
     _LOGGER.debug( "opening transactions: %s", dataPath )
     dataFrame = pandas.read_csv( dataPath, names=["trans_time", "name", "stock_id", "k_s", "amount",
                                                   "unit_price", "unit_currency", "price", "currency"],
                                  sep=';', decimal=',', thousands=' ' )
-    
+
     #### fix names to match GPW names
     ## XTRADEBDM -> XTB
     ## CELONPHARMA -> CLNPHARMA
     dataFrame["name"].replace({"XTRADEBDM": "XTB", "CELONPHARMA": "CLNPHARMA"}, inplace=True)
-    
+
     dataFrame['amount'] = dataFrame['amount'].apply( convert_int )
 
     dataFrame['unit_price'] = dataFrame['unit_price'].apply( convert_float )
     dataFrame['price'] = dataFrame['price'].apply( convert_float )
-    
+
     return dataFrame

@@ -300,7 +300,7 @@ class GpwCurrentData( WorksheetData ):
         dataFrame['Kurs maks.'] = dataFrame['Kurs maks.'].apply( convert_float )
         dataFrame['Kurs ost. trans. / zamk.'] = dataFrame['Kurs ost. trans. / zamk.'].apply( convert_float )
         dataFrame['Zm.do k.odn.(%)'] = dataFrame['Zm.do k.odn.(%)'].apply( convert_float )
-        
+
         ## Wart. obr. - skumul.(tys.)
         dataFrame['Unnamed: 22_level_0'] = dataFrame['Unnamed: 22_level_0'].apply( convert_float )
 
@@ -332,7 +332,7 @@ def convert_indexes_data( dataFrame: DataFrame ):
     dataFrame['Kurs maks.'] = dataFrame['Kurs maks.'].apply( convert_float )
     dataFrame['Wart. ost.'] = dataFrame['Wart. ost.'].apply( convert_float )
     dataFrame['Wartość obrotu skum. (w tys. zł)'] = dataFrame['Wartość obrotu skum. (w tys. zł)'].apply( convert_float )
-    
+
     dataFrame['Liczba spółek'] = dataFrame['Liczba spółek'].apply( convert_int )
     dataFrame['% otw. portfela'] = dataFrame['% otw. portfela'].apply( convert_int )
 

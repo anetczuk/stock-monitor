@@ -184,8 +184,8 @@ class WalletData( persist.Versionable ):
         def transactionsProfit(self, considerCommission=True):
             profitValue = 0
             for amount, unit_price, _ in self.transactions:
-                ## positive amount: buy  -- decrease transactions sum 
-                ## negative amount: sell -- increase transactions sum 
+                ## positive amount: buy  -- decrease transactions sum
+                ## negative amount: sell -- increase transactions sum
                 currValue = amount * unit_price
                 profitValue -= currValue
                 if considerCommission:
@@ -251,7 +251,7 @@ class WalletData( persist.Versionable ):
             if date2 is None:
                 return -1
             return date1 < date2
-        
+
         def _findSimilar(self, unit_price, trans_date):
             for i in range( len( self.transactions ) ):
                 item = self.transactions[i]
@@ -299,7 +299,7 @@ class WalletData( persist.Versionable ):
 
     def clear(self):
         self.stockList.clear()
-        
+
     def transactions(self, code):
         return self.stockList.get( code, None )
 
@@ -519,23 +519,22 @@ class DataObject( QObject ):
         return self.gpwCurrentData.getStockData( stockList )
 
     def getWalletStock(self):
-        columnsList = ["Nazwa", "Ticker", "Liczba", "Kurs", "Średni kurs nabycia", "Zysk %", "Zysk", "Wartość", "Zysk całkowity"]
+        columnsList = ["Nazwa", "Ticker", "Liczba", "Kurs", "Średni kurs nabycia",
+                       "Zysk %", "Zysk", "Wartość", "Zysk całkowity"]
 
-        wallet = self.wallet
         currentStock: GpwCurrentData = self.currentGpwData.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
-        for code, transactions in wallet.stockList.items():
-            transState = transactions.calc2()
-            amount, buy_unit_price = transState
+        for code, transactions in self.wallet.stockList.items():
+            amount, buy_unit_price = transactions.calc2()
             codeRow = currentStock.getRowByTicker( code )
-            
+
             if codeRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", code )
                 rowsList.append( ["-", code, amount, "-", buy_unit_price, "-", "-", "-", "-"] )
                 continue
-            
+
             stockName = codeRow["Nazwa"]
             currUnitValueRaw = codeRow.iloc[currUnitValueIndex]
             currUnitValue = 0
@@ -547,24 +546,24 @@ class DataObject( QObject ):
                 totalProfit = round( totalProfit, 2 )
                 rowsList.append( [stockName, code, amount, "-", "-", "-", "-", "-", totalProfit] )
                 continue
-                
+
             currValue = currUnitValue * amount
             buyValue  = buy_unit_price * amount
             profit    = currValue - buyValue
             profitPnt = 0
             if buyValue != 0:
                 profitPnt = profit / buyValue * 100.0
-            
-            commission = broker_commission( currValue )
-            totalProfit = transactions.transactionsProfit() + currValue - commission
-            
+
+            totalProfit  = transactions.transactionsProfit()
+            totalProfit += currValue - broker_commission( currValue )
+
             buy_unit_price = round( buy_unit_price, 4 )
             profitPnt      = round( profitPnt, 2 )
             profit         = round( profit, 2 )
             currValue      = round( currValue, 2 )
             totalProfit    = round( totalProfit, 2 )
 
-            rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price, 
+            rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price,
                               profitPnt, profit, currValue, totalProfit] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
@@ -580,7 +579,7 @@ class DataObject( QObject ):
             oper       = row['k_s']
             amount     = row['amount']
             unit_price = row['unit_price']
-            
+
 #             print("raw row:", transTime, stockName, oper, amount, unit_price)
 
             dateObject = None
@@ -705,11 +704,11 @@ class DataObject( QObject ):
 
 def broker_commission( value ):
     ## always returns positive value
+    commission = 0.0
     if value > 0.0:
         commission = value * 0.0039
         commission = max( commission,  3.0 )
-        return commission
     else:
         commission = value * 0.0039
         commission = -min( commission, -3.0 )
-        return commission
+    return commission
