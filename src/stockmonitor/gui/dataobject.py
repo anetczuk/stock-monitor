@@ -499,9 +499,14 @@ class DataObject( QObject ):
             buyValue  = buy_unit_price * amount
             profit    = currValue - buyValue
             profitPnt = profit / buyValue * 100.0
+            
             buy_unit_price = round( buy_unit_price, 4 )
+            profitPnt      = round( profitPnt, 2 )
+            profit         = round( profit, 2 )
+            currValue      = round( currValue, 2 )
+
             rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price, 
-                              round( profitPnt, 2 ), round( profit, 2 ), round( currValue, 2 )] )
+                              profitPnt, profit, currValue] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame

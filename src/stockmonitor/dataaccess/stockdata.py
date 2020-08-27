@@ -331,6 +331,8 @@ class StockAnalysis(object):
             if stockDiff != 0:
                 relVal = raiseVal / stockDiff
             moneyLink = self.getMoneyPlLink( key )
+            potVal = round( potVal, 4 )
+            relVal = round( relVal, 4 )
             rowsList.append( [key, minVal, maxVal, currVal, tradingVal, potVal, relVal, moneyLink] )
 
         writer.writerow( columnsList )
@@ -617,6 +619,7 @@ class StockAnalysis(object):
         for key, val in dataDict.items():
             moneyLink = self.getMoneyPlLink( key )
             trading = tradDict[ key ]
+            val = round( val, 4 )
             rowsList.append( [key, val, trading, moneyLink] )
 
         ## sort by variance
@@ -730,6 +733,10 @@ class StockAnalysis(object):
             avgPair = potAvg.get(key, [0, 0])
             avgVal = avgPair[0] / avgPair[1]
             moneyLink = self.getMoneyPlLink( key )
+            
+            pot    = round( pot, 4 )
+            avgVal = round( avgVal, 4 )
+            
             rowsList.append( [key, prevVal, nextVal, pot, avgVal, currAccuracy, moneyLink] )
 
         ## sort by accuracy, then by potential
