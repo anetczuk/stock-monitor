@@ -24,13 +24,15 @@
 import logging
 import copy
 import re
+import io
+import csv
 
 from typing import Dict, List
 
 from urllib.parse import urlparse
 from pandas import DataFrame
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import Qt, QModelIndex, QUrl
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
@@ -480,6 +482,8 @@ class DataFrameTable( QTableView ):
         self.setData( DataFrame() )
 
         self.doubleClicked.connect( self.linkClicked )
+        
+        self.installEventFilter( self )
 
     def addProxyModel(self, nextProxyModel):
         sinkModel   = self.model()
@@ -599,3 +603,28 @@ class DataFrameTable( QTableView ):
         ## do nothing -- reimplement if needed
         ## DO NOT REMOVE, reimplemented in inheriting classes
         pass
+    
+    def eventFilter(self, source, event):
+        if event.type() == QtCore.QEvent.KeyPress:
+            if event.matches(QtGui.QKeySequence.Copy):
+                self.copySelection()
+                return True
+        return super().eventFilter(source, event)
+
+    def copySelection(self):
+        selection = self.selectedIndexes()
+        if not selection:
+            return
+        rows = sorted(index.row() for index in selection)
+        columns = sorted(index.column() for index in selection)
+        rowcount = rows[-1] - rows[0] + 1
+        colcount = columns[-1] - columns[0] + 1
+        table = [[''] * colcount for _ in range(rowcount)]
+        for index in selection:
+            row = index.row() - rows[0]
+            column = index.column() - columns[0]
+            table[row][column] = index.data()
+        stream = io.StringIO()
+        csv.writer(stream).writerows(table)
+        QtWidgets.qApp.clipboard().setText(stream.getvalue()) 
+            
