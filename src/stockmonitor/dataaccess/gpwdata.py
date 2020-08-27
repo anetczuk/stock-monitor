@@ -300,9 +300,12 @@ class GpwCurrentData( WorksheetData ):
         dataFrame['Kurs maks.'] = dataFrame['Kurs maks.'].apply( convert_float )
         dataFrame['Kurs ost. trans. / zamk.'] = dataFrame['Kurs ost. trans. / zamk.'].apply( convert_float )
         dataFrame['Zm.do k.odn.(%)'] = dataFrame['Zm.do k.odn.(%)'].apply( convert_float )
-        dataFrame['Wart. obr. - skumul.(tys.)'] = dataFrame['Wart. obr. - skumul.(tys.)'].apply( convert_float )
+        
+        ## Wart. obr. - skumul.(tys.)
+        dataFrame['Unnamed: 22_level_0'] = dataFrame['Unnamed: 22_level_0'].apply( convert_float )
 
-        dataFrame['Wol. obr. - skumul.'] = dataFrame['Wol. obr. - skumul.'].apply( convert_int )
+        ## Wol. obr. - skumul.
+        dataFrame['Unnamed: 21_level_0'] = dataFrame['Unnamed: 21_level_0'].apply( convert_int )
 
         return dataFrame
 
