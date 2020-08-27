@@ -65,7 +65,9 @@ app.setOrganizationName("arnet")
 dataObject = DataObject()
 dataObject.loadDownloadedStocks()
 dataObject.wallet.add( "EAT", 10, 15.2 )
-dataObject.wallet.add( "ALR", 280, 16.57 )
+dataObject.wallet.add( "ALR", 280, 216.57 )
+dataObject.wallet.add( "XXX", 80,  3.33 )
+dataObject.wallet.add( "CDR", 300, 80.33 )
 
 # csvPath = data.get_data_root_path() + "/akcje_2020-04-14_15-50.csv"
 # dataframe.to_csv( csvPath, encoding='utf-8', index=False )

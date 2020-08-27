@@ -25,7 +25,6 @@ import os
 import logging
 import urllib.request
 import datetime
-import re
 
 from typing import List
 
@@ -34,34 +33,12 @@ from pandas.core.frame import DataFrame
 import xlrd
 
 from stockmonitor.dataaccess import tmp_dir
+from stockmonitor.dataaccess.convert import convert_float, convert_int
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
-from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
-    BaseWorksheetData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetData
 
 
 _LOGGER = logging.getLogger(__name__)
-
-
-## =================================================================
-
-
-def convert_int( data ):
-    value = data.strip()
-    value = re.sub(r'\s+', '', value)       ## remove whitespaces
-    try:
-        return int(value)
-    except ValueError:
-        return value
-
-
-def convert_float( data ):
-    value = data.strip()
-    value = value.replace(',', '.')
-    value = re.sub(r'\s+', '', value)       ## remove whitespaces
-    try:
-        return float(value)
-    except ValueError:
-        return value
 
 
 ## =================================================================

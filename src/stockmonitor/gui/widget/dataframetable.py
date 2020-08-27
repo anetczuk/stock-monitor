@@ -326,6 +326,9 @@ class DataFrameTableModel( QAbstractTableModel ):
             rawData = self._rawData.iloc[index.row(), index.column()]
             strData = str(rawData)
             return strData
+        if role == Qt.UserRole:
+            rawData = self._rawData.iloc[index.row(), index.column()]
+            return rawData
         if role == Qt.TextAlignmentRole:
             return Qt.AlignHCenter | Qt.AlignVCenter
 
@@ -351,22 +354,9 @@ def convert_to_qurl( strData ):
 def contains_string( data ):
     if data == '-':
         return True
-    if re.search('[a-zA-Z:]', data):
+    if re.search( '[a-zA-Z:]', str(data) ):
         return True
     return False
-
-
-# def convert_float( data ):
-#     value = data.strip()
-#     value = value.replace(',', '.')
-#     value = re.sub(r'\s+', '', value)       ## remove whitespaces
-#     return float(value)
-#
-#
-# def convert_int( data ):
-#     value = data.strip()
-#     value = re.sub(r'\s+', '', value)       ## remove whitespaces
-#     return int(value)
 
 
 class DFProxyModel( QtCore.QSortFilterProxyModel ):
@@ -384,8 +374,9 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         self.condition = condition
 
     def lessThan(self, left: QModelIndex, right: QModelIndex):
-        leftData  = self.sourceModel().data(left, QtCore.Qt.DisplayRole)
-        rightData = self.sourceModel().data(right, QtCore.Qt.DisplayRole)
+        leftData  = self.sourceModel().data(left, QtCore.Qt.UserRole)
+        rightData = self.sourceModel().data(right, QtCore.Qt.UserRole)
+#         print("xxxxxxxx:", type(leftData), type(rightData) )
         return self.valueLessThan( leftData, rightData )
 
     def valueLessThan(self, leftData, rightData):
@@ -420,7 +411,8 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         filterColumn = self.filterKeyColumn()
         filterValue = self.filterRegExp().pattern()
         valueIndex = self.sourceModel().index( sourceRow, filterColumn, sourceParent )
-        value = self.sourceModel().data( valueIndex )
+        rawValue = self.sourceModel().data( valueIndex, QtCore.Qt.UserRole )
+        value = str(rawValue)
 
         if self.condition == 0:
             ## greater than
@@ -446,19 +438,6 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
     def convertType(self, leftData, rightData):
         if contains_string(leftData) or contains_string(rightData):
             return ( str(leftData), str(rightData) )
-
-#         try:
-#             left  = convert_float(leftData)
-#             right = convert_float(rightData)
-#             return (left, right)
-#         except ValueError:
-#             pass
-#         try:
-#             left  = convert_int(leftData)
-#             right = convert_int(rightData)
-#             return (left, right)
-#         except ValueError:
-#             pass
 
         #print("unable to detect type:", ascii(leftData), ascii(rightData) )
         return (leftData, rightData)

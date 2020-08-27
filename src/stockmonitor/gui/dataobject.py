@@ -488,14 +488,20 @@ class DataObject( QObject ):
 
         for code, amount, buy_unit_price in wallet.items():
             codeRow = currentStock.getRowByTicker( code )
+            if codeRow.empty:
+                _LOGGER.warning( "could not find stock by ticker: %s", code )
+                rowsList.append( ["-", code, amount, "-", buy_unit_price, "-", "-", "-"] )
+                continue
+#             print( "aaa:", codeRow )
             stockName = codeRow["Nazwa"]
             currUnitValue = float( codeRow.iloc[currUnitValueIndex] )
             currValue = currUnitValue * amount
             buyValue  = buy_unit_price * amount
             profit    = currValue - buyValue
-            profitPnt = round( profit / buyValue * 100.0, 2 )
+            profitPnt = profit / buyValue * 100.0
             buy_unit_price = round( buy_unit_price, 4 )
-            rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price, profitPnt, profit, currValue] )
+            rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price, 
+                              round( profitPnt, 2 ), round( profit, 2 ), round( currValue, 2 )] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame

@@ -28,6 +28,8 @@ import pandas
 from PyQt5.QtWidgets import QMenu, QFileDialog
 from PyQt5.QtGui import QCursor
 
+from stockmonitor.dataaccess.convert import convert_float, convert_int
+
 from .. import uiloader
 
 from .stocktable import StockTable
@@ -66,8 +68,7 @@ class WalletStockTable( StockTable ):
     def _importTransactions(self):
         if self.dataObject is None:
             return
-        filePath = QFileDialog.getOpenFileName( self,
-                                                "Import transactions" )
+        filePath = QFileDialog.getOpenFileName( self, "Import transactions" )
         if not filePath:
             return
         dataPath = filePath[0]
@@ -125,4 +126,10 @@ def import_mb_transactions( dataPath ):
     dataFrame = pandas.read_csv( dataPath, names=["trans_time", "name", "stock_id", "k_s", "amount",
                                                   "unit_price", "unit_currency", "price", "currency"],
                                  sep=';', decimal=',', thousands=' ' )
+    
+    dataFrame['amount'] = dataFrame['amount'].apply( convert_int )
+
+    dataFrame['unit_price'] = dataFrame['unit_price'].apply( convert_float )
+    dataFrame['price'] = dataFrame['price'].apply( convert_float )
+    
     return dataFrame
