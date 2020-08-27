@@ -323,6 +323,17 @@ class GpwCurrentData( WorksheetData ):
 ## ==========================================================================
 
 
+def convert_indexes_data( dataFrame: DataFrame ):
+    dataFrame['Kurs otw.'] = dataFrame['Kurs otw.'].apply( convert_float )
+    dataFrame['Kurs min.'] = dataFrame['Kurs min.'].apply( convert_float )
+    dataFrame['Kurs maks.'] = dataFrame['Kurs maks.'].apply( convert_float )
+    dataFrame['Wart. ost.'] = dataFrame['Wart. ost.'].apply( convert_float )
+    dataFrame['Wartość obrotu skum. (w tys. zł)'] = dataFrame['Wartość obrotu skum. (w tys. zł)'].apply( convert_float )
+    
+    dataFrame['Liczba spółek'] = dataFrame['Liczba spółek'].apply( convert_int )
+    dataFrame['% otw. portfela'] = dataFrame['% otw. portfela'].apply( convert_int )
+
+
 class GpwMainIndexesData( WorksheetData ):
 
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
@@ -331,6 +342,7 @@ class GpwMainIndexesData( WorksheetData ):
         dataFrame = DataFrame()
         dataFrame = dataFrame.append( allDataFrames[0] )        ## realtime indexes
         dataFrame = dataFrame.append( allDataFrames[1] )        ## main indexes
+        convert_indexes_data( dataFrame )
         return dataFrame
 
     def getDataPaths(self):
@@ -349,6 +361,7 @@ class GpwMacroIndexesData( WorksheetData ):
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
+        convert_indexes_data( dataFrame )
         return dataFrame
 
     def getDataPaths(self):
@@ -367,6 +380,7 @@ class GpwSectorsIndexesData( WorksheetData ):
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
+        convert_indexes_data( dataFrame )
         return dataFrame
 
     def getDataPaths(self):

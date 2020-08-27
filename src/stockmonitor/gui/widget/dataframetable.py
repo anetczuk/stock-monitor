@@ -380,7 +380,7 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         return self.valueLessThan( leftData, rightData )
 
     def valueLessThan(self, leftData, rightData):
-        leftData, rightData = self.convertType( leftData, rightData )
+#         leftData, rightData = self.convertType( leftData, rightData )
 
         ## put no-data rows on bottom
         if leftData in ("-", "--", "x"):
@@ -392,7 +392,11 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
                 return True
             return False
 
-        return leftData < rightData
+        try:
+            return leftData < rightData
+        except TypeError:
+            _LOGGER.warning( "unable to sort types: %s %s data: >%s< >%s<", type(leftData), type(rightData), leftData, rightData )
+            return str(leftData) < str(rightData)
 
     def clearFilter(self):
         self.condition = 0

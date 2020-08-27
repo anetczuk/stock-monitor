@@ -25,6 +25,8 @@ import re
 
 
 def convert_int( data ):
+    if isinstance( data, int ):
+        return data
     value = data.strip()
     value = re.sub(r'\s+', '', value)       ## remove whitespaces
     try:
