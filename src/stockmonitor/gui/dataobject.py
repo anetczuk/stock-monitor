@@ -24,16 +24,21 @@
 import logging
 import collections
 import glob
-from typing import Dict, Set
+from typing import Dict, Set, List, Tuple
 # from multiprocessing import Process, Queue
 # from multiprocessing import Pool
-# import functools
+
+from datetime import datetime
+import functools
+
+from pandas.core.frame import DataFrame
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
 
 from stockmonitor import persist
+from stockmonitor.dataaccess.datatype import CurrentDataType
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIsinMapData
 from stockmonitor.dataaccess.gpwdata import GpwIndexesData
 from stockmonitor.dataaccess.gpwdata import GpwIndicatorsData
@@ -141,13 +146,152 @@ class FavData( persist.Versionable ):
         self.favs[group] = groupList
 
 
-class UserContainer():
+class WalletData( persist.Versionable ):
+
+    class History():
+
+        def __init__(self):
+            ## amount, unit_price
+            self.transactions: List[ Tuple[int, float, datetime] ] = list()
+
+        def clear(self):
+            self.transactions.clear()
+
+        def add(self, amount, unitPrice, transTime=None):
+            self.transactions.append( (amount, unitPrice, transTime) )
+            self.sort()
+
+        def sort(self):
+            ## sort by date -- recent date first
+            compare = functools.cmp_to_key( self._sortDate )
+            self.transactions.sort( key=compare, reverse=True )
+#             self.transactions.sort(key=lambda x: (x[2] in None, x[2]), reverse=True)
+
+        def calc(self):
+            ## Buy value raises then current unit price rises
+            ## Sell value raises then current unit price decreases
+            currAmount = 0
+            currValue  = 0
+
+            for amount, unit_price, _ in self.transactions:
+                currAmount += amount
+                currValue  += amount * unit_price
+
+            if currAmount == 0:
+                return None
+            currUnitPrice = currValue / currAmount
+            return ( currAmount, currUnitPrice )
+
+        def calc2(self):
+            ## Buy value raises then current unit price rises
+            ## Sell value raises then current unit price decreases
+            stockAmount = 0
+
+            for item in self.transactions:
+                stockAmount += item[0]
+
+            if stockAmount <= 0:
+                return None
+
+            currAmount = 0
+            currValue  = 0
+            for item in self.transactions:
+                amount      = item[0]
+                if amount <= 0:
+                    continue
+
+                currAmount += amount
+
+                amountDiff = currAmount - stockAmount
+                if amountDiff > 0:
+                    restAmount = amount - amountDiff
+                    if restAmount <= 0:
+                        break
+                    amount = restAmount
+
+                unit_price = item[1]
+                currValue += amount * unit_price
+
+            currUnitPrice = currValue / stockAmount
+            return ( stockAmount, currUnitPrice )
+
+        @staticmethod
+        def _sortDate( tuple1, tuple2 ):
+            date1 = tuple1[2]
+            if date1 is None:
+                return 1
+            date2 = tuple2[2]
+            if date2 is None:
+                return -1
+            return date1 < date2
+
     ## 0 - first version
-    _class_version = 0
+    ## 1 - dict instead of list
+    ## 2 - sort transactions
+    _class_version = 2
 
     def __init__(self):
-        self.favs  = FavData()
-        self.notes = { "notes": "" }        ## default notes
+        ## code, amount, unit price
+        self.stockList: Dict[ str, self.History ] = dict()
+
+    def _convertstate_(self, dict_, dictVersion_ ):
+        _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
+
+        if dictVersion_ is None:
+            dictVersion_ = 0
+
+        if dictVersion_ < 0:
+            ## nothing to do
+            dictVersion_ = 0
+
+        if dictVersion_ == 0:
+            dict_["stockList"] = dict()
+            dictVersion_ = 1
+
+        if dictVersion_ == 1:
+            histDict = dict_["stockList"]
+            for _, item in histDict.items():
+                item.sort()
+            dictVersion_ = 2
+
+        # pylint: disable=W0201
+        self.__dict__ = dict_
+
+    def size(self):
+        return len( self.stockList )
+
+    def clear(self):
+        self.stockList.clear()
+
+    def items(self) -> List[ Tuple[str, int, float] ]:
+        ret = list()
+        for key, hist in self.stockList.items():
+            if key is None:
+                _LOGGER.warning("found wallet None key")
+                continue
+            val = hist.calc2()
+            if val is not None:
+                ret.append( (key, val[0], val[1]) )
+        return ret
+
+    def add( self, code, amount, unit_price, transTime: datetime=datetime.today() ):
+        transactions = self.stockList.get( code, None )
+        if transactions is None:
+            transactions = self.History()
+            self.stockList[ code ] = transactions
+        transactions.add( amount, unit_price, transTime )
+
+
+class UserContainer():
+
+    ## 0 - first version
+    ## 1 - wallet added
+    _class_version = 1
+
+    def __init__(self):
+        self.favs   = FavData()
+        self.notes  = { "notes": "" }        ## default notes
+        self.wallet = WalletData()
 
     def store( self, outputDir ):
         changed = False
@@ -162,6 +306,10 @@ class UserContainer():
 
         outputFile = outputDir + "/notes.obj"
         if persist.store_object( self.notes, outputFile ) is True:
+            changed = True
+
+        outputFile = outputDir + "/wallet.obj"
+        if persist.store_object( self.wallet, outputFile ) is True:
             changed = True
 
         ## backup data
@@ -187,6 +335,14 @@ class UserContainer():
         self.notes = persist.load_object( inputFile, self._class_version )
         if self.notes is None:
             self.notes = { "notes": "" }
+
+        inputFile = inputDir + "/wallet.obj"
+        self.wallet = persist.load_object( inputFile, self._class_version )
+        if self.wallet is None:
+            self.wallet = WalletData()
+
+
+## =========================================================================
 
 
 class StockData():
@@ -236,6 +392,7 @@ class DataObject( QObject ):
 
     stockDataChanged    = pyqtSignal()
     stockHeadersChanged = pyqtSignal()
+    walletDataChanged   = pyqtSignal()
 
     def __init__(self, parent: QWidget=None):
         super().__init__( parent )
@@ -282,6 +439,10 @@ class DataObject( QObject ):
     def notes(self, newData: Dict[str, str]):
         self.userContainer.notes = newData
 
+    @property
+    def wallet(self) -> WalletData:
+        return self.userContainer.wallet
+
     ## ======================================================================
 
     def addFavGroup(self, name):
@@ -316,6 +477,58 @@ class DataObject( QObject ):
     def getFavStock(self, favGroup):
         stockList = self.favs.getFavs( favGroup )
         return self.gpwCurrentData.getStockData( stockList )
+
+    def getWalletStock(self):
+        columnsList = ["Nazwa", "Ticker", "Liczba", "Kurs", "Średni kurs nabycia", "Zysk %", "Zysk", "Wartość"]
+
+        wallet = self.wallet
+        currentStock: GpwCurrentData = self.currentGpwData.stockData
+        currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        rowsList = []
+
+        for code, amount, buy_unit_price in wallet.items():
+            codeRow = currentStock.getRowByTicker( code )
+            stockName = codeRow["Nazwa"]
+            currUnitValue = float( codeRow.iloc[currUnitValueIndex] )
+            currValue = currUnitValue * amount
+            buyValue  = buy_unit_price * amount
+            profit    = currValue - buyValue
+            profitPnt = round( profit / buyValue * 100.0, 2 )
+            buy_unit_price = round( buy_unit_price, 4 )
+            rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price, profitPnt, profit, currValue] )
+
+        dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
+        return dataFrame
+
+    def importWalletTransactions(self, dataFrame: DataFrame):
+        wallet: WalletData = self.wallet
+        wallet.clear()
+
+        for _, row in dataFrame.iterrows():
+            transTime  = row['trans_time']
+            stockName  = row['name']
+            oper       = row['k_s']
+            amount     = row['amount']
+            unit_price = row['unit_price']
+
+            dateObject = None
+            try:
+                ## 31.03.2020 13:21:44
+                dateObject = datetime.strptime(transTime, '%d.%m.%Y %H:%M:%S')
+            except ValueError:
+                dateObject = None
+
+            code = self.getStockCodeFromName( stockName )
+            if code is None:
+                _LOGGER.warning( "could not find stock code for name: %s", stockName )
+                continue
+
+            if oper == "K":
+                wallet.add( code,  amount, unit_price, dateObject )
+            elif oper == "S":
+                wallet.add( code, -amount, unit_price, dateObject )
+
+        self.walletDataChanged.emit()
 
     ## ======================================================================
 

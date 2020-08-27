@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -229,6 +229,28 @@
            </widget>
           </item>
          </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="walletTab">
+       <attribute name="title">
+        <string>Wallet</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_16">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="WalletWidget" name="walletwidget" native="true"/>
         </item>
        </layout>
       </widget>
@@ -448,6 +470,12 @@
    <class>PublishedReportsWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.info.reportswidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>WalletWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.walletwidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

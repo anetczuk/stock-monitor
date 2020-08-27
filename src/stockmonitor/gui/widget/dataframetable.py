@@ -356,17 +356,17 @@ def contains_string( data ):
     return False
 
 
-def convert_float( data ):
-    value = data.strip()
-    value = value.replace(',', '.')
-    value = re.sub(r'\s+', '', value)       ## remove whitespaces
-    return float(value)
-
-
-def convert_int( data ):
-    value = data.strip()
-    value = re.sub(r'\s+', '', value)       ## remove whitespaces
-    return int(value)
+# def convert_float( data ):
+#     value = data.strip()
+#     value = value.replace(',', '.')
+#     value = re.sub(r'\s+', '', value)       ## remove whitespaces
+#     return float(value)
+#
+#
+# def convert_int( data ):
+#     value = data.strip()
+#     value = re.sub(r'\s+', '', value)       ## remove whitespaces
+#     return int(value)
 
 
 class DFProxyModel( QtCore.QSortFilterProxyModel ):
@@ -447,18 +447,18 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         if contains_string(leftData) or contains_string(rightData):
             return ( str(leftData), str(rightData) )
 
-        try:
-            left  = convert_float(leftData)
-            right = convert_float(rightData)
-            return (left, right)
-        except ValueError:
-            pass
-        try:
-            left  = convert_int(leftData)
-            right = convert_int(rightData)
-            return (left, right)
-        except ValueError:
-            pass
+#         try:
+#             left  = convert_float(leftData)
+#             right = convert_float(rightData)
+#             return (left, right)
+#         except ValueError:
+#             pass
+#         try:
+#             left  = convert_int(leftData)
+#             right = convert_int(rightData)
+#             return (left, right)
+#         except ValueError:
+#             pass
 
         #print("unable to detect type:", ascii(leftData), ascii(rightData) )
         return (leftData, rightData)
@@ -551,6 +551,9 @@ class DataFrameTable( QTableView ):
         contextMenu.exec_( globalPos )
 
     ## ===============================================
+
+    def clear(self):
+        self.setData( None )
 
     def getSelectedRows(self) -> List[int]:
         selection = self.selectionModel()

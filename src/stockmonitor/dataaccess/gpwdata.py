@@ -25,6 +25,7 @@ import os
 import logging
 import urllib.request
 import datetime
+import re
 
 from typing import List
 
@@ -39,6 +40,31 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+## =================================================================
+
+
+def convert_int( data ):
+    value = data.strip()
+    value = re.sub(r'\s+', '', value)       ## remove whitespaces
+    try:
+        return int(value)
+    except ValueError:
+        return value
+
+
+def convert_float( data ):
+    value = data.strip()
+    value = value.replace(',', '.')
+    value = re.sub(r'\s+', '', value)       ## remove whitespaces
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+
+## =================================================================
 
 
 class GpwArchiveData:
@@ -192,6 +218,15 @@ class GpwCurrentData( WorksheetData ):
             return None
         return self.extractColumn( worksheet, colIndex )
 
+    def getRowByTicker(self, ticker):
+        dataFrame = self.getWorksheet()
+        if dataFrame is None:
+            _LOGGER.warning("no worksheet found")
+            return None
+        colIndex = self.getColumnIndex( CurrentDataType.SHORT )
+        retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex] == ticker ]
+        return retRows.squeeze()            ## convert 1 row dataframe to series
+
     def getShortField(self, rowIndex: int):
         dataFrame = self.getWorksheet()
         if dataFrame is None:
@@ -281,6 +316,16 @@ class GpwCurrentData( WorksheetData ):
         cleanup_column( dataFrame, 'Nazwa', "\t" )
         cleanup_column( dataFrame, 'Nazwa', "\u00A0" )          ## non-breaking space
         cleanup_column( dataFrame, 'Nazwa', "\xc2\xa0" )        ## non-breaking space
+
+        dataFrame['Kurs odn.'] = dataFrame['Kurs odn.'].apply( convert_float )
+        dataFrame['Kurs otw.'] = dataFrame['Kurs otw.'].apply( convert_float )
+        dataFrame['Kurs min.'] = dataFrame['Kurs min.'].apply( convert_float )
+        dataFrame['Kurs maks.'] = dataFrame['Kurs maks.'].apply( convert_float )
+        dataFrame['Kurs ost. trans. / zamk.'] = dataFrame['Kurs ost. trans. / zamk.'].apply( convert_float )
+        dataFrame['Zm.do k.odn.(%)'] = dataFrame['Zm.do k.odn.(%)'].apply( convert_float )
+        dataFrame['Wart. obr. - skumul.(tys.)'] = dataFrame['Wart. obr. - skumul.(tys.)'].apply( convert_float )
+
+        dataFrame['Wol. obr. - skumul.'] = dataFrame['Wol. obr. - skumul.'].apply( convert_int )
 
         return dataFrame
 

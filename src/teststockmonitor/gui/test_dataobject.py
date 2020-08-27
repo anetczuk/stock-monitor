@@ -23,7 +23,98 @@
 
 import unittest
 
-from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.dataobject import DataObject, WalletData
+
+
+class WalletDataTest(unittest.TestCase):
+    def setUp(self):
+        ## Called before testfunction is executed
+        pass
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_add_buy(self):
+        dataobject = WalletData()
+        self.assertEqual( dataobject.size(), 0 )
+
+        dataobject.add( "xxx", 1, 20.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        dataobject.add( "xxx", 1, 10.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        items = dataobject.items()
+        code, amount, unit_price = items[0]
+        self.assertEqual( code, "xxx" )
+        self.assertEqual( amount, 2 )
+        self.assertEqual( unit_price, 15.0 )
+
+    def test_add_sell_1(self):
+        dataobject = WalletData()
+        dataobject.add( "xxx", 1, 20.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        dataobject.add( "xxx", 1, 10.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        dataobject.add( "xxx", -1, 10.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        items = dataobject.items()
+        code, amount, unit_price = items[0]
+        self.assertEqual( code, "xxx" )
+        self.assertEqual( amount, 1 )
+        self.assertEqual( unit_price, 20.0 )
+
+    def test_add_sell_2(self):
+        dataobject = WalletData()
+        dataobject.add( "xxx", 1, 10.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        dataobject.add( "xxx", 1, 20.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        dataobject.add( "xxx", -1, 20.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        items = dataobject.items()
+        code, amount, unit_price = items[0]
+        self.assertEqual( code, "xxx" )
+        self.assertEqual( amount, 1 )
+        self.assertEqual( unit_price, 10.0 )
+
+    def test_add_sell_3(self):
+        dataobject = WalletData()
+        dataobject.add( "xxx", 1, 20.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        dataobject.add( "xxx", 1, 10.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        dataobject.add( "xxx", -1, 15.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        items = dataobject.items()
+        code, amount, unit_price = items[0]
+        self.assertEqual( code, "xxx" )
+        self.assertEqual( amount, 1 )
+        self.assertEqual( unit_price, 20.0 )
+
+    def test_add_sell_4(self):
+        dataobject = WalletData()
+        dataobject.add( "xxx", 2, 10.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        dataobject.add( "xxx", -1, 20.0 )
+        self.assertEqual( dataobject.size(), 1 )
+
+        items = dataobject.items()
+        code, amount, unit_price = items[0]
+        self.assertEqual( code, "xxx" )
+        self.assertEqual( amount, 1 )
+        self.assertEqual( unit_price, 10.0 )
 
 
 class DataObjectTest(unittest.TestCase):

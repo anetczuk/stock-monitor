@@ -83,11 +83,16 @@ class ThreadWorker( QtCore.QObject ):
 
     def processWorker(self):
 #         _LOGGER.info("executing function: %s %s", self.func, self.args)
-        if self.func is not None:
-            self.func( *self.args )
-#         _LOGGER.info("executing finished")
-        _LOGGER.info( "work finished" )
-        self.finished.emit()
+        try:
+            if self.func is not None:
+                self.func( *self.args )
+    #         _LOGGER.info("executing finished")
+            _LOGGER.info( "work finished" )
+        # pylint: disable=W0703
+        except Exception:
+            _LOGGER.exception("work terminated" )
+        finally:
+            self.finished.emit()
 
 
 class QThreadList( QtCore.QObject ):
