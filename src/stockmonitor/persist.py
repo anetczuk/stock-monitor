@@ -141,6 +141,41 @@ def backup_files( inputFiles, outputArchive ):
     os.rename( tmpZipFile, storedZipFile )
 
 
+def compare_files_bytes( file1Path, file2Path ):
+    contentA = read_file_bytes( file1Path )
+    contentB = read_file_bytes( file2Path )
+    aSize = len( contentA )
+    bSize = len( contentB )
+    if aSize != bSize:
+        _LOGGER.info( "files size differ: %s %s", aSize, bSize )
+        return
+    for i in range(aSize):
+        if contentA[i] != contentB[i]:
+            _LOGGER.info( "files differ at byte %s: %s %s", i, contentA[i], contentB[i] )
+    
+    
+def print_file_content( filePath ):
+    byteList = read_file_bytes( filePath )
+    #return ''.join('{:02x} '.format(x) for x in byteList)
+    bSize = len( byteList )
+    for i in range(bSize):
+        print( ''.join( '{:06d}: {:02x}'.format( i, byteList[i] ) ) )
+
+
+def read_file_bytes( filePath ):
+    byteList = []
+    with open(filePath, 'rb') as f:
+        while 1:
+            byte_s = f.read(1)
+            if not byte_s:
+                break
+            byteList.append( byte_s[0] )
+    return byteList
+
+
+## ==========================================================
+
+
 class Versionable( metaclass=abc.ABCMeta ):
 
     def __getstate__(self):
