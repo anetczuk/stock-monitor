@@ -48,5 +48,5 @@ class DeleteFavGroupCommand( QUndoCommand ):
         self.dataObject.favsChanged.emit()
 
     def undo(self):
-        self.self.dataObject.favs = self.prevFavs
+        self.dataObject.favs = self.prevFavs
         self.dataObject.favsChanged.emit()
