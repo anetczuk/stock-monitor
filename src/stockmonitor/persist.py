@@ -152,8 +152,8 @@ def compare_files_bytes( file1Path, file2Path ):
     for i in range(aSize):
         if contentA[i] != contentB[i]:
             _LOGGER.info( "files differ at byte %s: %s %s", i, contentA[i], contentB[i] )
-    
-    
+
+
 def print_file_content( filePath ):
     byteList = read_file_bytes( filePath )
     #return ''.join('{:02x} '.format(x) for x in byteList)

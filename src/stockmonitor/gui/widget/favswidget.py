@@ -95,6 +95,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         self.dataObject.favsAdded.connect( self.updateTab )
         self.dataObject.favsRemoved.connect( self.updateTab )
         self.dataObject.favsReordered.connect( self.updateOrder )
+        self.dataObject.favsRenamed.connect( self._renameTab )
         self.dataObject.favsChanged.connect( self.updateView )
         self.updateView()
 
@@ -103,16 +104,17 @@ class FavsWidget( QtBaseClass ):           # type: ignore
             _LOGGER.warning("unable to update view")
             self.ui.data_tabs.clear()
             return
-        _LOGGER.info("updating view")
         favsObj = self.dataObject.favs
-        dataDict = favsObj.favs
-        favKeys = dataDict.keys()
+        favKeys = favsObj.favGroupsList()
+
+        _LOGGER.info("updating view: %s %s", favKeys, self.tabsList() )
 
         tabsNum = self.ui.data_tabs.count()
 
         for i in reversed( range(tabsNum) ):
             tabName = self.tabText( i )
             if tabName not in favKeys:
+                _LOGGER.info("removing tab: %s %s", i, tabName)
                 self.removeTab( i )
 
         i = -1
@@ -120,10 +122,10 @@ class FavsWidget( QtBaseClass ):           # type: ignore
             i += 1
             tabIndex = self.findTabIndex( favName )
             if tabIndex < 0:
+                _LOGGER.debug("adding tab: %s", favName)
                 self.addTab( favName )
-                continue
-            if tabIndex != i:
-                _LOGGER.warning("unhandled case - tab moved: %s %s %s", favName, tabIndex, i)
+
+        self.updateOrder()
 
     def updateTab(self, tabName):
         tabIndex = self.findTabIndex( tabName )
@@ -134,18 +136,19 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         if self.dataObject is None:
             _LOGGER.warning("unable to reorder view")
             return
+        favsObj = self.dataObject.favs
+        favKeys = favsObj.favGroupsList()
         tabBar = self.ui.data_tabs.tabBar()
         tabBar.tabMoved.disconnect( self.tabMoved )
-        favsObj = self.dataObject.favs
-        dataDict = favsObj.favs
-        favKeys = dataDict.keys()
         i = -1
         for key in favKeys:
             i += 1
             tabIndex = self.findTabIndex( key )
             if tabIndex < 0:
                 continue
-            tabBar.moveTab( tabIndex, i )
+            if tabIndex != i:
+                _LOGGER.warning("moving tab %s from %s to %s", key, tabIndex, i)
+                tabBar.moveTab( tabIndex, i )
         tabBar.tabMoved.connect( self.tabMoved )
 
     def addTab(self, favGroup):
@@ -177,6 +180,13 @@ class FavsWidget( QtBaseClass ):           # type: ignore
                 return ind
         return -1
 
+    def tabsList(self):
+        ret = []
+        for ind in range(0, self.ui.data_tabs.count()):
+            tabText = self.tabText( ind )
+            ret.append( tabText )
+        return ret
+
     def contextMenuEvent( self, event ):
         evPos     = event.pos()
         globalPos = self.mapToGlobal( evPos )
@@ -204,11 +214,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
             self.removeFavGrp.emit( favCode )
 
     def tabMoved(self):
-        favOrder = []
-        tabsSize = self.ui.data_tabs.count()
-        for tabIndex in range(0, tabsSize):
-            favCode = self.tabText( tabIndex )
-            favOrder.append( favCode )
+        favOrder = self.tabsList()
         self.dataObject.reorderFavGroups( favOrder )
 
     def _newTabRequest( self ):
@@ -242,3 +248,11 @@ class FavsWidget( QtBaseClass ):           # type: ignore
             # not empty
             return newText
         return ""
+
+    def _renameTab(self, fromName, toName):
+        tabIndex = self.findTabIndex( fromName )
+        if tabIndex < 0:
+            self.updateView()
+            return
+        tabBar = self.ui.data_tabs.tabBar()
+        tabBar.setTabText( tabIndex, toName )

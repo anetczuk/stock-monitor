@@ -23,7 +23,24 @@
 
 import unittest
 
-from stockmonitor.gui.dataobject import DataObject, WalletData
+import pickle
+
+from stockmonitor.gui.dataobject import DataObject, WalletData, FavData
+
+
+class FavDataTest(unittest.TestCase):
+    def setUp(self):
+        ## Called before testfunction is executed
+        pass
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_pickle(self):
+        dataMem1 = pickle.dumps( FavData() )
+        dataMem2 = pickle.dumps( FavData() )
+        self.assertEqual( dataMem1, dataMem2 )
 
 
 class WalletDataTest(unittest.TestCase):
@@ -154,10 +171,10 @@ class DataObjectTest(unittest.TestCase):
     def test_renameFavGrp(self):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
-        self.assertEqual( len(dataobject.favs.favs), 1 )
+        self.assertEqual( len(dataobject.favs.favsList), 1 )
 
         dataobject.renameFavGroup("xxx", "yyy")
-        self.assertEqual( len(dataobject.favs.favs), 1 )
+        self.assertEqual( len(dataobject.favs.favsList), 1 )
 
         xxxFavs = dataobject.favs.getFavs( "xxx" )
         self.assertEqual( xxxFavs, None )
@@ -168,24 +185,24 @@ class DataObjectTest(unittest.TestCase):
     def test_deleteFavGrp(self):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
-        self.assertEqual( len(dataobject.favs.favs), 1 )
+        self.assertEqual( len(dataobject.favs.favsList), 1 )
 
         dataobject.deleteFavGroup("xxx")
-        self.assertEqual( len(dataobject.favs.favs), 0 )
+        self.assertEqual( len(dataobject.favs.favsList), 0 )
 
     def test_deleteFavGrp_duplicates(self):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
         dataobject.addFavGroup("xxx")
-        self.assertEqual( len(dataobject.favs.favs), 1 )
+        self.assertEqual( len(dataobject.favs.favsList), 1 )
 
         dataobject.deleteFavGroup("xxx")
-        self.assertEqual( len(dataobject.favs.favs), 0 )
+        self.assertEqual( len(dataobject.favs.favsList), 0 )
 
     def test_addFav_duplicates(self):
         dataobject = DataObject()
         dataobject.addFavGroup("xxx")
-        self.assertEqual( len(dataobject.favs.favs), 1 )
+        self.assertEqual( len(dataobject.favs.favsList), 1 )
 
         dataobject.addFav("xxx", "aaa")
         self.assertEqual( dataobject.undoStack.count(), 2 )

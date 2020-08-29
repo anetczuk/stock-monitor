@@ -43,8 +43,8 @@ class RenameFavGroupCommand( QUndoCommand ):
 
     def redo(self):
         self.favs.renameFavGroup( self.fromName, self.toName )
-        self.dataObject.favsChanged.emit()
+        self.dataObject.favsRenamed.emit( self.fromName, self.toName )
 
     def undo(self):
         self.favs.renameFavGroup( self.toName, self.fromName )
-        self.dataObject.favsChanged.emit()
+        self.dataObject.favsRenamed.emit( self.toName, self.fromName )

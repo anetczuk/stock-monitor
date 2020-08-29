@@ -24,11 +24,11 @@
 import logging
 import collections
 import glob
-from typing import Dict, Set, List, Tuple
+from typing import Dict, List, Tuple
 # from multiprocessing import Process, Queue
 # from multiprocessing import Pool
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import functools
 
 from pandas.core.frame import DataFrame
@@ -52,7 +52,6 @@ from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
-from _datetime import timedelta
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -66,10 +65,16 @@ class FavData( persist.Versionable ):
     ## 0 - first version
     ## 1 - use ordererd dict
     ## 2 - use favs set
-    _class_version = 2
+    ## 3 - use favs group list
+    ## 4 - remove redundant field
+    ## 5 - restore favs group as ordered dict
+    ## 6 - use favs list
+    _class_version = 6
 
     def __init__(self):
-        self.favs: Dict[ str, Set[str] ] = collections.OrderedDict()
+        ## Use list internally. For unknown reason Set causes persist to
+        ## detect changes (difference in file content) even if elements does not change.
+        self.favsList: Dict[ str, List[str] ] = collections.OrderedDict()
 
     def _convertstate_(self, dict_, dictVersion_ ):
         _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
@@ -96,6 +101,39 @@ class FavData( persist.Versionable ):
             dict_["favs"] = favsDict
             dictVersion_ = 2
 
+        if dictVersion_ == 2:
+            ## convert ordererd dict to list
+            favsDict = dict_["favs"]
+            favsList = list()
+            for key in favsDict.keys():
+                pair = ( key, favsDict[key] )
+                favsList.append( pair )
+            del dict_["favs"]
+            dict_["favsList"] = favsList
+            dictVersion_ = 3
+
+        if dictVersion_ == 3:
+            ## remove redundant field
+            if "favs" in dict_.keys():
+                del dict_["favs"]
+            dictVersion_ = 4
+
+        if dictVersion_ == 4:
+            favsList = dict_["favsList"]
+            favsDict = collections.OrderedDict()
+            for item in favsList:
+                grp = item[0]
+                favsDict[ grp ] = item[1]
+            dict_["favsList"] = favsDict
+            dictVersion_ = 5
+
+        if dictVersion_ == 5:
+            favsDict = dict_["favsList"]
+            for key in favsDict.keys():
+                favsDict[ key ] = list( favsDict[ key ] )
+            dict_["favsList"] = favsDict
+            dictVersion_ = 6
+
         # pylint: disable=W0201
         self.__dict__ = dict_
 
@@ -104,47 +142,48 @@ class FavData( persist.Versionable ):
         return found is not None
 
     def favGroupsList(self):
-        return self.favs.keys()
+        return self.favsList.keys()
 
-    def getFavs(self, group) -> Set[str]:
-        return self.favs.get( group, None )
+    def getFavs(self, group) -> List[str]:
+        return self.favsList.get( group, None )
 
     def getFavsAll(self):
         ret = set()
-        for val in self.favs.values():
-            ret = ret | val
+        for val in self.favsList.values():
+            ret = ret | set( val )
         return ret
 
     def addFavGroup(self, name):
-        if name not in self.favs:
-            self.favs[name] = set()
+        if name not in self.favsList:
+            self.favsList[name] = list()
 
     def renameFavGroup(self, fromName, toName):
-        self.favs[toName] = self.favs.pop(fromName)
+        self.favsList[toName] = self.favsList.pop(fromName)
 
     def deleteFavGroup(self, name):
-        del self.favs[name]
+        del self.favsList[name]
 
     def reorderFavGroups(self, newOrder):
         for item in reversed(newOrder):
             # pylint: disable=E1101
-            self.favs.move_to_end( item, False )
+            self.favsList.move_to_end( item, False )
 
     def addFav(self, group, items):
-        itemsSet = set( items )
+        itemsList = list( items )
         self.addFavGroup( group )
-        self.favs[group] = self.favs[group] | itemsSet          ## sum of sets
+        newSet = set( self.favsList[group] + itemsList )          ## sum of sets
+        self.favsList[group] = list( newSet )
 
     def deleteFav(self, group, items):
         _LOGGER.info( "Removing favs: %s from group %s", items, group )
         itemsList = set( items )
-        if group not in self.favs:
+        if group not in self.favsList:
             _LOGGER.warning("Unable to find group")
             return
-        groupList = self.favs[group]
+        groupList = self.favsList[group]
         for item in itemsList:
             groupList.remove( item )
-        self.favs[group] = groupList
+        self.favsList[group] = groupList
 
 
 class WalletData( persist.Versionable ):
@@ -425,9 +464,10 @@ def heavy_comp( limit ):
 
 class DataObject( QObject ):
 
-    favsAdded           = pyqtSignal( str )     ## emit group
-    favsRemoved         = pyqtSignal( str )     ## emit group
+    favsAdded           = pyqtSignal( str )        ## emit group
+    favsRemoved         = pyqtSignal( str )        ## emit group
     favsReordered       = pyqtSignal()
+    favsRenamed         = pyqtSignal( str, str )   ## from, to
     favsChanged         = pyqtSignal()
 
     stockDataChanged    = pyqtSignal()
@@ -500,6 +540,7 @@ class DataObject( QObject ):
         favsSet = self.favs.getFavs( group )
         if favsSet is None:
             favsSet = set()
+        favsSet = set( favsSet )
         itemsSet = set( favItem )
         diffSet = itemsSet - favsSet
         if len(diffSet) < 1:
