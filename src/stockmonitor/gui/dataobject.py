@@ -141,7 +141,7 @@ class FavData( persist.Versionable ):
         found = self.getFavs( group )
         return found is not None
 
-    def favGroupsList(self):
+    def getFavGroups(self):
         return self.favsList.keys()
 
     def getFavs(self, group) -> List[str]:
@@ -158,7 +158,12 @@ class FavData( persist.Versionable ):
             self.favsList[name] = list()
 
     def renameFavGroup(self, fromName, toName):
-        self.favsList[toName] = self.favsList.pop(fromName)
+#         self.favsList[toName] = self.favsList.pop(fromName)
+        dLen = len(self.favsList)
+        for _ in range(dLen):
+            k, v = self.favsList.popitem(False)
+            newKey = toName if fromName == k else k
+            self.favsList[ newKey ] = v
 
     def deleteFavGroup(self, name):
         del self.favsList[name]

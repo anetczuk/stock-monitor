@@ -105,7 +105,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
             self.ui.data_tabs.clear()
             return
         favsObj = self.dataObject.favs
-        favKeys = favsObj.favGroupsList()
+        favKeys = favsObj.getFavGroups()
 
         _LOGGER.info("updating view: %s %s", favKeys, self.tabsList() )
 
@@ -137,7 +137,8 @@ class FavsWidget( QtBaseClass ):           # type: ignore
             _LOGGER.warning("unable to reorder view")
             return
         favsObj = self.dataObject.favs
-        favKeys = favsObj.favGroupsList()
+        _LOGGER.info("updating order")
+        favKeys = favsObj.getFavGroups()
         tabBar = self.ui.data_tabs.tabBar()
         tabBar.tabMoved.disconnect( self.tabMoved )
         i = -1
@@ -254,5 +255,10 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         if tabIndex < 0:
             self.updateView()
             return
+        tabWidget: SinglePageWidget = self.ui.data_tabs.widget( tabIndex )
+        if tabWidget is None:
+            self.updateView()
+            return
+        tabWidget.setData( self.dataObject, toName )
         tabBar = self.ui.data_tabs.tabBar()
         tabBar.setTabText( tabIndex, toName )

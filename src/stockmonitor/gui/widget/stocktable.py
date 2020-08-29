@@ -72,7 +72,7 @@ class StockTable( DataFrameTable ):
         favsActions = []
         if self.dataObject is not None:
             favSubMenu    = contextMenu.addMenu("Add to favs")
-            favGroupsList = self.dataObject.favs.favGroupsList()
+            favGroupsList = self.dataObject.favs.getFavGroups()
             for favGroup in favGroupsList:
                 favAction = favSubMenu.addAction( favGroup )
                 favAction.setData( favGroup )
