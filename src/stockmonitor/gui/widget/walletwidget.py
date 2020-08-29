@@ -34,6 +34,7 @@ from stockmonitor.dataaccess.convert import convert_float, convert_int
 from .. import uiloader
 
 from .stocktable import StockTable
+from stockmonitor.gui.widget.stocktable import insert_new_action
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,26 +69,12 @@ class WalletStockTable( StockTable ):
         super().__init__(parentWidget)
         self.setObjectName("walletstocktable")
 
-    def contextMenuEvent( self, _ ):
-        contextMenu         = QMenu(self)
+    def createContextMenu(self):
+        contextMenu = super().createContextMenu()
         if self.dataObject is not None:
-            stockInfoAction     = contextMenu.addAction("Stock info")
-            importTransAction   = contextMenu.addAction("Import mb transactions")
-            stockInfoAction.triggered.connect( self._openInfo )
+            importTransAction = insert_new_action(contextMenu, "Import mb transactions", 1)
             importTransAction.triggered.connect( self._importTransactions )
-        self._addFavActions( contextMenu )
-        contextMenu.addSeparator()
-        filterDataAction    = contextMenu.addAction("Filter data")
-        configColumnsAction = contextMenu.addAction("Configure columns")
-
-        filterDataAction.triggered.connect( self.showFilterConfiguration )
-        configColumnsAction.triggered.connect( self.showColumnsConfiguration )
-
-        if self._rawData is None:
-            configColumnsAction.setEnabled( False )
-
-        globalPos = QCursor.pos()
-        contextMenu.exec_( globalPos )
+        return contextMenu
 
     def _importTransactions(self):
         if self.dataObject is None:
@@ -96,6 +83,8 @@ class WalletStockTable( StockTable ):
         if not filePath:
             return
         dataPath = filePath[0]
+        if not dataPath:
+            return
         importedData = import_mb_transactions( dataPath )
 #         importedData = import_mb_orders( dataPath )
 #         print("data:\n", importedData)

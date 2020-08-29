@@ -27,7 +27,7 @@ from typing import List
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
-from PyQt5.QtWidgets import QMenu, QInputDialog
+from PyQt5.QtWidgets import QMenu, QAction, QInputDialog
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QDesktopServices
@@ -50,10 +50,29 @@ class StockTable( DataFrameTable ):
         self.dataObject = dataObject
 
     def contextMenuEvent( self, _ ):
+        contextMenu = self.createContextMenu()
+        globalPos = QCursor.pos()
+        contextMenu.exec_( globalPos )
+
+    def createContextMenu(self):
         contextMenu         = QMenu(self)
         if self.dataObject is not None:
-            stockInfoAction     = contextMenu.addAction("Stock info")
-            stockInfoAction.triggered.connect( self._openInfo )
+            stockInfoMenu = contextMenu.addMenu("Stock info")
+            gpwLinks = self._getGpwInfoLinks()
+            if gpwLinks:
+                action = self._createActionOpenUrl("gpw.pl", gpwLinks)
+                action.setParent( stockInfoMenu )
+                stockInfoMenu.addAction( action )
+            moneyLinks = self._getMoneyInfoLinks()
+            if moneyLinks:
+                action = self._createActionOpenUrl("money.pl", moneyLinks)
+                action.setParent( stockInfoMenu )
+                stockInfoMenu.addAction( action )
+            googleLinks = self._getGoogleInfoLinks()
+            if googleLinks:
+                action = self._createActionOpenUrl("google.pl", googleLinks)
+                action.setParent( stockInfoMenu )
+                stockInfoMenu.addAction( action )
         self._addFavActions( contextMenu )
         contextMenu.addSeparator()
         filterDataAction    = contextMenu.addAction("Filter data")
@@ -65,8 +84,23 @@ class StockTable( DataFrameTable ):
         if self._rawData is None:
             configColumnsAction.setEnabled( False )
 
-        globalPos = QCursor.pos()
-        contextMenu.exec_( globalPos )
+        return contextMenu
+
+    def _createActionOpenUrl(self, text, link ):
+        action = QAction( text )
+        action.setData( link )
+        action.triggered.connect( self._openUrlAction )
+        return action
+    
+    def _openUrlAction(self):
+        parentAction = self.sender()
+        urlLinkList = parentAction.data()
+        if is_iterable( urlLinkList ) is False:
+            urlLinkList = list( urlLinkList )
+        for urlLink in urlLinkList:
+            url = QtCore.QUrl(urlLink)
+            _LOGGER.info( "opening url: %s", url )
+            QDesktopServices.openUrl( url )
 
     def _addFavActions(self, contextMenu):
         favsActions = []
@@ -101,17 +135,47 @@ class StockTable( DataFrameTable ):
         favList = self._getSelectedCodes()
         self.dataObject.addFav( favGrp, favList )
 
-    def _openInfo(self):
+    def _getGpwInfoLinks(self):
+        favList = self._getSelectedCodes()
+        if not favList:
+            _LOGGER.warning( "unable to get stock info: empty codes list" )
+            return []
+        dataAccess = self.dataObject.gpwCurrentData
+        ret = []
+        for code in favList:
+            infoLink = dataAccess.getGpwLinkFromCode( code )
+            if infoLink is not None:
+                ret.append( infoLink )
+        _LOGGER.debug( "returning links list: %s", ret )
+        return ret
+
+    def _getMoneyInfoLinks(self):
         favList = self._getSelectedCodes()
         if not favList:
             _LOGGER.warning( "unable to open stock info: empty codes list" )
             return
         dataAccess = self.dataObject.gpwCurrentData
+        ret = []
         for code in favList:
-            infoLink = dataAccess.getInfoLinkFromCode( code )
-            url = QtCore.QUrl(infoLink)
-            _LOGGER.info( "opening url: %s", url )
-            QDesktopServices.openUrl( url )
+            infoLink = dataAccess.getMoneyLinkFromCode( code )
+            if infoLink is not None:
+                ret.append( infoLink )
+        _LOGGER.debug( "returning links list: %s", ret )
+        return ret
+
+    def _getGoogleInfoLinks(self):
+        favList = self._getSelectedCodes()
+        if not favList:
+            _LOGGER.warning( "unable to get stock info: empty codes list" )
+            return []
+        dataAccess = self.dataObject.gpwCurrentData
+        ret = []
+        for code in favList:
+            infoLink = dataAccess.getGoogleLinkFromCode( code )
+            if infoLink is not None:
+                ret.append( infoLink )
+        _LOGGER.debug( "returning links list: %s", ret )
+        return ret
 
     def _getSelectedCodes(self) -> List[str]:
         ## reimplement if needed
@@ -208,21 +272,12 @@ class StockFavsTable( StockTable ):
     def updateView(self):
         self.setHeadersText( self.dataObject.gpwCurrentHeaders )
 
-    def contextMenuEvent( self, _ ):
-        contextMenu         = QMenu(self)
-        stockInfoAction     = contextMenu.addAction("Stock info")
-        remFavAction        = contextMenu.addAction("Remove fav")
-        contextMenu.addSeparator()
-        filterDataAction    = contextMenu.addAction("Filter data")
-        configColumnsAction = contextMenu.addAction("Configure columns")
-
-        stockInfoAction.triggered.connect( self._openInfo )
-        remFavAction.triggered.connect( self._removeFav )
-        filterDataAction.triggered.connect( self.showFilterConfiguration )
-        configColumnsAction.triggered.connect( self.showColumnsConfiguration )
-
-        globalPos = QCursor.pos()
-        contextMenu.exec_( globalPos )
+    def createContextMenu(self):
+        contextMenu = super().createContextMenu()
+        if self.dataObject is not None:
+            remFavAction = insert_new_action(contextMenu, "Remove fav", 1)
+            remFavAction.triggered.connect( self._removeFav )
+        return contextMenu
 
     def _removeFav(self):
         favList = self._getSelectedCodes()
@@ -277,3 +332,22 @@ def stock_background_color( dataObject, stockCode ):
         return TableRowColorDelegate.STOCK_FAV_BGCOLOR
 
     return None
+
+
+def insert_new_action( menu: QMenu, text: str, index: int ):
+    actionsList = menu.actions()
+    if index >= len( actionsList ):
+        return menu.addAction( text )
+    indexAction = actionsList[index]
+    newAction = QAction( text, menu )
+    menu.insertAction( indexAction, newAction )
+    return newAction
+
+
+def is_iterable(obj):
+    try:
+        iter(obj)
+    except Exception:
+        return False
+    else:
+        return True

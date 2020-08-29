@@ -266,18 +266,31 @@ class GpwCurrentData( WorksheetData ):
 
     ## ======================================================================
 
-    def getInfoLinkFromIsin(self, isin):
+    def getGpwLinkFromIsin(self, isin):
         return "https://www.gpw.pl/spolka?isin=%s" % isin
 
-    def getInfoLinkFromCode(self, code):
+    def getGpwLinkFromCode(self, code):
         isin = self.getIsinFromCode(code)
-        if isin is not None:
-            infoLink = "https://www.gpw.pl/spolka?isin=%s" % isin
-            return infoLink
+        if isin is None:
+            return None
+        return self.getGpwLinkFromIsin( isin )
+
+    def getGoogleLinkFromCode(self, code):
         infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % code
         return infoLink
 
+    def getMoneyLinkFromIsin(self, isin):
+        return "https://www.gpw.pl/spolka?isin=%s" % isin
+
+    def getMoneyLinkFromCode(self, code):
+        isin = self.getIsinFromCode(code)
+        if isin is None:
+            return None
+        return self.getMoneyLinkFromIsin( isin )
+
     def getIsinFromCode(self, code):
+        _LOGGER.warning("unable to get isin: not implemented")
+        #TODO: implement
         if code is None:
             return code
         return None
