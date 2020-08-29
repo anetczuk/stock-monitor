@@ -164,7 +164,14 @@ class GpwArchiveData:
 ## ==========================================================================
 
 
-def cleanup_column(dataFrame, colName, substr):
+def cleanup_column(dataFrame, colName):
+    cleanup_column_str( dataFrame, colName, " " )
+    cleanup_column_str( dataFrame, colName, "\t" )
+    cleanup_column_str( dataFrame, colName, "\u00A0" )          ## non-breaking space
+    cleanup_column_str( dataFrame, colName, "\xc2\xa0" )        ## non-breaking space
+
+
+def cleanup_column_str(dataFrame, colName, substr):
     val = dataFrame.loc[ dataFrame[ colName ].str.contains( substr ), colName ]
     for index, value in val.items():
         val[ index ] = value.split( substr )[0]
@@ -289,10 +296,7 @@ class GpwCurrentData( WorksheetData ):
         dataFrame.drop( dataFrame.tail(1).index, inplace=True )
 
         ## remove trash from column
-        cleanup_column( dataFrame, 'Nazwa', " " )
-        cleanup_column( dataFrame, 'Nazwa', "\t" )
-        cleanup_column( dataFrame, 'Nazwa', "\u00A0" )          ## non-breaking space
-        cleanup_column( dataFrame, 'Nazwa', "\xc2\xa0" )        ## non-breaking space
+        cleanup_column( dataFrame, 'Nazwa' )
 
         dataFrame['Kurs odn.'] = dataFrame['Kurs odn.'].apply( convert_float )
         dataFrame['Kurs otw.'] = dataFrame['Kurs otw.'].apply( convert_float )
@@ -302,10 +306,16 @@ class GpwCurrentData( WorksheetData ):
         dataFrame['Zm.do k.odn.(%)'] = dataFrame['Zm.do k.odn.(%)'].apply( convert_float )
 
         ## Wart. obr. - skumul.(tys.)
-        dataFrame['Unnamed: 22_level_0'] = dataFrame['Unnamed: 22_level_0'].apply( convert_float )
+        try:
+            dataFrame['Unnamed: 22_level_0'] = dataFrame['Unnamed: 22_level_0'].apply( convert_float )
+        except KeyError:
+            _LOGGER.exception( "unable to get values by key" )
 
         ## Wol. obr. - skumul.
-        dataFrame['Unnamed: 21_level_0'] = dataFrame['Unnamed: 21_level_0'].apply( convert_int )
+        try:
+            dataFrame['Unnamed: 21_level_0'] = dataFrame['Unnamed: 21_level_0'].apply( convert_int )
+        except KeyError:
+            _LOGGER.exception( "unable to get values by key" )
 
         return dataFrame
 
@@ -436,6 +446,9 @@ class GpwIndicatorsData( WorksheetData ):
         dataFrame = DataFrame()
         dataFrame = dataFrame.append( allDataFrames[1] )            ## country
         dataFrame = dataFrame.append( allDataFrames[2] )            ## foreign
+        
+        cleanup_column( dataFrame, 'Sektor' )
+
         return dataFrame
 
     def getDataPaths(self):
