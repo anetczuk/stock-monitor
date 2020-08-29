@@ -312,7 +312,7 @@ class StockAnalysis(object):
         writer.writerow( ["relative:",  "(max - curr) / (max - min)"] )
         writer.writerow( [] )
 
-        columnsList = ["name", "min val", "max val", "recent val", "trading[k]", "potential", "relative", "link"]
+        columnsList = ["name", "min val", "max val", "curr val", "trading[k]", "potential", "relative", "link"]
         rowsList = []
 
         currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
