@@ -61,10 +61,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.setWindowTitle( self.appTitle )
 
-        refreshAction = QtWidgets.QAction(self)
-        refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
-        refreshAction.triggered.connect( self.refreshStockDataForce )
-        self.addAction( refreshAction )
+        self.refreshAction = QtWidgets.QAction(self)
+        self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
+        self.refreshAction.triggered.connect( self.refreshStockDataForce )
+        self.addAction( self.refreshAction )
 
         ## =============================================================
 
@@ -184,6 +184,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.notesWidget.setNotes( self.data.notes )
 
     def refreshStockDataForce(self):
+        self.refreshAction.setEnabled( False )
+        self.ui.stockRefreshPB.setEnabled( False )
         self.data.refreshStockData( True )
 
     def _updateStockViews(self):
@@ -197,6 +199,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.reportswidget.refreshData()
         self.ui.recentrepswidget.refreshData()
         self.ui.dividendswidget.refreshData()
+
+        self.refreshAction.setEnabled( True )
+        self.ui.stockRefreshPB.setEnabled( True )
 
         self.setStatusMessage( "Stock data refreshed" )
 
