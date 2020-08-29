@@ -304,7 +304,7 @@ class GpwCurrentData( WorksheetData ):
         apply_on_column( dataFrame, 'Kurs maks.', convert_float )
         apply_on_column( dataFrame, 'Kurs ost. trans. / zamk.', convert_float )
         apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
-        
+
         ## Wart. obr. - skumul.(tys.)
         try:
             apply_on_column( dataFrame, 'Unnamed: 22_level_0', convert_float )
@@ -342,10 +342,10 @@ def convert_indexes_data( dataFrame: DataFrame ):
     apply_on_column( dataFrame, 'Kurs maks.', convert_float )
     apply_on_column( dataFrame, 'Wart. ost.', convert_float )
     apply_on_column( dataFrame, 'Wartość obrotu skum. (w tys. zł)', convert_float )
-    
+
     apply_on_column( dataFrame, 'Liczba spółek', convert_int )
     apply_on_column( dataFrame, '% otw. portfela', convert_int )
-    
+
 
 class GpwMainIndexesData( WorksheetData ):
 
@@ -446,13 +446,13 @@ class GpwIndicatorsData( WorksheetData ):
         dataFrame = DataFrame()
         dataFrame = dataFrame.append( allDataFrames[1] )            ## country
         dataFrame = dataFrame.append( allDataFrames[2] )            ## foreign
-        
+
         cleanup_column( dataFrame, 'Sektor' )
 
         apply_on_column( dataFrame, 'Liczba wyemitowanych akcji', convert_int )
         apply_on_column( dataFrame, 'Wartość rynkowa (mln zł)', convert_float )
         apply_on_column( dataFrame, 'Wartość księgowa (mln zł)', convert_float )
-        
+
         apply_on_column( dataFrame, 'C/WK', convert_float )
         apply_on_column( dataFrame, 'C/Z', convert_float )
         apply_on_column( dataFrame, 'Stopa dywidendy (%)', convert_float )
