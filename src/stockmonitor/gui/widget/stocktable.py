@@ -143,7 +143,10 @@ class StockTable( DataFrameTable ):
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
         for code in favList:
-            infoLink = dataAccess.getGpwLinkFromCode( code )
+            isin = self.dataObject.getStockIsinFromCode( code )
+            if isin is None:
+                continue
+            infoLink = dataAccess.getGpwLinkFromIsin( isin )
             if infoLink is not None:
                 ret.append( infoLink )
         _LOGGER.debug( "returning links list: %s", ret )
@@ -157,7 +160,10 @@ class StockTable( DataFrameTable ):
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
         for code in favList:
-            infoLink = dataAccess.getMoneyLinkFromCode( code )
+            isin = self.dataObject.getStockIsinFromCode( code )
+            if isin is None:
+                continue
+            infoLink = dataAccess.getMoneyLinkFromIsin( isin )
             if infoLink is not None:
                 ret.append( infoLink )
         _LOGGER.debug( "returning links list: %s", ret )

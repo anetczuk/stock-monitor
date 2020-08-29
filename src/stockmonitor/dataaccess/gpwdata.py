@@ -269,24 +269,12 @@ class GpwCurrentData( WorksheetData ):
     def getGpwLinkFromIsin(self, isin):
         return "https://www.gpw.pl/spolka?isin=%s" % isin
 
-    def getGpwLinkFromCode(self, code):
-        isin = self.getIsinFromCode(code)
-        if isin is None:
-            return None
-        return self.getGpwLinkFromIsin( isin )
-
     def getGoogleLinkFromCode(self, code):
         infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % code
         return infoLink
 
     def getMoneyLinkFromIsin(self, isin):
-        return "https://www.gpw.pl/spolka?isin=%s" % isin
-
-    def getMoneyLinkFromCode(self, code):
-        isin = self.getIsinFromCode(code)
-        if isin is None:
-            return None
-        return self.getMoneyLinkFromIsin( isin )
+        return "https://www.money.pl/gielda/spolki-gpw/%s.html" % isin
 
     def getIsinFromCode(self, code):
         _LOGGER.warning("unable to get isin: not implemented")
@@ -507,6 +495,15 @@ class GpwIsinMapData( WorksheetData ):
             return None
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["Ticker"]
+        return tickerColumn.iloc[ rowIndex ]
+
+    def getStockIsinFromCode(self, stockCode):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["Ticker"] == stockCode ].index.values
+        if not rowIndexes:
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["ISIN"]
         return tickerColumn.iloc[ rowIndex ]
 
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:

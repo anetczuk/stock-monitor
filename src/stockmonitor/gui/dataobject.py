@@ -761,6 +761,9 @@ class DataObject( QObject ):
     def getStockCodeFromName(self, stockName):
         return self.gpwIsinMap.getStockCodeFromName( stockName )
 
+    def getStockIsinFromCode(self, stockCode):
+        return self.gpwIsinMap.getStockIsinFromCode( stockCode )
+
 
 def broker_commission( value ):
     ## always returns positive value
