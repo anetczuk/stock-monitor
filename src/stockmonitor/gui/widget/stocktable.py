@@ -133,10 +133,7 @@ class StockFullColorDelegate( TableRowColorDelegate ):
     def background(self, index: QModelIndex ):
         dataRow = index.row()
         stockCode = self.dataObject.getStockCode( dataRow )
-        allFavs = self.dataObject.favs.getFavsAll()
-        if stockCode in allFavs:
-            return TableRowColorDelegate.STOCK_FAV_BGCOLOR
-        return None
+        return stock_background_color( self.dataObject, stockCode )
 
 
 class StockFullTable( StockTable ):
@@ -268,3 +265,15 @@ class ToolStockTable( StockTable ):
                 favCodes.add( code )
         favList = list(favCodes)
         return favList
+
+
+def stock_background_color( dataObject, stockCode ):
+    walletStock = dataObject.wallet.getCurrentStock()
+    if stockCode in walletStock:
+        return TableRowColorDelegate.STOCK_WALLET_BGCOLOR
+
+    allFavs = dataObject.favs.getFavsAll()
+    if stockCode in allFavs:
+        return TableRowColorDelegate.STOCK_FAV_BGCOLOR
+
+    return None

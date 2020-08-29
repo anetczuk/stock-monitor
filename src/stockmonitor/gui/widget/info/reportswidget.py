@@ -30,7 +30,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
-from stockmonitor.gui.widget.stocktable import StockTable
+from stockmonitor.gui.widget.stocktable import StockTable, stock_background_color
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.dataobject import DataObject
 
@@ -69,10 +69,7 @@ class ReportsColorDelegate( TableRowColorDelegate ):
     def background(self, index: QModelIndex ):
         dataRow = index.row()
         stockCode = self.dataAccess.getStockCode( dataRow )
-        allFavs = self.dataObject.favs.getFavsAll()
-        if stockCode in allFavs:
-            return TableRowColorDelegate.STOCK_FAV_BGCOLOR
-        return None
+        return stock_background_color( self.dataObject, stockCode )
 
 
 class ReportsWidget( QWidget ):

@@ -29,7 +29,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
-from stockmonitor.gui.widget.stocktable import StockTable
+from stockmonitor.gui.widget.stocktable import StockTable, stock_background_color
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.dataobject import DataObject
 
@@ -67,13 +67,16 @@ class DividendsColorDelegate( TableRowColorDelegate ):
     def background(self, index: QModelIndex ):
         dataRow = index.row()
         stockCode = self.widget.getStockCode( dataRow )
-        allFavs = self.widget.dataObject.favs.getFavsAll()
-        if stockCode in allFavs:
-            return TableRowColorDelegate.STOCK_FAV_BGCOLOR
+
+        stockColor = stock_background_color( self.widget.dataObject, stockCode )
+        if stockColor is not None:
+            return stockColor
+
         todayDate = datetime.date.today()
         dateObject = self.widget.dataAccess.getLawDate( dataRow )
         if dateObject <= todayDate:
             return TableRowColorDelegate.STOCK_GRAY_BGCOLOR
+
         return None
 
 

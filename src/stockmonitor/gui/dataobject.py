@@ -225,6 +225,12 @@ class WalletData( persist.Versionable ):
             self.transactions.sort( key=compare, reverse=True )
 #             self.transactions.sort(key=lambda x: (x[2] in None, x[2]), reverse=True)
 
+        def currentAmount(self):
+            stockAmount = 0
+            for item in self.transactions:
+                stockAmount += item[0]
+            return stockAmount
+
         def transactionsProfit(self, considerCommission=True):
             profitValue = 0
             for amount, unit_price, _ in self.transactions:
@@ -364,6 +370,14 @@ class WalletData( persist.Versionable ):
             transactions = self.History()
             self.stockList[ code ] = transactions
         transactions.add( amount, unit_price, transTime, joinSimilar )
+
+    def getCurrentStock(self) -> List[ str ]:
+        ret = list()
+        for key, hist in self.stockList.items():
+            amount = hist.currentAmount()
+            if amount > 0:
+                ret.append( key )
+        return ret
 
 
 class UserContainer():
