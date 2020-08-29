@@ -298,22 +298,22 @@ class GpwCurrentData( WorksheetData ):
         ## remove trash from column
         cleanup_column( dataFrame, 'Nazwa' )
 
-        dataFrame['Kurs odn.'] = dataFrame['Kurs odn.'].apply( convert_float )
-        dataFrame['Kurs otw.'] = dataFrame['Kurs otw.'].apply( convert_float )
-        dataFrame['Kurs min.'] = dataFrame['Kurs min.'].apply( convert_float )
-        dataFrame['Kurs maks.'] = dataFrame['Kurs maks.'].apply( convert_float )
-        dataFrame['Kurs ost. trans. / zamk.'] = dataFrame['Kurs ost. trans. / zamk.'].apply( convert_float )
-        dataFrame['Zm.do k.odn.(%)'] = dataFrame['Zm.do k.odn.(%)'].apply( convert_float )
-
+        apply_on_column( dataFrame, 'Kurs odn.', convert_float )
+        apply_on_column( dataFrame, 'Kurs otw.', convert_float )
+        apply_on_column( dataFrame, 'Kurs min.', convert_float )
+        apply_on_column( dataFrame, 'Kurs maks.', convert_float )
+        apply_on_column( dataFrame, 'Kurs ost. trans. / zamk.', convert_float )
+        apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
+        
         ## Wart. obr. - skumul.(tys.)
         try:
-            dataFrame['Unnamed: 22_level_0'] = dataFrame['Unnamed: 22_level_0'].apply( convert_float )
+            apply_on_column( dataFrame, 'Unnamed: 22_level_0', convert_float )
         except KeyError:
             _LOGGER.exception( "unable to get values by key" )
 
         ## Wol. obr. - skumul.
         try:
-            dataFrame['Unnamed: 21_level_0'] = dataFrame['Unnamed: 21_level_0'].apply( convert_int )
+            apply_on_column( dataFrame, 'Unnamed: 21_level_0', convert_int )
         except KeyError:
             _LOGGER.exception( "unable to get values by key" )
 
@@ -337,15 +337,15 @@ class GpwCurrentData( WorksheetData ):
 
 
 def convert_indexes_data( dataFrame: DataFrame ):
-    dataFrame['Kurs otw.'] = dataFrame['Kurs otw.'].apply( convert_float )
-    dataFrame['Kurs min.'] = dataFrame['Kurs min.'].apply( convert_float )
-    dataFrame['Kurs maks.'] = dataFrame['Kurs maks.'].apply( convert_float )
-    dataFrame['Wart. ost.'] = dataFrame['Wart. ost.'].apply( convert_float )
-    dataFrame['Wartość obrotu skum. (w tys. zł)'] = dataFrame['Wartość obrotu skum. (w tys. zł)'].apply( convert_float )
-
-    dataFrame['Liczba spółek'] = dataFrame['Liczba spółek'].apply( convert_int )
-    dataFrame['% otw. portfela'] = dataFrame['% otw. portfela'].apply( convert_int )
-
+    apply_on_column( dataFrame, 'Kurs otw.', convert_float )
+    apply_on_column( dataFrame, 'Kurs min.', convert_float )
+    apply_on_column( dataFrame, 'Kurs maks.', convert_float )
+    apply_on_column( dataFrame, 'Wart. ost.', convert_float )
+    apply_on_column( dataFrame, 'Wartość obrotu skum. (w tys. zł)', convert_float )
+    
+    apply_on_column( dataFrame, 'Liczba spółek', convert_int )
+    apply_on_column( dataFrame, '% otw. portfela', convert_int )
+    
 
 class GpwMainIndexesData( WorksheetData ):
 
@@ -449,6 +449,14 @@ class GpwIndicatorsData( WorksheetData ):
         
         cleanup_column( dataFrame, 'Sektor' )
 
+        apply_on_column( dataFrame, 'Liczba wyemitowanych akcji', convert_int )
+        apply_on_column( dataFrame, 'Wartość rynkowa (mln zł)', convert_float )
+        apply_on_column( dataFrame, 'Wartość księgowa (mln zł)', convert_float )
+        
+        apply_on_column( dataFrame, 'C/WK', convert_float )
+        apply_on_column( dataFrame, 'C/Z', convert_float )
+        apply_on_column( dataFrame, 'Stopa dywidendy (%)', convert_float )
+
         return dataFrame
 
     def getDataPaths(self):
@@ -502,3 +510,10 @@ class GpwIsinMapData( WorksheetData ):
     def getDataUrl(self):
         url = "http://infostrefa.com/infostrefa/pl/spolki"
         return url
+
+
+## ============================================================
+
+
+def apply_on_column( dataFrame, columnName, function ):
+    dataFrame[ columnName ] = dataFrame[ columnName ].apply( function )
