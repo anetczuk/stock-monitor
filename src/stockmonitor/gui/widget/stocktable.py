@@ -91,7 +91,7 @@ class StockTable( DataFrameTable ):
         action.setData( link )
         action.triggered.connect( self._openUrlAction )
         return action
-    
+
     def _openUrlAction(self):
         parentAction = self.sender()
         urlLinkList = parentAction.data()
@@ -156,7 +156,7 @@ class StockTable( DataFrameTable ):
         favList = self._getSelectedCodes()
         if not favList:
             _LOGGER.warning( "unable to open stock info: empty codes list" )
-            return
+            return []
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
         for code in favList:
@@ -183,6 +183,7 @@ class StockTable( DataFrameTable ):
         _LOGGER.debug( "returning links list: %s", ret )
         return ret
 
+    ## returns list of tickers
     def _getSelectedCodes(self) -> List[str]:
         ## reimplement if needed
         return list()
@@ -233,14 +234,7 @@ class StockFullTable( StockTable ):
         self.setHeadersText( self.dataObject.gpwCurrentHeaders )
 
     def _getSelectedCodes(self):
-        dataAccess = self.dataObject.gpwCurrentData
-        selectedRows = self.getSelectedRows()
-        favCodes = set()
-        for dataRow in selectedRows:
-            code = dataAccess.getShortField( dataRow )
-            favCodes.add( code )
-        favList = list(favCodes)
-        return favList
+        return self.getSelectedData( 3 )                ## ticker
 
     def settingsAccepted(self):
         self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
@@ -290,14 +284,7 @@ class StockFavsTable( StockTable ):
         self.dataObject.deleteFav( self.favGroup, favList )
 
     def _getSelectedCodes(self):
-        dataAccess = self.dataObject.gpwCurrentData
-        selectedRows = self.getSelectedRows()
-        favCodes = set()
-        for dataRow in selectedRows:
-            code = dataAccess.getShortFieldFromData( self._rawData, dataRow )
-            favCodes.add( code )
-        favList = list(favCodes)
-        return favList
+        return self.getSelectedData( 3 )                ## ticker
 
     def settingsAccepted(self):
         self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
@@ -317,10 +304,9 @@ class ToolStockTable( StockTable ):
 
     def _getSelectedCodes(self):
         dataAccess = self.dataObject.gpwCurrentData
-        selectedRows = self.getSelectedRows()
+        selectedData = self.getSelectedData( 0 )                ## stock name
         favCodes = set()
-        for dataRow in selectedRows:
-            stockName = self._rawData.iloc[dataRow, 0]
+        for stockName in selectedData:
             code = dataAccess.getShortFieldByName( stockName )
             if code is not None:
                 favCodes.add( code )
@@ -353,6 +339,7 @@ def insert_new_action( menu: QMenu, text: str, index: int ):
 def is_iterable(obj):
     try:
         iter(obj)
+    # pylint: disable=W0703
     except Exception:
         return False
     else:

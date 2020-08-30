@@ -46,10 +46,10 @@ class IndicatorsTable( StockTable ):
 
     def _getSelectedCodes(self) -> List[str]:
         parent = self.parent()
-        selectedRows = self.getSelectedRows()
+        selectedData = self.getSelectedData( 2 )                ## name
         favCodes = set()
-        for dataRow in selectedRows:
-            code = parent.getStockCode( dataRow )
+        for name in selectedData:
+            code = parent.getStockCodeFromName( name )
             favCodes.add( code )
         favList = list(favCodes)
         return favList
@@ -116,3 +116,6 @@ class IndicatorsWidget( QWidget ):
         stockIsin = self.dataAccess.getStockIsin( dataRow )
         stockCode = self.dataObject.getStockCodeFromIsin( stockIsin )
         return stockCode
+
+    def getStockCodeFromName(self, stockName):
+        return self.dataObject.getStockCodeFromName( stockName )

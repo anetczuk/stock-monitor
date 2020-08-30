@@ -46,10 +46,10 @@ class DividendsTable( StockTable ):
 
     def _getSelectedCodes(self) -> List[str]:
         parent = self.parent()
-        selectedRows = self.getSelectedRows()
+        selectedData = self.getSelectedData( 0 )                ## name
         favCodes = set()
-        for dataRow in selectedRows:
-            code = parent.getStockCode( dataRow )
+        for name in selectedData:
+            code = parent.getStockCodeFromName( name )
             favCodes.add( code )
         favList = list(favCodes)
         return favList
@@ -126,3 +126,6 @@ class DividendsWidget( QWidget ):
         stockName = self.dataAccess.getStockName( dataRow )
         stockCode = self.dataObject.getStockCodeFromName( stockName )
         return stockCode
+
+    def getStockCodeFromName(self, stockName):
+        return self.dataObject.getStockCodeFromName( stockName )

@@ -46,14 +46,7 @@ class ReportsTable( StockTable ):
         self.setAlternatingRowColors( False )
 
     def _getSelectedCodes(self) -> List[str]:
-        dataAccess = self.parent().dataAccess
-        selectedRows = self.getSelectedRows()
-        favCodes = set()
-        for dataRow in selectedRows:
-            code = dataAccess.getStockCode( dataRow )
-            favCodes.add( code )
-        favList = list(favCodes)
-        return favList
+        return self.getSelectedData( 1 )                ## ticker
 
 
 class ReportsColorDelegate( TableRowColorDelegate ):

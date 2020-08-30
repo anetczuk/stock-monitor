@@ -26,15 +26,14 @@ import logging
 import pandas
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QMenu, QFileDialog
-from PyQt5.QtGui import QCursor
+from PyQt5.QtWidgets import QFileDialog
 
 from stockmonitor.dataaccess.convert import convert_float, convert_int
+from stockmonitor.gui.widget.stocktable import insert_new_action
 
 from .. import uiloader
 
 from .stocktable import StockTable
-from stockmonitor.gui.widget.stocktable import insert_new_action
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -91,16 +90,7 @@ class WalletStockTable( StockTable ):
         self.dataObject.importWalletTransactions( importedData )
 
     def _getSelectedCodes(self):
-        dataAccess = self.dataObject.gpwCurrentData
-        selectedRows = self.getSelectedRows()
-        favCodes = set()
-        for dataRow in selectedRows:
-            stockName = self._rawData.iloc[dataRow, 0]
-            code = dataAccess.getShortFieldByName( stockName )
-            if code is not None:
-                favCodes.add( code )
-        favList = list(favCodes)
-        return favList
+        return self.getSelectedData( 1 )                ## ticker
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )

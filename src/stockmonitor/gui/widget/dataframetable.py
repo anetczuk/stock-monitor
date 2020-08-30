@@ -27,7 +27,7 @@ import re
 import io
 import csv
 
-from typing import Dict, List
+from typing import Dict
 
 from urllib.parse import urlparse
 from pandas import DataFrame
@@ -549,15 +549,23 @@ class DataFrameTable( QTableView ):
     def clear(self):
         self.setData( None )
 
-    def getSelectedRows(self) -> List[int]:
+    def getSelectedIndexes(self):
         selection = self.selectionModel()
-        indexes = selection.selectedIndexes()
-        selectedIndexees = list()
-        for ind in indexes:
-            sourceIndex = self.model().mapToSource( ind )
-            dataRow = sourceIndex.row()
-            selectedIndexees.append( dataRow )
-        return selectedIndexees
+        return selection.selectedIndexes()
+
+    ## column index is independent from column visibility
+    ## it points to index in data source
+    def getSelectedData(self, columnIndex):
+        selectedIndexes = self.getSelectedIndexes()
+        dataModel = self.model()
+        ret = set()
+        for dataRow in selectedIndexes:
+            row = dataRow.row()
+            parent = dataRow.parent()
+            dataIndex = dataModel.index( row, columnIndex, parent )
+            data = dataIndex.data()
+            ret.add( data )
+        return ret
 
     def setColorDelegate(self, decorator: TableRowColorDelegate):
         self.pandaModel.setColorDelegate( decorator )
