@@ -58,6 +58,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="importMBPB">
+       <property name="text">
+        <string>Import mb transactions</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

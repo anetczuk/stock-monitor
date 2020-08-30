@@ -31,12 +31,10 @@ from PyQt5.QtWidgets import QFileDialog
 
 from stockmonitor.dataaccess.convert import convert_float, convert_int
 from stockmonitor.dataaccess.gpwdata import apply_on_column
-from stockmonitor.gui.widget.stocktable import insert_new_action
 
 from .. import uiloader
 
 from .stocktable import StockTable
-#import shutil
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -71,14 +69,14 @@ class WalletStockTable( StockTable ):
         super().__init__(parentWidget)
         self.setObjectName("walletstocktable")
 
-    def createContextMenu(self):
-        contextMenu = super().createContextMenu()
-        if self.dataObject is not None:
-            importTransAction = insert_new_action(contextMenu, "Import mb transactions", 1)
-            importTransAction.triggered.connect( self._importTransactions )
-        return contextMenu
+#     def createContextMenu(self):
+#         contextMenu = super().createContextMenu()
+#         if self.dataObject is not None:
+#             importTransAction = insert_new_action(contextMenu, "Import mb transactions", 1)
+#             importTransAction.triggered.connect( self.importTransactions )
+#         return contextMenu
 
-    def _importTransactions(self):
+    def importTransactions(self):
         if self.dataObject is None:
             return
         filePath = QFileDialog.getOpenFileName( self, "Import transactions" )
@@ -110,6 +108,8 @@ class WalletWidget( QtBaseClass ):           # type: ignore
 
         self.soldOutFilter = WalletProxyModel()
         self.ui.walletTable.addProxyModel( self.soldOutFilter )
+
+        self.ui.importMBPB.clicked.connect( self.ui.walletTable.importTransactions )
 
         self.ui.soldOutCB.stateChanged.connect( self._handleSoldOut )
 
