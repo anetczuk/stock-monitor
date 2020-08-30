@@ -181,14 +181,14 @@ def cleanup_column_str(dataFrame, colName, substr):
 class GpwCurrentData( WorksheetData ):
     """Handle GPW current day data."""
 
-    def getStockData(self, stockCodesList: List[str] = None) -> DataFrame:
-        if stockCodesList is None:
+    def getStockData(self, tickerList: List[str] = None) -> DataFrame:
+        if tickerList is None:
             return None
         dataFrame = self.getWorksheet()
         if dataFrame is None:
             return None
-        colIndex = self.getColumnIndex( CurrentDataType.SHORT )
-        retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( stockCodesList ) ]
+        colIndex = self.getColumnIndex( CurrentDataType.TICKER )
+        retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( tickerList ) ]
         return retRows
 
     def getData(self, dataType: CurrentDataType):
@@ -207,29 +207,29 @@ class GpwCurrentData( WorksheetData ):
         if dataFrame is None:
             _LOGGER.warning("no worksheet found")
             return None
-        colIndex = self.getColumnIndex( CurrentDataType.SHORT )
+        colIndex = self.getColumnIndex( CurrentDataType.TICKER )
         retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex] == ticker ]
         return retRows.squeeze()            ## convert 1 row dataframe to series
 
-    def getShortField(self, rowIndex: int):
+    def getTickerField(self, rowIndex: int):
         dataFrame = self.getWorksheet()
         if dataFrame is None:
             return None
-        return self.getShortFieldFromData( dataFrame, rowIndex )
+        return self.getTickerFieldFromData( dataFrame, rowIndex )
 
-    def getShortFieldByName(self, stockName):
+    def getTickerFieldByName(self, stockName):
         dataFrame = self.getWorksheet()
         if dataFrame is None:
             return None
         nameIndex = self.getColumnIndex( CurrentDataType.NAME )
-        shortIndex = self.getColumnIndex( CurrentDataType.SHORT )
+        tickerIndex = self.getColumnIndex( CurrentDataType.TICKER )
         retRows = dataFrame.loc[ dataFrame.iloc[:, nameIndex] == stockName ]
         if retRows.shape[0] > 0:
-            return retRows.iloc[0, shortIndex]
+            return retRows.iloc[0, tickerIndex]
         return None
 
-    def getShortFieldFromData(self, dataFrame: DataFrame, rowIndex: int):
-        colIndex = self.getColumnIndex( CurrentDataType.SHORT )
+    def getTickerFieldFromData(self, dataFrame: DataFrame, rowIndex: int):
+        colIndex = self.getColumnIndex( CurrentDataType.TICKER )
         if colIndex is None:
             return None
         return dataFrame.iloc[rowIndex, colIndex]
@@ -239,7 +239,7 @@ class GpwCurrentData( WorksheetData ):
     def getColumnIndex(self, dataType: CurrentDataType):
         switcher = {
             CurrentDataType.NAME:               2,
-            CurrentDataType.SHORT:              3,
+            CurrentDataType.TICKER:             3,
             CurrentDataType.CURRENCY:           4,
             CurrentDataType.RECENT_TRANS_TIME:  5,
             CurrentDataType.REFERENCE:          6,
@@ -269,19 +269,12 @@ class GpwCurrentData( WorksheetData ):
     def getGpwLinkFromIsin(self, isin):
         return "https://www.gpw.pl/spolka?isin=%s" % isin
 
-    def getGoogleLinkFromCode(self, code):
-        infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % code
+    def getGoogleLinkFromTicker(self, ticker):
+        infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % ticker
         return infoLink
 
     def getMoneyLinkFromIsin(self, isin):
         return "https://www.money.pl/gielda/spolki-gpw/%s.html" % isin
-
-    def getIsinFromCode(self, code):
-        _LOGGER.warning("unable to get isin: not implemented")
-        #TODO: implement
-        if code is None:
-            return code
-        return None
 
     ## ======================================================================
 
@@ -479,7 +472,7 @@ class GpwIndicatorsData( WorksheetData ):
 ## http://infostrefa.com/infostrefa/pl/spolki
 class GpwIsinMapData( WorksheetData ):
 
-    def getStockCodeFromIsin(self, stockIsin):
+    def getTickerFromIsin(self, stockIsin):
         dataFrame = self.getWorksheet()
         rowIndexes = dataFrame[ dataFrame["ISIN"] == stockIsin ].index.values
         if not rowIndexes:
@@ -488,7 +481,7 @@ class GpwIsinMapData( WorksheetData ):
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
 
-    def getStockCodeFromName(self, stockName):
+    def getTickerFromName(self, stockName):
         dataFrame = self.getWorksheet()
         rowIndexes = dataFrame[ dataFrame["Nazwa giełdowa"] == stockName ].index.values
         if not rowIndexes:
@@ -497,9 +490,9 @@ class GpwIsinMapData( WorksheetData ):
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
 
-    def getStockIsinFromCode(self, stockCode):
+    def getStockIsinFromTicker(self, ticker):
         dataFrame = self.getWorksheet()
-        rowIndexes = dataFrame[ dataFrame["Ticker"] == stockCode ].index.values
+        rowIndexes = dataFrame[ dataFrame["Ticker"] == ticker ].index.values
         if not rowIndexes:
             return None
         rowIndex = rowIndexes[0]

@@ -25,6 +25,21 @@ from enum import Enum, unique
 
 
 @unique
+class DataFieldType(Enum):
+    TICKER = ()                  ## short code, e.g. 11B or CDR
+    ISIN = ()                    ## ISIN, e.g. PLCCC0000016
+    STOCK_NAME = ()              ## short name, e.g. SANPL
+    FULL_NAME = ()               ## full name, e.g. "CD Projekt SA"
+
+    def __new__(cls):
+        value = len(cls.__members__)  # note no + 1
+        obj = object.__new__(cls)
+        # pylint: disable=W0212
+        obj._value_ = value
+        return obj
+
+
+@unique
 class ArchiveDataType(Enum):
     DATE = ()             ## data
     NAME = ()             ## nazwa
@@ -50,7 +65,7 @@ class ArchiveDataType(Enum):
 @unique
 class CurrentDataType(Enum):
     NAME = ()               ## nazwa
-    SHORT = ()              ## skrot
+    TICKER = ()             ## skrot
     CURRENCY = ()           ## waluta
     RECENT_TRANS_TIME = ()  ## czas ostatniej transakcji
     REFERENCE = ()          ## kurs odniesienia

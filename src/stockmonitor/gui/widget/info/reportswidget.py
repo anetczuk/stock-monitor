@@ -45,7 +45,7 @@ class ReportsTable( StockTable ):
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
 
-    def _getSelectedCodes(self) -> List[str]:
+    def _getSelectedTickers(self) -> List[str]:
         return self.getSelectedData( 1 )                ## ticker
 
 
@@ -61,8 +61,8 @@ class ReportsColorDelegate( TableRowColorDelegate ):
 
     def background(self, index: QModelIndex ):
         dataRow = index.row()
-        stockCode = self.dataAccess.getStockCode( dataRow )
-        return stock_background_color( self.dataObject, stockCode )
+        ticker = self.dataAccess.getTicker( dataRow )
+        return stock_background_color( self.dataObject, ticker )
 
 
 class ReportsWidget( QWidget ):

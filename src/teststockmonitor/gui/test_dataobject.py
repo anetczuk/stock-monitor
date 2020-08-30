@@ -65,8 +65,8 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( dataobject.transactions("xxx").size(), 2 )
 
         items = dataobject.items()
-        code, amount, unit_price = items[0]
-        self.assertEqual( code, "xxx" )
+        ticker, amount, unit_price = items[0]
+        self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 2 )
         self.assertEqual( unit_price, 15.0 )
 
@@ -80,8 +80,8 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( dataobject.transactions("xxx").size(), 1 )
 
         items = dataobject.items()
-        code, amount, unit_price = items[0]
-        self.assertEqual( code, "xxx" )
+        ticker, amount, unit_price = items[0]
+        self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 4 )
         self.assertEqual( unit_price, 20.0 )
 
@@ -97,8 +97,8 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( dataobject.size(), 1 )
 
         items = dataobject.items()
-        code, amount, unit_price = items[0]
-        self.assertEqual( code, "xxx" )
+        ticker, amount, unit_price = items[0]
+        self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
         self.assertEqual( unit_price, 20.0 )
 
@@ -114,8 +114,8 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( dataobject.size(), 1 )
 
         items = dataobject.items()
-        code, amount, unit_price = items[0]
-        self.assertEqual( code, "xxx" )
+        ticker, amount, unit_price = items[0]
+        self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
         self.assertEqual( unit_price, 10.0 )
 
@@ -131,8 +131,8 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( dataobject.size(), 1 )
 
         items = dataobject.items()
-        code, amount, unit_price = items[0]
-        self.assertEqual( code, "xxx" )
+        ticker, amount, unit_price = items[0]
+        self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
         self.assertEqual( unit_price, 20.0 )
 
@@ -145,8 +145,8 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( dataobject.size(), 1 )
 
         items = dataobject.items()
-        code, amount, unit_price = items[0]
-        self.assertEqual( code, "xxx" )
+        ticker, amount, unit_price = items[0]
+        self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
         self.assertEqual( unit_price, 10.0 )
 

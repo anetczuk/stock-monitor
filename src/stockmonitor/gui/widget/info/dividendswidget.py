@@ -44,15 +44,14 @@ class DividendsTable( StockTable ):
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
 
-    def _getSelectedCodes(self) -> List[str]:
+    def _getSelectedTickers(self) -> List[str]:
         parent = self.parent()
         selectedData = self.getSelectedData( 0 )                ## name
-        favCodes = set()
+        tickersSet = set()
         for name in selectedData:
-            code = parent.getStockCodeFromName( name )
-            favCodes.add( code )
-        favList = list(favCodes)
-        return favList
+            ticker = parent.getTickerFromName( name )
+            tickersSet.add( ticker )
+        return list( tickersSet )
 
 
 class DividendsColorDelegate( TableRowColorDelegate ):
@@ -66,9 +65,9 @@ class DividendsColorDelegate( TableRowColorDelegate ):
 
     def background(self, index: QModelIndex ):
         dataRow = index.row()
-        stockCode = self.widget.getStockCode( dataRow )
+        ticker = self.widget.getTicker( dataRow )
 
-        stockColor = stock_background_color( self.widget.dataObject, stockCode )
+        stockColor = stock_background_color( self.widget.dataObject, ticker )
         if stockColor is not None:
             return stockColor
 
@@ -122,10 +121,10 @@ class DividendsWidget( QWidget ):
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
 
-    def getStockCode(self, dataRow):
+    def getTicker(self, dataRow):
         stockName = self.dataAccess.getStockName( dataRow )
-        stockCode = self.dataObject.getStockCodeFromName( stockName )
-        return stockCode
+        ticker = self.dataObject.getTickerFromName( stockName )
+        return ticker
 
-    def getStockCodeFromName(self, stockName):
-        return self.dataObject.getStockCodeFromName( stockName )
+    def getTickerFromName(self, stockName):
+        return self.dataObject.getTickerFromName( stockName )

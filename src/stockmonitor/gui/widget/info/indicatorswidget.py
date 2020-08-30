@@ -44,15 +44,14 @@ class IndicatorsTable( StockTable ):
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
 
-    def _getSelectedCodes(self) -> List[str]:
+    def _getSelectedTickers(self) -> List[str]:
         parent = self.parent()
         selectedData = self.getSelectedData( 2 )                ## name
-        favCodes = set()
+        tickersSet = set()
         for name in selectedData:
-            code = parent.getStockCodeFromName( name )
-            favCodes.add( code )
-        favList = list(favCodes)
-        return favList
+            ticker = parent.getTickerFromName( name )
+            tickersSet.add( ticker )
+        return list(tickersSet)
 
 
 class IndicatorsColorDelegate( TableRowColorDelegate ):
@@ -66,8 +65,8 @@ class IndicatorsColorDelegate( TableRowColorDelegate ):
 
     def background(self, index: QModelIndex ):
         dataRow = index.row()
-        stockCode = self.widget.getStockCode( dataRow )
-        return stock_background_color( self.widget.dataObject, stockCode )
+        ticker = self.widget.getTicker( dataRow )
+        return stock_background_color( self.widget.dataObject, ticker )
 
 
 class IndicatorsWidget( QWidget ):
@@ -112,10 +111,9 @@ class IndicatorsWidget( QWidget ):
         dataFrame = self.dataAccess.getWorksheet()
         self.dataTable.setData( dataFrame )
 
-    def getStockCode(self, dataRow):
+    def getTicker(self, dataRow):
         stockIsin = self.dataAccess.getStockIsin( dataRow )
-        stockCode = self.dataObject.getStockCodeFromIsin( stockIsin )
-        return stockCode
+        return self.dataObject.getTickerFromIsin( stockIsin )
 
-    def getStockCodeFromName(self, stockName):
-        return self.dataObject.getStockCodeFromName( stockName )
+    def getTickerFromName(self, stockName):
+        return self.dataObject.getTickerFromName( stockName )

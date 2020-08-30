@@ -211,8 +211,8 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         elif action == renameAction:
             self._renameTabRequest( tabIndex )
         elif action == deleteAction:
-            favCode = self.tabText( tabIndex )
-            self.removeFavGrp.emit( favCode )
+            ticker = self.tabText( tabIndex )
+            self.removeFavGrp.emit( ticker )
 
     def tabMoved(self):
         favOrder = self.tabsList()

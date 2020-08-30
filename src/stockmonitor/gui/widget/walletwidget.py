@@ -89,7 +89,7 @@ class WalletStockTable( StockTable ):
 #         print("data:\n", importedData)
         self.dataObject.importWalletTransactions( importedData )
 
-    def _getSelectedCodes(self):
+    def _getSelectedTickers(self):
         return self.getSelectedData( 1 )                ## ticker
 
 

@@ -132,18 +132,18 @@ class StockTable( DataFrameTable ):
                 favGrp = newText
             else:
                 return
-        favList = self._getSelectedCodes()
+        favList = self._getSelectedTickers()
         self.dataObject.addFav( favGrp, favList )
 
     def _getGpwInfoLinks(self):
-        favList = self._getSelectedCodes()
+        favList = self._getSelectedTickers()
         if not favList:
-            _LOGGER.warning( "unable to get stock info: empty codes list" )
+            _LOGGER.warning( "unable to get stock info: empty ticker list" )
             return []
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
-        for code in favList:
-            isin = self.dataObject.getStockIsinFromCode( code )
+        for ticker in favList:
+            isin = self.dataObject.getStockIsinFromTicker( ticker )
             if isin is None:
                 continue
             infoLink = dataAccess.getGpwLinkFromIsin( isin )
@@ -153,14 +153,14 @@ class StockTable( DataFrameTable ):
         return ret
 
     def _getMoneyInfoLinks(self):
-        favList = self._getSelectedCodes()
+        favList = self._getSelectedTickers()
         if not favList:
-            _LOGGER.warning( "unable to open stock info: empty codes list" )
+            _LOGGER.warning( "unable to open stock info: empty ticker list" )
             return []
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
-        for code in favList:
-            isin = self.dataObject.getStockIsinFromCode( code )
+        for ticker in favList:
+            isin = self.dataObject.getStockIsinFromTicker( ticker )
             if isin is None:
                 continue
             infoLink = dataAccess.getMoneyLinkFromIsin( isin )
@@ -170,21 +170,21 @@ class StockTable( DataFrameTable ):
         return ret
 
     def _getGoogleInfoLinks(self):
-        favList = self._getSelectedCodes()
+        favList = self._getSelectedTickers()
         if not favList:
-            _LOGGER.warning( "unable to get stock info: empty codes list" )
+            _LOGGER.warning( "unable to get stock info: empty ticker list" )
             return []
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
-        for code in favList:
-            infoLink = dataAccess.getGoogleLinkFromCode( code )
+        for ticker in favList:
+            infoLink = dataAccess.getGoogleLinkFromTicker( ticker )
             if infoLink is not None:
                 ret.append( infoLink )
         _LOGGER.debug( "returning links list: %s", ret )
         return ret
 
     ## returns list of tickers
-    def _getSelectedCodes(self) -> List[str]:
+    def _getSelectedTickers(self) -> List[str]:
         ## reimplement if needed
         return list()
 
@@ -203,8 +203,8 @@ class StockFullColorDelegate( TableRowColorDelegate ):
 
     def background(self, index: QModelIndex ):
         dataRow = index.row()
-        stockCode = self.dataObject.getStockCode( dataRow )
-        return stock_background_color( self.dataObject, stockCode )
+        ticker = self.dataObject.getTicker( dataRow )
+        return stock_background_color( self.dataObject, ticker )
 
 
 class StockFullTable( StockTable ):
@@ -233,7 +233,7 @@ class StockFullTable( StockTable ):
     def updateView(self):
         self.setHeadersText( self.dataObject.gpwCurrentHeaders )
 
-    def _getSelectedCodes(self):
+    def _getSelectedTickers(self):
         return self.getSelectedData( 3 )                ## ticker
 
     def settingsAccepted(self):
@@ -280,10 +280,10 @@ class StockFavsTable( StockTable ):
         return contextMenu
 
     def _removeFav(self):
-        favList = self._getSelectedCodes()
+        favList = self._getSelectedTickers()
         self.dataObject.deleteFav( self.favGroup, favList )
 
-    def _getSelectedCodes(self):
+    def _getSelectedTickers(self):
         return self.getSelectedData( 3 )                ## ticker
 
     def settingsAccepted(self):
@@ -302,25 +302,24 @@ class ToolStockTable( StockTable ):
         super().__init__(parentWidget)
         self.setObjectName("toolstocktable")
 
-    def _getSelectedCodes(self):
+    def _getSelectedTickers(self):
         dataAccess = self.dataObject.gpwCurrentData
         selectedData = self.getSelectedData( 0 )                ## stock name
-        favCodes = set()
+        tickersList = set()
         for stockName in selectedData:
-            code = dataAccess.getShortFieldByName( stockName )
-            if code is not None:
-                favCodes.add( code )
-        favList = list(favCodes)
-        return favList
+            ticker = dataAccess.getTickerFieldByName( stockName )
+            if ticker is not None:
+                tickersList.add( ticker )
+        return list( tickersList )
 
 
-def stock_background_color( dataObject, stockCode ):
+def stock_background_color( dataObject, ticker ):
     walletStock = dataObject.wallet.getCurrentStock()
-    if stockCode in walletStock:
+    if ticker in walletStock:
         return TableRowColorDelegate.STOCK_WALLET_BGCOLOR
 
     allFavs = dataObject.favs.getFavsAll()
-    if stockCode in allFavs:
+    if ticker in allFavs:
         return TableRowColorDelegate.STOCK_FAV_BGCOLOR
 
     return None

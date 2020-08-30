@@ -318,7 +318,7 @@ class WalletData( persist.Versionable ):
     _class_version = 2
 
     def __init__(self):
-        ## code, amount, unit price
+        ## ticker, amount, unit price
         self.stockList: Dict[ str, self.History ] = dict()
 
     def _convertstate_(self, dict_, dictVersion_ ):
@@ -350,8 +350,8 @@ class WalletData( persist.Versionable ):
     def clear(self):
         self.stockList.clear()
 
-    def transactions(self, code):
-        return self.stockList.get( code, None )
+    def transactions(self, ticker):
+        return self.stockList.get( ticker, None )
 
     def items(self) -> List[ Tuple[str, int, float] ]:
         ret = list()
@@ -364,11 +364,11 @@ class WalletData( persist.Versionable ):
                 ret.append( (key, val[0], val[1]) )
         return ret
 
-    def add( self, code, amount, unit_price, transTime: datetime=datetime.today(), joinSimilar=True ):
-        transactions = self.stockList.get( code, None )
+    def add( self, ticker, amount, unit_price, transTime: datetime=datetime.today(), joinSimilar=True ):
+        transactions = self.stockList.get( ticker, None )
         if transactions is None:
             transactions = self.History()
-            self.stockList[ code ] = transactions
+            self.stockList[ ticker ] = transactions
         transactions.add( amount, unit_price, transTime, joinSimilar )
 
     def getCurrentStock(self) -> List[ str ]:
@@ -586,17 +586,17 @@ class DataObject( QObject ):
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
-        for code, transactions in self.wallet.stockList.items():
+        for ticker, transactions in self.wallet.stockList.items():
             amount, buy_unit_price = transactions.calc2()
-            codeRow = currentStock.getRowByTicker( code )
+            tickerRow = currentStock.getRowByTicker( ticker )
 
-            if codeRow.empty:
-                _LOGGER.warning( "could not find stock by ticker: %s", code )
-                rowsList.append( ["-", code, amount, "-", buy_unit_price, "-", "-", "-", "-"] )
+            if tickerRow.empty:
+                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
+                rowsList.append( ["-", ticker, amount, "-", buy_unit_price, "-", "-", "-", "-"] )
                 continue
 
-            stockName = codeRow["Nazwa"]
-            currUnitValueRaw = codeRow.iloc[currUnitValueIndex]
+            stockName = tickerRow["Nazwa"]
+            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
             currUnitValue = 0
             if currUnitValueRaw != "-":
                 currUnitValue = float( currUnitValueRaw )
@@ -604,7 +604,7 @@ class DataObject( QObject ):
             if amount == 0:
                 totalProfit = transactions.transactionsProfit()
                 totalProfit = round( totalProfit, 2 )
-                rowsList.append( [stockName, code, amount, "-", "-", "-", "-", "-", totalProfit] )
+                rowsList.append( [stockName, ticker, amount, "-", "-", "-", "-", "-", totalProfit] )
                 continue
 
             currValue = currUnitValue * amount
@@ -623,7 +623,7 @@ class DataObject( QObject ):
             currValue      = round( currValue, 2 )
             totalProfit    = round( totalProfit, 2 )
 
-            rowsList.append( [stockName, code, amount, currUnitValue, buy_unit_price,
+            rowsList.append( [stockName, ticker, amount, currUnitValue, buy_unit_price,
                               profitPnt, profit, currValue, totalProfit] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
@@ -649,15 +649,15 @@ class DataObject( QObject ):
             except ValueError:
                 dateObject = None
 
-            code = self.getStockCodeFromName( stockName )
-            if code is None:
-                _LOGGER.warning( "could not find stock code for name: >%s<", stockName )
+            ticker = self.getTickerFromName( stockName )
+            if ticker is None:
+                _LOGGER.warning( "could not find stock ticker for name: >%s<", stockName )
                 continue
 
             if oper == "K":
-                wallet.add( code,  amount, unit_price, dateObject )
+                wallet.add( ticker,  amount, unit_price, dateObject )
             elif oper == "S":
-                wallet.add( code, -amount, unit_price, dateObject )
+                wallet.add( ticker, -amount, unit_price, dateObject )
 
         self.walletDataChanged.emit()
 
@@ -752,17 +752,17 @@ class DataObject( QObject ):
         self.currentGpwData.stockHeaders = headersDict
         self.stockHeadersChanged.emit()
 
-    def getStockCode(self, rowIndex):
-        return self.currentGpwData.stockData.getShortField( rowIndex )
+    def getTicker(self, rowIndex):
+        return self.currentGpwData.stockData.getTickerField( rowIndex )
 
-    def getStockCodeFromIsin(self, stockIsin):
-        return self.gpwIsinMap.getStockCodeFromIsin( stockIsin )
+    def getTickerFromIsin(self, stockIsin):
+        return self.gpwIsinMap.getTickerFromIsin( stockIsin )
 
-    def getStockCodeFromName(self, stockName):
-        return self.gpwIsinMap.getStockCodeFromName( stockName )
+    def getTickerFromName(self, stockName):
+        return self.gpwIsinMap.getTickerFromName( stockName )
 
-    def getStockIsinFromCode(self, stockCode):
-        return self.gpwIsinMap.getStockIsinFromCode( stockCode )
+    def getStockIsinFromTicker(self, ticker):
+        return self.gpwIsinMap.getStockIsinFromTicker( ticker )
 
 
 def broker_commission( value ):

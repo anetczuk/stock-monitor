@@ -35,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class FinRepsCalendarData( WorksheetData ):
 
-    def getStockCode(self, rowIndex):
+    def getTicker(self, rowIndex):
         dataFrame = self.getWorksheet()
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
@@ -62,7 +62,7 @@ class FinRepsCalendarData( WorksheetData ):
 
 class PublishedFinRepsCalendarData( WorksheetData ):
 
-    def getStockCode(self, rowIndex):
+    def getTicker(self, rowIndex):
         dataFrame = self.getWorksheet()
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]

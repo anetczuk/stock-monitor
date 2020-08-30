@@ -52,7 +52,7 @@ class GpwCurrentDataTest(unittest.TestCase):
         pass
 
     def test_getData(self):
-        currData = self.dataAccess.getData( CurrentDataType.SHORT )
+        currData = self.dataAccess.getData( CurrentDataType.TICKER )
         dataLen = len( currData )
         self.assertEqual(dataLen, 393)      ## one removes, because if summary
 
