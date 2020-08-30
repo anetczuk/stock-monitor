@@ -27,6 +27,8 @@ import re
 def convert_int( data ):
     if isinstance( data, int ):
         return data
+    if isinstance( data, float ):
+        return data
     value = data.strip()
     value = re.sub(r'\s+', '', value)       ## remove whitespaces
     try:
@@ -37,6 +39,8 @@ def convert_int( data ):
 
 def convert_float( data ):
     if isinstance( data, float ):
+        return data
+    if isinstance( data, int ):
         return data
     value = data.strip()
     value = value.replace(',', '.')

@@ -22,6 +22,7 @@
 #
 
 import logging
+import tempfile
 
 import pandas
 
@@ -29,11 +30,13 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QFileDialog
 
 from stockmonitor.dataaccess.convert import convert_float, convert_int
+from stockmonitor.dataaccess.gpwdata import apply_on_column
 from stockmonitor.gui.widget.stocktable import insert_new_action
 
 from .. import uiloader
 
 from .stocktable import StockTable
+#import shutil
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -134,25 +137,49 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         self.soldOutFilter.includeSoldOut( incluideSoldOut )
 
 
-def import_mb_transactions( dataPath ):
+def import_mb_transactions( filePath ):
     ## imported transaction values are not affected by borker's commission
     ## real sell profit is transaction value decreased by broker's commission
     ## real buy cost is transaction value increased by broker's commission
     ## broker commission: greater of 3PLN and 0.39%
 
-    _LOGGER.debug( "opening transactions: %s", dataPath )
-    dataFrame = pandas.read_csv( dataPath, names=["trans_time", "name", "stock_id", "k_s", "amount",
-                                                  "unit_price", "unit_currency", "price", "currency"],
+    ##
+    ## find line in file and remove header information leaving raw data
+    ##
+    tmpfile = tempfile.NamedTemporaryFile()
+    lineFound = False
+    with open( filePath, 'r+b' ) as srcFile:
+        for line in srcFile:
+            if lineFound:
+                tmpfile.write(line)
+            elif b"Czas transakcji" in line:
+                lineFound = True
+    tmpfile.seek(0)
+
+    sourceFile = None
+    if lineFound:
+        sourceFile = tmpfile
+    else:
+        sourceFile = filePath
+
+    _LOGGER.debug( "opening transactions: %s", filePath )
+
+    dataFrame = pandas.read_csv( sourceFile, names=["trans_time", "name", "stock_id", "k_s", "amount",
+                                                    "unit_price", "unit_currency", "price", "currency"],
                                  sep=';', decimal=',', thousands=' ' )
+
+    tmpfile.close()
 
     #### fix names to match GPW names
     ## XTRADEBDM -> XTB
     ## CELONPHARMA -> CLNPHARMA
     dataFrame["name"].replace({"XTRADEBDM": "XTB", "CELONPHARMA": "CLNPHARMA"}, inplace=True)
 
-    dataFrame['amount'] = dataFrame['amount'].apply( convert_int )
+    apply_on_column( dataFrame, 'name', str )
 
-    dataFrame['unit_price'] = dataFrame['unit_price'].apply( convert_float )
-    dataFrame['price'] = dataFrame['price'].apply( convert_float )
+    apply_on_column( dataFrame, 'amount', convert_int )
+
+    apply_on_column( dataFrame, 'unit_price', convert_float )
+    apply_on_column( dataFrame, 'price', convert_float )
 
     return dataFrame
