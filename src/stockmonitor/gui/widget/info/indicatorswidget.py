@@ -57,6 +57,7 @@ class IndicatorsTable( StockTable ):
 class IndicatorsColorDelegate( TableRowColorDelegate ):
 
     def __init__(self, widget: 'IndicatorsWidget'):
+        super().__init__()
         self.widget = widget
 
 #     def foreground(self, index: QModelIndex ):

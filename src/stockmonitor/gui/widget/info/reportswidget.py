@@ -52,6 +52,7 @@ class ReportsTable( StockTable ):
 class ReportsColorDelegate( TableRowColorDelegate ):
 
     def __init__(self, dataAccess, dataObject: DataObject):
+        super().__init__()
         self.dataAccess = dataAccess
         self.dataObject = dataObject
 

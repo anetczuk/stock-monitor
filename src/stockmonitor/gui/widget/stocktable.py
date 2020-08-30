@@ -195,6 +195,7 @@ class StockTable( DataFrameTable ):
 class StockFullColorDelegate( TableRowColorDelegate ):
 
     def __init__(self, dataObject: DataObject):
+        super().__init__()
         self.dataObject = dataObject
 
 #     def foreground(self, index: QModelIndex ):
@@ -249,6 +250,7 @@ class StockFullTable( StockTable ):
 class StockFavsColorDelegate( TableRowColorDelegate ):
 
     def __init__(self, dataObject: DataObject):
+        super().__init__()
         self.dataObject = dataObject
 
 #     def foreground(self, index: QModelIndex ):
@@ -322,6 +324,7 @@ class StockFavsTable( StockTable ):
 class ToolStockColorDelegate( TableRowColorDelegate ):
 
     def __init__(self, dataObject: DataObject):
+        super().__init__()
         self.dataObject = dataObject
 
 #     def foreground(self, index: QModelIndex ):

@@ -57,6 +57,7 @@ class DividendsTable( StockTable ):
 class DividendsColorDelegate( TableRowColorDelegate ):
 
     def __init__(self, widget: 'DividendsWidget'):
+        super().__init__()
         self.widget = widget
 
 #     def foreground(self, index: QModelIndex ):

@@ -271,9 +271,9 @@ class TableRowColorDelegate():
     def background(self, _: QModelIndex ):
         ## reimplement if needed
         return None
-    
-    def setParent(self, object):
-        self.parent = object
+
+    def setParent(self, newParent):
+        self.parent = newParent
 
 
 class DataFrameTableModel( QAbstractTableModel ):
