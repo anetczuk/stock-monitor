@@ -246,11 +246,30 @@ class StockFullTable( StockTable ):
 ## ====================================================================
 
 
+class StockFavsColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataObject: DataObject):
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
+#         return None
+
+    def background(self, index: QModelIndex ):
+        sourceParent = index.parent()
+        dataRow = index.row()
+        dataIndex = self.parent.index( dataRow, 3, sourceParent )       ## get name
+        ticker = dataIndex.data()
+        return wallet_background_color( self.dataObject, ticker )
+
+
 class StockFavsTable( StockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.setObjectName("stockfavstable")
+        self.setShowGrid( True )
+        self.setAlternatingRowColors( False )
         self.dataObject = None
         self.favGroup = None
 
@@ -260,6 +279,10 @@ class StockFavsTable( StockTable ):
         self.favGroup = favGroup
         if self.dataObject is None:
             return
+
+        colorDecorator = StockFavsColorDelegate( self.dataObject )
+        self.setColorDelegate( colorDecorator )
+
         self.dataObject.stockDataChanged.connect( self.updateData )
         self.dataObject.stockHeadersChanged.connect( self.updateView )
         self.updateData()
@@ -296,11 +319,37 @@ class StockFavsTable( StockTable ):
 ## ====================================================================
 
 
+class ToolStockColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataObject: DataObject):
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
+#         return None
+
+    def background(self, index: QModelIndex ):
+        sourceParent = index.parent()
+        dataRow = index.row()
+        dataIndex = self.parent.index( dataRow, 0, sourceParent )       ## get name
+        name = dataIndex.data()
+        ticker = self.dataObject.getTickerFromName( name )
+        return stock_background_color( self.dataObject, ticker )
+
+
 class ToolStockTable( StockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.setObjectName("toolstocktable")
+        self.setShowGrid( True )
+        self.setAlternatingRowColors( False )
+
+    def connectData(self, dataObject):
+        super().connectData( dataObject )
+
+        colorDecorator = ToolStockColorDelegate( self.dataObject )
+        self.setColorDelegate( colorDecorator )
 
     def _getSelectedTickers(self):
         dataAccess = self.dataObject.gpwCurrentData
@@ -313,10 +362,17 @@ class ToolStockTable( StockTable ):
         return list( tickersList )
 
 
-def stock_background_color( dataObject, ticker ):
+def wallet_background_color( dataObject, ticker ):
     walletStock = dataObject.wallet.getCurrentStock()
     if ticker in walletStock:
         return TableRowColorDelegate.STOCK_WALLET_BGCOLOR
+    return None
+
+
+def stock_background_color( dataObject, ticker ):
+    walletColor = wallet_background_color( dataObject, ticker )
+    if walletColor is not None:
+        return walletColor
 
     allFavs = dataObject.favs.getFavsAll()
     if ticker in allFavs:

@@ -261,6 +261,9 @@ class TableRowColorDelegate():
     STOCK_GRAY_BGCOLOR   = QColor( "#f0f0f0" )
     STOCK_WALLET_BGCOLOR = QColor( "palegreen" )
 
+    def __init__(self):
+        self.parent: 'DataFrameTableModel' = None
+
     def foreground(self, _: QModelIndex ):
         ## reimplement if needed
         return None
@@ -268,6 +271,9 @@ class TableRowColorDelegate():
     def background(self, _: QModelIndex ):
         ## reimplement if needed
         return None
+    
+    def setParent(self, object):
+        self.parent = object
 
 
 class DataFrameTableModel( QAbstractTableModel ):
@@ -281,6 +287,7 @@ class DataFrameTableModel( QAbstractTableModel ):
     def setColorDelegate(self, decorator: TableRowColorDelegate):
         self.beginResetModel()
         self.colorDelegate = decorator
+        decorator.setParent( self )
         self.endResetModel()
 
     def setContent(self, data: DataFrame):
