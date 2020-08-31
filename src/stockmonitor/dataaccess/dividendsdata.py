@@ -51,7 +51,7 @@ class DividendsCalendarData( WorksheetData ):
         except ValueError:
             return datetime.date( 1, 1, 1 )
 
-    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
+    def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
         dataFrame = dataFrame[2]

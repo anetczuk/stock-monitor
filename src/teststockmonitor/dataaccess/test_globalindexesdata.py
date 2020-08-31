@@ -38,9 +38,9 @@ class GlobalIndexesDataTest(unittest.TestCase):
         ## Called after testfunction was executed
         pass
 
-    def test_loadWorksheetFromFile(self):
+    def test_parseDataFromFile(self):
         filePath = get_data_path( "global_indexes_data.html" )
-        currData = self.dataAccess.loadWorksheetFromFile( filePath )
+        currData = self.dataAccess.parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 48)
 

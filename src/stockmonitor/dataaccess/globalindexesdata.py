@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class GlobalIndexesData( WorksheetData ):
 
-    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
+    def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
 
         # fix HTML: handle multiple tbody inside single table

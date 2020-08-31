@@ -278,7 +278,7 @@ class GpwCurrentData( WorksheetData ):
 
     ## ======================================================================
 
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
         dataFrame = dataFrameList[0]
@@ -343,7 +343,7 @@ def convert_indexes_data( dataFrame: DataFrame ):
 
 class GpwMainIndexesData( WorksheetData ):
 
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = DataFrame()
@@ -364,7 +364,7 @@ class GpwMainIndexesData( WorksheetData ):
 
 class GpwMacroIndexesData( WorksheetData ):
 
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
@@ -383,7 +383,7 @@ class GpwMacroIndexesData( WorksheetData ):
 
 class GpwSectorsIndexesData( WorksheetData ):
 
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
@@ -434,7 +434,7 @@ class GpwIndicatorsData( WorksheetData ):
         tickerColumn = dataFrame["Kod"]
         return tickerColumn.iloc[ rowIndex ]
 
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = DataFrame()
@@ -499,7 +499,7 @@ class GpwIsinMapData( WorksheetData ):
         tickerColumn = dataFrame["ISIN"]
         return tickerColumn.iloc[ rowIndex ]
 
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[1]

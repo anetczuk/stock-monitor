@@ -38,8 +38,8 @@ class MetaStockIntradayDataTest(unittest.TestCase):
         ## Called after testfunction was executed
         pass
 
-    def test_loadWorksheetFromFile(self):
+    def test_parseDataFromFile(self):
         filePath = get_data_path( "a_cgl_intraday_2020-08-17.prn" )
-        currData = self.dataAccess.loadWorksheetFromFile( filePath )
+        currData = self.dataAccess.parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 77388)

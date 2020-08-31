@@ -40,7 +40,7 @@ class FinRepsCalendarData( WorksheetData ):
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
 
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
         dataFrame = dataFrame[0]
@@ -67,7 +67,7 @@ class PublishedFinRepsCalendarData( WorksheetData ):
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
 
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
         dataFrame = dataFrame[0]

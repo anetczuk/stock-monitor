@@ -36,7 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 ## https://info.bossa.pl/index.jsp?layout=intraday&page=1&news_cat_id=875&dirpath=/mstock/daily/
 class MetaStockIntradayData( WorksheetData ):
 
-    def loadWorksheetFromFile(self, dataFile) -> DataFrame:
+    def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw",
                                                       "max", "min", "kurs", "obrot", "unknown_2"] )

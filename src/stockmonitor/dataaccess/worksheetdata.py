@@ -75,7 +75,7 @@ class WorksheetData( BaseWorksheetData ):
             return
 
         _LOGGER.debug( "loading recent data from file[%s]", dataPath )
-        self.worksheet = self.loadWorksheetFromFile( dataPath )
+        self.worksheet = self.parseDataFromFile( dataPath )
 
         if timestampPath is None:
             self.grabTimestamp = None
@@ -97,7 +97,7 @@ class WorksheetData( BaseWorksheetData ):
             persist.store_object_simple(currTimestamp, timestampPath)
 
     @abc.abstractmethod
-    def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
@@ -111,7 +111,7 @@ class WorksheetData( BaseWorksheetData ):
 
 # class HtmlWorksheetData( WorksheetData ):
 #
-#     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:
+#     def parseDataFromFile(self, dataFile: str) -> DataFrame:
 #         _LOGGER.debug( "opening workbook: %s", dataFile )
 #         dataFrame = pandas.read_html( dataFile )
 #         dataFrame = dataFrame[0]
