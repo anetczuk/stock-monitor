@@ -68,7 +68,7 @@ class WorksheetData( BaseWorksheetData ):
 
     def loadWorksheet(self, forceRefresh=False):
         dataPath, timestampPath = self.getDataPaths()
-        if forceRefresh is True:
+        if forceRefresh is True or not os.path.exists( dataPath ):
             self.downloadData()
 
         if not os.path.exists( dataPath ):
@@ -76,10 +76,14 @@ class WorksheetData( BaseWorksheetData ):
 
         _LOGGER.debug( "loading recent data from file[%s]", dataPath )
         self.worksheet = self.loadWorksheetFromFile( dataPath )
-        if timestampPath is not None:
-            self.grabTimestamp = persist.load_object_simple( timestampPath, None )
-        else:
+
+        if timestampPath is None:
             self.grabTimestamp = None
+            return
+        if not os.path.exists( timestampPath ):
+            self.grabTimestamp = None
+            return
+        self.grabTimestamp = persist.load_object_simple( timestampPath, None )
 
     def downloadData(self):
         filePath, timestampPath = self.getDataPaths()
@@ -89,7 +93,8 @@ class WorksheetData( BaseWorksheetData ):
 
         currTimestamp = datetime.datetime.today()
         download_content( url, filePath )
-        persist.store_object_simple(currTimestamp, timestampPath)
+        if timestampPath is not None:
+            persist.store_object_simple(currTimestamp, timestampPath)
 
     @abc.abstractmethod
     def loadWorksheetFromFile(self, dataFile: str) -> DataFrame:

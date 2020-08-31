@@ -23,10 +23,10 @@
 
 
 import unittest
-from teststockmonitor.data import get_data_path
+# import datetime
 
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIndexesData,\
-    GpwIndicatorsData, GpwIsinMapData
+from teststockmonitor.data import get_data_path
+from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIndexesData, GpwIndicatorsData, GpwIsinMapData
 from stockmonitor.dataaccess.datatype import CurrentDataType
 
 
@@ -54,7 +54,7 @@ class GpwCurrentDataTest(unittest.TestCase):
     def test_getData(self):
         currData = self.dataAccess.getData( CurrentDataType.TICKER )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 393)      ## one removes, because if summary
+        self.assertEqual(dataLen, 391)      ## one removes, because if summary
 
     def test_getStockData_None(self):
         currData = self.dataAccess.getStockData()
@@ -65,6 +65,13 @@ class GpwCurrentDataTest(unittest.TestCase):
         currData = self.dataAccess.getStockData( stockList )
         dataLen = len( currData )
         self.assertEqual(dataLen, 2)
+
+#     def test_getWorksheet_micro(self):
+#         startTime = datetime.datetime.now()
+#         self.dataAccess.getWorksheet( True )
+#         endTime = datetime.datetime.now()
+#         diff = endTime - startTime
+#         print( "load time:", diff )
 
 
 class GpwIndexesDataTest(unittest.TestCase):
@@ -113,3 +120,10 @@ class GpwIsinMapDataTest(unittest.TestCase):
         currData = self.dataAccess.getWorksheet()
         dataLen = len( currData )
         self.assertEqual(dataLen, 827)
+
+#     def test_getWorksheet_micro(self):
+#         startTime = datetime.datetime.now()
+#         self.dataAccess.getWorksheet( True )
+#         endTime = datetime.datetime.now()
+#         diff = endTime - startTime
+#         print( "load time:", diff )
