@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -106,13 +106,25 @@
         <item>
          <widget class="QTabWidget" name="infoTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="indicatorsTab">
            <attribute name="title">
             <string>Indicators</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_15">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item>
              <widget class="IndicatorsWidget" name="indicatorswidget" native="true"/>
             </item>
@@ -123,6 +135,18 @@
             <string>Fin Reports</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_11">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item>
              <widget class="ReportsWidget" name="reportswidget" native="true"/>
             </item>
@@ -133,6 +157,18 @@
             <string>Recent Reports</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_12">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item>
              <widget class="PublishedReportsWidget" name="recentrepswidget" native="true"/>
             </item>
@@ -143,6 +179,18 @@
             <string>Dividends</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_13">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
             <item>
              <widget class="DividendsWidget" name="dividendswidget" native="true"/>
             </item>
@@ -161,34 +209,100 @@
          <number>0</number>
         </property>
         <property name="topMargin">
-         <number>6</number>
+         <number>0</number>
         </property>
         <property name="rightMargin">
          <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>6</number>
+         <number>0</number>
         </property>
         <item>
-         <widget class="DataFrameTable" name="indexesTable"/>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Source:</string>
+         <widget class="QTabWidget" name="indexesTabWidget">
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <widget class="QWidget" name="gpwIndexesTab">
+           <attribute name="title">
+            <string>GPW</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_17">
+            <property name="leftMargin">
+             <number>0</number>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="indexesSourceLabel">
-            <property name="text">
-             <string/>
+            <property name="topMargin">
+             <number>0</number>
             </property>
-           </widget>
-          </item>
-         </layout>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="DataFrameTable" name="gpwIndexesTable"/>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
+              <item>
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Source:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="gpwIndexesSourceLabel">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="globalIndexesTab">
+           <attribute name="title">
+            <string>Global</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_18">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="DataFrameTable" name="globalIndexesTable"/>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,1">
+              <item>
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Source:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="globalIndexesSourceLabel">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>

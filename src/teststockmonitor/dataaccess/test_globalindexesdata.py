@@ -21,46 +21,31 @@
 # SOFTWARE.
 #
 
-import re
+
+import unittest
+from teststockmonitor.data import get_data_path
+
+from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
 
 
-def convert_int( data ):
-    if isinstance( data, int ):
-        return data
-    if isinstance( data, float ):
-        return data
-    value = data.strip()
-    value = re.sub(r'\s+', '', value)       ## remove whitespaces
-    try:
-        return int(value)
-    except ValueError:
-        return value
+class GlobalIndexesDataTest(unittest.TestCase):
 
+    def setUp(self):
+        ## Called before testfunction is executed
+        self.dataAccess = GlobalIndexesData()
 
-def convert_float( data ):
-    if isinstance( data, float ):
-        return data
-    if isinstance( data, int ):
-        return data
-    value = data.strip()
-    value = value.replace(',', '.')
-    value = re.sub(r'\s+', '', value)       ## remove whitespaces
-    try:
-        return float(value)
-    except ValueError:
-        return value
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
 
+    def test_loadWorksheetFromFile(self):
+        filePath = get_data_path( "global_indexes_data.html" )
+        currData = self.dataAccess.loadWorksheetFromFile( filePath )
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 48)
 
-def convert_percentage( data ):
-    if isinstance( data, float ):
-        return data
-    if isinstance( data, int ):
-        return data
-    value = data.strip()
-    value = value.replace(',', '.')
-    value = re.sub(r'\s+', '', value)       ## remove whitespaces
-    value = value.replace('%', '')
-    try:
-        return float(value)
-    except ValueError:
-        return value
+#     def test_getWorksheet(self):
+#         self.dataAccess.loadWorksheet( True )
+#         currData = self.dataAccess.getWorksheet()
+#         dataLen = len( currData )
+#         self.assertEqual(dataLen, 783)

@@ -103,11 +103,17 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.recentrepswidget.connectData( self.data )
         self.ui.dividendswidget.connectData( self.data )
 
-        self.ui.indexesSourceLabel.setOpenExternalLinks(True)
+        self.ui.gpwIndexesSourceLabel.setOpenExternalLinks(True)
         indexesDataAccess = self.data.gpwIndexesData
         sourceUrl = indexesDataAccess.sourceLink()
         htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.ui.indexesSourceLabel.setText( htmlText )
+        self.ui.gpwIndexesSourceLabel.setText( htmlText )
+
+        self.ui.globalIndexesSourceLabel.setOpenExternalLinks(True)
+        indexesDataAccess = self.data.globalIndexesData
+        sourceUrl = indexesDataAccess.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.ui.globalIndexesSourceLabel.setText( htmlText )
 
         self.ui.stockSourceLabel.setOpenExternalLinks(True)
         sourceUrl = self.data.currentGpwData.stockData.sourceLink()
@@ -193,7 +199,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self._updateStockTimestamp()
 
         data = self.data.gpwIndexesData.getWorksheet()
-        self.ui.indexesTable.setData( data )
+        self.ui.gpwIndexesTable.setData( data )
+
+        data = self.data.globalIndexesData.getWorksheet()
+        self.ui.globalIndexesTable.setData( data )
 
         self.ui.indicatorswidget.refreshData()
         self.ui.reportswidget.refreshData()

@@ -52,6 +52,7 @@ from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
+from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -500,6 +501,7 @@ class DataObject( QObject ):
         self.userContainer      = UserContainer()                   ## user data
         self.currentGpwData     = StockData( GpwCurrentData() )
         self.gpwIndexesData     = GpwIndexesData()
+        self.globalIndexesData  = GlobalIndexesData()
         self.gpwIndicatorsData  = GpwIndicatorsData()
         self.gpwDividendsData   = DividendsCalendarData()
 
@@ -732,6 +734,7 @@ class DataObject( QObject ):
         retList = []
         retList.append( self.currentGpwData )
         retList.append( self.gpwIndexesData )
+        retList.append( self.globalIndexesData )
         retList.append( self.gpwIndicatorsData )
         retList.append( self.gpwDividendsData )
         retList.append( self.gpwReportsData )
