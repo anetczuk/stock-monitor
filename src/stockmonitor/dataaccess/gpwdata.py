@@ -313,10 +313,8 @@ class GpwCurrentData( WorksheetData ):
 
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/gpw/recent_data.xls"
-        timestampPath = tmp_dir + "data/gpw/recent_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/gpw/recent_data.xls"
 
     def getDataUrl(self):
         url = ("https://www.gpw.pl/ajaxindex.php"
@@ -352,10 +350,8 @@ class GpwMainIndexesData( WorksheetData ):
         convert_indexes_data( dataFrame )
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/gpw/indexes_main_data.html"
-        timestampPath = tmp_dir + "data/gpw/indexes_main_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/gpw/indexes_main_data.html"
 
     def getDataUrl(self):
         url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
@@ -371,10 +367,8 @@ class GpwMacroIndexesData( WorksheetData ):
         convert_indexes_data( dataFrame )
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/gpw/indexes_macro_data.html"
-        timestampPath = tmp_dir + "data/gpw/indexes_macro_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/gpw/indexes_macro_data.html"
 
     def getDataUrl(self):
         url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
@@ -390,14 +384,11 @@ class GpwSectorsIndexesData( WorksheetData ):
         convert_indexes_data( dataFrame )
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/gpw/indexes_sectors_data.html"
-        timestampPath = tmp_dir + "data/gpw/indexes_sectors_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/gpw/indexes_sectors_data.html"
 
     def getDataUrl(self):
-        url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
-        return url
+        return "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
 
 
 class GpwIndexesData( BaseWorksheetData ):
@@ -453,14 +444,11 @@ class GpwIndicatorsData( WorksheetData ):
 
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/gpw/indicators_data.html"
-        timestampPath = tmp_dir + "data/gpw/indicators_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/gpw/indicators_data.html"
 
     def getDataUrl(self):
-        url = "https://www.gpw.pl/wskazniki"
-        return url
+        return "https://www.gpw.pl/wskazniki"
 
     def sourceLink(self):
         return self.getDataUrl()
@@ -505,14 +493,11 @@ class GpwIsinMapData( WorksheetData ):
         dataFrame = allDataFrames[1]
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/gpw/isin_map_data.html"
-        timestampPath = tmp_dir + "data/gpw/isin_map_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/gpw/isin_map_data.html"
 
     def getDataUrl(self):
-        url = "http://infostrefa.com/infostrefa/pl/spolki"
-        return url
+        return "http://infostrefa.com/infostrefa/pl/spolki"
 
 
 ## ============================================================

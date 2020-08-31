@@ -67,41 +67,70 @@ class WorksheetData( BaseWorksheetData ):
         self.grabTimestamp: datetime.datetime = None
 
     def loadWorksheet(self, forceRefresh=False):
-        dataPath, timestampPath = self.getDataPaths()
-        if forceRefresh is True or not os.path.exists( dataPath ):
+        dataPath = self.getDataPath()
+        if forceRefresh is False:
+            forceRefresh = not os.path.exists( dataPath )
+        if forceRefresh:
             self.downloadData()
 
         if not os.path.exists( dataPath ):
             return
 
         _LOGGER.debug( "loading recent data from file[%s]", dataPath )
-        self.worksheet = self.parseDataFromFile( dataPath )
-
-        if timestampPath is None:
+        self.loadObjectData( forceRefresh )
+        if self.worksheet is None:
             self.grabTimestamp = None
             return
+
+        timestampPath = self.getTimestampPath()
         if not os.path.exists( timestampPath ):
             self.grabTimestamp = None
             return
         self.grabTimestamp = persist.load_object_simple( timestampPath, None )
 
+    def loadObjectData(self, forceRefresh=False):
+        picklePath = self.getPicklePath()
+        if forceRefresh is False:
+            forceRefresh = not os.path.exists( picklePath )
+        if forceRefresh is False:
+            self.worksheet = persist.load_object_simple( picklePath, None )
+            if self.worksheet is not None:
+                return
+
+        self.parseDataFromDefaultFile()
+        if self.worksheet is not None:
+            persist.store_object_simple(self.worksheet, picklePath)
+
     def downloadData(self):
-        filePath, timestampPath = self.getDataPaths()
+        filePath = self.getDataPath()
 
         url = self.getDataUrl()
         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
 
         currTimestamp = datetime.datetime.today()
         download_content( url, filePath )
-        if timestampPath is not None:
-            persist.store_object_simple(currTimestamp, timestampPath)
+
+        timestampPath = self.getTimestampPath()
+        persist.store_object_simple(currTimestamp, timestampPath)
+
+    def parseDataFromDefaultFile(self):
+        dataPath = self.getDataPath()
+        self.worksheet = self.parseDataFromFile( dataPath )
+
+    def getPicklePath(self):
+        dataPath = self.getDataPath()
+        return dataPath + ".pickle"
+
+    def getTimestampPath(self):
+        dataPath = self.getDataPath()
+        return dataPath + ".timestamp"
 
     @abc.abstractmethod
     def parseDataFromFile(self, dataFile: str) -> DataFrame:
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
-    def getDataPaths(self):
+    def getDataPath(self):
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod

@@ -46,10 +46,8 @@ class FinRepsCalendarData( WorksheetData ):
         dataFrame = dataFrame[0]
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/strefa/fin_reps_cal_data.html"
-        timestampPath = tmp_dir + "data/strefa/fin_reps_cal_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/strefa/fin_reps_cal_data.html"
 
     def getDataUrl(self):
         url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
@@ -74,10 +72,8 @@ class PublishedFinRepsCalendarData( WorksheetData ):
         dataFrame['Ticker'] = dataFrame['Ticker'].str.replace( '#', '' )
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/strefa/fin_reps_cal_publ_data.html"
-        timestampPath = tmp_dir + "data/strefa/fin_reps_cal_publ_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/strefa/fin_reps_cal_publ_data.html"
 
     def getDataUrl(self):
         url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"

@@ -43,14 +43,11 @@ class MetaStockIntradayData( WorksheetData ):
         dataFrame.drop( dataFrame.tail(1).index, inplace=True )
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/bossa/recent_intraday_data.prn"
-        timestampPath = tmp_dir + "data/bossa/recent_intraday_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/bossa/recent_intraday_data.prn"
 
     def getDataUrl(self):
-        url = "https://info.bossa.pl/pub/intraday/mstock/daily//a_cgl.prn"
-        return url
+        return "https://info.bossa.pl/pub/intraday/mstock/daily//a_cgl.prn"
 
 
 ## https://info.bossa.pl/index.jsp?layout=mstock&page=1&news_cat_id=706&dirpath=/ciagle/mstock/sesjacgl

@@ -23,7 +23,7 @@
 
 
 import unittest
-# import datetime
+import datetime
 
 from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIndexesData, GpwIndicatorsData, GpwIsinMapData
@@ -32,10 +32,8 @@ from stockmonitor.dataaccess.datatype import CurrentDataType
 
 class GpwCurrentDataMock(GpwCurrentData):
 
-    def getDataPaths(self):
-        filePath      = get_data_path( "akcje_2020-04-14_15-50.xls" )
-        timestampPath = None
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return get_data_path( "akcje_2020-04-14_15-50.xls" )
 
 
 ## =================================================================
@@ -46,6 +44,7 @@ class GpwCurrentDataTest(unittest.TestCase):
     def setUp(self):
         ## Called before testfunction is executed
         self.dataAccess = GpwCurrentDataMock()
+        self.dataAccess.parseDataFromDefaultFile()
 
     def tearDown(self):
         ## Called after testfunction was executed
@@ -69,9 +68,12 @@ class GpwCurrentDataTest(unittest.TestCase):
 #     def test_getWorksheet_micro(self):
 #         startTime = datetime.datetime.now()
 #         self.dataAccess.getWorksheet( True )
-#         endTime = datetime.datetime.now()
-#         diff = endTime - startTime
-#         print( "load time:", diff )
+#         end1Time = datetime.datetime.now()
+#         self.dataAccess.loadWorksheet( False )
+#         end2Time = datetime.datetime.now()
+#         diff1 = end1Time - startTime
+#         diff2 = end2Time - end1Time
+#         print( "load time:", diff1, diff2 )
 
 
 class GpwIndexesDataTest(unittest.TestCase):

@@ -62,10 +62,8 @@ class GlobalIndexesData( WorksheetData ):
 
             return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/bankier/global_indexes_data.html"
-        timestampPath = tmp_dir + "data/bankier/global_indexes_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/bankier/global_indexes_data.html"
 
     def getDataUrl(self):
         return "https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy"

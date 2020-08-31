@@ -58,10 +58,8 @@ class DividendsCalendarData( WorksheetData ):
         dataFrame = dataFrame.fillna("-")
         return dataFrame
 
-    def getDataPaths(self):
-        filePath      = tmp_dir + "data/stockwatch/dividends_cal_data.html"
-        timestampPath = tmp_dir + "data/stockwatch/dividends_cal_timestamp.txt"
-        return (filePath, timestampPath)
+    def getDataPath(self):
+        return tmp_dir + "data/stockwatch/dividends_cal_data.html"
 
     def getDataUrl(self):
         url = "https://www.stockwatch.pl/dywidendy/"
