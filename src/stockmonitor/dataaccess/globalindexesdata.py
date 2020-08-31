@@ -59,7 +59,7 @@ class GlobalIndexesData( WorksheetData ):
             apply_on_column( dataFrame, 'Otwarcie AD', convert_float )
             apply_on_column( dataFrame, 'Max AD', convert_float )
             apply_on_column( dataFrame, 'Min AD', convert_float )
-            
+
             return dataFrame
 
     def getDataPaths(self):
