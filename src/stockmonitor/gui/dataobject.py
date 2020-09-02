@@ -197,7 +197,7 @@ class WalletData( persist.Versionable ):
     class History():
 
         def __init__(self):
-            ## amount, unit_price
+            ## amount, unit_price, transaction time
             self.transactions: List[ Tuple[int, float, datetime] ] = list()
 
         def size(self):
@@ -255,10 +255,47 @@ class WalletData( persist.Versionable ):
                 currValue  += amount * unit_price
 
             if currAmount == 0:
+                ## ignore no wallet stock transaction
                 return (0, 0)
 
             currUnitPrice = currValue / currAmount
             return ( currAmount, currUnitPrice )
+
+        def currentTransactions(self):
+            ## Buy value raises then current unit price rises
+            ## Sell value raises then current unit price decreases
+            stockAmount = 0
+
+            for item in self.transactions:
+                stockAmount += item[0]
+
+            retList = []
+
+            if stockAmount <= 0:
+                ## ignore no wallet stock transaction
+                return retList
+
+            currAmount = 0
+            for item in self.transactions:
+                amount = item[0]
+                if amount <= 0:
+                    ## ignore sell transaction
+                    continue
+
+                currAmount += amount
+
+                amountDiff = currAmount - stockAmount
+                if amountDiff > 0:
+                    restAmount = amount - amountDiff
+                    if restAmount <= 0:
+                        break
+                    amount = restAmount
+
+                row = list( item )
+                row[0] = amount
+                retList.append( tuple( row ) )
+
+            return retList
 
         def calc2(self):
             ## Buy value raises then current unit price rises
@@ -269,13 +306,15 @@ class WalletData( persist.Versionable ):
                 stockAmount += item[0]
 
             if stockAmount <= 0:
+                ## ignore no wallet stock transaction
                 return (0, 0)
 
             currAmount = 0
             currValue  = 0
             for item in self.transactions:
-                amount      = item[0]
+                amount = item[0]
                 if amount <= 0:
+                    ## ignore sell transaction
                     continue
 
                 currAmount += amount
@@ -671,6 +710,87 @@ class DataObject( QObject ):
         walletProfit  = round( walletProfit, 2 )
         overallProfit = round( overallProfit, 2 )
         return ( walletProfit, overallProfit )
+
+    # pylint: disable=R0914
+    def getWalletTransactions(self):
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Kurs nabycia",
+                        "Zysk %", "Zysk", "Data nabycia" ]
+
+        currentStock: GpwCurrentData = self.currentGpwData.stockData
+        currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        rowsList = []
+
+        for ticker, transactions in self.wallet.stockList.items():
+            tickerRow = currentStock.getRowByTicker( ticker )
+            if tickerRow.empty:
+                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
+                currTransactions = transactions.currentTransactions()
+                for item in currTransactions:
+                    amount         = item[0]
+                    buy_unit_price = item[1]
+                    buy_date       = item[2]
+                    rowsList.append( ["-", ticker, amount, "-", buy_unit_price, "-", "-", buy_date] )
+                continue
+
+            currUnitValue    = 0
+            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
+            if currUnitValueRaw != "-":
+                currUnitValue = float( currUnitValueRaw )
+
+            currTransactions = transactions.currentTransactions()
+            for item in currTransactions:
+                stockName = tickerRow["Nazwa"]
+
+                amount         = item[0]
+                buy_unit_price = item[1]
+                buy_date       = item[2]
+
+                currValue = currUnitValue * amount
+                buyValue  = buy_unit_price * amount
+                profit    = currValue - buyValue
+                profitPnt = 0
+                if buyValue != 0:
+                    profitPnt = profit / buyValue * 100.0
+
+                buy_unit_price = round( buy_unit_price, 4 )
+                profitPnt      = round( profitPnt, 2 )
+                profit         = round( profit, 2 )
+
+                rowsList.append( [ stockName, ticker, amount, currUnitValue, buy_unit_price,
+                                   profitPnt, profit, buy_date ] )
+
+#             if amount == 0:
+#                 totalProfit = transactions.transactionsProfit()
+#                 totalProfit = round( totalProfit, 2 )
+#                 rowsList.append( [stockName, ticker, amount, "-", "-", "-", "-", "-", totalProfit] )
+#                 continue
+#
+#             currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
+#             currUnitValue    = 0
+#             if currUnitValueRaw != "-":
+#                 currUnitValue = float( currUnitValueRaw )
+#
+#             currValue = currUnitValue * amount
+#             buyValue  = buy_unit_price * amount
+#             profit    = currValue - buyValue
+#             profitPnt = 0
+#             if buyValue != 0:
+#                 profitPnt = profit / buyValue * 100.0
+#
+#             totalProfit  = transactions.transactionsProfit()
+#             totalProfit += currValue - broker_commission( currValue )
+#
+#             buy_unit_price = round( buy_unit_price, 4 )
+#             profitPnt      = round( profitPnt, 2 )
+#             profit         = round( profit, 2 )
+#             currValue      = round( currValue, 2 )
+#             totalProfit    = round( totalProfit, 2 )
+#
+#             rowsList.append( [stockName, ticker, amount, currUnitValue, buy_unit_price,
+#                               profitPnt, profit, currValue, totalProfit] )
+
+        dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
+        return dataFrame
 
     def importWalletTransactions(self, dataFrame: DataFrame):
         wallet: WalletData = self.wallet

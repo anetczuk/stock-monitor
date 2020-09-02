@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -346,7 +346,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="walletTab">
+      <widget class="QWidget" name="walletMainTab">
        <attribute name="title">
         <string>Wallet</string>
        </attribute>
@@ -355,7 +355,7 @@
          <number>0</number>
         </property>
         <property name="topMargin">
-         <number>6</number>
+         <number>0</number>
         </property>
         <property name="rightMargin">
          <number>0</number>
@@ -364,7 +364,55 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="WalletWidget" name="walletwidget" native="true"/>
+         <widget class="QTabWidget" name="walletTabWidget">
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <widget class="QWidget" name="walletTab">
+           <attribute name="title">
+            <string>Wallet</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_19">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="WalletWidget" name="walletwidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="transactionsTab">
+           <attribute name="title">
+            <string>Current transactions</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_20">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="TransactionsWidget" name="transactionswidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -590,6 +638,12 @@
    <class>WalletWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.walletwidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TransactionsWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.transactionswidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

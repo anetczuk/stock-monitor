@@ -79,7 +79,10 @@ def load_state(window: QMainWindow, settings: QSettings):
     widgetsList = sort_widgets( widgets )
     for w, wKey in widgetsList:
         settings.beginGroup( wKey )
-        colsNum = w.model().columnCount()
+        colsNum = 0
+        wmodel = w.model()
+        if wmodel is not None:
+            colsNum = wmodel.columnCount()
         for c in range(0, colsNum):
             state = settings.value( "column" + str(c) )
             if state is not None:

@@ -97,6 +97,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.stockFullTable.connectData( self.data )
         self.ui.favsWidget.connectData( self.data )
         self.ui.walletwidget.connectData( self.data )
+        self.ui.transactionswidget.connectData( self.data )
 
         self.ui.indicatorswidget.connectData( self.data )
         self.ui.reportswidget.connectData( self.data )
@@ -186,6 +187,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.stockFullTable.updateData()
         self.ui.stockFullTable.updateView()
         self.ui.walletwidget.updateView()
+        self.ui.transactionswidget.updateView()
         self.ui.favsWidget.updateView()
         self.ui.notesWidget.setNotes( self.data.notes )
 
