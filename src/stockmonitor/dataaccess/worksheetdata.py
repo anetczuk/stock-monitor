@@ -93,9 +93,14 @@ class WorksheetData( BaseWorksheetData ):
         if forceRefresh is False:
             forceRefresh = not os.path.exists( picklePath )
         if forceRefresh is False:
-            self.worksheet = persist.load_object_simple( picklePath, None )
-            if self.worksheet is not None:
-                return
+            try:
+                self.worksheet = persist.load_object_simple( picklePath, None )
+                if self.worksheet is not None:
+                    return
+            except ModuleNotFoundError:
+                ## ths might happen when object files are shared between 
+                ## different operating systems (different versions of libraries)
+                _LOGGER.exception("unable to load object data files, continuing with raw data file")
 
         self.parseDataFromDefaultFile()
         if self.worksheet is not None:
