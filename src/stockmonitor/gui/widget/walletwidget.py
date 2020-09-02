@@ -109,6 +109,9 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         self.soldOutFilter = WalletProxyModel()
         self.ui.walletTable.addProxyModel( self.soldOutFilter )
 
+        self.ui.walletProfitLabel.setStyleSheet("font-weight: bold")
+        self.ui.overallProfitLabel.setStyleSheet("font-weight: bold")
+
         self.ui.importMBPB.clicked.connect( self.ui.walletTable.importTransactions )
 
         self.ui.soldOutCB.stateChanged.connect( self._handleSoldOut )
@@ -131,6 +134,12 @@ class WalletWidget( QtBaseClass ):           # type: ignore
             self.ui.walletTable.clear()
             return
         self.ui.walletTable.setData( stock )
+
+        profit = self.dataObject.getWalletProfit()
+        walletProfit = profit[0]
+        overallProfit = profit[1]
+        self.ui.walletProfitLabel.setText( str(walletProfit) )
+        self.ui.overallProfitLabel.setText( str(overallProfit) )
 
     def _handleSoldOut(self):
         incluideSoldOut = self.ui.soldOutCB.isChecked()

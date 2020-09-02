@@ -98,7 +98,7 @@ class WorksheetData( BaseWorksheetData ):
                 if self.worksheet is not None:
                     return
             except ModuleNotFoundError:
-                ## ths might happen when object files are shared between 
+                ## ths might happen when object files are shared between
                 ## different operating systems (different versions of libraries)
                 _LOGGER.exception("unable to load object data files, continuing with raw data file")
 

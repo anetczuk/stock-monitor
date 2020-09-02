@@ -598,16 +598,17 @@ class DataObject( QObject ):
                 continue
 
             stockName = tickerRow["Nazwa"]
-            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
-            currUnitValue = 0
-            if currUnitValueRaw != "-":
-                currUnitValue = float( currUnitValueRaw )
 
             if amount == 0:
                 totalProfit = transactions.transactionsProfit()
                 totalProfit = round( totalProfit, 2 )
                 rowsList.append( [stockName, ticker, amount, "-", "-", "-", "-", "-", totalProfit] )
                 continue
+
+            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
+            currUnitValue    = 0
+            if currUnitValueRaw != "-":
+                currUnitValue = float( currUnitValueRaw )
 
             currValue = currUnitValue * amount
             buyValue  = buy_unit_price * amount
@@ -630,6 +631,46 @@ class DataObject( QObject ):
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
+
+    def getWalletProfit(self):
+        currentStock: GpwCurrentData = self.currentGpwData.stockData
+        currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
+
+        walletProfit  = 0
+        overallProfit = 0
+        for ticker, transactions in self.wallet.stockList.items():
+            amount, buy_unit_price = transactions.calc2()
+
+            if amount == 0:
+                totalProfit    = transactions.transactionsProfit()
+                overallProfit += totalProfit
+                continue
+
+            tickerRow = currentStock.getRowByTicker( ticker )
+            if tickerRow.empty:
+                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
+                continue
+
+            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
+            currUnitValue    = 0
+            if currUnitValueRaw != "-":
+                currUnitValue = float( currUnitValueRaw )
+
+            currValue = currUnitValue * amount
+            currCommission = broker_commission( currValue )
+            buyValue  = buy_unit_price * amount
+            profit    = currValue - buyValue
+            profit   -= currCommission
+
+            walletProfit  += profit
+
+            totalProfit    = transactions.transactionsProfit()
+            totalProfit   += currValue - currCommission
+            overallProfit += totalProfit
+
+        walletProfit  = round( walletProfit, 2 )
+        overallProfit = round( overallProfit, 2 )
+        return ( walletProfit, overallProfit )
 
     def importWalletTransactions(self, dataFrame: DataFrame):
         wallet: WalletData = self.wallet
