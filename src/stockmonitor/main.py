@@ -28,7 +28,7 @@ import sys
 import argparse
 import logging
 
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
 import stockmonitor.logger as logger
 
@@ -47,21 +47,25 @@ def run_app():
     app.setOrganizationName("arnet")
     ### app.setOrganizationDomain("www.my-org.com")
 
-    window = MainWindow()
-    window.loadData()
-    window.loadSettings()
+    try:
+        window = MainWindow()
+        window.loadData()
+        window.loadSettings()
 
-    window.show()
+        window.show()
 
-    setup_interrupt_handling()
+        setup_interrupt_handling()
 
-    exitCode = app.exec_()
+        exitCode = app.exec_()
 
-    if exitCode == 0:
-        window.saveSettings()
-        window.saveData()
+        if exitCode == 0:
+            window.saveSettings()
+            window.saveData()
 
-    return exitCode
+        return exitCode
+    except BaseException as e:
+        QMessageBox.critical( None, MainWindow.appTitle, str(e) + "\n\nInvestigate application logs for details" )
+        raise
 
 
 def create_parser( parser: argparse.ArgumentParser = None ):
