@@ -53,7 +53,7 @@ class DividendsCalendarData( WorksheetData ):
 
     def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile )
+        dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
         dataFrame = dataFrame[2]
         dataFrame = dataFrame.fillna("-")
         return dataFrame
