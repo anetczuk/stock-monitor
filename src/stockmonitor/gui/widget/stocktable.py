@@ -32,8 +32,9 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QDesktopServices
 
-from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
+from stockmonitor.dataaccess.gpwdata import GpwCurrentData
 from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -227,7 +228,7 @@ class StockFullTable( StockTable ):
         self.updateView()
 
     def updateData(self):
-        dataAccess = self.dataObject.gpwCurrentData
+        dataAccess: GpwCurrentData = self.dataObject.gpwCurrentData
         dataframe = dataAccess.getWorksheet( False )
         self.setData( dataframe )
 
