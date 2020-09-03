@@ -25,17 +25,95 @@ import logging
 # from datetime import datetime
 
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMenu, QInputDialog
 from PyQt5.QtWidgets import QLineEdit
 
+from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.widget.stocktable import wallet_background_color, insert_new_action
+
 from .. import uiloader
-from .stocktable import StockFavsTable
+from .stocktable import StockTable, TableRowColorDelegate
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class StockFavsColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataObject: DataObject):
+        super().__init__()
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
+#         return None
+
+    def background(self, index: QModelIndex ):
+        sourceParent = index.parent()
+        dataRow = index.row()
+        dataIndex = self.parent.index( dataRow, 3, sourceParent )       ## get name
+        ticker = dataIndex.data()
+        return wallet_background_color( self.dataObject, ticker )
+
+
+class StockFavsTable( StockTable ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.setObjectName("stockfavstable")
+        self.setShowGrid( True )
+        self.setAlternatingRowColors( False )
+        self.dataObject = None
+        self.favGroup = None
+
+    # pylint: disable=W0221
+    def connectData(self, dataObject, favGroup):
+        self.dataObject = dataObject
+        self.favGroup = favGroup
+        if self.dataObject is None:
+            return
+
+        colorDecorator = StockFavsColorDelegate( self.dataObject )
+        self.setColorDelegate( colorDecorator )
+
+        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.dataObject.stockHeadersChanged.connect( self.updateView )
+        self.updateData()
+        self.updateView()
+
+    def updateData(self):
+        dataframe = self.dataObject.getFavStock( self.favGroup )
+        self.setData( dataframe )
+
+    def updateView(self):
+        self.setHeadersText( self.dataObject.gpwCurrentHeaders )
+
+    def createContextMenu(self):
+        contextMenu = super().createContextMenu()
+        if self.dataObject is not None:
+            remFavAction = insert_new_action(contextMenu, "Remove fav", 1)
+            remFavAction.triggered.connect( self._removeFav )
+        return contextMenu
+
+    def _removeFav(self):
+        favList = self._getSelectedTickers()
+        self.dataObject.deleteFav( self.favGroup, favList )
+
+    def _getSelectedTickers(self):
+        return self.getSelectedData( 3 )                ## ticker
+
+    def settingsAccepted(self):
+        self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
+
+    def settingsRejected(self):
+        self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
+
+
+## ====================================================================
 
 
 class SinglePageWidget( QWidget ):
@@ -91,7 +169,6 @@ class FavsWidget( QtBaseClass ):           # type: ignore
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
-        self.dataObject.stockDataChanged.connect( self.updateView )
         self.dataObject.favsAdded.connect( self.updateTab )
         self.dataObject.favsRemoved.connect( self.updateTab )
         self.dataObject.favsReordered.connect( self.updateOrder )
