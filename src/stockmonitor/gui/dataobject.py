@@ -853,38 +853,10 @@ class DataObject( QObject ):
             func( *args )
 
     def refreshStockData(self, forceRefresh=True):
-# #         stockList = self.stockDownloadList()
-# #         for func in stockList:
-# #             func()
-#
-#
-#         pool = Pool()
-#         stockList = self.stockProviderList()
-#         for stock in stockList:
-#             stock.downloadData()
-# #             bound_instance_downloadData = functools.partial(instance_download_data, stock)
-# #             pool.apply_async( bound_instance_downloadData )
-#
-#         # cleanup
-#         pool.close()
-#         pool.join()
-#
-#         for stock in stockList:
-#             stock.loadWorksheet()
-#
-# #         stockList = self.stockProviderList()
-# #         for stock in stockList:
-# #             stock.downloadData()
-# #
-# #         for stock in stockList:
-# #             stock.loadWorksheet()
-#
-#         self.stockDataChanged.emit()
-
-
 #         threads = threadlist.QThreadList( self )
-        threads = threadlist.QThreadMeasuredList( self )
 #         threads = threadlist.SerialList( self )
+        threads = threadlist.QThreadMeasuredList( self )
+#         threads = threadlist.ProcessList( self )
 
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
