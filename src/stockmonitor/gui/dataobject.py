@@ -29,7 +29,6 @@ from typing import Dict, List, Tuple
 # from multiprocessing import Pool
 
 from datetime import datetime, timedelta
-import functools
 
 from pandas.core.frame import DataFrame
 
@@ -206,25 +205,36 @@ class WalletData( persist.Versionable ):
         def clear(self):
             self.transactions.clear()
 
+        def items(self):
+            return self.transactions
+
         def add(self, amount, unitPrice, transTime=None, joinSimilar=True):
             if joinSimilar is False:
+#                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
                 self.transactions.append( (amount, unitPrice, transTime) )
                 self.sort()
                 return
             similarIndex = self._findSimilar( unitPrice, transTime )
             if similarIndex < 0:
+#                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
                 self.transactions.append( (amount, unitPrice, transTime) )
                 self.sort()
                 return
+            _LOGGER.debug( "joining transaction: %s %s %s", amount, unitPrice, transTime )
             similar = self.transactions[ similarIndex ]
             newAmount = similar[0] + amount
             self.transactions[ similarIndex ] = ( newAmount, similar[1], similar[2] )
 
         def sort(self):
             ## sort by date -- recent date first
-            compare = functools.cmp_to_key( self._sortDate )
-            self.transactions.sort( key=compare, reverse=True )
-#             self.transactions.sort(key=lambda x: (x[2] in None, x[2]), reverse=True)
+#             def sort_alias(a, b):
+#                 return self._sortDate(a, b)
+#             compare = functools.cmp_to_key( self._sortDate )
+# #             compare = functools.cmp_to_key( sort_alias )
+# #             self.transactions.sort( key=sort_alias, reverse=True )
+#             self.transactions = sorted( self.transactions, key=compare, reverse=True )
+# #             self.transactions.sort(key=lambda x: (x[2] is None, x[2]), reverse=True)
+            self.transactions.sort( key=self._sortKey, reverse=True )
 
         def currentAmount(self):
             stockAmount = 0
@@ -342,13 +352,21 @@ class WalletData( persist.Versionable ):
                 return -1
             return date1 < date2
 
+        @staticmethod
+        def _sortKey( tupleValue ):
+            date = tupleValue[2]
+            if date is None:
+                return datetime.min
+            return date
+
         def _findSimilar(self, unit_price, trans_date):
             for i in range( len( self.transactions ) ):
                 item = self.transactions[i]
                 if item[1] != unit_price:
                     continue
                 diff = item[2] - trans_date
-                if diff < timedelta( minutes=5 ):
+                # print("diff:", item[2], trans_date, diff)
+                if diff < timedelta( minutes=5 ) and diff > -timedelta( minutes=5 ):
                     return i
             return -1
 
@@ -390,7 +408,7 @@ class WalletData( persist.Versionable ):
     def clear(self):
         self.stockList.clear()
 
-    def transactions(self, ticker):
+    def transactions(self, ticker) -> 'History':
         return self.stockList.get( ticker, None )
 
     def items(self) -> List[ Tuple[str, int, float] ]:
@@ -404,12 +422,13 @@ class WalletData( persist.Versionable ):
                 ret.append( (key, val[0], val[1]) )
         return ret
 
-    def add( self, ticker, amount, unit_price, transTime: datetime=datetime.today(), joinSimilar=True ):
+    def add( self, ticker, amount, unitPrice, transTime: datetime=datetime.today(), joinSimilar=True ):
         transactions = self.stockList.get( ticker, None )
         if transactions is None:
             transactions = self.History()
             self.stockList[ ticker ] = transactions
-        transactions.add( amount, unit_price, transTime, joinSimilar )
+        _LOGGER.debug( "adding transaction: %s %s %s %s", ticker, amount, unitPrice, transTime )
+        transactions.add( amount, unitPrice, transTime, joinSimilar )
 
     def getCurrentStock(self) -> List[ str ]:
         ret = list()
@@ -792,9 +811,11 @@ class DataObject( QObject ):
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
 
-    def importWalletTransactions(self, dataFrame: DataFrame):
+    def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
         wallet: WalletData = self.wallet
-        wallet.clear()
+
+        if addTransactions is False:
+            wallet.clear()
 
         for _, row in dataFrame.iterrows():
             transTime  = row['trans_time']

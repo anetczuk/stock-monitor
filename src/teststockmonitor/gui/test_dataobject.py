@@ -23,6 +23,7 @@
 
 import unittest
 
+import datetime
 import pickle
 
 from stockmonitor.gui.dataobject import DataObject, WalletData, FavData
@@ -51,6 +52,20 @@ class WalletDataTest(unittest.TestCase):
     def tearDown(self):
         ## Called after testfunction was executed
         pass
+
+    def test_add_sort(self):
+        dataobject = WalletData()
+        self.assertEqual( dataobject.size(), 0 )
+
+        dataobject.add( "xxx", 2, 20.0, datetime.datetime(2, 2, 2) )
+        dataobject.add( "xxx", 1, 20.0, datetime.datetime(1, 1, 1) )
+        dataobject.add( "xxx", 3, 20.0, datetime.datetime(3, 3, 3) )
+
+        items = dataobject.transactions("xxx").items()
+        self.assertEqual( len( items ), 3 )
+        self.assertEqual( items[0][0], 3 )
+        self.assertEqual( items[1][0], 2 )
+        self.assertEqual( items[2][0], 1 )
 
     def test_add_buy(self):
         dataobject = WalletData()

@@ -23,6 +23,7 @@
 
 import logging
 import tempfile
+import codecs
 
 import pandas
 
@@ -85,10 +86,7 @@ class WalletStockTable( StockTable ):
         dataPath = filePath[0]
         if not dataPath:
             return
-        importedData = import_mb_transactions( dataPath )
-#         importedData = import_mb_orders( dataPath )
-#         print("data:\n", importedData)
-        self.dataObject.importWalletTransactions( importedData )
+        import_mb_transactions( self.dataObject, dataPath )
 
     def _getSelectedTickers(self):
         return self.getSelectedData( 1 )                ## ticker
@@ -146,7 +144,7 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         self.soldOutFilter.includeSoldOut( incluideSoldOut )
 
 
-def import_mb_transactions( filePath ):
+def import_mb_transactions( dataObject, filePath ):
     ## imported transaction values are not affected by borker's commission
     ## real sell profit is transaction value decreased by broker's commission
     ## real buy cost is transaction value increased by broker's commission
@@ -155,36 +153,58 @@ def import_mb_transactions( filePath ):
     ##
     ## find line in file and remove header information leaving raw data
     ##
-    tmpfile = tempfile.NamedTemporaryFile()
-    lineFound = False
-    with open( filePath, 'r+b' ) as srcFile:
+    tmpfile = tempfile.NamedTemporaryFile( mode='w+t' )
+    headerFound = False
+    historyFound = False
+    currentFound = False
+
+    with codecs.open(filePath, 'r', encoding='utf-8', errors='replace') as srcFile:
         for line in srcFile:
-            if lineFound:
+            if headerFound:
                 tmpfile.write(line)
-            elif b"Czas transakcji" in line:
-                lineFound = True
+            elif "Czas transakcji" in line:
+                headerFound = True
+            elif "Historia transakcji" in line:
+                historyFound = True
+            elif "Transakcje bie" in line:
+                currentFound = True
     tmpfile.seek(0)
 
     sourceFile = None
-    if lineFound:
+    if headerFound:
         sourceFile = tmpfile
     else:
         sourceFile = filePath
 
-    _LOGGER.debug( "opening transactions: %s", filePath )
+    if historyFound:
+        ## load history transactions
+        _LOGGER.debug( "opening transactions: %s", filePath )
+        importedData = load_mb_transactions( sourceFile )
+        dataObject.importWalletTransactions( importedData )
+        tmpfile.close()
+    elif currentFound:
+        ## add transactions
+        _LOGGER.debug( "opening transactions: %s", filePath )
+        importedData = load_mb_transactions( sourceFile )
+        dataObject.importWalletTransactions( importedData, True )
+        tmpfile.close()
+    else:
+        _LOGGER.warning( "invalid import file: %s", filePath )
 
+
+def load_mb_transactions( sourceFile ):
     dataFrame = pandas.read_csv( sourceFile, names=["trans_time", "name", "stock_id", "k_s", "amount",
                                                     "unit_price", "unit_currency", "price", "currency"],
-                                 sep=';', decimal=',', thousands=' ' )
+                                 sep=r'[;\t]', decimal=',', thousands=' ', engine='python', encoding='utf_8' )
 
-    tmpfile.close()
+#     print( "raw data:\n", dataFrame )
+
+    apply_on_column( dataFrame, 'name', str )
 
     #### fix names to match GPW names
     ## XTRADEBDM -> XTB
     ## CELONPHARMA -> CLNPHARMA
     dataFrame["name"].replace({"XTRADEBDM": "XTB", "CELONPHARMA": "CLNPHARMA"}, inplace=True)
-
-    apply_on_column( dataFrame, 'name', str )
 
     apply_on_column( dataFrame, 'amount', convert_int )
 
