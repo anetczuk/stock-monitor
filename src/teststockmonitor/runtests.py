@@ -24,6 +24,17 @@
 #
 
 
+try:
+    ## following import success only when file is directly executed from command line
+    ## otherwise will throw exception when executing as parameter for "python -m"
+    # pylint: disable=W0611
+    import __init__
+except ImportError as error:
+    ## when import fails then it means that the script was executed indirectly
+    ## in this case __init__ is already loaded
+    pass
+
+
 import sys
 import os
 
@@ -36,11 +47,16 @@ import subprocess
 
 import tempfile
 
+import stockmonitor.logger as logger
+
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 src_dir = os.path.abspath(os.path.join(script_dir, ".."))
 sys.path.insert(0, src_dir)
+
+
+logger.configure_console()
 
 
 _LOGGER = logging.getLogger(__name__)

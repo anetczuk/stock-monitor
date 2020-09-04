@@ -75,6 +75,20 @@ def configure( logFile=None, logLevel=None ):
 ##                        )
 
 
+def configure_console( logLevel=None ):
+    if logLevel is None:
+        logLevel = logging.DEBUG
+
+    consoleHandler = logging.StreamHandler( stream=sys.stdout )
+
+    formatter = create_formatter()
+
+    consoleHandler.setFormatter( formatter )
+
+    logging.root.addHandler( consoleHandler )
+    logging.root.setLevel( logLevel )
+
+
 def create_stdout_handler():
     formatter = create_formatter()
     consoleHandler = logging.StreamHandler( stream=sys.stdout )
