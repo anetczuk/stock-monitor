@@ -41,7 +41,6 @@ import logging
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
-from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.widget.mpl.timelinechartwidget import TimelineChartWidget
 
@@ -73,8 +72,8 @@ app.setOrganizationName("arnet")
 # csvPath = data.get_data_root_path() + "/akcje_2020-04-14_15-50.csv"
 # dataframe.to_csv( csvPath, encoding='utf-8', index=False )
 
-xdata = [ datetime.datetime.fromtimestamp( 100000 ), datetime.datetime.fromtimestamp( 200000 ), 
-          datetime.datetime.fromtimestamp( 300000 ), datetime.datetime.fromtimestamp( 400000 ), 
+xdata = [ datetime.datetime.fromtimestamp( 100000 ), datetime.datetime.fromtimestamp( 200000 ),
+          datetime.datetime.fromtimestamp( 300000 ), datetime.datetime.fromtimestamp( 400000 ),
           datetime.datetime.fromtimestamp( 500000 ) ]
 ydata = [1, 10, 5, 4, 7]
 

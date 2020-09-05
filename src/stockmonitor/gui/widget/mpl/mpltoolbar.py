@@ -40,15 +40,14 @@ class DynamicToolbar(NavigationToolbar):
 
     def home(self, *args):
         super().home(*args)
-        self._restore_view()
+        self._restoreView()
 
-    def _restore_view(self):
-        axesList = self._get_axes()
+    def _restoreView(self):
+        axesList = self._getAxes()
         for ax in axesList:
             ax.set_xlim(auto=True)
             ax.set_ylim(auto=True)
         self.canvas.draw_idle()
 
-    def _get_axes(self):
+    def _getAxes(self):
         return self.canvas.figure.get_axes()
-

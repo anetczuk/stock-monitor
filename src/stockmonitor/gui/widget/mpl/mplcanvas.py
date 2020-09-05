@@ -26,11 +26,8 @@ _LOGGER = logging.getLogger(__name__)
 class MplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
 
-    logger = None
-
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig = Figure( figsize=(width, height), dpi=dpi )
-        self.plot = self.fig.add_subplot(1, 1, 1)
 
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
@@ -47,7 +44,6 @@ class MplCanvas(FigureCanvas):
     def setBackgroundByQColor(self, bgcolor):
         rgbColor = ( bgcolor.red() / 255, bgcolor.green() / 255, bgcolor.blue() / 255, 1.0 )
         self.fig.patch.set_facecolor( rgbColor )
-        ###self.logger.debug("setting background: %r", rgbColor)
 
     def showFigure(self, show):
         currVis = self.fig.get_visible()
@@ -57,10 +53,7 @@ class MplCanvas(FigureCanvas):
         self.draw()                         ## QWidget draw
 
 
-MplCanvas.logger = _LOGGER.getChild(MplCanvas.__name__)
-
-
-class DynamicMplCanvas(MplCanvas):
+class DynamicMplCanvas( MplCanvas ):
     """A canvas that updates itself every second with a new plot."""
 
     logger = None
@@ -127,7 +120,3 @@ class DynamicMplCanvas(MplCanvas):
         if len(xdata) < 1:
             return False
         return True
-
-
-DynamicMplCanvas.logger = _LOGGER.getChild(DynamicMplCanvas.__name__)
-

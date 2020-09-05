@@ -35,17 +35,13 @@ _LOGGER = logging.getLogger(__name__)
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
 
 
-class TimelineChartWidget(QtBaseClass):
-
-    logger = None
+class TimelineChartWidget(QtBaseClass):             # type: ignore
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
 
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
-
-#         self.device = None
 
         if parentWidget is not None:
             bgcolor = parentWidget.palette().color(parentWidget.backgroundRole())
@@ -59,34 +55,6 @@ class TimelineChartWidget(QtBaseClass):
 
         self._refreshWidget()
 
-#     def attachConnector(self, connector):
-#         if self.device is not None:
-#             ## disconnect old object
-#             self.device.connectionStateChanged.disconnect( self._refreshWidget )
-#             self.device.positionChanged.disconnect( self._updatePositionState )
-# 
-#         self.device = connector
-# 
-#         self._refreshWidget()
-# 
-#         if self.device is not None:
-#             ## connect new object
-#             self.device.connectionStateChanged.connect( self._refreshWidget )
-#             self.device.positionChanged.connect( self._updatePositionState )
-
-#     def loadSettings(self, settings):
-#         settings.beginGroup( self.objectName() )
-#         enabled = settings.value("chart_enabled", True, type=bool)
-#         settings.endGroup()
-# 
-#         self.ui.enabledCB.setChecked( enabled )
-# 
-#     def saveSettings(self, settings):
-#         settings.beginGroup( self.objectName() )
-#         enabledChart = self.ui.enabledCB.isChecked()
-#         settings.setValue("chart_enabled", enabledChart)
-#         settings.endGroup()
-
     def setData(self, xdata, ydata):
         self.ui.dataChart.setData( xdata, ydata )
         self._refreshWidget()
@@ -95,34 +63,8 @@ class TimelineChartWidget(QtBaseClass):
         enabledChart = self.ui.enabledCB.isChecked()
         self.toolbar.setEnabled( enabledChart )
         self.ui.dataChart.setEnabled( enabledChart )
-                    
-#         ## self.logger.info("setting enabled: %s", enabled)
-#         connected = self.isDeviceConnected()
-#         if connected is True:
-#             enabledChart = self.ui.enabledCB.isChecked()
-#             self.toolbar.setEnabled( enabledChart )
-#             self.ui.dataChart.setEnabled( enabledChart )
-#             self._updatePositionState()                             ## add current position
-#         else:
-#             self.toolbar.setEnabled( False )
-#             self.ui.dataChart.setEnabled( False )
 
-#     def isDeviceConnected(self):
-#         if self.device is None:
-#             return False
-#         return self.device.isConnected()
-
-#     def _updatePositionState(self):
-#         enabledChart = self.ui.enabledCB.isChecked()
-#         if enabledChart is False:
-#             return
-#         deskHeight = self.device.currentPosition()
-#         self.ui.dataChart.addData( deskHeight )
-
-    def _toggleEnabled(self, state):
+    def _toggleEnabled(self, _):
         ## state: 0 -- unchecked
         ## state: 2 -- checked
         self._refreshWidget()
-
-
-TimelineChartWidget.logger = _LOGGER.getChild(TimelineChartWidget.__name__)
