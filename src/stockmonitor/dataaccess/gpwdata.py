@@ -28,12 +28,14 @@ import datetime
 
 from typing import List
 
+import json
 import pandas
 from pandas.core.frame import DataFrame
 import xlrd
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.convert import convert_float, convert_int
+from stockmonitor.dataaccess.convert import convert_float, convert_int,\
+    convert_timestamp_datetime
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CurrentDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetData
 
@@ -323,6 +325,50 @@ class GpwCurrentData( WorksheetData ):
 
     def sourceLink(self):
         return "https://www.gpw.pl/akcje"
+
+
+## ==========================================================================
+
+
+class GpwCurrentIntradayData( WorksheetData ):
+
+    def __init__(self, isin):
+        super().__init__()
+        self.isin = isin
+
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+        with open( dataFile ) as f:
+            json_data = json.load(f)
+            json_dict = json_data[0]
+            data_field = json_dict["data"]
+#             print("xxx:", data_field)
+
+            ## example data
+            #            c      h      l      o      p           t      v
+            # 0     418.4  419.8  418.4  419.8  418.4  1599202800  11141
+            # 1     419.0  419.0  418.1  418.4  419.0  1599202801    334
+            # 2     418.0  419.5  418.0  419.0  418.0  1599202802    130
+
+            dataFrame = DataFrame( data_field )
+#             print( "xxx:\n", dataFrame )
+
+            apply_on_column( dataFrame, 't', convert_timestamp_datetime )
+
+            return dataFrame
+
+        return None
+
+    def getDataPath(self):
+        currDate = datetime.date.now()
+        dateStr = str(currDate)
+        return tmp_dir + "data/gpw/curr/%s/isin_%s.json" % ( dateStr, self.isin )
+
+    def getDataUrl(self):
+        currDateTime = datetime.datetime.utcnow()
+        currTimestamp = int( currDateTime.timestamp() )
+        return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + self.isin + \
+               "%22,%22mode%22:%22CURR%22,%22from%22:%22444223%22,%22to%22:null}]&t=" + \
+               str(currTimestamp)
 
 
 ## ==========================================================================

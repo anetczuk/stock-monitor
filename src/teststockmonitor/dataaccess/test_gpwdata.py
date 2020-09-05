@@ -26,14 +26,9 @@ import unittest
 # import datetime
 
 from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIndexesData, GpwIndicatorsData, GpwIsinMapData
+from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIndexesData, GpwIndicatorsData, GpwIsinMapData,\
+    GpwCurrentIntradayData
 from stockmonitor.dataaccess.datatype import CurrentDataType
-
-
-class GpwCurrentDataMock(GpwCurrentData):
-
-    def getDataPath(self):
-        return get_data_path( "akcje_2020-04-14_15-50.xls" )
 
 
 ## =================================================================
@@ -43,7 +38,12 @@ class GpwCurrentDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = GpwCurrentDataMock()
+        self.dataAccess = GpwCurrentData()
+
+        def data_path():
+            return get_data_path( "akcje_2020-04-14_15-50.xls" )
+
+        self.dataAccess.getDataPath = data_path           # type: ignore
         self.dataAccess.parseDataFromDefaultFile()
 
     def tearDown(self):
@@ -74,6 +74,31 @@ class GpwCurrentDataTest(unittest.TestCase):
 #         diff1 = end1Time - startTime
 #         diff2 = end2Time - end1Time
 #         print( "load time:", diff1, diff2 )
+
+
+## ===================================================================
+
+
+class GpwCurrentIntradayDataTest(unittest.TestCase):
+
+    def setUp(self):
+        ## Called before testfunction is executed
+        self.dataAccess = GpwCurrentIntradayData( "PLOPTTC00011" )
+
+        def data_path():
+            return get_data_path( "cdr.chart.04-09.txt" )
+
+        self.dataAccess.getDataPath = data_path           # type: ignore
+        self.dataAccess.parseDataFromDefaultFile()
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_getData(self):
+        currData = self.dataAccess.getWorksheet()
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 3104)
 
 
 class GpwIndexesDataTest(unittest.TestCase):

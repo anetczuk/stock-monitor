@@ -22,6 +22,7 @@
 #
 
 import re
+import datetime
 
 
 def convert_int( data ):
@@ -64,3 +65,7 @@ def convert_percentage( data ):
         return float(value)
     except ValueError:
         return value
+
+
+def convert_timestamp_datetime( timestamp ):
+    return datetime.datetime.fromtimestamp( timestamp )
