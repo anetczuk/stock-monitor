@@ -38,6 +38,7 @@ from . import guistate
 from .dataobject import DataObject
 
 from .widget.settingsdialog import SettingsDialog, AppSettings
+from stockmonitor.gui.appwindow import AppWindow
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,8 +59,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.data = DataObject( self )
         self.appSettings = AppSettings()
-
-        self.setWindowTitle( self.appTitle )
 
         self.refreshAction = QtWidgets.QAction(self)
         self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
@@ -86,7 +85,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
         ## =============================================================
 
         self.trayIcon = trayicon.TrayIcon(self)
-        self.trayIcon.setToolTip( self.appTitle )
         self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
 
         self.ui.minmaxwidget.connectData( self.data )
@@ -117,7 +115,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.globalIndexesSourceLabel.setText( htmlText )
 
         self.ui.stockSourceLabel.setOpenExternalLinks(True)
-        sourceUrl = self.data.currentGpwData.stockData.sourceLink()
+        sourceUrl = self.data.gpwCurrentSource.stockData.sourceLink()
         htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
         self.ui.stockSourceLabel.setText( htmlText )
 
@@ -138,6 +136,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.applySettings()
         self.trayIcon.show()
+
+        self.setWindowTitle()
 
         self.setStatusMessage( "Ready", timeout=10000 )
 
@@ -181,6 +181,20 @@ class MainWindow( QtBaseClass ):           # type: ignore
         return settingsDir
 
     ## ====================================================================
+
+    def setWindowTitleSuffix( self, suffix="" ):
+        if len(suffix) < 1:
+            self.setWindowTitle( suffix )
+            return
+        newTitle = AppWindow.appTitle + " " + suffix
+        self.setWindowTitle( newTitle )
+
+    def setWindowTitle( self, newTitle="" ):
+        if len(newTitle) < 1:
+            newTitle = AppWindow.appTitle
+        super().setWindowTitle( newTitle )
+        if hasattr(self, 'trayIcon'):
+            self.trayIcon.setToolTip( newTitle )
 
     def refreshView(self):
         self._updateStockViews()

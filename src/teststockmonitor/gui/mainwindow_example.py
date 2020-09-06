@@ -68,9 +68,8 @@ app = QApplication(sys.argv)
 app.setApplicationName("StockMonitor")
 app.setOrganizationName("arnet")
 
-MainWindow.appTitle = MainWindow.appTitle + " Preview"
-
 window = MainWindow()
+window.setWindowTitleSuffix( "Preview" )
 window.disableSaving()
 window.setWindowTitle( window.windowTitle() )
 if args.loadUserData:

@@ -34,6 +34,7 @@ import stockmonitor.logger as logger
 
 from stockmonitor.gui.mainwindow import MainWindow
 from stockmonitor.gui.sigint import setup_interrupt_handling
+from stockmonitor.gui.appwindow import AppWindow
 
 
 logger.configure()
@@ -64,7 +65,7 @@ def run_app():
 
         return exitCode
     except BaseException as e:
-        QMessageBox.critical( None, MainWindow.appTitle, str(e) + "\n\nInvestigate application logs for details" )
+        QMessageBox.critical( None, AppWindow.appTitle, str(e) + "\n\nInvestigate application logs for details" )
         raise
 
 
