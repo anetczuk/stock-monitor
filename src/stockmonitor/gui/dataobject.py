@@ -38,7 +38,8 @@ from PyQt5.QtWidgets import QWidget, QUndoStack
 
 from stockmonitor import persist
 from stockmonitor.dataaccess.datatype import CurrentDataType
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIsinMapData
+from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIsinMapData,\
+    GpwCurrentIntradayData
 from stockmonitor.dataaccess.gpwdata import GpwIndexesData
 from stockmonitor.dataaccess.gpwdata import GpwIndicatorsData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
@@ -522,6 +523,31 @@ class StockData():
         self.stockData.downloadData()
 
 
+class GpwIntradayMap():
+
+    def __init__(self):
+        self.dataDict = dict()
+    
+    def getData(self, isin):
+        source = self.getSource(isin)
+        return source.getWorksheet()
+    
+    def getSource(self, isin):
+        source = self.dataDict.get( isin, None )
+        if source is not None:
+            return source
+        source = GpwCurrentIntradayData( isin )
+        self.dataDict[ isin ] = source
+        return source
+    
+    def refreshData(self, forceRefresh=True):
+        for val in self.dataDict.values():
+            val.refreshData( forceRefresh )
+
+
+## =========================================================================
+
+
 def instance_download_data(obj):
     """Wrapper/alias for object.
 
@@ -557,7 +583,10 @@ class DataObject( QObject ):
         self.parentWidget = parent
 
         self.userContainer      = UserContainer()                   ## user data
-        self.currentGpwData     = StockData( GpwCurrentData() )
+        
+        self.gpwCurrentSource   = StockData( GpwCurrentData() )
+        self.gpwIntradayData    = GpwIntradayMap()
+        
         self.gpwIndexesData     = GpwIndexesData()
         self.globalIndexesData  = GlobalIndexesData()
         self.gpwIndicatorsData  = GpwIndicatorsData()
@@ -579,7 +608,7 @@ class DataObject( QObject ):
         self.userContainer.load( inputDir )
         inputFile = inputDir + "/gpwcurrentheaders.obj"
         headers = persist.load_object_simple( inputFile, dict() )
-        self.currentGpwData.stockHeaders = headers
+        self.gpwCurrentSource.stockHeaders = headers
         #self.gpwCurrentHeaders = headers
 
     @property
@@ -642,7 +671,7 @@ class DataObject( QObject ):
         columnsList = ["Nazwa", "Ticker", "Liczba", "Kurs", "Średni kurs nabycia",
                        "Zysk %", "Zysk", "Wartość", "Zysk całkowity"]
 
-        currentStock: GpwCurrentData = self.currentGpwData.stockData
+        currentStock: GpwCurrentData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
@@ -691,7 +720,7 @@ class DataObject( QObject ):
         return dataFrame
 
     def getWalletProfit(self):
-        currentStock: GpwCurrentData = self.currentGpwData.stockData
+        currentStock: GpwCurrentData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
 
         walletProfit  = 0
@@ -735,7 +764,7 @@ class DataObject( QObject ):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Kurs nabycia",
                         "Zysk %", "Zysk", "Data nabycia" ]
 
-        currentStock: GpwCurrentData = self.currentGpwData.stockData
+        currentStock: GpwCurrentData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
@@ -777,36 +806,6 @@ class DataObject( QObject ):
 
                 rowsList.append( [ stockName, ticker, amount, currUnitValue, buy_unit_price,
                                    profitPnt, profit, buy_date ] )
-
-#             if amount == 0:
-#                 totalProfit = transactions.transactionsProfit()
-#                 totalProfit = round( totalProfit, 2 )
-#                 rowsList.append( [stockName, ticker, amount, "-", "-", "-", "-", "-", totalProfit] )
-#                 continue
-#
-#             currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
-#             currUnitValue    = 0
-#             if currUnitValueRaw != "-":
-#                 currUnitValue = float( currUnitValueRaw )
-#
-#             currValue = currUnitValue * amount
-#             buyValue  = buy_unit_price * amount
-#             profit    = currValue - buyValue
-#             profitPnt = 0
-#             if buyValue != 0:
-#                 profitPnt = profit / buyValue * 100.0
-#
-#             totalProfit  = transactions.transactionsProfit()
-#             totalProfit += currValue - broker_commission( currValue )
-#
-#             buy_unit_price = round( buy_unit_price, 4 )
-#             profitPnt      = round( profitPnt, 2 )
-#             profit         = round( profit, 2 )
-#             currValue      = round( currValue, 2 )
-#             totalProfit    = round( totalProfit, 2 )
-#
-#             rowsList.append( [stockName, ticker, amount, currUnitValue, buy_unit_price,
-#                               profitPnt, profit, currValue, totalProfit] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
@@ -877,16 +876,17 @@ class DataObject( QObject ):
             retList.append( (stock.refreshData, [forceRefresh] ) )
         return retList
 
-    def stockDownloadList(self):
-        stockList = self.stockProviderList()
-        retList = []
-        for stock in stockList:
-            retList.append( stock.downloadData )
-        return retList
+#     def stockDownloadList(self):
+#         stockList = self.stockProviderList()
+#         retList = []
+#         for stock in stockList:
+#             retList.append( stock.downloadData )
+#         return retList
 
     def stockProviderList(self):
         retList = []
-        retList.append( self.currentGpwData )
+        retList.append( self.gpwCurrentSource )
+        retList.append( self.gpwIntradayData )
         retList.append( self.gpwIndexesData )
         retList.append( self.globalIndexesData )
         retList.append( self.gpwIndicatorsData )
@@ -898,19 +898,23 @@ class DataObject( QObject ):
 
     @property
     def gpwCurrentData(self):
-        return self.currentGpwData.stockData
+        return self.gpwCurrentSource.stockData
 
     @property
     def gpwCurrentHeaders(self) -> Dict[ int, str ]:
-        return self.currentGpwData.stockHeaders
+        return self.gpwCurrentSource.stockHeaders
 
     @gpwCurrentHeaders.setter
     def gpwCurrentHeaders(self, headersDict):
-        self.currentGpwData.stockHeaders = headersDict
+        self.gpwCurrentSource.stockHeaders = headersDict
         self.stockHeadersChanged.emit()
 
+    def getIntradayData(self, ticker):
+        isin = self.getStockIsinFromTicker(ticker)
+        return self.gpwIntradayData.getData(isin)
+    
     def getTicker(self, rowIndex):
-        return self.currentGpwData.stockData.getTickerField( rowIndex )
+        return self.gpwCurrentSource.stockData.getTickerField( rowIndex )
 
     def getTickerFromIsin(self, stockIsin):
         return self.gpwIsinMap.getTickerFromIsin( stockIsin )
@@ -920,6 +924,9 @@ class DataObject( QObject ):
 
     def getStockIsinFromTicker(self, ticker):
         return self.gpwIsinMap.getStockIsinFromTicker( ticker )
+
+    def getNameFromTicker(self, ticker):
+        return self.gpwIsinMap.getNameFromTicker( ticker )
 
 
 def broker_commission( value ):

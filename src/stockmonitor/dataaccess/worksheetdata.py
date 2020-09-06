@@ -52,6 +52,7 @@ class BaseWorksheetData( metaclass=abc.ABCMeta ):
 
     def getWorksheet(self, forceRefresh=False) -> DataFrame:
         if self.worksheet is None or forceRefresh is True:
+#             _LOGGER.info("state: %s %s", (self.worksheet is None), (forceRefresh is True) )
             self.loadWorksheet( forceRefresh )
         return self.worksheet
 

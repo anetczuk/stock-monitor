@@ -35,6 +35,8 @@ from PyQt5.QtGui import QDesktopServices
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
+from stockmonitor.gui.widget.stockchartwidget import StockChartWidget,\
+    StockChartWindow
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,7 +59,13 @@ class StockTable( DataFrameTable ):
 
     def createContextMenu(self):
         contextMenu         = QMenu(self)
+
         if self.dataObject is not None:
+            tickersList = self._getSelectedTickers()
+            openChartMenu = contextMenu.addAction("Open chart")
+            openChartMenu.setData( tickersList )
+            openChartMenu.triggered.connect( self._openChartAction )
+
             stockInfoMenu = contextMenu.addMenu("Stock info")
             gpwLinks = self._getGpwInfoLinks()
             if gpwLinks:
@@ -74,6 +82,7 @@ class StockTable( DataFrameTable ):
                 action = self._createActionOpenUrl("google.pl", googleLinks)
                 action.setParent( stockInfoMenu )
                 stockInfoMenu.addAction( action )
+            
         self._addFavActions( contextMenu )
         contextMenu.addSeparator()
         filterDataAction    = contextMenu.addAction("Filter data")
@@ -102,6 +111,18 @@ class StockTable( DataFrameTable ):
             url = QtCore.QUrl(urlLink)
             _LOGGER.info( "opening url: %s", url )
             QDesktopServices.openUrl( url )
+
+    def _openChartAction(self):
+        if self.dataObject is None:
+            return
+        parentAction = self.sender()
+        tickerList = parentAction.data()
+        if is_iterable( tickerList ) is False:
+            tickerList = list( tickerList )
+        for ticker in tickerList:
+            chartWidget = StockChartWindow( self )
+            chartWidget.connectData( self.dataObject, ticker )
+            chartWidget.show()
 
     def _addFavActions(self, contextMenu):
         favsActions = []
@@ -137,13 +158,13 @@ class StockTable( DataFrameTable ):
         self.dataObject.addFav( favGrp, favList )
 
     def _getGpwInfoLinks(self):
-        favList = self._getSelectedTickers()
-        if not favList:
+        tickersList = self._getSelectedTickers()
+        if not tickersList:
             _LOGGER.warning( "unable to get stock info: empty ticker list" )
             return []
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
-        for ticker in favList:
+        for ticker in tickersList:
             isin = self.dataObject.getStockIsinFromTicker( ticker )
             if isin is None:
                 continue
@@ -282,7 +303,7 @@ class ToolStockTable( StockTable ):
         self.setColorDelegate( colorDecorator )
 
     def _getSelectedTickers(self):
-        dataAccess = self.dataObject.gpwCurrentData
+        dataAccess = self.dataObject.gpwCurrentSource
         selectedData = self.getSelectedData( 0 )                ## stock name
         tickersList = set()
         for stockName in selectedData:

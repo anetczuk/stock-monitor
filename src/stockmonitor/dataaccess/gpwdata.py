@@ -359,7 +359,8 @@ class GpwCurrentIntradayData( WorksheetData ):
         return None
 
     def getDataPath(self):
-        currDate = datetime.date.now()
+        currDateTime = datetime.datetime.now()
+        currDate     = currDateTime.date()
         dateStr = str(currDate)
         return tmp_dir + "data/gpw/curr/%s/isin_%s.json" % ( dateStr, self.isin )
 
@@ -531,6 +532,15 @@ class GpwIsinMapData( WorksheetData ):
             return None
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["ISIN"]
+        return tickerColumn.iloc[ rowIndex ]
+
+    def getNameFromTicker(self, ticker):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["Ticker"] == ticker ].index.values
+        if not rowIndexes:
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["Emitent"]
         return tickerColumn.iloc[ rowIndex ]
 
     def parseDataFromFile(self, dataFile: str) -> DataFrame:
