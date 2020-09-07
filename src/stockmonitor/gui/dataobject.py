@@ -909,10 +909,13 @@ class DataObject( QObject ):
         self.gpwCurrentSource.stockHeaders = headersDict
         self.stockHeadersChanged.emit()
 
-    def getIntradayData(self, ticker):
+    def getIntradayDataByTicker(self, ticker):
         isin = self.getStockIsinFromTicker(ticker)
         return self.gpwIntradayData.getData(isin)
-    
+
+    def getIntradayDataByIsin(self, isin):
+        return self.gpwIntradayData.getData(isin)
+
     def getTicker(self, rowIndex):
         return self.gpwCurrentSource.stockData.getTickerField( rowIndex )
 

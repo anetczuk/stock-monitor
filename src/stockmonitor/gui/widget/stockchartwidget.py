@@ -54,6 +54,9 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.toolbar = DynamicToolbar(self.ui.dataChart, self)
         self.ui.toolbarLayout.addWidget( self.toolbar )
 
+    def clearData(self):
+        self.ui.dataChart.clearData()
+
 #     def attachConnector(self, connector):
 #         if self.device is not None:
 #             ## disconnect old object
@@ -106,7 +109,10 @@ class StockChartWindow( AppWindow ):
         self.updateData()
 
     def updateData(self):
-        dataFrame = self.dataObject.getIntradayData( self.ticker )
+        dataFrame = self.dataObject.getIntradayDataByTicker( self.ticker )
+        if dataFrame is None:
+            self.chart.clearData()
+            return
 #         print( "got intraday data:", dataFrame )
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
