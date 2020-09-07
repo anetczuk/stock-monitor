@@ -56,9 +56,6 @@ src_dir = os.path.abspath(os.path.join(script_dir, ".."))
 sys.path.insert(0, src_dir)
 
 
-logger.configure_console()
-
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -119,7 +116,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.logall is True:
-        logging.basicConfig( level=logging.DEBUG )
+        logger.configure_console( logging.DEBUG )
+    else:
+        logger.configure_console( logging.ERROR )
 
     coverageData = None
     ## start code coverage
