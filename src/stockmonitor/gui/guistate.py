@@ -21,9 +21,14 @@
 # SOFTWARE.
 #
 
+import logging
+
 from PyQt5.QtCore import QSettings, QObject
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # pylint: disable=R0915
@@ -216,6 +221,8 @@ def sort_widgets( widgetsList ):
     retList = []
     for w in widgetsList:
         wKey = get_widget_key(w)
+        if wKey is None:
+            continue
         retList.append( (w, wKey) )
     ## sort by wKey
     retList.sort(key=lambda x: x[1])
@@ -225,10 +232,16 @@ def sort_widgets( widgetsList ):
 def get_widget_key(widget: QObject, suffix=None ):
     if widget is None:
         return None
-    retKey = widget.objectName()
-    widget = widget.parent()
+    retKey = None
     while widget is not None:
-        retKey = widget.objectName() + "-" + retKey
+        if retKey is None:
+            retKey = widget.objectName()
+        else:
+            retKey = widget.objectName() + "-" + retKey
+        if callable(widget.parent) is False:
+            ## some objects has "parent" attribute instead of "parent" method
+            ## e.g. matplotlib's NavigationToolbar
+            return None
         widget = widget.parent()
     if suffix is not None:
         retKey = retKey + "-" + suffix
