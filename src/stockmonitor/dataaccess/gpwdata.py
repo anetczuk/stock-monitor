@@ -331,7 +331,7 @@ class GpwCurrentData( WorksheetData ):
 ## ==========================================================================
 
 
-class GpwCurrentIntradayData( WorksheetData ):
+class GpwCurrentStockIntradayData( WorksheetData ):
 
     def __init__(self, isin):
         super().__init__()
@@ -372,6 +372,50 @@ class GpwCurrentIntradayData( WorksheetData ):
         currTimestamp = int( currDateTime.timestamp() )
         return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + self.isin + \
                "%22,%22mode%22:%22CURR%22,%22from%22:%22444223%22,%22to%22:null}]&t=" + \
+               str(currTimestamp)
+
+
+class GpwCurrentIndexIntradayData( WorksheetData ):
+
+    def __init__(self, isin):
+        super().__init__()
+        self.isin = isin
+
+    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+        with open( dataFile ) as f:
+            json_data = json.load(f)
+            json_dict = json_data[0]
+            data_field = json_dict.get("data", None)
+            if data_field is None:
+                return None
+#             print("xxx:", data_field)
+
+            ## example data
+            #              c        h        l        o        p           t
+            # 0     1765.37  1765.37  1765.37  1765.37  1765.37  1599462009
+            # 1     1768.42  1768.42  1768.42  1768.42  1768.42  1599462015
+            # 2     1768.49  1768.49  1768.49  1768.49  1768.49  1599462030
+
+            dataFrame = DataFrame( data_field )
+#             print( "xxx:\n", dataFrame )
+
+            apply_on_column( dataFrame, 't', convert_timestamp_datetime )
+
+            return dataFrame
+
+        return None
+
+    def getDataPath(self):
+        currDateTime = datetime.datetime.now()
+        currDate     = currDateTime.date()
+        dateStr = str(currDate)
+        return tmp_dir + "data/gpw/curr/%s/isin_%s.json" % ( dateStr, self.isin )
+
+    def getDataUrl(self):
+        currDateTime = datetime.datetime.utcnow()
+        currTimestamp = int( currDateTime.timestamp() )
+        return "https://gpwbenchmark.pl/chart-json.php?req=[{%22isin%22:%22" + self.isin + \
+               "%22,%22mode%22:%22CURR%22,%22from%22:%22444319%22,%22to%22:null}]&t=" + \
                str(currTimestamp)
 
 

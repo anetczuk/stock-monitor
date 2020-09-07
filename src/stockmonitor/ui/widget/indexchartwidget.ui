@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Stock Chart</string>
+   <string>Index Chart</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="StockIntradayChart" name="dataChart" native="true">
+    <widget class="IndexIntradayChart" name="dataChart" native="true">
      <property name="minimumSize">
       <size>
        <width>0</width>
@@ -43,9 +43,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>StockIntradayChart</class>
+   <class>IndexIntradayChart</class>
    <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.mpl.stockintradaychart</header>
+   <header>stockmonitor.gui.widget.mpl.indexintradaychart</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

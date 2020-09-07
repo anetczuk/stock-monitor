@@ -36,6 +36,7 @@ from stockmonitor.dataaccess.gpwdata import GpwCurrentData
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
 from stockmonitor.gui.widget.stockchartwidget import StockChartWindow
+from stockmonitor.gui.widget.indexchartwidget import IndexChartWindow
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -60,31 +61,30 @@ class StockTable( DataFrameTable ):
         contextMenu         = QMenu(self)
 
         if self.dataObject is not None:
-            tickersList = self._getSelectedTickers()
-            if tickersList:
-                openChartMenu = contextMenu.addAction("Open chart")
-                openChartMenu.setData( tickersList )
-                openChartMenu.triggered.connect( self._openChartAction )
+            self._addOpenChartAction( contextMenu )
 
-            stockInfoMenu = contextMenu.addMenu("Stock info")
             gpwLinks = self._getGpwInfoLinks()
-            if gpwLinks:
-                action = self._createActionOpenUrl("gpw.pl", gpwLinks)
-                action.setParent( stockInfoMenu )
-                stockInfoMenu.addAction( action )
             moneyLinks = self._getMoneyInfoLinks()
-            if moneyLinks:
-                action = self._createActionOpenUrl("money.pl", moneyLinks)
-                action.setParent( stockInfoMenu )
-                stockInfoMenu.addAction( action )
             googleLinks = self._getGoogleInfoLinks()
-            if googleLinks:
-                action = self._createActionOpenUrl("google.pl", googleLinks)
-                action.setParent( stockInfoMenu )
-                stockInfoMenu.addAction( action )
+            if gpwLinks or moneyLinks or googleLinks:
+                stockInfoMenu = contextMenu.addMenu("Stock info")
+                if gpwLinks:
+                    action = self._createActionOpenUrl("gpw.pl", gpwLinks)
+                    action.setParent( stockInfoMenu )
+                    stockInfoMenu.addAction( action )
+                if moneyLinks:
+                    action = self._createActionOpenUrl("money.pl", moneyLinks)
+                    action.setParent( stockInfoMenu )
+                    stockInfoMenu.addAction( action )
+                if googleLinks:
+                    action = self._createActionOpenUrl("google.pl", googleLinks)
+                    action.setParent( stockInfoMenu )
+                    stockInfoMenu.addAction( action )
 
-        self._addFavActions( contextMenu )
-        contextMenu.addSeparator()
+        tickersList = self._getSelectedTickers()
+        if tickersList:
+            self._addFavActions( contextMenu )
+            contextMenu.addSeparator()
         filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
 
@@ -112,6 +112,14 @@ class StockTable( DataFrameTable ):
             _LOGGER.info( "opening url: %s", url )
             QDesktopServices.openUrl( url )
 
+    def _addOpenChartAction(self, contextMenu):
+        tickersList = self._getSelectedTickers()
+        if not tickersList:
+            return
+        openChartMenu = contextMenu.addAction("Open chart")
+        openChartMenu.setData( tickersList )
+        openChartMenu.triggered.connect( self._openChartAction )
+
     def _openChartAction(self):
         if self.dataObject is None:
             return
@@ -126,18 +134,19 @@ class StockTable( DataFrameTable ):
 
     def _addFavActions(self, contextMenu):
         favsActions = []
-        if self.dataObject is not None:
-            favSubMenu    = contextMenu.addMenu("Add to favs")
-            favGroupsList = self.dataObject.favs.getFavGroups()
-            for favGroup in favGroupsList:
-                favAction = favSubMenu.addAction( favGroup )
-                favAction.setData( favGroup )
-                favAction.triggered.connect( self._addToFavAction )
-                favsActions.append( favAction )
-            newFavGroupAction = favSubMenu.addAction( "New group ..." )
-            newFavGroupAction.setData( None )
-            newFavGroupAction.triggered.connect( self._addToFavAction )
-            favsActions.append( newFavGroupAction )
+        if self.dataObject is None:
+            return favsActions
+        favSubMenu    = contextMenu.addMenu("Add to favs")
+        favGroupsList = self.dataObject.favs.getFavGroups()
+        for favGroup in favGroupsList:
+            favAction = favSubMenu.addAction( favGroup )
+            favAction.setData( favGroup )
+            favAction.triggered.connect( self._addToFavAction )
+            favsActions.append( favAction )
+        newFavGroupAction = favSubMenu.addAction( "New group ..." )
+        newFavGroupAction.setData( None )
+        newFavGroupAction.triggered.connect( self._addToFavAction )
+        favsActions.append( newFavGroupAction )
         return favsActions
 
     def _addToFavAction(self):
@@ -154,8 +163,8 @@ class StockTable( DataFrameTable ):
                 favGrp = newText
             else:
                 return
-        favList = self._getSelectedTickers()
-        self.dataObject.addFav( favGrp, favList )
+        tickersList = self._getSelectedTickers()
+        self.dataObject.addFav( favGrp, tickersList )
 
     def _getGpwInfoLinks(self):
         tickersList = self._getSelectedTickers()
@@ -209,6 +218,16 @@ class StockTable( DataFrameTable ):
     def _getSelectedTickers(self) -> List[str]:
         ## reimplement if needed
         return list()
+
+#     ## returns list of isins
+#     ## reimplement if needed
+#     def _getSelectedIsins(self) -> List[str]:
+#         retList = set()
+#         tickersList = self._getSelectedTickers()
+#         for ticker in tickersList:
+#             isin = self.dataObject.getStockIsinFromTicker(ticker)
+#             retList.add( isin )
+#         return list(retList)
 
 
 ## ====================================================================
@@ -269,6 +288,95 @@ class StockFullTable( StockTable ):
 ## ====================================================================
 
 
+class StockIndexesTable( StockTable ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.setObjectName("stockindexestable")
+#         self.setShowGrid( True )
+#         self.setAlternatingRowColors( False )
+
+#     def connectData(self, dataObject):
+#         super().connectData( dataObject )
+#
+#         colorDecorator = ToolStockColorDelegate( self.dataObject )
+#         self.setColorDelegate( colorDecorator )
+
+    def createContextMenu(self):
+        contextMenu         = QMenu(self)
+
+        if self.dataObject is not None:
+            self._addOpenChartAction( contextMenu )
+
+            gpwLinks = self._getGpwInfoLinks()
+            moneyLinks = self._getMoneyInfoLinks()
+            googleLinks = self._getGoogleInfoLinks()
+            if gpwLinks or moneyLinks or googleLinks:
+                stockInfoMenu = contextMenu.addMenu("Stock info")
+                if gpwLinks:
+                    action = self._createActionOpenUrl("gpw.pl", gpwLinks)
+                    action.setParent( stockInfoMenu )
+                    stockInfoMenu.addAction( action )
+                if moneyLinks:
+                    action = self._createActionOpenUrl("money.pl", moneyLinks)
+                    action.setParent( stockInfoMenu )
+                    stockInfoMenu.addAction( action )
+                if googleLinks:
+                    action = self._createActionOpenUrl("google.pl", googleLinks)
+                    action.setParent( stockInfoMenu )
+                    stockInfoMenu.addAction( action )
+
+        contextMenu.addSeparator()
+        filterDataAction    = contextMenu.addAction("Filter data")
+        configColumnsAction = contextMenu.addAction("Configure columns")
+
+        filterDataAction.triggered.connect( self.showFilterConfiguration )
+        configColumnsAction.triggered.connect( self.showColumnsConfiguration )
+
+        if self._rawData is None:
+            configColumnsAction.setEnabled( False )
+
+        return contextMenu
+
+    def _addOpenChartAction(self, contextMenu):
+        isinList = self._getSelectedIsins()
+        if not isinList:
+            return
+        openChartMenu = contextMenu.addAction("Open chart")
+        openChartMenu.setData( isinList )
+        openChartMenu.triggered.connect( self._openChartAction )
+
+    def _openChartAction(self):
+        if self.dataObject is None:
+            return
+        parentAction = self.sender()
+        isinList = parentAction.data()
+        if is_iterable( isinList ) is False:
+            isinList = list( isinList )
+        for isin in isinList:
+            chartWidget = IndexChartWindow( self )
+            chartWidget.connectData( self.dataObject, isin )
+            chartWidget.show()
+
+#     def _getSelectedTickers(self):
+#         dataAccess = self.dataObject.gpwIndexesData
+#         selectedData = self.getSelectedData( 12 )                ## isin
+#         tickersList = set()
+#         for stockName in selectedData:
+#             ticker = dataAccess.getTickerFieldByName( stockName )
+#             if ticker is not None:
+#                 tickersList.add( ticker )
+#         return list( tickersList )
+
+    ## returns list of isins
+    def _getSelectedIsins(self) -> List[str]:
+        selectedData = self.getSelectedData( 12 )                ## isin
+        return list( selectedData )
+
+
+## ====================================================================
+
+
 class ToolStockColorDelegate( TableRowColorDelegate ):
 
     def __init__(self, dataObject: DataObject):
@@ -311,6 +419,9 @@ class ToolStockTable( StockTable ):
             if ticker is not None:
                 tickersList.add( ticker )
         return list( tickersList )
+
+
+# =========================================================================
 
 
 def wallet_background_color( dataObject, ticker ):

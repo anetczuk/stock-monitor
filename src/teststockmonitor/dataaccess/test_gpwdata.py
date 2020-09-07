@@ -27,7 +27,7 @@ import unittest
 
 from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIndexesData, GpwIndicatorsData, GpwIsinMapData,\
-    GpwCurrentIntradayData
+    GpwCurrentStockIntradayData, GpwCurrentIndexIntradayData
 from stockmonitor.dataaccess.datatype import CurrentDataType
 
 
@@ -79,11 +79,11 @@ class GpwCurrentDataTest(unittest.TestCase):
 ## ===================================================================
 
 
-class GpwCurrentIntradayDataTest(unittest.TestCase):
+class GpwCurrentStockIntradayDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = GpwCurrentIntradayData( "PLOPTTC00011" )
+        self.dataAccess = GpwCurrentStockIntradayData( "PLOPTTC00011" )
 
         def data_path():
             return get_data_path( "cdr.chart.04-09.txt" )
@@ -99,6 +99,28 @@ class GpwCurrentIntradayDataTest(unittest.TestCase):
         currData = self.dataAccess.getWorksheet()
         dataLen = len( currData )
         self.assertEqual(dataLen, 3104)
+
+
+class GpwCurrentIndexIntradayDataTest(unittest.TestCase):
+
+    def setUp(self):
+        ## Called before testfunction is executed
+        self.dataAccess = GpwCurrentIndexIntradayData( "PL9999999987" )
+
+        def data_path():
+            return get_data_path( "wig20.chart.07-09.txt" )
+
+        self.dataAccess.getDataPath = data_path           # type: ignore
+        self.dataAccess.parseDataFromDefaultFile()
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_getData(self):
+        currData = self.dataAccess.getWorksheet()
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 1962)
 
 
 class GpwIndexesDataTest(unittest.TestCase):

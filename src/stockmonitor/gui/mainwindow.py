@@ -92,6 +92,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.variancewidget.connectData( self.data )
         self.ui.daywidget.connectData( self.data )
 
+        self.ui.gpwIndexesTable.connectData( self.data )
+
         self.ui.stockFullTable.connectData( self.data )
         self.ui.favsWidget.connectData( self.data )
         self.ui.walletwidget.connectData( self.data )
@@ -285,6 +287,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     # Override closeEvent, to intercept the window closing event
     def closeEvent(self, event):
+        _LOGGER.info("received close event")
         event.ignore()
         self.hide()
         self.trayIcon.show()
@@ -299,6 +302,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     # pylint: disable=R0201
     def closeApplication(self):
+        _LOGGER.info("received close request")
         ##self.close()
         qApp.quit()
 

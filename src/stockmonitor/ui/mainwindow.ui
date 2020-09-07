@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -220,7 +220,7 @@
         <item>
          <widget class="QTabWidget" name="indexesTabWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="gpwIndexesTab">
            <attribute name="title">
@@ -240,7 +240,7 @@
              <number>6</number>
             </property>
             <item>
-             <widget class="DataFrameTable" name="gpwIndexesTable"/>
+             <widget class="StockIndexesTable" name="gpwIndexesTable"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
@@ -645,6 +645,11 @@
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.transactionswidget</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StockIndexesTable</class>
+   <extends>QTableView</extends>
+   <header>stockmonitor.gui.widget.stocktable</header>
   </customwidget>
  </customwidgets>
  <resources/>

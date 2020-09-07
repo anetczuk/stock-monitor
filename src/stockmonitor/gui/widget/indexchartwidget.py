@@ -37,7 +37,7 @@ _LOGGER = logging.getLogger(__name__)
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
 
 
-class StockChartWidget(QtBaseClass):                    # type: ignore
+class IndexChartWidget(QtBaseClass):                    # type: ignore
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -85,42 +85,42 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 #         settings.setValue("chart_enabled", enabledChart)
 #         settings.endGroup()
 
-    def setData(self, xdata, ydata1, ydata2):
-        self.ui.dataChart.setData( list(xdata), ydata1, ydata2 )
+    def setData(self, xdata, ydata ):
+        self.ui.dataChart.setData( list(xdata), ydata )
 
 
-class StockChartWindow( AppWindow ):
+class IndexChartWindow( AppWindow ):
 
     def __init__(self, parentWidget=None):
         super().__init__( parentWidget )
 
         self.dataObject = None
-        self.ticker = None
+        self.isin = None
 
-        self.chart = StockChartWidget( self )
+        self.chart = IndexChartWidget( self )
         self.addWidget( self.chart )
 
-    def connectData(self, dataObject, ticker):
+    def connectData(self, dataObject, isin):
         self.dataObject = dataObject
-        self.ticker     = ticker
+        self.isin       = isin
         self.dataObject.stockDataChanged.connect( self.updateData )
         name = self._getStockName()
         self.setWindowTitleSuffix( "- " + name )
         self.updateData()
 
     def updateData(self):
-        dataFrame = self.dataObject.getStockIntradayDataByTicker( self.ticker )
+        dataFrame = self.dataObject.getIndexIntradayDataByIsin( self.isin )
         if dataFrame is None:
             self.chart.clearData()
             return
 #         print( "got intraday data:", dataFrame )
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
-        volumeColumn = dataFrame["v"]
-        self.chart.setData( timeColumn, priceColumn, volumeColumn )
+        self.chart.setData( timeColumn, priceColumn )
 
     def _getStockName(self):
-        name = self.dataObject.getNameFromTicker( self.ticker )
-        if name is None:
-            return self.ticker
-        return name + " [" + self.ticker + "]"
+        return self.isin
+#         name = self.dataObject.getNameFromTicker( self.ticker )
+#         if name is None:
+#             return self.isin
+#         return name + " [" + self.isin + "]"

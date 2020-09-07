@@ -39,7 +39,7 @@ from PyQt5.QtWidgets import QWidget, QUndoStack
 from stockmonitor import persist
 from stockmonitor.dataaccess.datatype import CurrentDataType
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIsinMapData,\
-    GpwCurrentIntradayData
+    GpwCurrentStockIntradayData, GpwCurrentIndexIntradayData
 from stockmonitor.dataaccess.gpwdata import GpwIndexesData
 from stockmonitor.dataaccess.gpwdata import GpwIndicatorsData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
@@ -523,7 +523,7 @@ class StockData():
         self.stockData.downloadData()
 
 
-class GpwIntradayMap():
+class GpwStockIntradayMap():
 
     def __init__(self):
         self.dataDict = dict()
@@ -536,7 +536,29 @@ class GpwIntradayMap():
         source = self.dataDict.get( isin, None )
         if source is not None:
             return source
-        source = GpwCurrentIntradayData( isin )
+        source = GpwCurrentStockIntradayData( isin )
+        self.dataDict[ isin ] = source
+        return source
+
+    def refreshData(self, forceRefresh=True):
+        for val in self.dataDict.values():
+            val.refreshData( forceRefresh )
+
+
+class GpwIndexIntradayMap():
+
+    def __init__(self):
+        self.dataDict = dict()
+
+    def getData(self, isin):
+        source = self.getSource(isin)
+        return source.getWorksheet()
+
+    def getSource(self, isin):
+        source = self.dataDict.get( isin, None )
+        if source is not None:
+            return source
+        source = GpwCurrentIndexIntradayData( isin )
         self.dataDict[ isin ] = source
         return source
 
@@ -584,8 +606,9 @@ class DataObject( QObject ):
 
         self.userContainer      = UserContainer()                   ## user data
 
-        self.gpwCurrentSource   = StockData( GpwCurrentData() )
-        self.gpwIntradayData    = GpwIntradayMap()
+        self.gpwCurrentSource     = StockData( GpwCurrentData() )
+        self.gpwStockIntradayData = GpwStockIntradayMap()
+        self.gpwIndexIntradayData = GpwIndexIntradayMap()
 
         self.gpwIndexesData     = GpwIndexesData()
         self.globalIndexesData  = GlobalIndexesData()
@@ -886,7 +909,7 @@ class DataObject( QObject ):
     def stockProviderList(self):
         retList = []
         retList.append( self.gpwCurrentSource )
-        retList.append( self.gpwIntradayData )
+        retList.append( self.gpwStockIntradayData )
         retList.append( self.gpwIndexesData )
         retList.append( self.globalIndexesData )
         retList.append( self.gpwIndicatorsData )
@@ -909,12 +932,15 @@ class DataObject( QObject ):
         self.gpwCurrentSource.stockHeaders = headersDict
         self.stockHeadersChanged.emit()
 
-    def getIntradayDataByTicker(self, ticker):
+    def getStockIntradayDataByTicker(self, ticker):
         isin = self.getStockIsinFromTicker(ticker)
-        return self.gpwIntradayData.getData(isin)
+        return self.gpwStockIntradayData.getData(isin)
 
-    def getIntradayDataByIsin(self, isin):
-        return self.gpwIntradayData.getData(isin)
+    def getStockIntradayDataByIsin(self, isin):
+        return self.gpwStockIntradayData.getData(isin)
+
+    def getIndexIntradayDataByIsin(self, isin):
+        return self.gpwIndexIntradayData.getData(isin)
 
     def getTicker(self, rowIndex):
         return self.gpwCurrentSource.stockData.getTickerField( rowIndex )

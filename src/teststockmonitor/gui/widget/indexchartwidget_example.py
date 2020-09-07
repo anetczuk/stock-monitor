@@ -39,9 +39,9 @@ import logging
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
-from stockmonitor.dataaccess.gpwdata import GpwCurrentStockIntradayData
+from stockmonitor.dataaccess.gpwdata import GpwCurrentIndexIntradayData
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.widget.stockchartwidget import StockChartWidget
+from stockmonitor.gui.widget.indexchartwidget import IndexChartWidget
 
 from teststockmonitor.data import get_data_path
 
@@ -63,7 +63,7 @@ app = QApplication(sys.argv)
 app.setApplicationName("StockMonitor")
 app.setOrganizationName("arnet")
 
-dataAccess = GpwCurrentStockIntradayData( "PLOPTTC00011" )
+dataAccess = GpwCurrentIndexIntradayData( "PLOPTTC00011" )
 
 
 def data_path():
@@ -80,9 +80,9 @@ timeColumn   = dataFrame["t"]
 priceColumn  = dataFrame["c"]
 volumeColumn = dataFrame["v"]
 
-widget = StockChartWidget()
+widget = IndexChartWidget()
 widget.resize( 1024, 768 )
-widget.setData( timeColumn, priceColumn, volumeColumn )
+widget.setData( timeColumn, priceColumn )
 # widget.connectData(dataObject)
 widget.show()
 
