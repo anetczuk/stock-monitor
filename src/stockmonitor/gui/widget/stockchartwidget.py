@@ -24,11 +24,11 @@
 
 import logging
 
+from stockmonitor.gui.appwindow import AppWindow
+
 from .. import uiloader
 
 from .mpl.mpltoolbar import DynamicToolbar
-from stockmonitor.gui.appwindow import AppWindow
-from matplotlib import ticker
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,13 +87,13 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
 
 class StockChartWindow( AppWindow ):
-    
+
     def __init__(self, parentWidget=None):
         super().__init__( parentWidget )
-        
+
         self.dataObject = None
         self.ticker = None
-        
+
         self.chart = StockChartWidget( self )
         self.addWidget( self.chart )
 
@@ -104,7 +104,7 @@ class StockChartWindow( AppWindow ):
         name = self._getStockName()
         self.setWindowTitleSuffix( "- " + name )
         self.updateData()
-        
+
     def updateData(self):
         dataFrame = self.dataObject.getIntradayData( self.ticker )
 #         print( "got intraday data:", dataFrame )
@@ -117,4 +117,4 @@ class StockChartWindow( AppWindow ):
         name = self.dataObject.getNameFromTicker( self.ticker )
         if name is None:
             return self.ticker
-        return name + " [" + self.ticker +"]"
+        return name + " [" + self.ticker + "]"

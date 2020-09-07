@@ -29,6 +29,7 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 from PyQt5.QtGui import QIcon
 
+from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
 
 from . import uiloader
@@ -38,7 +39,6 @@ from . import guistate
 from .dataobject import DataObject
 
 from .widget.settingsdialog import SettingsDialog, AppSettings
-from stockmonitor.gui.appwindow import AppWindow
 
 
 _LOGGER = logging.getLogger(__name__)

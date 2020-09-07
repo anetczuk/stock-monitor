@@ -35,8 +35,7 @@ from PyQt5.QtGui import QDesktopServices
 from stockmonitor.dataaccess.gpwdata import GpwCurrentData
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
-from stockmonitor.gui.widget.stockchartwidget import StockChartWidget,\
-    StockChartWindow
+from stockmonitor.gui.widget.stockchartwidget import StockChartWindow
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -62,9 +61,10 @@ class StockTable( DataFrameTable ):
 
         if self.dataObject is not None:
             tickersList = self._getSelectedTickers()
-            openChartMenu = contextMenu.addAction("Open chart")
-            openChartMenu.setData( tickersList )
-            openChartMenu.triggered.connect( self._openChartAction )
+            if tickersList:
+                openChartMenu = contextMenu.addAction("Open chart")
+                openChartMenu.setData( tickersList )
+                openChartMenu.triggered.connect( self._openChartAction )
 
             stockInfoMenu = contextMenu.addMenu("Stock info")
             gpwLinks = self._getGpwInfoLinks()
@@ -82,7 +82,7 @@ class StockTable( DataFrameTable ):
                 action = self._createActionOpenUrl("google.pl", googleLinks)
                 action.setParent( stockInfoMenu )
                 stockInfoMenu.addAction( action )
-            
+
         self._addFavActions( contextMenu )
         contextMenu.addSeparator()
         filterDataAction    = contextMenu.addAction("Filter data")

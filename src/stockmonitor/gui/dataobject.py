@@ -527,11 +527,11 @@ class GpwIntradayMap():
 
     def __init__(self):
         self.dataDict = dict()
-    
+
     def getData(self, isin):
         source = self.getSource(isin)
         return source.getWorksheet()
-    
+
     def getSource(self, isin):
         source = self.dataDict.get( isin, None )
         if source is not None:
@@ -539,7 +539,7 @@ class GpwIntradayMap():
         source = GpwCurrentIntradayData( isin )
         self.dataDict[ isin ] = source
         return source
-    
+
     def refreshData(self, forceRefresh=True):
         for val in self.dataDict.values():
             val.refreshData( forceRefresh )
@@ -583,10 +583,10 @@ class DataObject( QObject ):
         self.parentWidget = parent
 
         self.userContainer      = UserContainer()                   ## user data
-        
+
         self.gpwCurrentSource   = StockData( GpwCurrentData() )
         self.gpwIntradayData    = GpwIntradayMap()
-        
+
         self.gpwIndexesData     = GpwIndexesData()
         self.globalIndexesData  = GlobalIndexesData()
         self.gpwIndicatorsData  = GpwIndicatorsData()

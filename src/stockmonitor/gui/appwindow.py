@@ -23,7 +23,7 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtWidgets import QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QVBoxLayout
 
 
 class AppWindow( QWidget ):
@@ -48,7 +48,7 @@ class AppWindow( QWidget ):
             return
         newTitle = AppWindow.appTitle + " " + suffix
         self.setWindowTitle( newTitle )
-        
+
     def setWindowTitle( self, newTitle="" ):
         if len(newTitle) < 1:
             newTitle = AppWindow.appTitle

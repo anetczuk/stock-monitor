@@ -28,10 +28,11 @@ import datetime
 
 from typing import List
 
+import re
 import json
+import xlrd
 import pandas
 from pandas.core.frame import DataFrame
-import xlrd
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.convert import convert_float, convert_int,\
@@ -340,7 +341,9 @@ class GpwCurrentIntradayData( WorksheetData ):
         with open( dataFile ) as f:
             json_data = json.load(f)
             json_dict = json_data[0]
-            data_field = json_dict["data"]
+            data_field = json_dict.get("data", None)
+            if data_field is None:
+                return None
 #             print("xxx:", data_field)
 
             ## example data
