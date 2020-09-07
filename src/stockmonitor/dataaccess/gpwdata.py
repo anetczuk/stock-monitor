@@ -389,6 +389,30 @@ def convert_indexes_data( dataFrame: DataFrame ):
     apply_on_column( dataFrame, '% otw. portfela', convert_int )
 
 
+def append_indexes_isin( dataFrame, dataFile ):
+    ## <a href="/karta-indeksu?isin=PL9999999987">WIG20</a>
+    with open(dataFile, 'r') as file:
+        fileContent = file.read()
+
+    isinList = []
+
+    for short in dataFrame["Skrót"]:
+        # pylint: disable=W1401
+        pattern = '<a href="/karta-indeksu\?isin=(\S*?)">' + short + '</a>'
+        matchObj = re.search( pattern, fileContent )
+        if matchObj is None:
+            isinList.append( None )
+            continue
+        groups = matchObj.groups()
+        if len(groups) < 1:
+            isinList.append( None )
+            continue
+        isin = groups[0]
+        isinList.append( isin )
+
+    dataFrame["isin"] = isinList
+
+
 class GpwMainIndexesData( WorksheetData ):
 
     def parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -398,6 +422,7 @@ class GpwMainIndexesData( WorksheetData ):
         dataFrame = dataFrame.append( allDataFrames[0] )        ## realtime indexes
         dataFrame = dataFrame.append( allDataFrames[1] )        ## main indexes
         convert_indexes_data( dataFrame )
+        append_indexes_isin( dataFrame, dataFile )
         return dataFrame
 
     def getDataPath(self):
@@ -415,6 +440,7 @@ class GpwMacroIndexesData( WorksheetData ):
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
         convert_indexes_data( dataFrame )
+        append_indexes_isin( dataFrame, dataFile )
         return dataFrame
 
     def getDataPath(self):
@@ -432,6 +458,7 @@ class GpwSectorsIndexesData( WorksheetData ):
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
         convert_indexes_data( dataFrame )
+        append_indexes_isin( dataFrame, dataFile )
         return dataFrame
 
     def getDataPath(self):
