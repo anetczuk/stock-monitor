@@ -540,6 +540,9 @@ class GpwStockIntradayMap():
         self.dataDict[ isin ] = source
         return source
 
+    def set(self, ticker, source):
+        self.dataDict[ ticker ] = source
+
     def refreshData(self, forceRefresh=True):
         for val in self.dataDict.values():
             val.refreshData( forceRefresh )
@@ -561,6 +564,9 @@ class GpwIndexIntradayMap():
         source = GpwCurrentIndexIntradayData( isin )
         self.dataDict[ isin ] = source
         return source
+
+    def set(self, isin, source):
+        self.dataDict[ isin ] = source
 
     def refreshData(self, forceRefresh=True):
         for val in self.dataDict.values():

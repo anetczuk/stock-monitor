@@ -85,8 +85,8 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 #         settings.setValue("chart_enabled", enabledChart)
 #         settings.endGroup()
 
-    def setData(self, xdata, ydata1, ydata2):
-        self.ui.dataChart.setData( list(xdata), ydata1, ydata2 )
+    def setData(self, xdata, ydata1, ydata2, referenceValue ):
+        self.ui.dataChart.setData( list(xdata), ydata1, ydata2, referenceValue )
 
 
 class StockChartWindow( AppWindow ):
@@ -99,28 +99,45 @@ class StockChartWindow( AppWindow ):
 
         self.chart = StockChartWidget( self )
         self.addWidget( self.chart )
+        
+        self.chart.ui.stockLabel.setStyleSheet("font-weight: bold")
 
     def connectData(self, dataObject, ticker):
         self.dataObject = dataObject
         self.ticker     = ticker
         self.dataObject.stockDataChanged.connect( self.updateData )
-        name = self._getStockName()
-        self.setWindowTitleSuffix( "- " + name )
+        self._setStockName()
         self.updateData()
 
-    def updateData(self):
+    def updateData(self):              
         dataFrame = self.dataObject.getStockIntradayDataByTicker( self.ticker )
         if dataFrame is None:
             self.chart.clearData()
             return
+
 #         print( "got intraday data:", dataFrame )
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
         volumeColumn = dataFrame["v"]
-        self.chart.setData( timeColumn, priceColumn, volumeColumn )
 
-    def _getStockName(self):
+        currentData = self.dataObject.gpwCurrentData
+        price     = currentData.getRecentValue( self.ticker )
+        change    = currentData.getRecentChange( self.ticker )
+        volumen   = volumeColumn.iloc[-1]
+        refPrice  = currentData.getReferenceValue( self.ticker )
+        timestamp = timeColumn.iloc[-1]
+
+        self.chart.setData( timeColumn, priceColumn, volumeColumn, refPrice )
+
+        self.chart.ui.valueLabel.setText( str(price) )
+        self.chart.ui.changeLabel.setText( str(change)+"%" )
+        self.chart.ui.volumeLabel.setText( str(volumen) )
+        self.chart.ui.timeLabel.setText( str(timestamp) )
+
+    def _setStockName(self):
         name = self.dataObject.getNameFromTicker( self.ticker )
         if name is None:
             return self.ticker
-        return name + " [" + self.ticker + "]"
+        title = name + " [" + self.ticker + "]"
+        self.setWindowTitleSuffix( "- " + title )
+        self.chart.ui.stockLabel.setText( name )

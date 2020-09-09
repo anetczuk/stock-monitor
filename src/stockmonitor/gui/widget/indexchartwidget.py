@@ -99,13 +99,14 @@ class IndexChartWindow( AppWindow ):
 
         self.chart = IndexChartWidget( self )
         self.addWidget( self.chart )
+        
+        self.chart.ui.nameLabel.setStyleSheet("font-weight: bold")
 
     def connectData(self, dataObject, isin):
         self.dataObject = dataObject
         self.isin       = isin
         self.dataObject.stockDataChanged.connect( self.updateData )
-        name = self._getStockName()
-        self.setWindowTitleSuffix( "- " + name )
+        self._setStockName()
         self.updateData()
 
     def updateData(self):
@@ -113,14 +114,24 @@ class IndexChartWindow( AppWindow ):
         if dataFrame is None:
             self.chart.clearData()
             return
+
 #         print( "got intraday data:", dataFrame )
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
         self.chart.setData( timeColumn, priceColumn )
+        
+        currentSource = self.dataObject.gpwIndexesData
+        value     = currentSource.getRecentValue( self.isin )
+        change    = currentSource.getRecentChange( self.isin )
+        timestamp = timeColumn.iloc[-1]
+ 
+        self.chart.ui.valueLabel.setText( str(value) )
+        self.chart.ui.changeLabel.setText( str(change)+"%" )
+        self.chart.ui.timeLabel.setText( str(timestamp) )
 
-    def _getStockName(self):
-        return self.isin
-#         name = self.dataObject.getNameFromTicker( self.ticker )
-#         if name is None:
-#             return self.isin
-#         return name + " [" + self.isin + "]"
+    def _setStockName(self):
+        currentSource = self.dataObject.gpwIndexesData
+        name = currentSource.getNameFromIsin( self.isin )
+        title = name + " [" + self.isin + "]"
+        self.setWindowTitleSuffix( "- " + title )
+        self.chart.ui.nameLabel.setText( name )

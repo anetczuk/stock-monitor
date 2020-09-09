@@ -37,9 +37,10 @@ class StockIntradayChart( MplCanvas ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget, 10, 10, 80)
 
-        self.xdata = list()
-        self.ydata1 = list()
-        self.ydata2 = list()
+        self.xdata     = list()
+        self.ydata1    = list()
+        self.ydata2    = list()
+        self.refValues = None
 
         self.pricePlot  = self.fig.add_subplot(2, 1, 1)
         self.volumePlot = self.fig.add_subplot(2, 1, 2)
@@ -53,10 +54,11 @@ class StockIntradayChart( MplCanvas ):
 
         self._setPlotData()
 
-    def setData(self, timedata, pricedata, volumedata):
-        self.xdata  = timedata
-        self.ydata1 = pricedata
-        self.ydata2 = volumedata
+    def setData(self, timedata, pricedata, volumedata, referenceValue):
+        self.xdata     = timedata
+        self.ydata1    = pricedata
+        self.ydata2    = volumedata
+        self.refValue  = referenceValue
         self._setPlotData()
 
     def clearData(self):
@@ -68,11 +70,18 @@ class StockIntradayChart( MplCanvas ):
     def _setPlotData(self):
         if len(self.xdata) < 2:
             return
-
+        
         self.pricePlot.plot_date( self.xdata, self.ydata1, 'r',
-                                  linewidth=2, antialiased=True)
+                                  linewidth=2, antialiased=True)        
         self.volumePlot.plot_date( self.xdata, self.ydata2, 'b',
                                    linewidth=2, antialiased=True)
+
+        if self.refValue:
+            refX  = [ self.xdata[0], self.xdata[-1] ]
+            refY  = [ self.refValue, self.refValue ]
+            line = self.pricePlot.plot_date( refX, refY, 'r',
+                                             linewidth=2, antialiased=True )
+            line[0].set_linestyle("--")
 
         self._updatePlot( self.pricePlot )
         self._updatePlot( self.volumePlot )

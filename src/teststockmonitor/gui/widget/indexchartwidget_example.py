@@ -41,7 +41,8 @@ from PyQt5.QtWidgets import QApplication
 import stockmonitor.logger as logger
 from stockmonitor.dataaccess.gpwdata import GpwCurrentIndexIntradayData
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.widget.indexchartwidget import IndexChartWidget
+from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.widget.indexchartwidget import IndexChartWindow
 
 from teststockmonitor.data import get_data_path
 
@@ -51,6 +52,19 @@ from teststockmonitor.data import get_data_path
 
 if __name__ != '__main__':
     sys.exit(0)
+
+
+def prepareDataObject():
+    dataObject = DataObject()
+    dataAccess = GpwCurrentIndexIntradayData( "PL9999999987" )
+    
+    def data_path():
+        return get_data_path( "wig20.chart.07-09.txt" )
+    
+    dataAccess.getDataPath = data_path           # type: ignore
+    dataAccess.parseDataFromDefaultFile()
+    dataObject.gpwIndexIntradayData.set( "PL9999999987" , dataAccess )
+    return dataObject
 
 
 logFile = logger.get_logging_output_file()
@@ -63,27 +77,13 @@ app = QApplication(sys.argv)
 app.setApplicationName("StockMonitor")
 app.setOrganizationName("arnet")
 
-dataAccess = GpwCurrentIndexIntradayData( "PLOPTTC00011" )
-
-
-def data_path():
-    return get_data_path( "cdr.chart.04-09.txt" )
-
-
-dataAccess.getDataPath = data_path           # type: ignore
-dataAccess.parseDataFromDefaultFile()
-
 setup_interrupt_handling()
 
-dataFrame = dataAccess.getWorksheet()
-timeColumn   = dataFrame["t"]
-priceColumn  = dataFrame["c"]
-volumeColumn = dataFrame["v"]
+dataObject = prepareDataObject()
 
-widget = IndexChartWidget()
+widget = IndexChartWindow()
+widget.connectData( dataObject, "PL9999999987" )
 widget.resize( 1024, 768 )
-widget.setData( timeColumn, priceColumn )
-# widget.connectData(dataObject)
 widget.show()
 
 sys.exit( app.exec_() )

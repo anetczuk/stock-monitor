@@ -236,6 +236,18 @@ class GpwCurrentData( WorksheetData ):
         if colIndex is None:
             return None
         return dataFrame.iloc[rowIndex, colIndex]
+    
+    def getRecentValue(self, ticker):
+        row = self.getRowByTicker( ticker )
+        return row.iloc[11]
+    
+    def getRecentChange(self, ticker):
+        row = self.getRowByTicker( ticker )
+        return row.iloc[12]
+    
+    def getReferenceValue(self, ticker):
+        row = self.getRowByTicker( ticker )
+        return row.iloc[6]
 
     # ==========================================================================
 
@@ -520,6 +532,26 @@ class GpwIndexesData( BaseWorksheetData ):
         self.dataList.append( GpwMainIndexesData() )
         self.dataList.append( GpwMacroIndexesData() )
         self.dataList.append( GpwSectorsIndexesData() )
+
+    def getNameFromIsin(self, isin):
+        row = self.getRowByIsin( isin )
+        return row.iloc[1]
+
+    def getRecentValue(self, isin):
+        row = self.getRowByIsin( isin )
+        return row.iloc[8]
+    
+    def getRecentChange(self, isin):
+        row = self.getRowByIsin( isin )
+        return row.iloc[9]
+
+    def getRowByIsin(self, isin):
+        dataFrame = self.getWorksheet()
+        if dataFrame is None:
+            _LOGGER.warning("no worksheet found")
+            return None
+        retRows = dataFrame.loc[ dataFrame.iloc[:, 12] == isin ]
+        return retRows.squeeze()            ## convert 1 row dataframe to series
 
     def loadWorksheet(self, forceRefresh=False):
         self.worksheet = DataFrame()
