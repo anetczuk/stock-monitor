@@ -54,7 +54,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>broker commission: greater of 3PLN and 0.39%</string>
+        <string>broker commission: greater of 5PLN and 0.39%</string>
        </property>
       </widget>
      </item>

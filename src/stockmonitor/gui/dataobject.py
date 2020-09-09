@@ -28,7 +28,7 @@ from typing import Dict, List, Tuple
 # from multiprocessing import Process, Queue
 # from multiprocessing import Pool
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from pandas.core.frame import DataFrame
 
@@ -966,11 +966,10 @@ class DataObject( QObject ):
 
 def broker_commission( value ):
     ## always returns positive value
-    commission = 0.0
-    if value > 0.0:
-        commission = value * 0.0039
-        commission = max( commission,  3.0 )
-    else:
-        commission = value * 0.0039
-        commission = -min( commission, -3.0 )
+    currDate = datetime.today().date()
+    minCommission = 3.0
+    if currDate > date( year=2020, month=9, day=9 ):
+        minCommission = 5.0
+    commission = abs( value ) * 0.0039
+    commission = max( commission, minCommission )
     return commission

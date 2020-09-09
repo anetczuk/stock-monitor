@@ -148,7 +148,7 @@ def import_mb_transactions( dataObject, filePath ):
     ## imported transaction values are not affected by borker's commission
     ## real sell profit is transaction value decreased by broker's commission
     ## real buy cost is transaction value increased by broker's commission
-    ## broker commission: greater of 3PLN and 0.39%
+    ## broker commission: greater of 5PLN and 0.39%
 
     ##
     ## find line in file and remove header information leaving raw data
