@@ -236,15 +236,15 @@ class GpwCurrentData( WorksheetData ):
         if colIndex is None:
             return None
         return dataFrame.iloc[rowIndex, colIndex]
-    
+
     def getRecentValue(self, ticker):
         row = self.getRowByTicker( ticker )
         return row.iloc[11]
-    
+
     def getRecentChange(self, ticker):
         row = self.getRowByTicker( ticker )
         return row.iloc[12]
-    
+
     def getReferenceValue(self, ticker):
         row = self.getRowByTicker( ticker )
         return row.iloc[6]
@@ -386,6 +386,9 @@ class GpwCurrentStockIntradayData( WorksheetData ):
                "%22,%22mode%22:%22CURR%22,%22from%22:%22444223%22,%22to%22:null}]&t=" + \
                str(currTimestamp)
 
+    def sourceLink(self):
+        return "https://www.gpw.pl/spolka?isin=" + self.isin
+
 
 class GpwCurrentIndexIntradayData( WorksheetData ):
 
@@ -429,6 +432,9 @@ class GpwCurrentIndexIntradayData( WorksheetData ):
         return "https://gpwbenchmark.pl/chart-json.php?req=[{%22isin%22:%22" + self.isin + \
                "%22,%22mode%22:%22CURR%22,%22from%22:%22444319%22,%22to%22:null}]&t=" + \
                str(currTimestamp)
+
+    def sourceLink(self):
+        return "https://gpwbenchmark.pl/karta-indeksu?isin=" + self.isin
 
 
 ## ==========================================================================
@@ -540,7 +546,7 @@ class GpwIndexesData( BaseWorksheetData ):
     def getRecentValue(self, isin):
         row = self.getRowByIsin( isin )
         return row.iloc[8]
-    
+
     def getRecentChange(self, isin):
         row = self.getRowByIsin( isin )
         return row.iloc[9]

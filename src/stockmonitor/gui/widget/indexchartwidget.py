@@ -54,6 +54,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.toolbar = DynamicToolbar(self.ui.dataChart, self)
         self.ui.toolbarLayout.addWidget( self.toolbar )
 
+        self.ui.sourceLabel.setOpenExternalLinks(True)
+
     def clearData(self):
         self.ui.dataChart.clearData()
 
@@ -99,7 +101,7 @@ class IndexChartWindow( AppWindow ):
 
         self.chart = IndexChartWidget( self )
         self.addWidget( self.chart )
-        
+
         self.chart.ui.nameLabel.setStyleSheet("font-weight: bold")
 
     def connectData(self, dataObject, isin):
@@ -110,7 +112,8 @@ class IndexChartWindow( AppWindow ):
         self.updateData()
 
     def updateData(self):
-        dataFrame = self.dataObject.getIndexIntradayDataByIsin( self.isin )
+        intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin )
+        dataFrame = intraSource.getWorksheet()
         if dataFrame is None:
             self.chart.clearData()
             return
@@ -119,15 +122,19 @@ class IndexChartWindow( AppWindow ):
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
         self.chart.setData( timeColumn, priceColumn )
-        
+
         currentSource = self.dataObject.gpwIndexesData
         value     = currentSource.getRecentValue( self.isin )
         change    = currentSource.getRecentChange( self.isin )
         timestamp = timeColumn.iloc[-1]
- 
+
         self.chart.ui.valueLabel.setText( str(value) )
-        self.chart.ui.changeLabel.setText( str(change)+"%" )
+        self.chart.ui.changeLabel.setText( str(change) + "%" )
         self.chart.ui.timeLabel.setText( str(timestamp) )
+
+        sourceUrl = intraSource.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.chart.ui.sourceLabel.setText( htmlText )
 
     def _setStockName(self):
         currentSource = self.dataObject.gpwIndexesData

@@ -54,6 +54,8 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.toolbar = DynamicToolbar(self.ui.dataChart, self)
         self.ui.toolbarLayout.addWidget( self.toolbar )
 
+        self.ui.sourceLabel.setOpenExternalLinks(True)
+
     def clearData(self):
         self.ui.dataChart.clearData()
 
@@ -99,7 +101,7 @@ class StockChartWindow( AppWindow ):
 
         self.chart = StockChartWidget( self )
         self.addWidget( self.chart )
-        
+
         self.chart.ui.stockLabel.setStyleSheet("font-weight: bold")
 
     def connectData(self, dataObject, ticker):
@@ -109,8 +111,10 @@ class StockChartWindow( AppWindow ):
         self._setStockName()
         self.updateData()
 
-    def updateData(self):              
-        dataFrame = self.dataObject.getStockIntradayDataByTicker( self.ticker )
+    def updateData(self):
+        isin = self.dataObject.getStockIsinFromTicker( self.ticker )
+        intraSource = self.dataObject.gpwStockIntradayData.getSource( isin )
+        dataFrame = intraSource.getWorksheet()
         if dataFrame is None:
             self.chart.clearData()
             return
@@ -130,14 +134,18 @@ class StockChartWindow( AppWindow ):
         self.chart.setData( timeColumn, priceColumn, volumeColumn, refPrice )
 
         self.chart.ui.valueLabel.setText( str(price) )
-        self.chart.ui.changeLabel.setText( str(change)+"%" )
+        self.chart.ui.changeLabel.setText( str(change) + "%" )
         self.chart.ui.volumeLabel.setText( str(volumen) )
         self.chart.ui.timeLabel.setText( str(timestamp) )
+
+        sourceUrl = intraSource.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.chart.ui.sourceLabel.setText( htmlText )
 
     def _setStockName(self):
         name = self.dataObject.getNameFromTicker( self.ticker )
         if name is None:
-            return self.ticker
+            return
         title = name + " [" + self.ticker + "]"
         self.setWindowTitleSuffix( "- " + title )
         self.chart.ui.stockLabel.setText( name )
