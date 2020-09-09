@@ -54,17 +54,17 @@ if __name__ != '__main__':
     sys.exit(0)
 
 
-def prepareDataObject():
-    dataObject = DataObject()
+def prepare_dataobject():
+    data = DataObject()
     dataAccess = GpwCurrentStockIntradayData( "PLOPTTC00011" )
-    
+
     def data_path():
         return get_data_path( "cdr.chart.04-09.txt" )
-    
+
     dataAccess.getDataPath = data_path           # type: ignore
     dataAccess.parseDataFromDefaultFile()
-    dataObject.gpwStockIntradayData.set( "CRD" , dataAccess )
-    return dataObject
+    data.gpwStockIntradayData.set( "CRD", dataAccess )
+    return data
 
 
 logFile = logger.get_logging_output_file()
@@ -79,7 +79,7 @@ app.setOrganizationName("arnet")
 
 setup_interrupt_handling()
 
-dataObject = prepareDataObject()
+dataObject = prepare_dataobject()
 
 widget = StockChartWindow()
 widget.connectData( dataObject, "CDR" )

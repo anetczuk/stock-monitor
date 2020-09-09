@@ -54,17 +54,17 @@ if __name__ != '__main__':
     sys.exit(0)
 
 
-def prepareDataObject():
-    dataObject = DataObject()
+def prepare_dataobject():
+    data = DataObject()
     dataAccess = GpwCurrentIndexIntradayData( "PL9999999987" )
-    
+
     def data_path():
         return get_data_path( "wig20.chart.07-09.txt" )
-    
+
     dataAccess.getDataPath = data_path           # type: ignore
     dataAccess.parseDataFromDefaultFile()
-    dataObject.gpwIndexIntradayData.set( "PL9999999987" , dataAccess )
-    return dataObject
+    data.gpwIndexIntradayData.set( "PL9999999987", dataAccess )
+    return data
 
 
 logFile = logger.get_logging_output_file()
@@ -79,7 +79,7 @@ app.setOrganizationName("arnet")
 
 setup_interrupt_handling()
 
-dataObject = prepareDataObject()
+dataObject = prepare_dataobject()
 
 widget = IndexChartWindow()
 widget.connectData( dataObject, "PL9999999987" )

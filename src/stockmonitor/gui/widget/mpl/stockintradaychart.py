@@ -40,7 +40,7 @@ class StockIntradayChart( MplCanvas ):
         self.xdata     = list()
         self.ydata1    = list()
         self.ydata2    = list()
-        self.refValues = None
+        self.refValue  = None
 
         self.pricePlot  = self.fig.add_subplot(2, 1, 1)
         self.volumePlot = self.fig.add_subplot(2, 1, 2)
@@ -70,9 +70,9 @@ class StockIntradayChart( MplCanvas ):
     def _setPlotData(self):
         if len(self.xdata) < 2:
             return
-        
+
         self.pricePlot.plot_date( self.xdata, self.ydata1, 'r',
-                                  linewidth=2, antialiased=True)        
+                                  linewidth=2, antialiased=True)
         self.volumePlot.plot_date( self.xdata, self.ydata2, 'b',
                                    linewidth=2, antialiased=True)
 
