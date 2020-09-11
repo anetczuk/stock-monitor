@@ -23,6 +23,7 @@
 # SOFTWARE.
 #
 
+
 try:
     ## following import success only when file is directly executed from command line
     ## otherwise will throw exception when executing as parameter for "python -m"
@@ -35,14 +36,17 @@ except ImportError as error:
 
 import sys
 import logging
+import pandas
 
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
 from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.dataaccess.worksheetdata import WorksheetDataMock
 from stockmonitor.dataaccess.gpwdata import GpwCurrentStockIntradayData
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.widget.stockchartwidget import StockChartWindow
+from stockmonitor.gui.widget.stockchartwidget import StockChartWindow,\
+    StockChartWidget
 
 from teststockmonitor.data import get_data_path
 
@@ -57,13 +61,16 @@ if __name__ != '__main__':
 def prepare_dataobject():
     data = DataObject()
     dataAccess = GpwCurrentStockIntradayData( "PLOPTTC00011" )
-
+ 
     def data_path():
         return get_data_path( "cdr.chart.04-09.txt" )
-
-    dataAccess.getDataPath = data_path           # type: ignore
+ 
+    dataAccess.getDataPath = data_path                  # type: ignore
     dataAccess.parseDataFromDefaultFile()
     data.gpwStockIntradayData.set( "CRD", dataAccess )
+
+#     dataAccess = WorksheetDataMock()
+#     data.gpwStockIntradayData.set( "PLOPTTC00011", dataAccess )
     return data
 
 
@@ -83,6 +90,7 @@ dataObject = prepare_dataobject()
 
 widget = StockChartWindow()
 widget.connectData( dataObject, "CDR" )
+# widget = StockChartWidget()
 widget.resize( 1024, 768 )
 widget.show()
 
