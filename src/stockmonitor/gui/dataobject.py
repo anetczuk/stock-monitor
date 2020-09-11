@@ -245,13 +245,13 @@ class WalletData( persist.Versionable ):
 
         def transactionsProfit(self, considerCommission=True):
             profitValue = 0
-            for amount, unit_price, _ in self.transactions:
+            for amount, unit_price, transTime in self.transactions:
                 ## positive amount: buy  -- decrease transactions sum
                 ## negative amount: sell -- increase transactions sum
                 currValue = amount * unit_price
                 profitValue -= currValue
                 if considerCommission:
-                    commission = broker_commission( currValue )
+                    commission = broker_commission( currValue, transTime )
                     profitValue -= commission
             return profitValue
 
@@ -964,11 +964,15 @@ class DataObject( QObject ):
         return self.gpwIsinMap.getNameFromTicker( ticker )
 
 
-def broker_commission( value ):
+def broker_commission( value, transTime=None ):
     ## always returns positive value
-    currDate = datetime.today().date()
     minCommission = 3.0
-    if currDate > date( year=2020, month=9, day=9 ):
+    if transTime is None:
+        transTime = datetime.today().date()
+    elif isinstance(transTime, datetime):
+        transTime = transTime.date()
+
+    if transTime > date( year=2020, month=9, day=9 ):
         minCommission = 5.0
     commission = abs( value ) * 0.0039
     commission = max( commission, minCommission )
