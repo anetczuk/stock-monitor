@@ -92,6 +92,9 @@ class StockIntradayChart( MplCanvas ):
         self.fig.tight_layout()                 ## make space for labels of axis
 #         self.fig.subplots_adjust(top=0.82)      ## make space for suptitle
 
+        ## force refresh plots after data update
+        self.draw()
+
     def _generateTicks(self, number):
         if number < 1:
             return list()

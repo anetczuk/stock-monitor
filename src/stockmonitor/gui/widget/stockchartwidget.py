@@ -119,10 +119,10 @@ class StockChartWindow( AppWindow ):
             self.chart.clearData()
             return
 
-#         print( "got intraday data:", dataFrame )
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
         volumeColumn = dataFrame["v"]
+#         print( "got intraday data:", priceColumn )
 
         currentData = self.dataObject.gpwCurrentData
         price     = currentData.getRecentValue( self.ticker )
