@@ -74,6 +74,10 @@ class StockIntradayChart( MplCanvas ):
 
         self.fig.set_visible( True )
 
+        ## remove old lines
+        self.pricePlot.lines.clear()
+        self.volumePlot.lines.clear()
+
         self.pricePlot.plot_date( self.xdata, self.ydata1, 'r',
                                   linewidth=2, antialiased=True)
         self.volumePlot.plot_date( self.xdata, self.ydata2, 'b',
