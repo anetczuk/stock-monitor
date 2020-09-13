@@ -47,14 +47,14 @@ class BaseWorksheetData( metaclass=abc.ABCMeta ):
     def __init__(self):
         self.worksheet: DataFrame = None
 
-    def refreshData(self, forceRefresh=True):
-        self.loadWorksheet( forceRefresh )
-
     def getWorksheet(self, forceRefresh=False) -> DataFrame:
         if self.worksheet is None or forceRefresh is True:
 #             _LOGGER.info("state: %s %s", (self.worksheet is None), (forceRefresh is True) )
-            self.loadWorksheet( forceRefresh )
+            self.refreshData( forceRefresh )
         return self.worksheet
+
+    def refreshData(self, forceRefresh=True):
+        self.loadWorksheet( forceRefresh )
 
     @abc.abstractmethod
     def loadWorksheet(self, forceRefresh=False):
@@ -101,7 +101,7 @@ class WorksheetData( BaseWorksheetData ):
             except ModuleNotFoundError:
                 ## ths might happen when object files are shared between
                 ## different operating systems (different versions of libraries)
-                _LOGGER.exception("unable to load object data files, continuing with raw data file")
+                _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath )
 
         self.parseDataFromDefaultFile()
         if self.worksheet is not None:
@@ -142,6 +142,19 @@ class WorksheetData( BaseWorksheetData ):
     @abc.abstractmethod
     def getDataUrl(self):
         raise NotImplementedError('You need to define this method in derived class!')
+
+
+## ================================================================================
+
+
+class WorksheetDataMock( BaseWorksheetData ):
+
+    def __init__(self, data=None):
+        super().__init__()
+        self.worksheet = data
+
+    def loadWorksheet(self, _=False):
+        pass
 
 
 # class HtmlWorksheetData( WorksheetData ):

@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -40,7 +40,7 @@
         <item>
          <widget class="QTabWidget" name="toolsTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="minmaxTab">
            <attribute name="title">
@@ -69,6 +69,16 @@
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
              <widget class="VarianceWidget" name="variancewidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="activityTab">
+           <attribute name="title">
+            <string>Activity</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_21">
+            <item>
+             <widget class="ActivityWidget" name="activitywidget" native="true"/>
             </item>
            </layout>
           </widget>
@@ -650,6 +660,12 @@
    <class>StockIndexesTable</class>
    <extends>QTableView</extends>
    <header>stockmonitor.gui.widget.stocktable</header>
+  </customwidget>
+  <customwidget>
+   <class>ActivityWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.tool.activitywidget</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

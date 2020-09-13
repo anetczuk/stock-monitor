@@ -36,17 +36,14 @@ except ImportError as error:
 
 import sys
 import logging
-import pandas
 
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
 from stockmonitor.gui.dataobject import DataObject
-from stockmonitor.dataaccess.worksheetdata import WorksheetDataMock
 from stockmonitor.dataaccess.gpwdata import GpwCurrentStockIntradayData
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.widget.stockchartwidget import StockChartWindow,\
-    StockChartWidget
+from stockmonitor.gui.widget.stockchartwidget import StockChartWindow
 
 from teststockmonitor.data import get_data_path
 
@@ -61,10 +58,10 @@ if __name__ != '__main__':
 def prepare_dataobject():
     data = DataObject()
     dataAccess = GpwCurrentStockIntradayData( "PLOPTTC00011" )
- 
+
     def data_path():
         return get_data_path( "cdr.chart.04-09.txt" )
- 
+
     dataAccess.getDataPath = data_path                  # type: ignore
     dataAccess.parseDataFromDefaultFile()
     data.gpwStockIntradayData.set( "CRD", dataAccess )

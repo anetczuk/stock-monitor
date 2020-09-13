@@ -44,7 +44,7 @@ class StockIntradayChart( MplCanvas ):
 
         self.pricePlot  = self.fig.add_subplot(2, 1, 1)
         self.volumePlot = self.fig.add_subplot(2, 1, 2)
- 
+
         self._configurePlot( self.pricePlot, "Price" )
         self._configurePlot( self.volumePlot, "Volume" )
 
@@ -120,7 +120,7 @@ class StockIntradayChart( MplCanvas ):
         formatter = matplotlib.dates.DateFormatter('%H:%M:%S')
         plot.xaxis.set_major_formatter( formatter )
 #         plot.xaxis_date()
- 
+
         plot.margins( y=0.2 )
         plot.set_xmargin(0.0)      ## prevents empty space between first tick and y axis
 

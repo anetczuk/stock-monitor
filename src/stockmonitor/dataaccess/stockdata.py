@@ -26,6 +26,9 @@ import logging
 import datetime
 from datetime import date
 import calendar
+import urllib
+import math
+import multiprocessing.dummy
 
 from typing import Dict, List
 
@@ -34,7 +37,8 @@ import pandas
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import ArchiveDataType
-from stockmonitor.dataaccess.gpwdata import GpwArchiveData
+from stockmonitor.dataaccess.gpwdata import GpwArchiveData,\
+    GpwCurrentStockIntradayData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,21 +51,23 @@ class StockData(object):
 
     def __init__(self):
         self.dataProvider = GpwArchiveData()
-        self.stock = dict()
 
     def getData(self, dataType: ArchiveDataType, day: date):
         return self.dataProvider.getData( dataType, day )
 
-    def getRecentValidDay(self, day: date ):
+    def getRecentValidDay(self, day: date ) -> datetime.date:
         return self.dataProvider.getRecentValidDay( day )
 
     def getNextValidDay(self, day: date):
         return self.dataProvider.getNextValidDay( day )
 
     def getISIN(self):
-        _LOGGER.info("loading recent ISIN data" )
         day = date.today() - datetime.timedelta(days=1)
-        validDay = self.getRecentValidDay(day)
+        return self.getISINForDate( day )
+
+    def getISINForDate(self, day: date) -> dict:
+        _LOGGER.info("loading recent ISIN data" )
+        validDay = self.getRecentValidDay( day )
         return self.dataProvider.getData( ArchiveDataType.ISIN, validDay )
 
     def sourceLink(self):
@@ -93,6 +99,19 @@ class StockDict:
 
     def __delitem__(self, key):
         del self.stock[key]
+
+    def keys(self):
+        return self.stock.keys()
+
+    def addDict(self, dataDict):
+        for key, value in dataDict:
+            self.add( key, value )
+
+    def add(self, key, value):
+        if key in self.stock:
+            self.stock[ key ] += value
+            return
+        self.stock[ key ] = value
 
     def max(self, data: dict):
         if data is None:
@@ -145,6 +164,149 @@ class StockDict:
         diffDict.abs()
         diffDict.div( avgDict )
         return diffDict
+
+
+## =========================================================================
+
+
+class DataLoader():
+
+    def __init__(self, day):
+        self.day   = day
+        self.func  = None
+
+    def load(self, isinList, pool):
+        self.func  = VarCalc.calcChange1
+        return pool.map( self._calc, isinList )
+
+    def _calc(self, isin):
+        for _ in range(0, 3):
+            try:
+                return self._calcSingle( isin )
+            except urllib.error.URLError as e:
+                _LOGGER.info( "exception: %s", str(e) )
+        return self._calcSingle( isin )
+
+    def _calcSingle(self, key):
+        name, isin = key
+        intradayData = GpwCurrentStockIntradayData( isin )
+        dataFrame    = intradayData.getWorksheetForDate( self.day )
+        return (name, dataFrame)
+
+
+class VarCalc():
+
+    def __init__(self, day):
+        self.day   = day
+        self.func  = None
+        self.cName = None
+
+    def load(self, isinList, pool):
+        self.func  = VarCalc.calcChange1
+        return pool.map( self._calc, isinList )
+
+    def calculateChange1(self, colName, isinList, pool):
+        self.func  = VarCalc.calcChange1
+        self.cName = colName
+        return pool.map( self._calc, isinList )
+
+    def calculateChange2(self, colName, isinList, pool):
+        self.func  = VarCalc.calcChange2
+        self.cName = colName
+        return pool.map( self._calc, isinList )
+
+    def calculateStdDev(self, colName, isinList, pool):
+        self.func  = VarCalc.calcStdDev
+        self.cName = colName
+        return pool.map( self._calc, isinList )
+
+    def calculateVar(self, colName, isinList, pool):
+        self.func  = VarCalc.calcVar
+        self.cName = colName
+        return pool.map( self._calc, isinList )
+
+    def calculateSum(self, colName, isinList, pool):
+        self.func  = VarCalc.calcSum
+        self.cName = colName
+        return pool.map( self._calc, isinList )
+
+    def _calc(self, isin):
+        for _ in range(0, 3):
+            try:
+                return self._calcSingle( isin )
+            except urllib.error.URLError as e:
+                _LOGGER.info( "exception: %s", str(e) )
+        return self._calcSingle( isin )
+
+    def _calcSingle(self, key):
+        name, isin = key
+        intradayData = GpwCurrentStockIntradayData( isin )
+        dataFrame    = intradayData.getWorksheetForDate( self.day )
+        if dataFrame is None:
+            ## no data
+            return (name, 0)
+
+        dataColumn = dataFrame[ self.cName ]
+        value = self.func( dataColumn )
+        if math.isnan(value):
+            return (name, 0)
+        return (name, value)
+
+    @staticmethod
+    def calcActivity(dataColumn):
+        if dataColumn.count() < 2:
+            return 0.0
+        refval = dataColumn.mean()
+        diff = dataColumn.diff().abs()
+        val = abs( diff.sum() / refval * 100 )
+        return val
+
+    @staticmethod
+    def calcChange1(dataColumn):
+        if dataColumn.count() < 2:
+            return 0.0
+        refval = dataColumn.min()
+        normColumn = dataColumn.div( refval ) * 100
+#         diff = normColumn.diff().abs()
+        diff = normColumn.diff()
+        return diff.sum()
+
+    @staticmethod
+    def calcChange2(dataColumn):
+        if dataColumn.count() < 2:
+            return 0.0
+        pmin = dataColumn.min()
+#         pmax = dataColumn.max()
+#         pdiff = pmax - pmin
+        pdiff = dataColumn.median() - pmin
+        pthresh = pmin + pdiff * 0.3
+        pcount = dataColumn[dataColumn > pthresh].count()
+#         priceVar     = dataColumn.quantile( 0.1 )
+        return pcount
+
+    @staticmethod
+    def calcStdDev(dataColumn):
+        if dataColumn.count() < 2:
+            return 0.0
+        diff = dataColumn.diff()
+        diff = diff.fillna(0.0)
+        return diff.std()
+
+    @staticmethod
+    def calcVar(dataColumn):
+        if dataColumn.count() < 2:
+            return 0.0
+        diff = dataColumn.diff()
+        return diff.var()
+
+    @staticmethod
+    def calcSum(dataColumn):
+        if dataColumn.count() < 1:
+            return 0.0
+        return dataColumn.sum()
+
+
+## =========================================================================
 
 
 class StockAnalysis(object):
@@ -602,7 +764,7 @@ class StockAnalysis(object):
 
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_raise.csv"
+            file = tmp_dir + "out/output_var.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -621,6 +783,123 @@ class StockAnalysis(object):
             trading = tradDict[ key ]
             val = round( val, 4 )
             rowsList.append( [key, val, trading, moneyLink] )
+
+        ## sort by variance
+        rowsList.sort(key=lambda x: x[1], reverse=True)
+
+        writer.writerow( columnsList )
+        for row in rowsList:
+            writer.writerow( row )
+
+        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+
+        self.logger.debug( "Done" )
+
+        return retDataFrame
+
+    def calcActivity(self, fromDay: date, toDay: date, outFilePath=None):
+        self.logger.debug( "Calculating stock activity in range: %s %s", fromDay, toDay )
+
+        isinDict = self.data.getISINForDate( toDay )
+#         isinList = isinDict.values()
+        isinItems = isinDict.items()
+
+        dataDict = list()
+        dataDict.append( StockDict() )
+        dataDict.append( StockDict() )
+        dataDict.append( StockDict() )
+        dataDict.append( StockDict() )
+
+        pool = multiprocessing.dummy.Pool( 1 )
+
+        currDate = fromDay
+        currDate -= datetime.timedelta(days=1)
+        while currDate < toDay:
+            currDate += datetime.timedelta(days=1)
+
+#             _LOGGER.debug( "accessing data for date: %s", currDate )
+
+#             for ticker, isin in isinDict.items():
+#                 intradayData = GpwCurrentStockIntradayData( isin )
+#                 dataFrame    = intradayData.getWorksheetForDate( currDate )
+#                 if dataFrame is None:
+#                     ## no data
+#                     continue
+#                 priceColumn  = dataFrame["c"]
+#                 priceVar     = priceColumn.var()
+#                 varDict.add( ticker, priceVar )
+
+            calc = DataLoader( currDate )
+            loadedData = calc.load( isinItems, pool )
+            for name, dataFrame in loadedData:
+                if dataFrame is None:
+                    continue
+
+                priceColumn = dataFrame["c"]
+                calcRet = VarCalc.calcActivity(priceColumn)
+                dataDict[0].add( name, calcRet )
+
+                calcRet = VarCalc.calcChange1(priceColumn)
+                dataDict[1].add( name, calcRet )
+
+                volumenColumn = dataFrame["v"]
+                calcRet = VarCalc.calcChange2(volumenColumn)
+                dataDict[2].add( name, calcRet )
+
+                turnoverColumn = priceColumn * volumenColumn
+                calcRet = VarCalc.calcStdDev( turnoverColumn )
+                dataDict[3].add( name, calcRet )
+
+#                 calcRet = VarCalc.calcSum(volumenColumn)
+#                 dataDict[2].add( name, calcRet )
+
+#             calc = VarCalc( currDate )
+#             priceRet  = calc.calculateChange1( "c", isinItems, pool )
+# #             ret = calc.calculateStdDev( isinItems, pool )
+# #             ret = calc.calculateVar( isinItems, pool )
+#             dataDict[0].addDict( priceRet )
+#
+#             volumeRet = calc.calculateChange2( "v", isinItems, pool )
+#             dataDict[1].addDict( volumeRet )
+
+        file = outFilePath
+        if file is None:
+            file = tmp_dir + "out/output_var2.csv"
+        dirPath = os.path.dirname( file )
+        os.makedirs( dirPath, exist_ok=True )
+
+        writer = csv.writer(open(file, 'w'))
+        writer.writerow( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
+        writer.writerow( ["variance:", ("|maxVal - max(open, close)| / max(open, close) + "
+                                        "|minVal - min(open, close)| / min(open, close)") ] )
+        writer.writerow( [] )
+
+#         columnsList = ["name", "variance"]
+        columnsList = ["name", "price activity", "price variance", "volume variance",
+                       "turnover stddev", "total volume", "trading [kPLN]", "link"]
+
+        rowsList = []
+
+        for key in dataDict[0].keys():
+            moneyLink = self.getMoneyPlLink( key )
+#             trading = tradDict[ key ]
+
+            priceAct = dataDict[0][key]
+            priceAct = round( priceAct, 4 )
+
+            price = dataDict[1][key]
+            price = round( price, 4 )
+
+            volume = dataDict[2][key]
+            volume = round( volume, 4 )
+
+            turnover = dataDict[3][key]
+            turnover = round( turnover, 4 )
+
+#             volume2 = dataDict[1][key]
+#             volume2 = round( volume, 4 )
+
+            rowsList.append( [key, priceAct, price, volume, turnover, 0.0, 0.0, moneyLink] )
 
         ## sort by variance
         rowsList.sort(key=lambda x: x[1], reverse=True)

@@ -63,7 +63,7 @@ class GpwArchiveData:
         return self.extractColumn( worksheet, colIndex )
 
     ## check valid stock day starting from "day" and going past
-    def getRecentValidDay(self, day: datetime.date):
+    def getRecentValidDay(self, day: datetime.date) -> datetime.date:
         currDay = day
         worksheet = None
         while True:
@@ -347,7 +347,17 @@ class GpwCurrentStockIntradayData( WorksheetData ):
 
     def __init__(self, isin):
         super().__init__()
-        self.isin = isin
+        self.isin     = isin
+        self.dataTime = datetime.datetime.now()
+
+    def getWorksheetForDate(self, dataDate):
+        self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
+        self.loadWorksheet( False )
+        return self.worksheet
+
+    def refreshData(self, forceRefresh=True):
+        self.dataTime = datetime.datetime.now()
+        super().refreshData( forceRefresh )
 
     def parseDataFromFile(self, dataFile: str) -> DataFrame:
         with open( dataFile ) as f:
@@ -374,17 +384,17 @@ class GpwCurrentStockIntradayData( WorksheetData ):
         return None
 
     def getDataPath(self):
-        currDateTime = datetime.datetime.now()
-        currDate     = currDateTime.date()
-        dateStr = str(currDate)
+        currDate = self.dataTime.date()
+        dateStr  = str(currDate)
         return tmp_dir + "data/gpw/curr/%s/isin_%s.json" % ( dateStr, self.isin )
 
     def getDataUrl(self):
-        currDateTime = datetime.datetime.utcnow()
-        currTimestamp = int( currDateTime.timestamp() )
+        currTimestamp = self.dataTime.timestamp()
+        utcDateTime   = datetime.datetime.utcfromtimestamp( currTimestamp )
+        utcTimestamp  = int( utcDateTime.timestamp() )
         return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + self.isin + \
-               "%22,%22mode%22:%22CURR%22,%22from%22:%22444223%22,%22to%22:null}]&t=" + \
-               str(currTimestamp)
+               "%22,%22mode%22:%22CURR%22,%22from%22:%" + "22444223" + "%22,%22to%22:null}]&t=" + \
+               str(utcTimestamp)
 
     def sourceLink(self):
         return "https://www.gpw.pl/spolka?isin=" + self.isin

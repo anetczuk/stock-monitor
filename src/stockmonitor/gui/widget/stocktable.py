@@ -411,7 +411,7 @@ class ToolStockTable( StockTable ):
         self.setColorDelegate( colorDecorator )
 
     def _getSelectedTickers(self):
-        dataAccess = self.dataObject.gpwCurrentSource
+        dataAccess = self.dataObject.gpwCurrentSource.stockData
         selectedData = self.getSelectedData( 0 )                ## stock name
         tickersList = set()
         for stockName in selectedData:

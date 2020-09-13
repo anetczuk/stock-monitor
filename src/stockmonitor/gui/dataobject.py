@@ -355,10 +355,10 @@ class WalletData( persist.Versionable ):
 
         @staticmethod
         def _sortKey( tupleValue ):
-            date = tupleValue[2]
-            if date is None:
+            retDate = tupleValue[2]
+            if retDate is None:
                 return datetime.min
-            return date
+            return retDate
 
         def _findSimilar(self, unit_price, trans_date):
             for i in range( len( self.transactions ) ):
@@ -540,8 +540,8 @@ class GpwStockIntradayMap():
         self.dataDict[ isin ] = source
         return source
 
-    def set(self, ticker, source):
-        self.dataDict[ ticker ] = source
+    def set(self, isin, source):
+        self.dataDict[ isin ] = source
 
     def refreshData(self, forceRefresh=True):
         for val in self.dataDict.values():

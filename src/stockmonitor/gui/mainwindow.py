@@ -90,6 +90,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.minmaxwidget.connectData( self.data )
         self.ui.sumwidget.connectData( self.data )
         self.ui.variancewidget.connectData( self.data )
+        self.ui.activitywidget.connectData( self.data )
         self.ui.daywidget.connectData( self.data )
 
         self.ui.gpwIndexesTable.connectData( self.data )
