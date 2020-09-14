@@ -111,9 +111,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
     def addPriceLine(self, xdata, ydata, color='r', style=None ):
         self.ui.dataChart.addPriceLine( xdata, ydata, color, style )
-
-    def refreshChart(self):
-        self.ui.dataChart.refreshChart()
+        self.ui.dataChart.draw_idle()
 
 
 class IndexChartWindow( AppWindow ):

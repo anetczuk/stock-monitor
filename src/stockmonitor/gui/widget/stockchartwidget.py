@@ -118,7 +118,6 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
                     self.addPriceLine( refX, refY, color='blue', style="--" )
 
         self.addVolumeLine( timeData, volumeColumn )
-        self.refreshChart()
 
         self.ui.valueLabel.setText( str(price) )
         self.ui.changeLabel.setText( str(change) + "%" )
@@ -144,12 +143,11 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def addPriceLine(self, xdata, ydata, color='r', style=None ):
         self.ui.dataChart.addPriceLine( xdata, ydata, color, style )
+        self.ui.dataChart.draw_idle()
 
     def addVolumeLine(self, xdata, ydata, color='b', style=None ):
         self.ui.dataChart.addVolumeLine( xdata, ydata, color, style )
-
-    def refreshChart(self):
-        self.ui.dataChart.refreshChart()
+        self.ui.dataChart.draw_idle()
 
 
 class StockChartWindow( AppWindow ):

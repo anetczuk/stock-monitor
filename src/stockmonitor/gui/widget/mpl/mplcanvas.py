@@ -27,9 +27,8 @@ class MplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        self.fig = Figure( figsize=(width, height), dpi=dpi )
+        super().__init__( Figure( figsize=(width, height), dpi=dpi ) )
 
-        FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
 
         FigureCanvas.setSizePolicy(self,
@@ -39,18 +38,23 @@ class MplCanvas(FigureCanvas):
 
     def setBackgroundByRGB(self, r, g, b):
         rgbColor = ( r / 255, g / 255, b / 255, 1.0 )
-        self.fig.patch.set_facecolor( rgbColor )
+        self.figure.patch.set_facecolor( rgbColor )
 
     def setBackgroundByQColor(self, bgcolor):
         rgbColor = ( bgcolor.red() / 255, bgcolor.green() / 255, bgcolor.blue() / 255, 1.0 )
-        self.fig.patch.set_facecolor( rgbColor )
+        self.figure.patch.set_facecolor( rgbColor )
 
     def showFigure(self, show):
-        currVis = self.fig.get_visible()
+        currVis = self.figure.get_visible()
         if currVis == show:
             return
-        self.fig.set_visible(show)
+        self.figure.set_visible(show)
         self.draw()                         ## QWidget draw
+    
+    ## fix fitting figure to widget
+    def resizeEvent(self, param):
+        super().resizeEvent( param )
+        self.figure.tight_layout()
 
 
 class DynamicMplCanvas( MplCanvas ):
@@ -90,8 +94,8 @@ class DynamicMplCanvas( MplCanvas ):
         else:
             self.showFigure( True )
 
-#         self.fig.canvas.draw()
-#         self.fig.canvas.flush_events()
+#         self.figure.canvas.draw()
+#         self.figure.canvas.flush_events()
 
         ##self.draw()                         ## QWidget draw
         self.draw_idle()

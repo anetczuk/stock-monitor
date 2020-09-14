@@ -40,12 +40,12 @@ class TimelineChart( MplCanvas ):
         self.xdata = list()
         self.ydata = list()
 
-        self.plot = self.fig.add_subplot(1, 1, 1)
+        self.plot = self.figure.add_subplot(1, 1, 1)
         linesList = self.plot.plot_date( self.xdata, self.ydata, 'r',
                                          linewidth=3, antialiased=True)
         self.line = linesList[0]
 
-#         self.fig.suptitle('Desk position', y=0.95, fontsize=18)
+#         self.figure.suptitle('Desk position', y=0.95, fontsize=18)
         self.plot.set_xlabel('Time', fontsize=14)
         self.plot.set_ylabel('Value', fontsize=14)
 
@@ -57,7 +57,7 @@ class TimelineChart( MplCanvas ):
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
-        self.fig.autofmt_xdate()
+        self.figure.autofmt_xdate()
 
         self._setPlotData()
 
@@ -88,8 +88,8 @@ class TimelineChart( MplCanvas ):
 
         self.plot.relim(True)
         self.plot.autoscale_view()
-        self.fig.tight_layout()                 ## make space for labels of axis
-#         self.fig.subplots_adjust(top=0.82)      ## make space for suptitle
+        self.figure.tight_layout()                 ## make space for labels of axis
+#         self.figure.subplots_adjust(top=0.82)      ## make space for suptitle
 
     def _generateTicks(self, number):
         if number < 1:

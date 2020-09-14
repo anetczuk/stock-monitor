@@ -37,18 +37,18 @@ class IndexIntradayChart( MplCanvas ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget, 10, 10, 80)
 
-        self.pricePlot  = self.fig.add_subplot(1, 1, 1)
+        self.pricePlot  = self.figure.add_subplot(1, 1, 1)
 
         self._configurePlot( self.pricePlot, "Price" )
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
-        self.fig.autofmt_xdate()
+        self.figure.autofmt_xdate()
 
     def clearLines(self):
         ## remove old lines
-        if self.fig.get_visible() is True:
-            self.fig.set_visible( False )
+        if self.figure.get_visible() is True:
+            self.figure.set_visible( False )
         self.pricePlot.lines.clear()
 
     def addPriceLine(self, xdata, ydata, color, style=None):
@@ -58,15 +58,8 @@ class IndexIntradayChart( MplCanvas ):
 
         _update_plot( xdata, self.pricePlot )
 
-        if self.fig.get_visible() is False:
-            self.fig.set_visible( True )
-
-    def refreshChart(self):
-        self.fig.tight_layout()                 ## make space for labels of axis
-#         self.fig.subplots_adjust(top=0.82)      ## make space for suptitle
-
-        ## force refresh plots after data update
-        self.draw()
+        if self.figure.get_visible() is False:
+            self.figure.set_visible( True )
 
     def _configurePlot(self, plot, ylabel):
         plot.set_xlabel( 'Time', fontsize=14 )
