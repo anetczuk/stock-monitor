@@ -560,7 +560,7 @@ class GpwIndexIntradayMap():
         source = self.getSource(isin)
         return source.getWorksheet()
 
-    def getSource(self, isin):
+    def getSource(self, isin) -> GpwCurrentIndexIntradayData:
         source = self.dataDict.get( isin, None )
         if source is not None:
             return source

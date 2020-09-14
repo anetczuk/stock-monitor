@@ -350,6 +350,15 @@ class GpwCurrentStockIntradayData( WorksheetData ):
         self.isin     = isin
         self.dataTime = datetime.datetime.now()
 
+    def getWorksheet(self, forceRefresh=False) -> DataFrame:
+        if forceRefresh is True:
+            return super().getWorksheet( True )
+        data = super().getWorksheet( forceRefresh )
+        timeDiff = datetime.datetime.today() - self.grabTimestamp
+        if timeDiff < datetime.timedelta( minutes=1 ):
+            return data
+        return super().getWorksheet( True )
+
     def getWorksheetForDate(self, dataDate):
         self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
         self.loadWorksheet( False )
@@ -405,6 +414,15 @@ class GpwCurrentIndexIntradayData( WorksheetData ):
     def __init__(self, isin):
         super().__init__()
         self.isin = isin
+
+    def getWorksheet(self, forceRefresh=False) -> DataFrame:
+        if forceRefresh is True:
+            return super().getWorksheet( True )
+        data = super().getWorksheet( forceRefresh )
+        timeDiff = datetime.datetime.today() - self.grabTimestamp
+        if timeDiff < datetime.timedelta( minutes=1 ):
+            return data
+        return super().getWorksheet( True )
 
     def parseDataFromFile(self, dataFile: str) -> DataFrame:
         with open( dataFile ) as f:
