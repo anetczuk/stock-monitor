@@ -929,7 +929,7 @@ class DataObject( QObject ):
         return retList
 
     @property
-    def gpwCurrentData(self):
+    def gpwCurrentData(self) -> GpwCurrentData:
         return self.gpwCurrentSource.stockData
 
     @property

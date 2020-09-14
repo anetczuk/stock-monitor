@@ -63,6 +63,8 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.showTransactionsCB.setChecked( False )
         self.ui.showWalletCB.stateChanged.connect( self.updateData )
         self.ui.showTransactionsCB.stateChanged.connect( self.updateData )
+        
+        self.ui.refreshPB.clicked.connect( self.refreshData )
 
     def connectData(self, dataObject, ticker):
         self.dataObject = dataObject
@@ -73,10 +75,13 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
     def clearData(self):
         self.ui.dataChart.clearLines()
 
-    def updateData(self):
+    def refreshData(self):
+        self.updateData( True )
+
+    def updateData(self, forceRefresh=False):
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
         intraSource = self.dataObject.gpwStockIntradayData.getSource( isin )
-        dataFrame = intraSource.getWorksheet()
+        dataFrame = intraSource.getWorksheet( forceRefresh )
 
         self.clearData()
         if dataFrame is None:
@@ -88,6 +93,8 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 #         print( "got intraday data:", priceColumn )
 
         currentData = self.dataObject.gpwCurrentData
+        currentData.loadWorksheet( forceRefresh )
+
         price     = currentData.getRecentValue( self.ticker )
         change    = currentData.getRecentChange( self.ticker )
         volumen   = volumeColumn.iloc[-1]

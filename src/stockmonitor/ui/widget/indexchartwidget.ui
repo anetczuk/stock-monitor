@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Index Chart</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,1">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,0,1">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -87,6 +87,30 @@
       <widget class="QLabel" name="timeLabel">
        <property name="text">
         <string>None</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="refreshPB">
+       <property name="text">
+        <string>Refresh</string>
        </property>
       </widget>
      </item>

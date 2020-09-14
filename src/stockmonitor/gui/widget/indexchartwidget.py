@@ -58,6 +58,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.sourceLabel.setOpenExternalLinks(True)
 
         self.ui.nameLabel.setStyleSheet("font-weight: bold")
+        
+        self.ui.refreshPB.clicked.connect( self.refreshData )
 
     def connectData(self, dataObject, isin):
         self.dataObject = dataObject
@@ -68,9 +70,12 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
     def clearData(self):
         self.ui.dataChart.clearLines()
 
-    def updateData(self):
+    def refreshData(self):
+        self.updateData( True )
+
+    def updateData(self, forceRefresh=False):
         intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin )
-        dataFrame = intraSource.getWorksheet()
+        dataFrame = intraSource.getWorksheet( forceRefresh )
 
         self.clearData()
         if dataFrame is None:
@@ -84,6 +89,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.addPriceLine( timeData, priceColumn )
 
         currentSource = self.dataObject.gpwIndexesData
+        currentSource.loadWorksheet( forceRefresh )
+        
         value     = currentSource.getRecentValue( self.isin )
         change    = currentSource.getRecentChange( self.isin )
         timestamp = timeColumn.iloc[-1]
