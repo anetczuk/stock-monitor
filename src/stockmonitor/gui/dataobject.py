@@ -403,6 +403,9 @@ class WalletData( persist.Versionable ):
         # pylint: disable=W0201
         self.__dict__ = dict_
 
+    def __getitem__(self, ticker) -> 'History':
+        return self.stockList.get( ticker, None )
+
     def size(self):
         return len( self.stockList )
 

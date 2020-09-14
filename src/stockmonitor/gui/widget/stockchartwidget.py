@@ -45,7 +45,8 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-#         self.device = None
+        self.dataObject = None
+        self.ticker = None
 
         if parentWidget is not None:
             bgcolor = parentWidget.palette().color(parentWidget.backgroundRole())
@@ -55,68 +56,30 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.toolbarLayout.addWidget( self.toolbar )
 
         self.ui.sourceLabel.setOpenExternalLinks(True)
-
-    def clearData(self):
-        self.ui.dataChart.clearData()
-
-#     def attachConnector(self, connector):
-#         if self.device is not None:
-#             ## disconnect old object
-#             self.device.connectionStateChanged.disconnect( self._refreshWidget )
-#             self.device.positionChanged.disconnect( self._updatePositionState )
-#
-#         self.device = connector
-#
-#         self._refreshWidget()
-#
-#         if self.device is not None:
-#             ## connect new object
-#             self.device.connectionStateChanged.connect( self._refreshWidget )
-#             self.device.positionChanged.connect( self._updatePositionState )
-
-#     def loadSettings(self, settings):
-#         settings.beginGroup( self.objectName() )
-#         enabled = settings.value("chart_enabled", True, type=bool)
-#         settings.endGroup()
-#
-#         self.ui.enabledCB.setChecked( enabled )
-#
-#     def saveSettings(self, settings):
-#         settings.beginGroup( self.objectName() )
-#         enabledChart = self.ui.enabledCB.isChecked()
-#         settings.setValue("chart_enabled", enabledChart)
-#         settings.endGroup()
-
-    def setData(self, xdata, ydata1, ydata2, referenceValue ):
-        self.ui.dataChart.setData( list(xdata), ydata1, ydata2, referenceValue )
-
-
-class StockChartWindow( AppWindow ):
-
-    def __init__(self, parentWidget=None):
-        super().__init__( parentWidget )
-
-        self.dataObject = None
-        self.ticker = None
-
-        self.chart = StockChartWidget( self )
-        self.addWidget( self.chart )
-
-        self.chart.ui.stockLabel.setStyleSheet("font-weight: bold")
+        
+        self.ui.stockLabel.setStyleSheet("font-weight: bold")
+        
+        self.ui.showWalletCB.setChecked( True )
+        self.ui.showTransactionsCB.setChecked( False )
+        self.ui.showWalletCB.stateChanged.connect( self.updateData )
+        self.ui.showTransactionsCB.stateChanged.connect( self.updateData )
 
     def connectData(self, dataObject, ticker):
         self.dataObject = dataObject
         self.ticker     = ticker
         self.dataObject.stockDataChanged.connect( self.updateData )
-        self._setStockName()
         self.updateData()
+
+    def clearData(self):
+        self.ui.dataChart.clearLines()
 
     def updateData(self):
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
         intraSource = self.dataObject.gpwStockIntradayData.getSource( isin )
         dataFrame = intraSource.getWorksheet()
+
+        self.clearData()
         if dataFrame is None:
-            self.chart.clearData()
             return
 
         timeColumn   = dataFrame["t"]
@@ -131,21 +94,85 @@ class StockChartWindow( AppWindow ):
         refPrice  = currentData.getReferenceValue( self.ticker )
         timestamp = timeColumn.iloc[-1]
 
-        self.chart.setData( timeColumn, priceColumn, volumeColumn, refPrice )
+        timeData = list(timeColumn)
+        self.addPriceLine( timeData, priceColumn )
+        
+        refX = [ timeData[0], timeData[-1] ]
+        refY = [ refPrice, refPrice ]
+        self.addPriceLine( refX, refY, style="--" )
+        
+        
+        
+        walletStock = self.dataObject.wallet[ self.ticker ]
+        if walletStock is not None:
+            if self.ui.showWalletCB.isChecked():
+                amount, buy_unit_price = walletStock.calc2()
+                if amount > 0:
+                    refY = [ buy_unit_price, buy_unit_price ]
+                    self.addPriceLine( refX, refY, color='black', style="--" )
+                
+            if self.ui.showTransactionsCB.isChecked():
+                currTransactions = walletStock.currentTransactions()
+                for item in currTransactions:
+                    amount         = item[0]
+                    buy_unit_price = item[1]
+                    refY = [ buy_unit_price, buy_unit_price ]
+                    self.addPriceLine( refX, refY, color='blue', style="--" )
 
-        self.chart.ui.valueLabel.setText( str(price) )
-        self.chart.ui.changeLabel.setText( str(change) + "%" )
-        self.chart.ui.volumeLabel.setText( str(volumen) )
-        self.chart.ui.timeLabel.setText( str(timestamp) )
+        self.addVolumeLine( timeData, volumeColumn )
+        self.refreshChart()
+
+        self.ui.valueLabel.setText( str(price) )
+        self.ui.changeLabel.setText( str(change) + "%" )
+        self.ui.volumeLabel.setText( str(volumen) )
+        self.ui.timeLabel.setText( str(timestamp) )
 
         sourceUrl = intraSource.sourceLink()
         htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.chart.ui.sourceLabel.setText( htmlText )
+        self.ui.sourceLabel.setText( htmlText )
+
+#     def loadSettings(self, settings):
+#         settings.beginGroup( self.objectName() )
+#         enabled = settings.value("chart_enabled", True, type=bool)
+#         settings.endGroup()
+#
+#         self.ui.enabledCB.setChecked( enabled )
+#
+#     def saveSettings(self, settings):
+#         settings.beginGroup( self.objectName() )
+#         enabledChart = self.ui.enabledCB.isChecked()
+#         settings.setValue("chart_enabled", enabledChart)
+#         settings.endGroup()
+
+    def addPriceLine(self, xdata, ydata, color='r', style=None ):
+        self.ui.dataChart.addPriceLine( xdata, ydata, color, style )
+
+    def addVolumeLine(self, xdata, ydata, color='b', style=None ):
+        self.ui.dataChart.addVolumeLine( xdata, ydata, color, style )
+        
+    def refreshChart(self):
+        self.ui.dataChart.refreshChart()
+        
+
+class StockChartWindow( AppWindow ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__( parentWidget )
+
+        self.chart = StockChartWidget( self )
+        self.addWidget( self.chart )
+
+    def connectData(self, dataObject, ticker):
+        self.chart.connectData(dataObject, ticker)
+        self._setStockName()
+
+    def updateData(self):
+        self.chart.updateData()
 
     def _setStockName(self):
-        name = self.dataObject.getNameFromTicker( self.ticker )
+        name = self.chart.dataObject.getNameFromTicker( self.chart.ticker )
         if name is None:
             return
-        title = name + " [" + self.ticker + "]"
+        title = name + " [" + self.chart.ticker + "]"
         self.setWindowTitleSuffix( "- " + title )
         self.chart.ui.stockLabel.setText( name )

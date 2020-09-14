@@ -37,11 +37,6 @@ class StockIntradayChart( MplCanvas ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget, 10, 10, 80)
 
-        self.xdata     = list()
-        self.ydata1    = list()
-        self.ydata2    = list()
-        self.refValue  = None
-
         self.pricePlot  = self.fig.add_subplot(2, 1, 1)
         self.volumePlot = self.fig.add_subplot(2, 1, 2)
 
@@ -52,73 +47,39 @@ class StockIntradayChart( MplCanvas ):
         # axes up to make room for them
         self.fig.autofmt_xdate()
 
-        self._setPlotData()
-
-    def setData(self, timedata, pricedata, volumedata, referenceValue):
-        self.xdata     = timedata
-        self.ydata1    = pricedata
-        self.ydata2    = volumedata
-        self.refValue  = referenceValue
-        self._setPlotData()
-
-    def clearData(self):
-        self.xdata.clear()
-        self.ydata1.clear()
-        self.ydata2.clear()
-        self._setPlotData()
-
-    def _setPlotData(self):
-        if len(self.xdata) < 2:
-            self.fig.set_visible( False )
-            return
-
-        self.fig.set_visible( True )
-
+    def clearLines(self):
         ## remove old lines
+        if self.fig.get_visible() is True:
+            self.fig.set_visible( False )
         self.pricePlot.lines.clear()
         self.volumePlot.lines.clear()
 
-        self.pricePlot.plot_date( self.xdata, self.ydata1, 'r',
-                                  linewidth=2, antialiased=True)
-        self.volumePlot.plot_date( self.xdata, self.ydata2, 'b',
-                                   linewidth=2, antialiased=True)
+    def addPriceLine(self, xdata, ydata, color, style=None):
+        line = self.pricePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
+        if style is not None:
+            line[0].set_linestyle( style )
 
-        if self.refValue:
-            refX  = [ self.xdata[0], self.xdata[-1] ]
-            refY  = [ self.refValue, self.refValue ]
-            line = self.pricePlot.plot_date( refX, refY, 'r',
-                                             linewidth=2, antialiased=True )
-            line[0].set_linestyle("--")
+        _updatePlot( xdata, self.pricePlot )
+        
+        if self.fig.get_visible() is False:
+            self.fig.set_visible( True )
 
-        self._updatePlot( self.pricePlot )
-        self._updatePlot( self.volumePlot )
+    def addVolumeLine(self, xdata, ydata, color, style=None):
+        line = self.volumePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
+        if style is not None:
+            line[0].set_linestyle( style )
 
+        _updatePlot( xdata, self.volumePlot )
+
+        if self.fig.get_visible() is False:
+            self.fig.set_visible( True )
+
+    def refreshChart(self):
         self.fig.tight_layout()                 ## make space for labels of axis
 #         self.fig.subplots_adjust(top=0.82)      ## make space for suptitle
 
         ## force refresh plots after data update
         self.draw()
-
-    def _generateTicks(self, number):
-        if number < 1:
-            return list()
-        start = self.xdata[0].timestamp()
-        tzoffset = start - pandas.Timestamp( start, unit="s" ).timestamp()
-        if number < 2:
-            middle = (start + self.xdata[-1].timestamp()) / 2 + tzoffset
-            ts = pandas.Timestamp( middle, unit="s" )
-            ticks = [ts]
-            return ticks
-#         print("data:", self.xdata, type(self.xdata))
-        delta = (self.xdata[-1].timestamp() - start) / (number - 1)
-        ticks = list()
-        ticks.append( self.xdata[0] )
-        currTs = start + tzoffset
-        for _ in range(1, number):
-            currTs += delta
-            ts = pandas.Timestamp( currTs, unit="s" )
-            ticks.append( ts )
-        return ticks
 
     def _configurePlot(self, plot, ylabel):
         plot.set_xlabel( 'Time', fontsize=14 )
@@ -131,14 +92,37 @@ class StockIntradayChart( MplCanvas ):
         plot.margins( y=0.2 )
         plot.set_xmargin(0.0)      ## prevents empty space between first tick and y axis
 
-    def _updatePlot(self, plot ):
-        ticks = self._generateTicks(12)
-        plot.set_xticks( ticks )
 
-        ### hide first and last major tick (next to plot edges)
-        xticks = plot.xaxis.get_major_ticks()
-        xticks[0].label1.set_visible(False)
-        ##xticks[-1].label1.set_visible(False)
+def _updatePlot(xdata, plot ):
+    ticks = _generateTicks(xdata, 12)
+    plot.set_xticks( ticks )
 
-        plot.relim(True)
-        plot.autoscale_view()
+    ### hide first and last major tick (next to plot edges)
+    xticks = plot.xaxis.get_major_ticks()
+    xticks[0].label1.set_visible(False)
+    ##xticks[-1].label1.set_visible(False)
+
+    plot.relim(True)
+    plot.autoscale_view()
+
+
+def _generateTicks(xdata, number):
+    if number < 1:
+        return list()
+    start = xdata[0].timestamp()
+    tzoffset = start - pandas.Timestamp( start, unit="s" ).timestamp()
+    if number < 2:
+        middle = (start + xdata[-1].timestamp()) / 2 + tzoffset
+        ts = pandas.Timestamp( middle, unit="s" )
+        ticks = [ts]
+        return ticks
+#         print("data:", self.xdata, type(self.xdata))
+    delta = (xdata[-1].timestamp() - start) / (number - 1)
+    ticks = list()
+    ticks.append( xdata[0] )
+    currTs = start + tzoffset
+    for _ in range(1, number):
+        currTs += delta
+        ts = pandas.Timestamp( currTs, unit="s" )
+        ticks.append( ts )
+    return ticks
