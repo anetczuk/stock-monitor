@@ -59,7 +59,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.stockLabel.setStyleSheet("font-weight: bold")
 
-        self.ui.showWalletCB.setChecked( True )
+        self.ui.showWalletCB.setChecked( False )
         self.ui.showTransactionsCB.setChecked( False )
         self.ui.showWalletCB.stateChanged.connect( self.updateData )
         self.ui.showTransactionsCB.stateChanged.connect( self.updateData )
