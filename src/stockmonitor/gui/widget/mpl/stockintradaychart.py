@@ -59,8 +59,8 @@ class StockIntradayChart( MplCanvas ):
         if style is not None:
             line[0].set_linestyle( style )
 
-        _updatePlot( xdata, self.pricePlot )
-        
+        _update_plot( xdata, self.pricePlot )
+
         if self.fig.get_visible() is False:
             self.fig.set_visible( True )
 
@@ -69,7 +69,7 @@ class StockIntradayChart( MplCanvas ):
         if style is not None:
             line[0].set_linestyle( style )
 
-        _updatePlot( xdata, self.volumePlot )
+        _update_plot( xdata, self.volumePlot )
 
         if self.fig.get_visible() is False:
             self.fig.set_visible( True )
@@ -93,8 +93,8 @@ class StockIntradayChart( MplCanvas ):
         plot.set_xmargin(0.0)      ## prevents empty space between first tick and y axis
 
 
-def _updatePlot(xdata, plot ):
-    ticks = _generateTicks(xdata, 12)
+def _update_plot(xdata, plot ):
+    ticks = _generate_ticks(xdata, 12)
     plot.set_xticks( ticks )
 
     ### hide first and last major tick (next to plot edges)
@@ -106,7 +106,7 @@ def _updatePlot(xdata, plot ):
     plot.autoscale_view()
 
 
-def _generateTicks(xdata, number):
+def _generate_ticks(xdata, number):
     if number < 1:
         return list()
     start = xdata[0].timestamp()

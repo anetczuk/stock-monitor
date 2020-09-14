@@ -56,9 +56,9 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.toolbarLayout.addWidget( self.toolbar )
 
         self.ui.sourceLabel.setOpenExternalLinks(True)
-        
+
         self.ui.stockLabel.setStyleSheet("font-weight: bold")
-        
+
         self.ui.showWalletCB.setChecked( True )
         self.ui.showTransactionsCB.setChecked( False )
         self.ui.showWalletCB.stateChanged.connect( self.updateData )
@@ -96,13 +96,11 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         timeData = list(timeColumn)
         self.addPriceLine( timeData, priceColumn )
-        
+
         refX = [ timeData[0], timeData[-1] ]
         refY = [ refPrice, refPrice ]
         self.addPriceLine( refX, refY, style="--" )
-        
-        
-        
+
         walletStock = self.dataObject.wallet[ self.ticker ]
         if walletStock is not None:
             if self.ui.showWalletCB.isChecked():
@@ -110,7 +108,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
                 if amount > 0:
                     refY = [ buy_unit_price, buy_unit_price ]
                     self.addPriceLine( refX, refY, color='black', style="--" )
-                
+
             if self.ui.showTransactionsCB.isChecked():
                 currTransactions = walletStock.currentTransactions()
                 for item in currTransactions:
@@ -149,10 +147,10 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def addVolumeLine(self, xdata, ydata, color='b', style=None ):
         self.ui.dataChart.addVolumeLine( xdata, ydata, color, style )
-        
+
     def refreshChart(self):
         self.ui.dataChart.refreshChart()
-        
+
 
 class StockChartWindow( AppWindow ):
 
