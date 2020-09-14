@@ -37,60 +37,36 @@ class IndexIntradayChart( MplCanvas ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget, 10, 10, 80)
 
-        self.xdata = list()
-        self.ydata = list()
-
         self.pricePlot  = self.fig.add_subplot(1, 1, 1)
+
         self._configurePlot( self.pricePlot, "Price" )
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
         self.fig.autofmt_xdate()
 
-        self._setPlotData()
+    def clearLines(self):
+        ## remove old lines
+        if self.fig.get_visible() is True:
+            self.fig.set_visible( False )
+        self.pricePlot.lines.clear()
 
-    def setData(self, timedata, pricedata):
-        self.xdata  = timedata
-        self.ydata = pricedata
-        self._setPlotData()
+    def addPriceLine(self, xdata, ydata, color, style=None):
+        line = self.pricePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
+        if style is not None:
+            line[0].set_linestyle( style )
 
-    def clearData(self):
-        self.xdata.clear()
-        self.ydata.clear()
-        self._setPlotData()
+        _update_plot( xdata, self.pricePlot )
 
-    def _setPlotData(self):
-        if len(self.xdata) < 2:
-            return
+        if self.fig.get_visible() is False:
+            self.fig.set_visible( True )
 
-        self.pricePlot.plot_date( self.xdata, self.ydata, 'r',
-                                  linewidth=2, antialiased=True)
-
-        self._updatePlot( self.pricePlot )
-
+    def refreshChart(self):
         self.fig.tight_layout()                 ## make space for labels of axis
 #         self.fig.subplots_adjust(top=0.82)      ## make space for suptitle
 
-    def _generateTicks(self, number):
-        if number < 1:
-            return list()
-        start = self.xdata[0].timestamp()
-        tzoffset = start - pandas.Timestamp( start, unit="s" ).timestamp()
-        if number < 2:
-            middle = (start + self.xdata[-1].timestamp()) / 2 + tzoffset
-            ts = pandas.Timestamp( middle, unit="s" )
-            ticks = [ts]
-            return ticks
-#         print("data:", self.xdata, type(self.xdata))
-        delta = (self.xdata[-1].timestamp() - start) / (number - 1)
-        ticks = list()
-        ticks.append( self.xdata[0] )
-        currTs = start + tzoffset
-        for _ in range(1, number):
-            currTs += delta
-            ts = pandas.Timestamp( currTs, unit="s" )
-            ticks.append( ts )
-        return ticks
+        ## force refresh plots after data update
+        self.draw()
 
     def _configurePlot(self, plot, ylabel):
         plot.set_xlabel( 'Time', fontsize=14 )
@@ -98,18 +74,42 @@ class IndexIntradayChart( MplCanvas ):
 
         formatter = matplotlib.dates.DateFormatter('%H:%M:%S')
         plot.xaxis.set_major_formatter( formatter )
+#         plot.xaxis_date()
 
         plot.margins( y=0.2 )
         plot.set_xmargin(0.0)      ## prevents empty space between first tick and y axis
 
-    def _updatePlot(self, plot ):
-        ticks = self._generateTicks(12)
-        plot.set_xticks( ticks )
 
-        ### hide first and last major tick (next to plot edges)
-        xticks = plot.xaxis.get_major_ticks()
-        xticks[0].label1.set_visible(False)
-        ##xticks[-1].label1.set_visible(False)
+def _update_plot(xdata, plot ):
+    ticks = _generate_ticks(xdata, 12)
+    plot.set_xticks( ticks )
 
-        plot.relim(True)
-        plot.autoscale_view()
+    ### hide first and last major tick (next to plot edges)
+    xticks = plot.xaxis.get_major_ticks()
+    xticks[0].label1.set_visible(False)
+    ##xticks[-1].label1.set_visible(False)
+
+    plot.relim(True)
+    plot.autoscale_view()
+
+
+def _generate_ticks(xdata, number):
+    if number < 1:
+        return list()
+    start = xdata[0].timestamp()
+    tzoffset = start - pandas.Timestamp( start, unit="s" ).timestamp()
+    if number < 2:
+        middle = (start + xdata[-1].timestamp()) / 2 + tzoffset
+        ts = pandas.Timestamp( middle, unit="s" )
+        ticks = [ts]
+        return ticks
+#         print("data:", self.xdata, type(self.xdata))
+    delta = (xdata[-1].timestamp() - start) / (number - 1)
+    ticks = list()
+    ticks.append( xdata[0] )
+    currTs = start + tzoffset
+    for _ in range(1, number):
+        currTs += delta
+        ts = pandas.Timestamp( currTs, unit="s" )
+        ticks.append( ts )
+    return ticks

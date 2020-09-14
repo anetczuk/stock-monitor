@@ -45,7 +45,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-#         self.device = None
+        self.dataObject = None
+        self.isin = None
 
         if parentWidget is not None:
             bgcolor = parentWidget.palette().color(parentWidget.backgroundRole())
@@ -56,23 +57,44 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.sourceLabel.setOpenExternalLinks(True)
 
-    def clearData(self):
-        self.ui.dataChart.clearData()
+        self.ui.nameLabel.setStyleSheet("font-weight: bold")
 
-#     def attachConnector(self, connector):
-#         if self.device is not None:
-#             ## disconnect old object
-#             self.device.connectionStateChanged.disconnect( self._refreshWidget )
-#             self.device.positionChanged.disconnect( self._updatePositionState )
-#
-#         self.device = connector
-#
-#         self._refreshWidget()
-#
-#         if self.device is not None:
-#             ## connect new object
-#             self.device.connectionStateChanged.connect( self._refreshWidget )
-#             self.device.positionChanged.connect( self._updatePositionState )
+    def connectData(self, dataObject, isin):
+        self.dataObject = dataObject
+        self.isin       = isin
+        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.updateData()
+
+    def clearData(self):
+        self.ui.dataChart.clearLines()
+
+    def updateData(self):
+        intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin )
+        dataFrame = intraSource.getWorksheet()
+
+        self.clearData()
+        if dataFrame is None:
+            return
+
+#         print( "got intraday data:", dataFrame )
+        timeColumn   = dataFrame["t"]
+        priceColumn  = dataFrame["c"]
+
+        timeData = list(timeColumn)
+        self.addPriceLine( timeData, priceColumn )
+
+        currentSource = self.dataObject.gpwIndexesData
+        value     = currentSource.getRecentValue( self.isin )
+        change    = currentSource.getRecentChange( self.isin )
+        timestamp = timeColumn.iloc[-1]
+
+        self.ui.valueLabel.setText( str(value) )
+        self.ui.changeLabel.setText( str(change) + "%" )
+        self.ui.timeLabel.setText( str(timestamp) )
+
+        sourceUrl = intraSource.sourceLink()
+        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
+        self.ui.sourceLabel.setText( htmlText )
 
 #     def loadSettings(self, settings):
 #         settings.beginGroup( self.objectName() )
@@ -87,8 +109,11 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 #         settings.setValue("chart_enabled", enabledChart)
 #         settings.endGroup()
 
-    def setData(self, xdata, ydata ):
-        self.ui.dataChart.setData( list(xdata), ydata )
+    def addPriceLine(self, xdata, ydata, color='r', style=None ):
+        self.ui.dataChart.addPriceLine( xdata, ydata, color, style )
+
+    def refreshChart(self):
+        self.ui.dataChart.refreshChart()
 
 
 class IndexChartWindow( AppWindow ):
@@ -96,49 +121,16 @@ class IndexChartWindow( AppWindow ):
     def __init__(self, parentWidget=None):
         super().__init__( parentWidget )
 
-        self.dataObject = None
-        self.isin = None
-
         self.chart = IndexChartWidget( self )
         self.addWidget( self.chart )
 
-        self.chart.ui.nameLabel.setStyleSheet("font-weight: bold")
-
     def connectData(self, dataObject, isin):
-        self.dataObject = dataObject
-        self.isin       = isin
-        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.chart.connectData( dataObject, isin )
         self._setStockName()
-        self.updateData()
-
-    def updateData(self):
-        intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin )
-        dataFrame = intraSource.getWorksheet()
-        if dataFrame is None:
-            self.chart.clearData()
-            return
-
-#         print( "got intraday data:", dataFrame )
-        timeColumn   = dataFrame["t"]
-        priceColumn  = dataFrame["c"]
-        self.chart.setData( timeColumn, priceColumn )
-
-        currentSource = self.dataObject.gpwIndexesData
-        value     = currentSource.getRecentValue( self.isin )
-        change    = currentSource.getRecentChange( self.isin )
-        timestamp = timeColumn.iloc[-1]
-
-        self.chart.ui.valueLabel.setText( str(value) )
-        self.chart.ui.changeLabel.setText( str(change) + "%" )
-        self.chart.ui.timeLabel.setText( str(timestamp) )
-
-        sourceUrl = intraSource.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.chart.ui.sourceLabel.setText( htmlText )
 
     def _setStockName(self):
-        currentSource = self.dataObject.gpwIndexesData
-        name = currentSource.getNameFromIsin( self.isin )
-        title = name + " [" + self.isin + "]"
+        currentSource = self.chart.dataObject.gpwIndexesData
+        name = currentSource.getNameFromIsin( self.chart.isin )
+        title = name + " [" + self.chart.isin + "]"
         self.setWindowTitleSuffix( "- " + title )
         self.chart.ui.nameLabel.setText( name )
