@@ -21,7 +21,6 @@
 # SOFTWARE.
 #
 
-
 import unittest
 
 import stockmonitor.gui.uiloader as uiloader

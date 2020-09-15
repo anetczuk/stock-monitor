@@ -21,7 +21,6 @@
 # SOFTWARE.
 #
 
-
 import unittest
 from teststockmonitor.data import get_data_path
 

@@ -23,7 +23,6 @@
 # SOFTWARE.
 #
 
-
 if __name__ == '__main__':
     from stockmonitor.main import main
 

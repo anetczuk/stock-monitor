@@ -21,7 +21,6 @@
 # SOFTWARE.
 #
 
-
 import logging
 from enum import unique, Enum
 

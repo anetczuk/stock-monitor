@@ -23,7 +23,6 @@
 # SOFTWARE.
 #
 
-
 try:
     ## following import success only when file is directly executed from command line
     ## otherwise will throw exception when executing as parameter for "python -m"

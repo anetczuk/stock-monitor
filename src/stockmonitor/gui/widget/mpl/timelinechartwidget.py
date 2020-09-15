@@ -21,7 +21,6 @@
 # SOFTWARE.
 #
 
-
 import logging
 
 from ... import uiloader
