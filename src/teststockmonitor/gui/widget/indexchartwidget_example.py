@@ -39,7 +39,7 @@ import logging
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
-from stockmonitor.dataaccess.gpwdata import GpwCurrentIndexIntradayData
+from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.indexchartwidget import IndexChartWindow

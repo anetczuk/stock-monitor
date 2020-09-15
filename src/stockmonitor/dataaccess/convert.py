@@ -69,3 +69,21 @@ def convert_percentage( data ):
 
 def convert_timestamp_datetime( timestamp ):
     return datetime.datetime.fromtimestamp( timestamp )
+
+
+def apply_on_column( dataFrame, columnName, function ):
+    dataFrame[ columnName ] = dataFrame[ columnName ].apply( function )
+
+
+def cleanup_column(dataFrame, colName):
+    cleanup_column_str( dataFrame, colName, " " )
+    cleanup_column_str( dataFrame, colName, "\t" )
+    cleanup_column_str( dataFrame, colName, "\u00A0" )          ## non-breaking space
+    cleanup_column_str( dataFrame, colName, "\xc2\xa0" )        ## non-breaking space
+
+
+def cleanup_column_str(dataFrame, colName, substr):
+    val = dataFrame.loc[ dataFrame[ colName ].str.contains( substr ), colName ]
+    for index, value in val.items():
+        val[ index ] = value.split( substr )[0]
+    dataFrame.loc[ dataFrame[ colName ].str.contains( substr ), colName ] = val

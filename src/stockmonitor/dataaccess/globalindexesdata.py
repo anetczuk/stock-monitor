@@ -30,8 +30,8 @@ from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
-from stockmonitor.dataaccess.gpwdata import apply_on_column
-from stockmonitor.dataaccess.convert import convert_float, convert_percentage
+from stockmonitor.dataaccess.convert import convert_float, convert_percentage,\
+    apply_on_column
 
 
 _LOGGER = logging.getLogger(__name__)

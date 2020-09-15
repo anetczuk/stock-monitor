@@ -23,7 +23,6 @@
 # SOFTWARE.
 #
 
-
 try:
     ## following import success only when file is directly executed from command line
     ## otherwise will throw exception when executing as parameter for "python -m"
@@ -40,8 +39,8 @@ import logging
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
+from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.gui.dataobject import DataObject
-from stockmonitor.dataaccess.gpwdata import GpwCurrentStockIntradayData
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.widget.stockchartwidget import StockChartWindow
 

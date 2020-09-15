@@ -38,12 +38,13 @@ from PyQt5.QtWidgets import QWidget, QUndoStack
 
 from stockmonitor import persist
 from stockmonitor.dataaccess.datatype import CurrentDataType
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIsinMapData,\
-    GpwCurrentStockIntradayData, GpwCurrentIndexIntradayData
-from stockmonitor.dataaccess.gpwdata import GpwIndexesData
-from stockmonitor.dataaccess.gpwdata import GpwIndicatorsData
+from stockmonitor.dataaccess.gpw.gpwdata import GpwIsinMapData
+from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
+from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
+    GpwCurrentIndexesData
 
 import stockmonitor.gui.threadlist as threadlist
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
@@ -52,7 +53,8 @@ from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
-from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
+from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData,\
+    GpwCurrentIndexIntradayData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -615,11 +617,11 @@ class DataObject( QObject ):
 
         self.userContainer      = UserContainer()                   ## user data
 
-        self.gpwCurrentSource     = StockData( GpwCurrentData() )
+        self.gpwCurrentSource     = StockData( GpwCurrentStockData() )
         self.gpwStockIntradayData = GpwStockIntradayMap()
         self.gpwIndexIntradayData = GpwIndexIntradayMap()
 
-        self.gpwIndexesData     = GpwIndexesData()
+        self.gpwIndexesData     = GpwCurrentIndexesData()
         self.globalIndexesData  = GlobalIndexesData()
         self.gpwIndicatorsData  = GpwIndicatorsData()
         self.gpwDividendsData   = DividendsCalendarData()
@@ -703,7 +705,7 @@ class DataObject( QObject ):
         columnsList = ["Nazwa", "Ticker", "Liczba", "Kurs", "Średni kurs nabycia",
                        "Zysk %", "Zysk", "Wartość", "Zysk całkowity"]
 
-        currentStock: GpwCurrentData = self.gpwCurrentSource.stockData
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
@@ -752,7 +754,7 @@ class DataObject( QObject ):
         return dataFrame
 
     def getWalletProfit(self):
-        currentStock: GpwCurrentData = self.gpwCurrentSource.stockData
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
 
         walletProfit  = 0
@@ -796,7 +798,7 @@ class DataObject( QObject ):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Kurs nabycia",
                         "Zysk %", "Zysk", "Data nabycia" ]
 
-        currentStock: GpwCurrentData = self.gpwCurrentSource.stockData
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
@@ -929,8 +931,8 @@ class DataObject( QObject ):
         return retList
 
     @property
-    def gpwCurrentData(self) -> GpwCurrentData:
-        return self.gpwCurrentSource.stockData
+    def gpwCurrentData(self) -> GpwCurrentStockData:
+        return self.gpwCurrentSource.stockData                  # type: ignore
 
     @property
     def gpwCurrentHeaders(self) -> Dict[ int, str ]:

@@ -26,19 +26,19 @@ import unittest
 # import datetime
 
 from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData, GpwIndexesData, GpwIndicatorsData, GpwIsinMapData,\
-    GpwCurrentStockIntradayData, GpwCurrentIndexIntradayData
 from stockmonitor.dataaccess.datatype import CurrentDataType
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
+    GpwCurrentIndexesData
 
 
 ## =================================================================
 
 
-class GpwCurrentDataTest(unittest.TestCase):
+class GpwCurrentStockDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = GpwCurrentData()
+        self.dataAccess = GpwCurrentStockData()
 
         def data_path():
             return get_data_path( "akcje_2020-04-14_15-50.xls" )
@@ -76,58 +76,14 @@ class GpwCurrentDataTest(unittest.TestCase):
 #         print( "load time:", diff1, diff2 )
 
 
-## ===================================================================
+# =================================================================
 
 
-class GpwCurrentStockIntradayDataTest(unittest.TestCase):
-
-    def setUp(self):
-        ## Called before testfunction is executed
-        self.dataAccess = GpwCurrentStockIntradayData( "PLOPTTC00011" )
-
-        def data_path():
-            return get_data_path( "cdr.chart.04-09.txt" )
-
-        self.dataAccess.getDataPath = data_path           # type: ignore
-        self.dataAccess.parseDataFromDefaultFile()
-
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
-
-    def test_getData(self):
-        currData = self.dataAccess.getWorksheet()
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 3104)
-
-
-class GpwCurrentIndexIntradayDataTest(unittest.TestCase):
+class GpwCurrentIndexesDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = GpwCurrentIndexIntradayData( "PL9999999987" )
-
-        def data_path():
-            return get_data_path( "wig20.chart.07-09.txt" )
-
-        self.dataAccess.getDataPath = data_path           # type: ignore
-        self.dataAccess.parseDataFromDefaultFile()
-
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
-
-    def test_getData(self):
-        currData = self.dataAccess.getWorksheet()
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 1962)
-
-
-class GpwIndexesDataTest(unittest.TestCase):
-
-    def setUp(self):
-        ## Called before testfunction is executed
-        self.dataAccess = GpwIndexesData()
+        self.dataAccess = GpwCurrentIndexesData()
 
     def tearDown(self):
         ## Called after testfunction was executed
@@ -137,42 +93,3 @@ class GpwIndexesDataTest(unittest.TestCase):
         currData = self.dataAccess.getWorksheet()
         dataLen = len( currData )
         self.assertEqual(dataLen, 27)
-
-
-class GpwIndicatorsDataTest(unittest.TestCase):
-
-    def setUp(self):
-        ## Called before testfunction is executed
-        self.dataAccess = GpwIndicatorsData()
-
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
-
-    def test_getWorksheet(self):
-        currData = self.dataAccess.getWorksheet()
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 436)
-
-
-class GpwIsinMapDataTest(unittest.TestCase):
-
-    def setUp(self):
-        ## Called before testfunction is executed
-        self.dataAccess = GpwIsinMapData()
-
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
-
-    def test_getWorksheet(self):
-        currData = self.dataAccess.getWorksheet()
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 828)
-
-#     def test_getWorksheet_micro(self):
-#         startTime = datetime.datetime.now()
-#         self.dataAccess.getWorksheet( True )
-#         endTime = datetime.datetime.now()
-#         diff = endTime - startTime
-#         print( "load time:", diff )

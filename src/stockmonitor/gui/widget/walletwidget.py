@@ -30,8 +30,8 @@ import pandas
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QFileDialog
 
-from stockmonitor.dataaccess.convert import convert_float, convert_int
-from stockmonitor.dataaccess.gpwdata import apply_on_column
+from stockmonitor.dataaccess.convert import convert_float, convert_int,\
+    apply_on_column
 
 from .. import uiloader
 

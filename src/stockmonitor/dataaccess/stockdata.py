@@ -37,8 +37,8 @@ import pandas
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import ArchiveDataType
-from stockmonitor.dataaccess.gpwdata import GpwArchiveData,\
-    GpwCurrentStockIntradayData
+from stockmonitor.dataaccess.gpw.gpwarchivedata import GpwArchiveData
+from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 
 
 _LOGGER = logging.getLogger(__name__)

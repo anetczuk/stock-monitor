@@ -50,8 +50,9 @@ class MplCanvas(FigureCanvas):
             return
         self.figure.set_visible(show)
         self.draw()                         ## QWidget draw
-    
+
     ## fix fitting figure to widget
+    # pylint: disable=W0221
     def resizeEvent(self, param):
         super().resizeEvent( param )
         self.figure.tight_layout()

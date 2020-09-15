@@ -23,7 +23,6 @@
 # SOFTWARE.
 #
 
-
 try:
     ## following import success only when file is directly executed from command line
     ## otherwise will throw exception when executing as parameter for "python -m"
@@ -40,8 +39,7 @@ from PyQt5.QtWidgets import QApplication
 
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.widget.stocktable import StockFullTable
-
-from stockmonitor.dataaccess.gpwdata import GpwCurrentData
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 
 import teststockmonitor.data as data
 
@@ -61,7 +59,7 @@ app.setOrganizationName("arnet")
 #                        'b': [100, 200, 300],
 #                        'c': ['a', 'b', 'c']})
 
-dataAccess = GpwCurrentData()
+dataAccess = GpwCurrentStockData()
 dataPath = data.get_data_path( "akcje_2020-04-14_15-50.xls" )
 dataframe = dataAccess.parseDataFromFile( dataPath )
 
