@@ -75,9 +75,10 @@ class WorksheetData( BaseWorksheetData ):
             self.downloadData()
 
         if not os.path.exists( dataPath ):
+            _LOGGER.warning( "could not find required file[%s]", dataPath )
             return
 
-        _LOGGER.debug( "loading recent data from file[%s]", dataPath )
+        _LOGGER.debug( "loading recent data from file[%s], force: %s", dataPath, forceRefresh )
         self.loadObjectData( forceRefresh )
         if self.worksheet is None:
             self.grabTimestamp = None
