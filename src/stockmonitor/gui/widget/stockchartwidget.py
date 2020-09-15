@@ -21,7 +21,6 @@
 # SOFTWARE.
 #
 
-
 import logging
 
 from stockmonitor.gui.appwindow import AppWindow

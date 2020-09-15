@@ -28,8 +28,8 @@ from enum import unique, Enum
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
-from stockmonitor.dataaccess import stockdata
-from stockmonitor.dataaccess.stockdata import StockAnalysis
+from stockmonitor.dataaccess import tmp_dir
+from stockmonitor.dataaccess.stockanalysis import StockAnalysis
 
 from ... import uiloader
 
@@ -85,7 +85,7 @@ class DayWidget(QtBaseClass):           # type: ignore
         weeksNum   = self.ui.numWeeksSB.value()
         fieldIndex = self.ui.fieldCB.currentIndex()
         fieldValue = self.ui.fieldCB.itemData( fieldIndex )
-        self.recentOutput = stockdata.tmp_dir + "out/output_day.csv"
+        self.recentOutput = tmp_dir + "out/output_day.csv"
 
         resultData = None
 

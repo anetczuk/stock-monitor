@@ -21,12 +21,11 @@
 # SOFTWARE.
 #
 
-
 import unittest
 # import datetime
 import pandas
 
-from stockmonitor.dataaccess.stockdata import VarCalc
+from stockmonitor.dataaccess.stockanalysisdata import VarCalc
 
 
 ## =================================================================

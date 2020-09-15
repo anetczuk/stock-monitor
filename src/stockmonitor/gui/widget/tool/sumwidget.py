@@ -21,15 +21,14 @@
 # SOFTWARE.
 #
 
-
 import logging
 import datetime
 
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
-from stockmonitor.dataaccess import stockdata
-from stockmonitor.dataaccess.stockdata import StockAnalysis
+from stockmonitor.dataaccess import tmp_dir
+from stockmonitor.dataaccess.stockanalysis import StockAnalysis
 from stockmonitor.dataaccess.datatype import ArchiveDataType, CompareDataType
 
 from ... import uiloader
@@ -95,7 +94,7 @@ class SumWidget(QtBaseClass):           # type: ignore
             analysis.loadSum( ArchiveDataType.TRANSACTIONS, fromDate, toDate)
             analysis.loadCurr( ArchiveDataType.TRANSACTIONS )
 
-        self.recentOutput = stockdata.tmp_dir + "out/output_sum.csv"
+        self.recentOutput = tmp_dir + "out/output_sum.csv"
         resultData = analysis.calcGreatestSum( self.recentOutput )
         self.ui.dataTable.setData( resultData )
         self.ui.openPB.setEnabled( True )
