@@ -31,6 +31,7 @@ from PyQt5.QtGui import QIcon
 
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
+from stockmonitor.gui.utils import set_label_url
 
 from . import uiloader
 from . import resources
@@ -107,20 +108,14 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.ui.gpwIndexesSourceLabel.setOpenExternalLinks(True)
         indexesDataAccess = self.data.gpwIndexesData
-        sourceUrl = indexesDataAccess.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.ui.gpwIndexesSourceLabel.setText( htmlText )
+        set_label_url( self.ui.gpwIndexesSourceLabel, indexesDataAccess.sourceLink() )
 
         self.ui.globalIndexesSourceLabel.setOpenExternalLinks(True)
         indexesDataAccess = self.data.globalIndexesData
-        sourceUrl = indexesDataAccess.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.ui.globalIndexesSourceLabel.setText( htmlText )
+        set_label_url( self.ui.globalIndexesSourceLabel, indexesDataAccess.sourceLink() )
 
         self.ui.stockSourceLabel.setOpenExternalLinks(True)
-        sourceUrl = self.data.gpwCurrentSource.stockData.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.ui.stockSourceLabel.setText( htmlText )
+        set_label_url( self.ui.stockSourceLabel, self.data.gpwCurrentSource.stockData.sourceLink() )
 
         ## ================== connecting signals ==================
 

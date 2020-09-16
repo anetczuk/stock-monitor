@@ -29,6 +29,7 @@ from PyQt5.QtGui import QDesktopServices
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.stockanalysis import StockAnalysis
+from stockmonitor.gui.utils import set_label_url
 
 from ... import uiloader
 
@@ -59,9 +60,7 @@ class VarianceWidget(QtBaseClass):           # type: ignore
         analysis = StockAnalysis()
         self.ui.sourceLabel.setTextInteractionFlags( Qt.TextBrowserInteraction )
         self.ui.sourceLabel.setOpenExternalLinks(True)
-        sourceUrl = analysis.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.ui.sourceLabel.setText( htmlText )
+        set_label_url( self.ui.sourceLabel, analysis.sourceLink() )
 
         self.ui.calculatePB.clicked.connect( self.calculate )
         self.ui.openPB.clicked.connect( self.openResults )

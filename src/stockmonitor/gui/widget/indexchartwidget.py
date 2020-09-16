@@ -26,6 +26,7 @@ import logging
 from PyQt5 import QtWidgets, QtGui
 
 from stockmonitor.gui.appwindow import AppWindow
+from stockmonitor.gui.utils import set_label_url
 
 from .. import uiloader
 
@@ -106,9 +107,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.changeLabel.setText( str(change) + "%" )
         self.ui.timeLabel.setText( str(timestamp) )
 
-        sourceUrl = intraSource.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.ui.sourceLabel.setText( htmlText )
+        set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
 
 #     def loadSettings(self, settings):
 #         settings.beginGroup( self.objectName() )

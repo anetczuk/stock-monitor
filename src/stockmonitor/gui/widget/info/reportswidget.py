@@ -32,6 +32,7 @@ from PyQt5.QtWidgets import QWidget
 from stockmonitor.gui.widget.stocktable import StockTable, stock_background_color
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.utils import set_label_url
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -94,9 +95,7 @@ class ReportsWidget( QWidget ):
         self.dataObject = dataObject
         self.dataAccess = self.dataObject.gpwReportsData
 
-        sourceUrl = self.dataAccess.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.sourceLabel.setText( htmlText )
+        set_label_url( self.sourceLabel, self.dataAccess.sourceLink() )
 
         colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
         self.dataTable.setColorDelegate( colorDecorator )
@@ -138,9 +137,7 @@ class PublishedReportsWidget( QWidget ):
         self.dataObject = dataObject
         self.dataAccess = self.dataObject.gpwPubReportsData
 
-        sourceUrl = self.dataAccess.sourceLink()
-        htmlText = "<a href=\"%s\">%s</a>" % (sourceUrl, sourceUrl)
-        self.sourceLabel.setText( htmlText )
+        set_label_url( self.sourceLabel, self.dataAccess.sourceLink() )
 
         colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
         self.dataTable.setColorDelegate( colorDecorator )

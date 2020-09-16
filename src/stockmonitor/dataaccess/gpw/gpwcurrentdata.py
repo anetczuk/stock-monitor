@@ -312,7 +312,6 @@ def convert_indexes_data( dataFrame: DataFrame ):
 
 
 def append_indexes_isin( dataFrame, dataFile ):
-    ## <a href="/karta-indeksu?isin=PL9999999987">WIG20</a>
     with open(dataFile, 'r') as file:
         fileContent = file.read()
 
