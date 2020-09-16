@@ -37,9 +37,13 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def download_content( url, outputPath ):
-    dirPath = os.path.dirname( outputPath )
-    os.makedirs( dirPath, exist_ok=True )
-    urllib.request.urlretrieve( url, outputPath )
+    try:
+        dirPath = os.path.dirname( outputPath )
+        os.makedirs( dirPath, exist_ok=True )
+        urllib.request.urlretrieve( url, outputPath )
+    except urllib.error.HTTPError:
+        _LOGGER.exception( "exception when accessing: %s", url )
+        raise
 
 
 class BaseWorksheetData( metaclass=abc.ABCMeta ):
