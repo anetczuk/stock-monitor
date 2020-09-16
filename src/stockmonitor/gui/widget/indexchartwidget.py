@@ -23,6 +23,8 @@
 
 import logging
 
+from PyQt5 import QtWidgets, QtGui
+
 from stockmonitor.gui.appwindow import AppWindow
 
 from .. import uiloader
@@ -133,6 +135,11 @@ class IndexChartWindow( AppWindow ):
 
         self.chart = IndexChartWidget( self )
         self.addWidget( self.chart )
+        
+        self.refreshAction = QtWidgets.QAction(self)
+        self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
+        self.refreshAction.triggered.connect( self.chart.refreshData )
+        self.addAction( self.refreshAction )
 
     def connectData(self, dataObject, isin):
         self.chart.connectData( dataObject, isin )
