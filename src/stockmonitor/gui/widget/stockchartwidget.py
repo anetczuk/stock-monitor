@@ -171,7 +171,7 @@ class StockChartWindow( AppWindow ):
 
         self.chart = StockChartWidget( self )
         self.addWidget( self.chart )
-        
+
         self.refreshAction = QtWidgets.QAction(self)
         self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
         self.refreshAction.triggered.connect( self.chart.refreshData )
