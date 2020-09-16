@@ -149,6 +149,12 @@ class FavData( persist.Versionable ):
             # pylint: disable=E1101
             self.favsList.move_to_end( item, False )
 
+    def setFavs(self, group, items):
+        itemsList = list( items )
+        self.addFavGroup( group )
+        newSet = set( itemsList )
+        self.favsList[group] = list( newSet )
+
     def addFav(self, group, items):
         itemsList = list( items )
         self.addFavGroup( group )

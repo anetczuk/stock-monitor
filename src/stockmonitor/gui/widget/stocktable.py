@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QDesktopServices
 
-from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
 from stockmonitor.gui.widget.stockchartwidget import StockChartWindow
 from stockmonitor.gui.widget.indexchartwidget import IndexChartWindow
@@ -140,6 +140,8 @@ class StockTable( DataFrameTable ):
         favSubMenu    = contextMenu.addMenu("Add to favs")
         favGroupsList = self.dataObject.favs.getFavGroups()
         for favGroup in favGroupsList:
+            if favGroup in READONLY_FAV_GROUPS:
+                continue
             favAction = favSubMenu.addAction( favGroup )
             favAction.setData( favGroup )
             favAction.triggered.connect( self._addToFavAction )
@@ -164,6 +166,8 @@ class StockTable( DataFrameTable ):
                 favGrp = newText
             else:
                 return
+        if favGrp in READONLY_FAV_GROUPS:
+            return
         tickersList = self._getSelectedTickers()
         self.dataObject.addFav( favGrp, tickersList )
 

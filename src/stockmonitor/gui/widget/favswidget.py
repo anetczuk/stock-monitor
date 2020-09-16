@@ -29,7 +29,7 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMenu, QInputDialog
 from PyQt5.QtWidgets import QLineEdit
 
-from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
 from stockmonitor.gui.widget.stocktable import wallet_background_color, insert_new_action
 
 from .. import uiloader
@@ -94,9 +94,10 @@ class StockFavsTable( StockTable ):
 
     def createContextMenu(self):
         contextMenu = super().createContextMenu()
-        if self.dataObject is not None:
-            remFavAction = insert_new_action(contextMenu, "Remove fav", 1)
-            remFavAction.triggered.connect( self._removeFav )
+        if self.favGroup not in READONLY_FAV_GROUPS:
+            if self.dataObject is not None:
+                remFavAction = insert_new_action(contextMenu, "Remove fav", 1)
+                remFavAction.triggered.connect( self._removeFav )
         return contextMenu
 
     def _removeFav(self):
@@ -169,8 +170,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
-        self.dataObject.favsAdded.connect( self.updateTab )
-        self.dataObject.favsRemoved.connect( self.updateTab )
+        self.dataObject.favsGrpChanged.connect( self.updateTab )
         self.dataObject.favsReordered.connect( self.updateOrder )
         self.dataObject.favsRenamed.connect( self._renameTab )
         self.dataObject.favsChanged.connect( self.updateView )
@@ -205,6 +205,7 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         self.updateOrder()
 
     def updateTab(self, tabName):
+        _LOGGER.info("updating tab: %s", tabName)
         tabIndex = self.findTabIndex( tabName )
         pageWidget: SinglePageWidget = self.ui.data_tabs.widget( tabIndex )
         pageWidget.updateView()

@@ -59,6 +59,9 @@ from stockmonitor.gui.datatypes import UserContainer, StockData,\
 _LOGGER = logging.getLogger(__name__)
 
 
+READONLY_FAV_GROUPS = ["All", "Wallet"]
+
+
 def instance_download_data(obj):
     """Wrapper/alias for object.
 
@@ -79,8 +82,7 @@ def heavy_comp( limit ):
 
 class DataObject( QObject ):
 
-    favsAdded           = pyqtSignal( str )        ## emit group
-    favsRemoved         = pyqtSignal( str )        ## emit group
+    favsGrpChanged      = pyqtSignal( str )        ## emit group
     favsReordered       = pyqtSignal()
     favsRenamed         = pyqtSignal( str, str )   ## from, to
     favsChanged         = pyqtSignal()
@@ -111,6 +113,9 @@ class DataObject( QObject ):
 
         self.undoStack = QUndoStack(self)
 
+        self.favsGrpChanged.connect( self.updateAllFavsGroup )
+        self.favsChanged.connect( self.updateAllFavsGroup )
+
     def store( self, outputDir ):
         outputFile = outputDir + "/gpwcurrentheaders.obj"
         persist.store_object( self.gpwCurrentHeaders, outputFile )
@@ -122,6 +127,8 @@ class DataObject( QObject ):
         headers = persist.load_object_simple( inputFile, dict() )
         self.gpwCurrentSource.stockHeaders = headers
         #self.gpwCurrentHeaders = headers
+        self.updateWalletFavGroup()
+        self.updateAllFavsGroup()
 
     @property
     def favs(self) -> FavData:
@@ -157,12 +164,12 @@ class DataObject( QObject ):
         self.undoStack.push( DeleteFavGroupCommand( self, name ) )
 
     def addFav(self, group, favItem):
-        favsSet = self.favs.getFavs( group )
-        if favsSet is None:
-            favsSet = set()
-        favsSet = set( favsSet )
-        itemsSet = set( favItem )
-        diffSet = itemsSet - favsSet
+        currFavsSet = self.favs.getFavs( group )
+        if currFavsSet is None:
+            currFavsSet = set()
+        currFavsSet = set( currFavsSet )
+        newItemsSet = set( favItem )
+        diffSet = newItemsSet - currFavsSet
         if len(diffSet) < 1:
             #_LOGGER.warning( "nothing to add: %s input: %s", diffSet, favItem )
             return
@@ -355,6 +362,41 @@ class DataObject( QObject ):
                 wallet.add( ticker, -amount, unit_price, dateObject )
 
         self.walletDataChanged.emit()
+
+        self.updateWalletFavGroup()
+
+    def updateWalletFavGroup(self):
+        wallet: WalletData = self.wallet
+        walletSet = set( wallet.getCurrentStock() )
+
+        currFavsSet = self.favs.getFavs( "Wallet" )
+        if currFavsSet is None:
+            currFavsSet = set()
+        else:
+            currFavsSet = set( currFavsSet )
+
+        if walletSet != currFavsSet:
+            _LOGGER.debug("updating Wallet favs")
+            self.favs.setFavs( "Wallet", walletSet )
+            self.favsGrpChanged.emit( "Wallet" )
+
+    def updateAllFavsGroup(self):
+        allFavsSet = set()
+        for group, favs in self.favs.favsList.items():
+            if group == "All":
+                continue
+            allFavsSet |= set( favs )
+
+        currFavsSet = self.favs.getFavs( "All" )
+        if currFavsSet is None:
+            currFavsSet = set()
+        else:
+            currFavsSet = set( currFavsSet )
+
+        if allFavsSet != currFavsSet:
+            _LOGGER.debug("updating All favs")
+            self.favs.setFavs( "All", allFavsSet )
+            self.favsGrpChanged.emit( "All" )
 
     ## ======================================================================
 
