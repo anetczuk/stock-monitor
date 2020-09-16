@@ -22,6 +22,9 @@
 #
 
 import logging
+import datetime
+
+from typing import List
 
 import pandas
 
@@ -53,7 +56,7 @@ class StockIntradayChart( MplCanvas ):
         self.pricePlot.lines.clear()
         self.volumePlot.lines.clear()
 
-    def addPriceLine(self, xdata, ydata, color, style=None):
+    def addPriceLine(self, xdata: List[datetime.datetime], ydata, color, style=None):
         line = self.pricePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
         if style is not None:
             line[0].set_linestyle( style )
@@ -63,7 +66,7 @@ class StockIntradayChart( MplCanvas ):
         if self.figure.get_visible() is False:
             self.figure.set_visible( True )
 
-    def addVolumeLine(self, xdata, ydata, color, style=None):
+    def addVolumeLine(self, xdata: List[datetime.datetime], ydata, color, style=None):
         line = self.volumePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
         if style is not None:
             line[0].set_linestyle( style )
@@ -89,9 +92,22 @@ def _update_plot(xdata, plot ):
     ticks = _generate_ticks(xdata, 12)
     plot.set_xticks( ticks )
 
+    setLongFormat = False
+    if len(ticks) > 1:
+        timeSpan = ticks[-1] - ticks[0]
+        if timeSpan > datetime.timedelta( days=2 ):
+            setLongFormat = True
+
+    if setLongFormat is True:
+        formatter = matplotlib.dates.DateFormatter('%d-%m-%Y')
+        plot.xaxis.set_major_formatter( formatter )
+    else:
+        formatter = matplotlib.dates.DateFormatter('%H:%M:%S')
+        plot.xaxis.set_major_formatter( formatter )
+
     ### hide first and last major tick (next to plot edges)
-    xticks = plot.xaxis.get_major_ticks()
-    xticks[0].label1.set_visible(False)
+#     xticks = plot.xaxis.get_major_ticks()
+#     xticks[0].label1.set_visible(False)
     ##xticks[-1].label1.set_visible(False)
 
     plot.relim(True)

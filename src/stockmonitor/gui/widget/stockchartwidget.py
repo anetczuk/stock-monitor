@@ -64,6 +64,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.showTransactionsCB.stateChanged.connect( self.repaintData )
 
         self.ui.refreshPB.clicked.connect( self.refreshData )
+        self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
 
     def connectData(self, dataObject, ticker):
         self.dataObject = dataObject
@@ -81,9 +82,10 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.updateData( False )
 
     def updateData(self, forceRefresh=False):
-        _LOGGER.debug( "updating chart data, force: %s", forceRefresh )
+        rangeText = self.ui.rangeCB.currentText()
+        _LOGGER.debug( "updating chart data, force[%s] range[%s]", forceRefresh, rangeText )
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
-        intraSource = self.dataObject.gpwStockIntradayData.getSource( isin )
+        intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
         dataFrame = intraSource.getWorksheet( forceRefresh )
 
         self.clearData()
@@ -172,8 +174,8 @@ class StockChartWindow( AppWindow ):
         self.chart.connectData(dataObject, ticker)
         self._setStockName()
 
-    def updateData(self):
-        self.chart.updateData()
+#     def updateData(self):
+#         self.chart.updateData()
 
     def _setStockName(self):
         name = self.chart.dataObject.getNameFromTicker( self.chart.ticker )

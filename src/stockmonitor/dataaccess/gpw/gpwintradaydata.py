@@ -37,10 +37,13 @@ _LOGGER = logging.getLogger(__name__)
 
 class GpwCurrentStockIntradayData( WorksheetData ):
 
-    def __init__(self, isin):
+    def __init__(self, isin, rangeCode=None):
         super().__init__()
-        self.isin     = isin
-        self.dataTime = datetime.datetime.now()
+        if rangeCode is None:
+            rangeCode = "1D"
+        self.isin      = isin
+        self.rangeCode = rangeCode
+        self.dataTime  = datetime.datetime.now()
 
 #     def getWorksheet(self, forceRefresh=False) -> DataFrame:
 #         if forceRefresh is True:
@@ -85,17 +88,15 @@ class GpwCurrentStockIntradayData( WorksheetData ):
         return None
 
     def getDataPath(self):
+        modeCode = mode_code( self.rangeCode )
         currDate = self.dataTime.date()
         dateStr  = str(currDate)
-        return tmp_dir + "data/gpw/curr/%s/isin_%s.json" % ( dateStr, self.isin )
+        return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
 
     def getDataUrl(self):
+        modeCode      = mode_code( self.rangeCode )
         currTimestamp = self.dataTime.timestamp()
-        utcDateTime   = datetime.datetime.utcfromtimestamp( currTimestamp )
-        utcTimestamp  = int( utcDateTime.timestamp() )
-        return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + self.isin + \
-               "%22,%22mode%22:%22CURR%22,%22from%22:%" + "22444223" + "%22,%22to%22:null}]&t=" + \
-               str(utcTimestamp)
+        return generate_chart_data_url( self.isin, modeCode, currTimestamp)
 
     def sourceLink(self):
         return "https://www.gpw.pl/spolka?isin=" + self.isin
@@ -103,9 +104,13 @@ class GpwCurrentStockIntradayData( WorksheetData ):
 
 class GpwCurrentIndexIntradayData( WorksheetData ):
 
-    def __init__(self, isin):
+    def __init__(self, isin, rangeCode=None):
         super().__init__()
-        self.isin = isin
+        if rangeCode is None:
+            rangeCode = "1D"
+        self.isin      = isin
+        self.rangeCode = rangeCode
+        self.dataTime  = datetime.datetime.now()
 
 #     def getWorksheet(self, forceRefresh=False) -> DataFrame:
 #         if forceRefresh is True:
@@ -115,6 +120,10 @@ class GpwCurrentIndexIntradayData( WorksheetData ):
 #         if timeDiff < datetime.timedelta( minutes=1 ):
 #             return data
 #         return super().getWorksheet( True )
+
+    def refreshData(self, forceRefresh=True):
+        self.dataTime = datetime.datetime.now()
+        super().refreshData( forceRefresh )
 
     def parseDataFromFile(self, dataFile: str) -> DataFrame:
         with open( dataFile ) as f:
@@ -141,17 +150,41 @@ class GpwCurrentIndexIntradayData( WorksheetData ):
         return None
 
     def getDataPath(self):
-        currDateTime = datetime.datetime.now()
-        currDate     = currDateTime.date()
-        dateStr = str(currDate)
-        return tmp_dir + "data/gpw/curr/%s/isin_%s.json" % ( dateStr, self.isin )
+        modeCode = mode_code( self.rangeCode )
+        currDate = self.dataTime.date()
+        dateStr  = str(currDate)
+        return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
 
     def getDataUrl(self):
-        currDateTime = datetime.datetime.utcnow()
-        currTimestamp = int( currDateTime.timestamp() )
-        return "https://gpwbenchmark.pl/chart-json.php?req=[{%22isin%22:%22" + self.isin + \
-               "%22,%22mode%22:%22CURR%22,%22from%22:%22444319%22,%22to%22:null}]&t=" + \
-               str(currTimestamp)
+        modeCode      = mode_code( self.rangeCode )
+        currTimestamp = self.dataTime.timestamp()
+        return generate_chart_data_url( self.isin, modeCode, currTimestamp)
 
     def sourceLink(self):
         return "https://gpwbenchmark.pl/karta-indeksu?isin=" + self.isin
+
+
+def mode_code( modeText ):
+    modeCode = modeText
+    if modeCode == "1D":
+        modeCode = "CURR"
+    elif modeCode == "MAX":
+        modeCode = "ARCH"
+    return modeCode
+
+
+def generate_chart_data_url(isin, modeCode, currTimestamp):
+    utcDateTime   = datetime.datetime.utcfromtimestamp( currTimestamp )
+    utcTimestamp  = int( utcDateTime.timestamp() )
+    if modeCode == "CURR":
+        return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
+               ",%22mode%22:%22" + modeCode + "%22,%22from%22:" + "444223" + ",%22to%22:null}]" + \
+               "&t=" + str(utcTimestamp)
+    elif modeCode == "ARCH":
+        return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
+               ",%22mode%22:%22" + modeCode + "%22,%22from%22:" + "null" + ",%22to%22:null}]" + \
+               "&t=" + str(utcTimestamp)
+    ### other cases
+    return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
+           ",%22mode%22:%22" + modeCode + "%22}]" + \
+           "&t=" + str(utcTimestamp)

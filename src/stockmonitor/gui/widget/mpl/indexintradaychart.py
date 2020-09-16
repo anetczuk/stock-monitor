@@ -22,6 +22,7 @@
 #
 
 import logging
+import datetime
 
 import pandas
 
@@ -76,9 +77,22 @@ def _update_plot(xdata, plot ):
     ticks = _generate_ticks(xdata, 12)
     plot.set_xticks( ticks )
 
+    setLongFormat = False
+    if len(ticks) > 1:
+        timeSpan = ticks[-1] - ticks[0]
+        if timeSpan > datetime.timedelta( days=2 ):
+            setLongFormat = True
+
+    if setLongFormat is True:
+        formatter = matplotlib.dates.DateFormatter('%d-%m-%Y')
+        plot.xaxis.set_major_formatter( formatter )
+    else:
+        formatter = matplotlib.dates.DateFormatter('%H:%M:%S')
+        plot.xaxis.set_major_formatter( formatter )
+
     ### hide first and last major tick (next to plot edges)
-    xticks = plot.xaxis.get_major_ticks()
-    xticks[0].label1.set_visible(False)
+#     xticks = plot.xaxis.get_major_ticks()
+#     xticks[0].label1.set_visible(False)
     ##xticks[-1].label1.set_visible(False)
 
     plot.relim(True)

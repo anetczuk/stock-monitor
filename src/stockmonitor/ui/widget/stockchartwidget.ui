@@ -139,6 +139,45 @@
       </spacer>
      </item>
      <item>
+      <widget class="QComboBox" name="rangeCB">
+       <item>
+        <property name="text">
+         <string>1D</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>14D</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1M</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3M</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>6M</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1R</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>MAX</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="refreshPB">
        <property name="text">
         <string>Refresh</string>

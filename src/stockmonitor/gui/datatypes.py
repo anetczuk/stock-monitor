@@ -510,12 +510,15 @@ class GpwStockIntradayMap():
         source = self.getSource(isin)
         return source.getWorksheet()
 
-    def getSource(self, isin):
-        source = self.dataDict.get( isin, None )
+    def getSource(self, isin, rangeCode=None):
+        if rangeCode is None:
+            rangeCode = "1D"
+        key = isin + "-" + rangeCode
+        source = self.dataDict.get( key, None )
         if source is not None:
             return source
-        source = GpwCurrentStockIntradayData( isin )
-        self.dataDict[ isin ] = source
+        source = GpwCurrentStockIntradayData( isin, rangeCode )
+        self.dataDict[ key ] = source
         return source
 
     def set(self, isin, source):
@@ -535,12 +538,15 @@ class GpwIndexIntradayMap():
         source = self.getSource(isin)
         return source.getWorksheet()
 
-    def getSource(self, isin) -> GpwCurrentIndexIntradayData:
-        source = self.dataDict.get( isin, None )
+    def getSource(self, isin, rangeCode=None) -> GpwCurrentIndexIntradayData:
+        if rangeCode is None:
+            rangeCode = "1D"
+        key = isin + "-" + rangeCode
+        source = self.dataDict.get( key, None )
         if source is not None:
             return source
-        source = GpwCurrentIndexIntradayData( isin )
-        self.dataDict[ isin ] = source
+        source = GpwCurrentIndexIntradayData( isin, rangeCode )
+        self.dataDict[ key ] = source
         return source
 
     def set(self, isin, source):
