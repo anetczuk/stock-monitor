@@ -399,6 +399,7 @@ class DataObject( QObject ):
         retList = []
         retList.append( self.gpwCurrentSource )
         retList.append( self.gpwStockIntradayData )
+        retList.append( self.gpwIndexIntradayData )
         retList.append( self.gpwIndexesData )
         retList.append( self.globalIndexesData )
         retList.append( self.gpwIndicatorsData )
