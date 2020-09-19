@@ -28,17 +28,19 @@ def _interrupt_handler(signum, _):
     QApplication.exit(2)
 
 
-def safe_timer(timeout, func, *args, **kwargs):
+def safe_timer(timeout):
     """
     Create a timer that is safe against garbage collection and overlapping calls.
 
     See: http://ralsina.me/weblog/posts/BB974.html
     """
     def timer_event():
-        try:
-            func(*args, **kwargs)
-        finally:
-            QtCore.QTimer.singleShot(timeout, timer_event)
+#         try:
+#             if func is not None:
+#                 func(*args, **kwargs)
+#         finally:
+#             QtCore.QTimer.singleShot(timeout, timer_event)
+        QtCore.QTimer.singleShot(timeout, timer_event)
 
     QtCore.QTimer.singleShot(timeout, timer_event)
 
@@ -49,4 +51,4 @@ def setup_interrupt_handling():
     signal.signal(signal.SIGINT, _interrupt_handler)
     # Regularly run some (any) python code, so the signal handler gets a
     # chance to be executed:
-    safe_timer(100, lambda: None)
+    safe_timer(100)
