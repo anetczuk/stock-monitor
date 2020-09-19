@@ -66,6 +66,9 @@ _LOGGER = logging.getLogger(__name__)
 app = QApplication(sys.argv)
 app.setApplicationName("StockMonitor")
 app.setOrganizationName("arnet")
+app.setQuitOnLastWindowClosed( False )
+
+setup_interrupt_handling()
 
 window = MainWindow()
 window.setWindowTitleSuffix( "Preview" )
@@ -75,8 +78,6 @@ if args.loadUserData:
     window.loadData()
 window.loadSettings()
 window.show()
-
-setup_interrupt_handling()
 
 exitCode = app.exec_()
 

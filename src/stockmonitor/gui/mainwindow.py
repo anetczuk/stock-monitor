@@ -132,6 +132,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.ui.notesWidget.dataChanged.connect( self._handleNotesChange )
 
+        #qApp.saveStateRequest.connect( self.saveSession )
+        #qApp.aboutToQuit.connect( self.saveOnQuit )
+
         self.applySettings()
         self.trayIcon.show()
 
@@ -283,7 +286,12 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     # Override closeEvent, to intercept the window closing event
     def closeEvent(self, event):
-        _LOGGER.info("received close event")
+        _LOGGER.info("received close event, saving session: %s", qApp.isSavingSession() )
+        if qApp.isSavingSession():
+            ## closing application due to system shutdown
+            self.saveAll()
+            return
+        ## windows close requested by user -- hide the window
         event.ignore()
         self.hide()
         self.trayIcon.show()
@@ -301,6 +309,11 @@ class MainWindow( QtBaseClass ):           # type: ignore
         _LOGGER.info("received close request")
         ##self.close()
         qApp.quit()
+
+    def saveAll(self):
+        _LOGGER.info("saving application state")
+        self.saveSettings()
+        self.saveData()
 
     ## ====================================================================
 

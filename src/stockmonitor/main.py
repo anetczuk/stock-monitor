@@ -47,6 +47,9 @@ def run_app():
     app.setApplicationName("StockMonitor")
     app.setOrganizationName("arnet")
     ### app.setOrganizationDomain("www.my-org.com")
+    app.setQuitOnLastWindowClosed( False )
+
+    setup_interrupt_handling()
 
     try:
         window = MainWindow()
@@ -55,13 +58,10 @@ def run_app():
 
         window.show()
 
-        setup_interrupt_handling()
-
         exitCode = app.exec_()
 
         if exitCode == 0:
-            window.saveSettings()
-            window.saveData()
+            window.saveAll()
 
         return exitCode
     except BaseException as e:
