@@ -27,6 +27,8 @@ from PyQt5.QtCore import QSettings, QObject
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
+from stockmonitor.gui.utils import get_parent
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -238,11 +240,7 @@ def get_widget_key(widget: QObject, suffix=None ):
             retKey = widget.objectName()
         else:
             retKey = widget.objectName() + "-" + retKey
-        if callable(widget.parent) is False:
-            ## some objects has "parent" attribute instead of "parent" method
-            ## e.g. matplotlib's NavigationToolbar
-            return None
-        widget = widget.parent()
+        widget = get_parent( widget )
     if suffix is not None:
         retKey = retKey + "-" + suffix
     return retKey

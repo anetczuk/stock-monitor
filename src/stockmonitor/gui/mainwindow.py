@@ -27,7 +27,6 @@ import logging
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
-from PyQt5.QtGui import QIcon
 
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
@@ -280,7 +279,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         appIcon = load_main_icon( theme )
         self.setWindowIcon( appIcon )
         self.trayIcon.setIcon( appIcon )
-        
+
         ## update charts icon
         chartIcon = load_chart_icon( theme )
         widgets = self.findChildren( AppWindow )

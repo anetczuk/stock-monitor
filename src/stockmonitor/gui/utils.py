@@ -22,8 +22,28 @@
 #
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QObject
 
 
 def set_label_url( label: QtWidgets.QLabel, url: str ):
     htmlText = "<a href=\"%s\">%s</a>" % (url, url)
     label.setText( htmlText )
+
+
+def find_parent(widget: QObject, objectType ):
+    if widget is None:
+        return None
+    widget = get_parent( widget )
+    while widget is not None:
+        if isinstance(widget, objectType):
+            return widget
+        widget = get_parent( widget )
+    return None
+
+
+def get_parent( widget: QObject ):
+    if callable(widget.parent) is False:
+        ## some objects has "parent" attribute instead of "parent" method
+        ## e.g. matplotlib's NavigationToolbar
+        return None
+    return widget.parent()
