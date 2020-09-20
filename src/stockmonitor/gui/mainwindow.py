@@ -286,6 +286,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
         for w in widgets:
             w.setWindowIcon( chartIcon )
 
+    def getIconTheme(self) -> trayicon.TrayIconTheme:
+        return self.appSettings.trayIcon
+
     # Override closeEvent, to intercept the window closing event
     def closeEvent(self, event):
         _LOGGER.info("received close event, saving session: %s", qApp.isSavingSession() )
