@@ -23,6 +23,7 @@
 
 import unittest
 
+from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData, GpwIsinMapData
 
 
@@ -48,6 +49,12 @@ class GpwIsinMapDataTest(unittest.TestCase):
         ## Called before testfunction is executed
         self.dataAccess = GpwIsinMapData()
 
+        def data_path():
+            return get_data_path( "isin_map_data.html" )
+
+        self.dataAccess.getDataPath = data_path           # type: ignore
+        self.dataAccess.parseDataFromDefaultFile()
+
     def tearDown(self):
         ## Called after testfunction was executed
         pass
@@ -55,7 +62,7 @@ class GpwIsinMapDataTest(unittest.TestCase):
     def test_getWorksheet(self):
         currData = self.dataAccess.getWorksheet()
         dataLen = len( currData )
-        self.assertEqual(dataLen, 828)
+        self.assertEqual(dataLen, 829)
 
 #     def test_getWorksheet_micro(self):
 #         startTime = datetime.datetime.now()
