@@ -21,9 +21,12 @@
 # SOFTWARE.
 #
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QVBoxLayout
+
+from stockmonitor.gui import trayicon
+from stockmonitor.gui.trayicon import load_chart_icon
 
 
 class AppWindow( QWidget ):
@@ -38,9 +41,13 @@ class AppWindow( QWidget ):
         self.vlayout = QVBoxLayout()
 #         vlayout.setContentsMargins( 0, 0, 0, 0 )
         self.setLayout( self.vlayout )
-#         self.setWindowIcon( appIcon )
 
-#         self.resize(300, 300)
+        from stockmonitor.gui.mainwindow import MainWindow
+        parentWindow = find_parent( self, MainWindow )
+        if parentWindow is not None:
+            iconTheme: trayicon.TrayIconTheme = parentWindow.appSettings.trayIcon
+            chartIcon = load_chart_icon( iconTheme )
+            self.setWindowIcon( chartIcon )
 
     def setWindowTitleSuffix( self, suffix="" ):
         if len(suffix) < 1:
@@ -56,3 +63,22 @@ class AppWindow( QWidget ):
 
     def addWidget(self, widget):
         self.vlayout.addWidget( widget )
+
+
+def find_parent(widget: QObject, type ):
+    if widget is None:
+        return None
+    widget = get_parent( widget )
+    while widget is not None:
+        if isinstance(widget, type):
+            return widget
+        widget = get_parent( widget )
+    return None
+
+
+def get_parent( widget: QObject ):
+    if callable(widget.parent) is False:
+        ## some objects has "parent" attribute instead of "parent" method
+        ## e.g. matplotlib's NavigationToolbar
+        return None
+    return widget.parent()

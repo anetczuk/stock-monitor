@@ -28,14 +28,16 @@ from PyQt5.QtGui import QIcon, QPainter, QPainterPath, QBrush, QColor, QPen
 from PyQt5.QtWidgets import QApplication, qApp
 from PyQt5.QtWidgets import QSystemTrayIcon, QMenu, QAction
 
+from stockmonitor.gui import resources
+
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @unique
 class TrayIconTheme(Enum):
-    WHITE         = 'stock-white.png'
-    BLACK         = 'stock-black.png'
+    WHITE         = ('stock-white.png', 'stock-chart-white.png')
+    BLACK         = ('stock-black.png', 'stock-chart-black.png')
 
     @classmethod
     def findByName(cls, name):
@@ -54,6 +56,18 @@ class TrayIconTheme(Enum):
                 return index
             index = index + 1
         return -1
+
+
+def load_main_icon( theme: TrayIconTheme ):
+    fileName = theme.value[0]
+    iconPath = resources.get_image_path( fileName )
+    return QIcon( iconPath )
+
+
+def load_chart_icon( theme: TrayIconTheme ):
+    fileName = theme.value[1]
+    iconPath = resources.get_image_path( fileName )
+    return QIcon( iconPath )
 
 
 class TrayIcon(QSystemTrayIcon):

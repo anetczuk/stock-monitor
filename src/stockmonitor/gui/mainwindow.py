@@ -31,10 +31,10 @@ from PyQt5.QtGui import QIcon
 
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
+from stockmonitor.gui.trayicon import load_main_icon, load_chart_icon
 from stockmonitor.gui.utils import set_label_url
 
 from . import uiloader
-from . import resources
 from . import trayicon
 from . import guistate
 from .dataobject import DataObject
@@ -277,12 +277,15 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self._updateIconTheme( theme )
 
     def _updateIconTheme(self, theme: trayicon.TrayIconTheme):
-        fileName = theme.value
-        iconPath = resources.get_image_path( fileName )
-        appIcon = QIcon( iconPath )
-
+        appIcon = load_main_icon( theme )
         self.setWindowIcon( appIcon )
         self.trayIcon.setIcon( appIcon )
+        
+        ## update charts icon
+        chartIcon = load_chart_icon( theme )
+        widgets = self.findChildren( AppWindow )
+        for w in widgets:
+            w.setWindowIcon( chartIcon )
 
     # Override closeEvent, to intercept the window closing event
     def closeEvent(self, event):
