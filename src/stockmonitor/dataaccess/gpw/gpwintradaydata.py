@@ -95,8 +95,8 @@ class GpwCurrentStockIntradayData( WorksheetData ):
 
     def getDataUrl(self):
         modeCode      = mode_code( self.rangeCode )
-        currTimestamp = self.dataTime.timestamp()
-        return generate_chart_data_url( self.isin, modeCode, currTimestamp)
+#         currTimestamp = self.dataTime.timestamp()
+        return generate_chart_data_url( self.isin, modeCode)
 
     def sourceLink(self):
         return "https://www.gpw.pl/spolka?isin=" + self.isin
@@ -157,8 +157,8 @@ class GpwCurrentIndexIntradayData( WorksheetData ):
 
     def getDataUrl(self):
         modeCode      = mode_code( self.rangeCode )
-        currTimestamp = self.dataTime.timestamp()
-        return generate_chart_data_url( self.isin, modeCode, currTimestamp)
+#         currTimestamp = self.dataTime.timestamp()
+        return generate_chart_data_url( self.isin, modeCode)
 
     def sourceLink(self):
         return "https://gpwbenchmark.pl/karta-indeksu?isin=" + self.isin
@@ -173,18 +173,24 @@ def mode_code( modeText ):
     return modeCode
 
 
-def generate_chart_data_url(isin, modeCode, currTimestamp):
-    utcDateTime   = datetime.datetime.utcfromtimestamp( currTimestamp )
-    utcTimestamp  = int( utcDateTime.timestamp() )
-    if modeCode == "CURR":
-        return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
-               ",%22mode%22:%22" + modeCode + "%22,%22from%22:" + "444223" + ",%22to%22:null}]" + \
-               "&t=" + str(utcTimestamp)
-    elif modeCode == "ARCH":
-        return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
-               ",%22mode%22:%22" + modeCode + "%22,%22from%22:" + "null" + ",%22to%22:null}]" + \
-               "&t=" + str(utcTimestamp)
-    ### other cases
+def generate_chart_data_url(isin, modeCode):
     return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
-           ",%22mode%22:%22" + modeCode + "%22}]" + \
-           "&t=" + str(utcTimestamp)
+           ",%22mode%22:%22" + modeCode + "%22}]"
+
+    ## fields 'from' and 'to' are useful in 'RANGE' mode (returned data is in day resolution)
+
+#     utcDateTime     = datetime.datetime.utcfromtimestamp( currTimestamp )
+#     utcTimestamp    = int( utcDateTime.timestamp() )
+# #     hoursSinceEpoch = currTimestamp.total_seconds() / 3600
+#     if modeCode == "CURR":
+#         return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
+#                ",%22mode%22:%22" + modeCode + "%22,%22from%22:" + "null" + ",%22to%22:null}]" + \
+#                "&t=" + str(utcTimestamp)
+#     elif modeCode == "ARCH":
+#         return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
+#                ",%22mode%22:%22" + modeCode + "%22,%22from%22:" + "null" + ",%22to%22:null}]" + \
+#                "&t=" + str(utcTimestamp)
+#     ### other cases
+#     return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
+#            ",%22mode%22:%22" + modeCode + "%22}]" + \
+#            "&t=" + str(utcTimestamp)
