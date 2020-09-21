@@ -36,7 +36,7 @@ from PyQt5.QtWidgets import QWidget, QUndoStack
 
 from stockmonitor import persist
 from stockmonitor.dataaccess.datatype import CurrentDataType
-from stockmonitor.dataaccess.gpw.gpwdata import GpwIsinMapData
+# from stockmonitor.dataaccess.gpw.gpwdata import GpwIsinMapData
 from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
@@ -109,7 +109,7 @@ class DataObject( QObject ):
         self.gpwReportsData     = FinRepsCalendarData()
         self.gpwPubReportsData  = PublishedFinRepsCalendarData()
 
-        self.gpwIsinMap         = GpwIsinMapData()
+#         self.gpwIsinMap         = GpwIsinMapData()
 
         self.undoStack = QUndoStack(self)
 
@@ -448,7 +448,7 @@ class DataObject( QObject ):
         retList.append( self.gpwDividendsData )
         retList.append( self.gpwReportsData )
         retList.append( self.gpwPubReportsData )
-        retList.append( self.gpwIsinMap )
+#         retList.append( self.gpwIsinMap )
         return retList
 
     @property
@@ -478,13 +478,13 @@ class DataObject( QObject ):
         return self.gpwCurrentSource.stockData.getTickerField( rowIndex )
 
     def getTickerFromIsin(self, stockIsin):
-        return self.gpwIsinMap.getTickerFromIsin( stockIsin )
+        return self.gpwCurrentData.getTickerFromIsin( stockIsin )
 
     def getTickerFromName(self, stockName):
-        return self.gpwIsinMap.getTickerFromName( stockName )
+        return self.gpwCurrentData.getTickerFromName( stockName )
 
     def getStockIsinFromTicker(self, ticker):
-        return self.gpwIsinMap.getStockIsinFromTicker( ticker )
+        return self.gpwCurrentData.getStockIsinFromTicker( ticker )
 
     def getNameFromTicker(self, ticker):
-        return self.gpwIsinMap.getNameFromTicker( ticker )
+        return self.gpwCurrentData.getNameFromTicker( ticker )

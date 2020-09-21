@@ -86,8 +86,8 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def updateData(self, forceRefresh=False):
         rangeText = self.ui.rangeCB.currentText()
-        _LOGGER.debug( "updating chart data, force[%s] range[%s]", forceRefresh, rangeText )
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
+        _LOGGER.debug( "updating chart data, force[%s] range[%s] isin[%s]", forceRefresh, rangeText, isin )
         intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
         dataFrame = intraSource.getWorksheet( forceRefresh )
 

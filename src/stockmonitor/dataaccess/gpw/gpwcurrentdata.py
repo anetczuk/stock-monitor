@@ -79,6 +79,43 @@ class GpwCurrentStockData( WorksheetData ):
             return None
         return self.getTickerFieldFromData( dataFrame, rowIndex )
 
+    def getTickerFromIsin(self, stockIsin):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["isin"] == stockIsin ].index.values
+        if not rowIndexes:
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["Skrót"]
+        return tickerColumn.iloc[ rowIndex ]
+
+    def getTickerFromName(self, stockName):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["Nazwa"] == stockName ].index.values
+        if not rowIndexes:
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["Skrót"]
+        return tickerColumn.iloc[ rowIndex ]
+
+    def getStockIsinFromTicker(self, ticker):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["Skrót"] == ticker ].index.values
+        if not rowIndexes:
+            _LOGGER.warning("no isin found for ticker %s", ticker)
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["isin"]
+        return tickerColumn.iloc[ rowIndex ]
+
+    def getNameFromTicker(self, ticker):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["Skrót"] == ticker ].index.values
+        if not rowIndexes:
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["Nazwa"]
+        return tickerColumn.iloc[ rowIndex ]
+
     def getTickerFieldByName(self, stockName):
         dataFrame = self.getWorksheet()
         if dataFrame is None:
@@ -184,6 +221,8 @@ class GpwCurrentStockData( WorksheetData ):
             apply_on_column( dataFrame, 'Unnamed: 21_level_0', convert_int )
         except KeyError:
             _LOGGER.exception( "unable to get values by key" )
+
+        append_stock_isin( dataFrame, dataFile )
 
         return dataFrame
 
@@ -309,6 +348,29 @@ def convert_indexes_data( dataFrame: DataFrame ):
 
     apply_on_column( dataFrame, 'Liczba spółek', convert_int )
     apply_on_column( dataFrame, '% otw. portfela', convert_int )
+
+
+def append_stock_isin( dataFrame, dataFile ):
+    with open(dataFile, 'r') as file:
+        fileContent = file.read()
+
+    isinList = []
+
+    for name in dataFrame["Nazwa"]:
+        # pylint: disable=W1401
+        pattern = '<a\s*href="spolka\?isin=(\S*?)">' + name + '.*?</a>'
+        matchObj = re.search( pattern, fileContent )
+        if matchObj is None:
+            isinList.append( None )
+            continue
+        groups = matchObj.groups()
+        if len(groups) < 1:
+            isinList.append( None )
+            continue
+        isin = groups[0]
+        isinList.append( isin )
+
+    dataFrame["isin"] = isinList
 
 
 def append_indexes_isin( dataFrame, dataFile ):

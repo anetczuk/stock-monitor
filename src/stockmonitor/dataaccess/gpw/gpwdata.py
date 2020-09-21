@@ -99,6 +99,7 @@ class GpwIsinMapData( WorksheetData ):
         dataFrame = self.getWorksheet()
         rowIndexes = dataFrame[ dataFrame["Ticker"] == ticker ].index.values
         if not rowIndexes:
+            _LOGGER.warning("no isin found for ticker %s", ticker)
             return None
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["ISIN"]
@@ -123,4 +124,6 @@ class GpwIsinMapData( WorksheetData ):
         return tmp_dir + "data/gpw/isin_map_data.html"
 
     def getDataUrl(self):
+        ## this source does not seem to be viable,
+        ## because it lacks a lot of tickers/isin values
         return "http://infostrefa.com/infostrefa/pl/spolki"
