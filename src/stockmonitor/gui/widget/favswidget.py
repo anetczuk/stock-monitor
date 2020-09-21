@@ -128,7 +128,7 @@ class SinglePageWidget( QWidget ):
         self.changeCounter = 0
 
         vlayout = QVBoxLayout()
-        vlayout.setContentsMargins( 0, 0, 0, 0 )
+        vlayout.setContentsMargins( 6, 6, 6, 6 )
         self.setLayout( vlayout )
         self.stockData = StockFavsTable(self)
 
