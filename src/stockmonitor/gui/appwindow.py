@@ -38,6 +38,7 @@ class AppWindow( QWidget ):
         super().__init__( parent )
         self.setWindowFlags( Qt.Window )
         self.setWindowTitle( self.appTitle )
+        self.setAttribute( Qt.WA_DeleteOnClose )
 
         self.vlayout = QVBoxLayout()
 #         vlayout.setContentsMargins( 0, 0, 0, 0 )

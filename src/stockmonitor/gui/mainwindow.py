@@ -307,6 +307,12 @@ class MainWindow( QtBaseClass ):           # type: ignore
     def hideEvent(self, _):
         self.trayIcon.updateLabel()
 
+    def setVisible(self, state):
+        childrenWindows = self.findChildren( AppWindow )
+        for w in childrenWindows:
+            w.setVisible( state )
+        super().setVisible( state )
+
     ## ====================================================================
 
     # pylint: disable=R0201
