@@ -39,8 +39,8 @@ class StockIntradayChart( MplCanvas ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget, 10, 10, 80)
 
-        self.pricePlot  = self.figure.add_subplot(2, 1, 1)
-        self.volumePlot = self.figure.add_subplot(2, 1, 2)
+        self.pricePlot  = self.figure.add_subplot(2, 1, 1)      ## matplotlib.axes._subplots.AxesSubplot
+        self.volumePlot = self.figure.add_subplot(2, 1, 2)      ## matplotlib.axes._subplots.AxesSubplot
 
         self._configurePlot( self.pricePlot, "Price" )
         self._configurePlot( self.volumePlot, "Volume" )
@@ -55,6 +55,11 @@ class StockIntradayChart( MplCanvas ):
             self.figure.set_visible( False )
         self.pricePlot.lines.clear()
         self.volumePlot.lines.clear()
+
+    def addPriceSecondaryY(self, yLabel, firstToSecondFunction, secondToFirstFunction):
+        secay = self.pricePlot.secondary_yaxis( 'right', functions=(firstToSecondFunction, secondToFirstFunction) )
+        if yLabel is not None:
+            secay.set_ylabel( yLabel )
 
     def addPriceLine(self, xdata: List[datetime.datetime], ydata, color, style=None):
         line = self.pricePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
