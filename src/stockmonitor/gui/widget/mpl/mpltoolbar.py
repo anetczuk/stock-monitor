@@ -24,7 +24,7 @@ class DynamicToolbar(NavigationToolbar):
 
     def __init__(self, plotCanvas, parent):
         super().__init__(plotCanvas, parent)
-        self.removeButton( 'Subplots' )
+#         self.removeButton( 'Subplots' )
 
     def removeButton(self, buttonName):
         items = []
