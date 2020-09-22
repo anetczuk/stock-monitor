@@ -30,7 +30,7 @@ from stockmonitor.gui.utils import set_label_url
 
 from .. import uiloader
 
-from .mpl.mpltoolbar import DynamicToolbar
+from .mpl.mpltoolbar import NavigationToolbar
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
             bgcolor = parentWidget.palette().color(parentWidget.backgroundRole())
             self.ui.dataChart.setBackgroundByQColor( bgcolor )
 
-        self.toolbar = DynamicToolbar(self.ui.dataChart, self)
+        self.toolbar = NavigationToolbar(self.ui.dataChart, self)
         self.ui.toolbarLayout.addWidget( self.toolbar )
 
         self.ui.sourceLabel.setOpenExternalLinks(True)

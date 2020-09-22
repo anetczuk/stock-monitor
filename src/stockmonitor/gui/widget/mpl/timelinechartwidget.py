@@ -25,7 +25,7 @@ import logging
 
 from ... import uiloader
 
-from .mpltoolbar import DynamicToolbar
+from .mpltoolbar import NavigationToolbar
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class TimelineChartWidget(QtBaseClass):             # type: ignore
         self.ui.enabledCB.setChecked( True )
         self.ui.enabledCB.stateChanged.connect( self._toggleEnabled )
 
-        self.toolbar = DynamicToolbar(self.ui.dataChart, self)
+        self.toolbar = NavigationToolbar(self.ui.dataChart, self)
         self.ui.toolbarLayout.addWidget( self.toolbar )
 
         self._refreshWidget()
