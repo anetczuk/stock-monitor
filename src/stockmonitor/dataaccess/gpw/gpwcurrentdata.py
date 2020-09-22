@@ -210,15 +210,13 @@ class GpwCurrentStockData( WorksheetData ):
         apply_on_column( dataFrame, 'Kurs ost. trans. / zamk.', convert_float )
         apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
 
-        ## Wart. obr. - skumul.(tys.)
         try:
-            apply_on_column( dataFrame, 'Unnamed: 22_level_0', convert_float )
+            apply_on_column( dataFrame, 'Wol. obr. - skumul.', convert_int )
         except KeyError:
             _LOGGER.exception( "unable to get values by key" )
 
-        ## Wol. obr. - skumul.
         try:
-            apply_on_column( dataFrame, 'Unnamed: 21_level_0', convert_int )
+            apply_on_column( dataFrame, 'Wart. obr. - skumul.(tys.)', convert_float )
         except KeyError:
             _LOGGER.exception( "unable to get values by key" )
 
