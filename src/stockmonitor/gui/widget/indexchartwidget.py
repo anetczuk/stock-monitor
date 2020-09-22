@@ -93,8 +93,16 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
 
+        refPrice  = priceColumn[ 0 ]
+
         timeData = list(timeColumn)
         self.addPriceLine( timeData, priceColumn )
+
+        self.addPriceSecondaryY( refPrice )
+
+        refX = [ timeData[0], timeData[-1] ]
+        refY = [ refPrice, refPrice ]
+        self.addPriceLine( refX, refY, style="--" )
 
         currentSource = self.dataObject.gpwIndexesData
         currentSource.loadWorksheet( forceRefresh )
@@ -121,6 +129,16 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 #         enabledChart = self.ui.enabledCB.isChecked()
 #         settings.setValue("chart_enabled", enabledChart)
 #         settings.endGroup()
+
+    def addPriceSecondaryY( self, referenceValue ):
+
+        def val_to_perc( y ):
+            return ( y / referenceValue - 1.0 ) * 100.0
+
+        def perc_to_val( y ):
+            return ( y / 100.0 + 1.0 ) * referenceValue
+
+        self.ui.dataChart.addPriceSecondaryY( "Change [%]", val_to_perc, perc_to_val )
 
     def addPriceLine(self, xdata, ydata, color='r', style=None ):
         self.ui.dataChart.addPriceLine( xdata, ydata, color, style )

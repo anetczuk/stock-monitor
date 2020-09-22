@@ -51,6 +51,11 @@ class IndexIntradayChart( MplCanvas ):
             self.figure.set_visible( False )
         self.pricePlot.lines.clear()
 
+    def addPriceSecondaryY(self, yLabel, firstToSecondFunction, secondToFirstFunction):
+        secay = self.pricePlot.secondary_yaxis( 'right', functions=(firstToSecondFunction, secondToFirstFunction) )
+        if yLabel is not None:
+            secay.set_ylabel( yLabel )
+
     def addPriceLine(self, xdata, ydata, color, style=None):
         line = self.pricePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
         if style is not None:
