@@ -66,6 +66,8 @@ def configure( logFile=None, logLevel=None ):
     logging.root.addHandler( fileHandler )
     logging.root.setLevel( logLevel )
 
+    logging.getLogger('matplotlib').setLevel(logging.WARNING)
+
 ##     loggerFormat   = '%(asctime)s,%(msecs)-3d %(levelname)-8s %(threadName)s [%(filename)s:%(lineno)d] %(message)s'
 ##     dateFormat     = '%Y-%m-%d %H:%M:%S'
 ##     logging.basicConfig( format   = loggerFormat,
