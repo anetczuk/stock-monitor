@@ -83,6 +83,14 @@ class GpwCurrentStockIntradayData( WorksheetData ):
 
             apply_on_column( dataFrame, 't', convert_timestamp_datetime )
 
+            if self.rangeCode != "1D":
+                ## add recent value to range other than "1D" (current)
+                currData = GpwCurrentStockIntradayData( self.isin )
+                currData.dataTime = self.dataTime
+                currWorksheet = currData.getWorksheet()
+                lastRow = currWorksheet.iloc[-1]
+                dataFrame.append( lastRow )
+
             return dataFrame
 
         return None
@@ -94,7 +102,7 @@ class GpwCurrentStockIntradayData( WorksheetData ):
         return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
 
     def getDataUrl(self):
-        modeCode      = mode_code( self.rangeCode )
+        modeCode = mode_code( self.rangeCode )
 #         currTimestamp = self.dataTime.timestamp()
         return generate_chart_data_url( self.isin, modeCode)
 
