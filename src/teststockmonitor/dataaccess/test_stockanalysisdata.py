@@ -54,3 +54,24 @@ class VarCalcTest(unittest.TestCase):
         change1 = VarCalc.calcChange1( dataColumn1 )
         change2 = VarCalc.calcChange1( dataColumn2 )
         self.assertGreater(change2, change1)
+
+    def test_calcChange3(self):
+        dataColumn = pandas.Series( [10.0, 15.0] )
+        change = VarCalc.calcChange3( dataColumn, 20.0 )
+        self.assertEqual( change, (50.0, 1) )
+
+        dataColumn = pandas.Series( [10.0, 15.0, 16.0] )
+        change = VarCalc.calcChange3( dataColumn, 20.0 )
+        self.assertEqual( change, (60.0, 1) )
+
+        dataColumn = pandas.Series( [10.0, 7.5, 15.0] )
+        change = VarCalc.calcChange3( dataColumn, 20.0 )
+        self.assertEqual(change, (100.0, 1))
+
+        dataColumn = pandas.Series( [10.0, 11.0, 15.0, 14.0] )
+        change = VarCalc.calcChange3( dataColumn, 20.0 )
+        self.assertEqual(change, (50.0, 1))
+
+        dataColumn = pandas.Series( [10.0, 7.5, 15.0, 11.0] )
+        change = VarCalc.calcChange3( dataColumn, 20.0 )
+        self.assertEqual(change, (100.0, 1))

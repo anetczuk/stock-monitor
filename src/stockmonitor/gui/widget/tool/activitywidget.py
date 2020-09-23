@@ -49,12 +49,15 @@ class ActivityWidget(QtBaseClass):           # type: ignore
 
         self.recentOutput = None
 
-        toDate   = datetime.date.today() - datetime.timedelta( days=1 )
-        fromDate = toDate - datetime.timedelta( days=7 )
-
-        self.ui.fromDE.setDate( fromDate )
-#         self.ui.fromDE.setDate( toDate )
+        toDate   = datetime.date.today()
+        self.ui.fromDE.setDate( toDate )
         self.ui.toDE.setDate( toDate )
+
+#         toDate   = datetime.date.today() - datetime.timedelta( days=1 )
+#         fromDate = toDate - datetime.timedelta( days=7 )
+#
+#         self.ui.fromDE.setDate( fromDate )
+#         self.ui.toDE.setDate( toDate )
 
         self.ui.openPB.setEnabled( False )
 
@@ -72,11 +75,12 @@ class ActivityWidget(QtBaseClass):           # type: ignore
     def calculate(self):
         fromDate = self.ui.fromDE.date().toPyDate()
         toDate   = self.ui.toDE.date().toPyDate()
+        thresh   = self.ui.threshSB.value()
 
         analysis = StockAnalysis()
 
         self.recentOutput = tmp_dir + "out/output_variance.csv"
-        resultData = analysis.calcActivity( fromDate, toDate, self.recentOutput )
+        resultData = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )
         self.ui.dataTable.setData( resultData )
         self.ui.openPB.setEnabled( True )
 

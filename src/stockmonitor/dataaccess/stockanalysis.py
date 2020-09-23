@@ -531,18 +531,18 @@ class StockAnalysis(object):
 
         return retDataFrame
 
-    def calcActivity(self, fromDay: date, toDay: date, outFilePath=None):
+    def calcActivity(self, fromDay: date, toDay: date, thresholdPercent, outFilePath=None):
         self.logger.debug( "Calculating stock activity in range: %s %s", fromDay, toDay )
 
         isinDict = self.data.getISINForDate( toDay )
 #         isinList = isinDict.values()
         isinItems = isinDict.items()
 
-        dataDict = list()
-        dataDict.append( StockDict() )
-        dataDict.append( StockDict() )
-        dataDict.append( StockDict() )
-        dataDict.append( StockDict() )
+        dataDicts = list()
+        dataDicts.append( StockDict() )
+        dataDicts.append( StockDict() )
+        dataDicts.append( StockDict() )
+        dataDicts.append( StockDict() )
 
         pool = multiprocessing.dummy.Pool( 1 )
 
@@ -570,42 +570,42 @@ class StockAnalysis(object):
                     continue
 
                 priceColumn = dataFrame["c"]
-                calcRet = VarCalc.calcActivity(priceColumn)
-                dataDict[0].add( name, calcRet )
+                calcRet = VarCalc.calcChange3(priceColumn, thresholdPercent)
+                dataDicts[0].add( name, calcRet )
 
                 calcRet = VarCalc.calcChange1(priceColumn)
-                dataDict[1].add( name, calcRet )
+                dataDicts[1].add( name, calcRet )
 
                 volumenColumn = dataFrame["v"]
                 calcRet = VarCalc.calcChange2(volumenColumn)
-                dataDict[2].add( name, calcRet )
+                dataDicts[2].add( name, calcRet )
 
                 turnoverColumn = priceColumn * volumenColumn
                 calcRet = VarCalc.calcStdDev( turnoverColumn )
-                dataDict[3].add( name, calcRet )
+                dataDicts[3].add( name, calcRet )
 
 #                 calcRet = VarCalc.calcSum(volumenColumn)
-#                 dataDict[2].add( name, calcRet )
+#                 dataDicts[2].add( name, calcRet )
 
 #             calc = VarCalc( currDate )
 #             priceRet  = calc.calculateChange1( "c", isinItems, pool )
 # #             ret = calc.calculateStdDev( isinItems, pool )
 # #             ret = calc.calculateVar( isinItems, pool )
-#             dataDict[0].addDict( priceRet )
+#             dataDicts[0].addDict( priceRet )
 #
 #             volumeRet = calc.calculateChange2( "v", isinItems, pool )
-#             dataDict[1].addDict( volumeRet )
+#             dataDicts[1].addDict( volumeRet )
 
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_var2.csv"
+            file = tmp_dir + "out/output_activity.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
         writer = csv.writer(open(file, 'w'))
         writer.writerow( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
-        writer.writerow( ["variance:", ("|maxVal - max(open, close)| / max(open, close) + "
-                                        "|minVal - min(open, close)| / min(open, close)") ] )
+        writer.writerow( ["volatility:", ("|maxVal - max(open, close)| / max(open, close) + "
+                                          "|minVal - min(open, close)| / min(open, close)") ] )
         writer.writerow( [] )
 
 #         columnsList = ["name", "variance"]
@@ -614,23 +614,24 @@ class StockAnalysis(object):
 
         rowsList = []
 
-        for key in dataDict[0].keys():
+        for key in dataDicts[0].keys():
             moneyLink = self.getMoneyPlLink( key )
 #             trading = tradDict[ key ]
 
-            priceAct = dataDict[0][key]
-            priceAct = round( priceAct, 4 )
+            priceAct = dataDicts[0][key]
+            priceAct = priceAct[1]
+            #priceAct = round( priceAct, 4 )
 
-            price = dataDict[1][key]
+            price = dataDicts[1][key]
             price = round( price, 4 )
 
-            volume = dataDict[2][key]
+            volume = dataDicts[2][key]
             volume = round( volume, 4 )
 
-            turnover = dataDict[3][key]
+            turnover = dataDicts[3][key]
             turnover = round( turnover, 4 )
 
-#             volume2 = dataDict[1][key]
+#             volume2 = dataDicts[1][key]
 #             volume2 = round( volume, 4 )
 
             rowsList.append( [key, priceAct, price, volume, turnover, 0.0, 0.0, moneyLink] )

@@ -276,6 +276,65 @@ class VarCalc():
         return pcount
 
     @staticmethod
+    def calcChange3(dataColumn, minPercent):
+        if dataColumn.count() < 2:
+            return (0.0, 0)
+        minDiff = minPercent / 100.0
+
+        dataSize = len( dataColumn )
+        dataList = list()
+        dataList.append( dataColumn[0] )
+        dataList.append( dataColumn[1] )
+        for i in range(2, dataSize):
+            recentDiff = dataList[-1] - dataList[-2]
+            currDiff   = dataColumn[i] - dataColumn[i - 1]
+            if recentDiff > 0:
+                if currDiff > 0:
+                    dataList[-1] += currDiff
+                    continue
+            else:
+                if currDiff < 0:
+                    dataList[-1] += currDiff
+                    continue
+            dataList.append( dataColumn[i] )
+
+        diff    = 0.0
+        counter = 0
+        dataSize = len( dataList )
+        localMin = dataList[0]
+        localMax = dataList[0]
+        for i in range(1, dataSize):
+            minRaise = (dataList[i] - localMin) / localMin
+            maxRaise = (dataList[i] - localMax) / localMax
+            currRaise = max( minRaise, maxRaise )
+            if currRaise > minDiff:
+                diff += currRaise
+                counter += 1
+                localMin = dataList[i]
+                localMax = dataList[i]
+                continue
+            if minRaise < 0:
+                localMin = dataList[i]
+            if maxRaise > 0:
+                localMax = dataList[i]
+
+#             minRaise = (dataList[i] - localMin) / localMin
+#             maxRaise = (dataList[i] - localMax) / localMax
+#             currDiff = max( abs(minRaise), abs(maxRaise) )
+#             if currDiff > minDiff:
+#                 diff += currDiff
+#                 counter += 1
+#                 localMin = dataList[i]
+#                 localMax = dataList[i]
+#                 continue
+#             if minRaise < 0:
+#                 localMin = dataList[i]
+#             if maxRaise > 0:
+#                 localMax = dataList[i]
+
+        return (diff * 100, counter)
+
+    @staticmethod
     def calcStdDev(dataColumn):
         if dataColumn.count() < 2:
             return 0.0
