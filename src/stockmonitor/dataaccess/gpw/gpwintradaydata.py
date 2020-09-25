@@ -89,7 +89,7 @@ class GpwCurrentStockIntradayData( WorksheetData ):
                 currData.dataTime = self.dataTime
                 currWorksheet = currData.getWorksheet()
                 lastRow = currWorksheet.iloc[-1]
-                dataFrame.append( lastRow )
+                dataFrame = dataFrame.append( lastRow )
 
             return dataFrame
 
