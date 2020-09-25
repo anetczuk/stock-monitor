@@ -544,7 +544,7 @@ class StockAnalysis(object):
         dataDicts.append( StockDict() )
         dataDicts.append( StockDict() )
 
-        pool = multiprocessing.dummy.Pool( 1 )
+        pool = multiprocessing.dummy.Pool( 6 )
 
         currDate = fromDay
         currDate -= datetime.timedelta(days=1)

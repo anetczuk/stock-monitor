@@ -23,10 +23,12 @@
 
 import logging
 
+from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets, QtGui
 
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url
+from stockmonitor.gui import threadlist
 
 from .. import uiloader
 
@@ -40,6 +42,8 @@ UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
 
 
 class StockChartWidget(QtBaseClass):                    # type: ignore
+
+#     updateFinished = QtCore.pyqtSignal()
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -76,7 +80,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.updateData( True )
 
     def clearData(self):
-        self.ui.dataChart.clearLines()
+        self.ui.dataChart.clearPlot()
 
     def refreshData(self):
         self.updateData( True )
@@ -84,24 +88,48 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
     def repaintData(self):
         self.updateData( False )
 
-    def updateData(self, forceRefresh=False):
+    def updateData(self, forceRefresh):
+        self.ui.refreshPB.setEnabled( False )
+         
+        threads = threadlist.QThreadMeasuredList( self )
+        threads.finished.connect( threads.deleteLater )
+        threads.finished.connect( self._updateView, Qt.QueuedConnection )
+         
+        intraSource = self.getIntradayDataSource()
+        threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+         
+        currentData = self.getCurrentDataSource()
+        threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )
+         
+        threads.start()
+
+#         intraSource = self.getIntradayDataSource()
+#         intraSource.getWorksheet( forceRefresh )
+#         currentData = self.getCurrentDataSource()
+#         currentData.loadWorksheet( forceRefresh )
+#         self._updateView()
+
+    def _updateView(self):
+        self.ui.refreshPB.setEnabled( True )
+        
         rangeText = self.ui.rangeCB.currentText()
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
-        _LOGGER.debug( "updating chart data, force[%s] range[%s] isin[%s]", forceRefresh, rangeText, isin )
-        intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
-        dataFrame = intraSource.getWorksheet( forceRefresh )
+        _LOGGER.debug( "updating chart data, range[%s] isin[%s]", rangeText, isin )
+        
+        intraSource = self.getIntradayDataSource()
+        dataFrame = intraSource.getWorksheet()
 
         self.clearData()
         if dataFrame is None:
             return
 
+        currentData = self.getCurrentDataSource()
+        currentData.loadWorksheet()
+
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
         volumeColumn = dataFrame["v"]
 #         print( "got intraday data:", priceColumn )
-
-        currentData = self.dataObject.gpwCurrentData
-        currentData.loadWorksheet( forceRefresh )
 
         price     = currentData.getRecentValue( self.ticker )
         change    = currentData.getRecentChange( self.ticker )
@@ -143,6 +171,15 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
 
+    def getIntradayDataSource(self):
+        rangeText = self.ui.rangeCB.currentText()
+        isin = self.dataObject.getStockIsinFromTicker( self.ticker )
+        intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+        return intraSource
+    
+    def getCurrentDataSource(self):
+        return self.dataObject.gpwCurrentData
+
 #     def loadSettings(self, settings):
 #         settings.beginGroup( self.objectName() )
 #         enabled = settings.value("chart_enabled", True, type=bool)
@@ -168,11 +205,11 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def addPriceLine(self, xdata, ydata, color='r', style=None ):
         self.ui.dataChart.addPriceLine( xdata, ydata, color, style )
-        self.ui.dataChart.draw_idle()
+        self.ui.dataChart.refreshCanvas()
 
     def addVolumeLine(self, xdata, ydata, color='b', style=None ):
         self.ui.dataChart.addVolumeLine( xdata, ydata, color, style )
-        self.ui.dataChart.draw_idle()
+        self.ui.dataChart.refreshCanvas()
 
 
 class StockChartWindow( AppWindow ):

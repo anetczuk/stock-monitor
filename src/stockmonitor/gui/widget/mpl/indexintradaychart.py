@@ -38,18 +38,19 @@ class IndexIntradayChart( MplCanvas ):
         super().__init__(parentWidget, 10, 10, 80)
 
         self.pricePlot  = self.figure.add_subplot(1, 1, 1)
+        self.clearPlot()
 
+    def clearPlot(self):
+#         if self.figure.get_visible() is True:
+#             self.figure.set_visible( False )
+
+        self.pricePlot.cla()
+        
         self._configurePlot( self.pricePlot, "Price" )
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
         self.figure.autofmt_xdate()
-
-    def clearLines(self):
-        ## remove old lines
-        if self.figure.get_visible() is True:
-            self.figure.set_visible( False )
-        self.pricePlot.lines.clear()
 
     def addPriceSecondaryY(self, yLabel, firstToSecondFunction, secondToFirstFunction):
         secay = self.pricePlot.secondary_yaxis( 'right', functions=(firstToSecondFunction, secondToFirstFunction) )

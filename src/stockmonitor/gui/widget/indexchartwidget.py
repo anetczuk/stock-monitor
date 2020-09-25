@@ -23,10 +23,12 @@
 
 import logging
 
+from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets, QtGui
 
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url
+from stockmonitor.gui import threadlist
 
 from .. import uiloader
 
@@ -71,7 +73,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.updateData( True )
 
     def clearData(self):
-        self.ui.dataChart.clearLines()
+        self.ui.dataChart.clearPlot()
 
     def refreshData(self):
         self.updateData( True )
@@ -80,14 +82,35 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.updateData( False )
 
     def updateData(self, forceRefresh=False):
+        self.ui.refreshPB.setEnabled( False )
+        
+        threads = threadlist.QThreadMeasuredList( self )
+        threads.finished.connect( threads.deleteLater )
+        threads.finished.connect( self._updateView, Qt.QueuedConnection )
+        
+        intraSource = self.getIntradayDataSource()
+        threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+        
+        currentData = self.getCurrentDataSource()
+        threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )
+        
+        threads.start()
+    
+    def _updateView(self):
+        self.ui.refreshPB.setEnabled( True )
+        
         rangeText = self.ui.rangeCB.currentText()
-        _LOGGER.debug( "updating chart data, force[%s] range[%s]", forceRefresh, rangeText )
-        intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin, rangeText )
-        dataFrame = intraSource.getWorksheet( forceRefresh )
+        _LOGGER.debug( "updating chart data, range[%s]", rangeText )
+        
+        intraSource = self.getIntradayDataSource()
+        dataFrame = intraSource.getWorksheet()
 
         self.clearData()
         if dataFrame is None:
             return
+
+        currentSource = self.getCurrentDataSource()
+        currentSource.loadWorksheet()
 
 #         print( "got intraday data:", dataFrame )
         timeColumn   = dataFrame["t"]
@@ -104,9 +127,6 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         refY = [ refPrice, refPrice ]
         self.addPriceLine( refX, refY, style="--" )
 
-        currentSource = self.dataObject.gpwIndexesData
-        currentSource.loadWorksheet( forceRefresh )
-
         value     = currentSource.getRecentValue( self.isin )
         change    = currentSource.getRecentChange( self.isin )
         timestamp = timeColumn.iloc[-1]
@@ -116,6 +136,14 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.timeLabel.setText( str(timestamp) )
 
         set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
+
+    def getIntradayDataSource(self):
+        rangeText = self.ui.rangeCB.currentText()
+        intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin, rangeText )
+        return intraSource
+
+    def getCurrentDataSource(self):
+        return self.dataObject.gpwIndexesData
 
 #     def loadSettings(self, settings):
 #         settings.beginGroup( self.objectName() )
@@ -142,7 +170,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
     def addPriceLine(self, xdata, ydata, color='r', style=None ):
         self.ui.dataChart.addPriceLine( xdata, ydata, color, style )
-        self.ui.dataChart.draw_idle()
+        self.ui.dataChart.refreshCanvas()
 
 
 class IndexChartWindow( AppWindow ):
@@ -163,7 +191,7 @@ class IndexChartWindow( AppWindow ):
         self._setStockName()
 
     def _setStockName(self):
-        currentSource = self.chart.dataObject.gpwIndexesData
+        currentSource = self.chart.getCurrentDataSource()
         name = currentSource.getNameFromIsin( self.chart.isin )
         title = name + " [" + self.chart.isin + "]"
         self.setWindowTitleSuffix( "- " + title )

@@ -126,6 +126,7 @@ class WorksheetData( BaseWorksheetData ):
 
     def parseDataFromDefaultFile(self):
         dataPath = self.getDataPath()
+        _LOGGER.info( "parsing raw data: %s", dataPath )
         self.worksheet = self.parseDataFromFile( dataPath )
 
     def getPicklePath(self):
