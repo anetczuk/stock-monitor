@@ -41,6 +41,7 @@ class StockIntradayChart( MplCanvas ):
 
         self.pricePlot  = self.figure.add_subplot(2, 1, 1)      ## matplotlib.axes._subplots.AxesSubplot
         self.volumePlot = self.figure.add_subplot(2, 1, 2)      ## matplotlib.axes._subplots.AxesSubplot
+
         self.clearPlot()
 
     def clearPlot(self):
@@ -56,6 +57,31 @@ class StockIntradayChart( MplCanvas ):
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
         self.figure.autofmt_xdate()
+
+    def setPriceFormatCoord( self, xdata, ydata, refValue ):
+        xformatter = self.pricePlot.xaxis.get_major_formatter()
+
+        def format_coord(x, _):
+#         def format_coord(x, y):
+            xtimestamp = pandas.Timestamp( x, unit='D' )
+            xindex = get_index( xdata, xtimestamp )
+            yvalue = ydata[ xindex ]
+            change = ( yvalue / refValue - 1 ) * 100
+            return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
+
+        self.pricePlot.format_coord = format_coord
+
+    def setVolumeFormatCoord( self, xdata, ydata ):
+        xformatter = self.volumePlot.xaxis.get_major_formatter()
+
+        def format_coord(x, _):
+#         def format_coord(x, y):
+            xtimestamp = pandas.Timestamp( x, unit='D' )
+            xindex = get_index( xdata, xtimestamp )
+            yvalue = ydata[ xindex ]
+            return 'x=' + xformatter.format_data(x) + ' y=%i' % yvalue
+
+        self.volumePlot.format_coord = format_coord
 
     def addPriceSecondaryY(self, yLabel, firstToSecondFunction, secondToFirstFunction):
         secay = self.pricePlot.secondary_yaxis( 'right', functions=(firstToSecondFunction, secondToFirstFunction) )
@@ -85,10 +111,6 @@ class StockIntradayChart( MplCanvas ):
     def _configurePlot(self, plot, ylabel):
         plot.set_xlabel( 'Time', fontsize=14 )
         plot.set_ylabel( ylabel, fontsize=14 )
-
-        formatter = matplotlib.dates.DateFormatter('%H:%M:%S')
-        plot.xaxis.set_major_formatter( formatter )
-#         plot.xaxis_date()
 
         plot.margins( y=0.2 )
         plot.set_xmargin(0.0)      ## prevents empty space between first tick and y axis
@@ -140,3 +162,12 @@ def _generate_ticks(xdata, number):
         ts = pandas.Timestamp( currTs, unit="s" )
         ticks.append( ts )
     return ticks
+
+
+def get_index( xdata, xvalue ):
+    dataSize = len( xdata )
+    for i in range(0, dataSize):
+        currData = xdata[ i ]
+        if xvalue < currData:
+            return i - 1
+    return dataSize - 1

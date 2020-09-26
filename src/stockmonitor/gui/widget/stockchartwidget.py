@@ -90,17 +90,17 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def updateData(self, forceRefresh):
         self.ui.refreshPB.setEnabled( False )
-         
+
         threads = threadlist.QThreadMeasuredList( self )
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
-         
+
         intraSource = self.getIntradayDataSource()
         threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
-         
+
         currentData = self.getCurrentDataSource()
         threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )
-         
+
         threads.start()
 
 #         intraSource = self.getIntradayDataSource()
@@ -111,11 +111,11 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def _updateView(self):
         self.ui.refreshPB.setEnabled( True )
-        
+
         rangeText = self.ui.rangeCB.currentText()
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
         _LOGGER.debug( "updating chart data, range[%s] isin[%s]", rangeText, isin )
-        
+
         intraSource = self.getIntradayDataSource()
         dataFrame = intraSource.getWorksheet()
 
@@ -164,6 +164,9 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         self.addVolumeLine( timeData, volumeColumn )
 
+        self.ui.dataChart.setPriceFormatCoord( timeData, priceColumn, refPrice )
+        self.ui.dataChart.setVolumeFormatCoord( timeData, volumeColumn )
+
         self.ui.valueLabel.setText( str(price) )
         self.ui.changeLabel.setText( str(change) + "%" )
         self.ui.volumeLabel.setText( str(volumen) )
@@ -176,7 +179,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
         intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
         return intraSource
-    
+
     def getCurrentDataSource(self):
         return self.dataObject.gpwCurrentData
 

@@ -83,25 +83,25 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
     def updateData(self, forceRefresh=False):
         self.ui.refreshPB.setEnabled( False )
-        
+
         threads = threadlist.QThreadMeasuredList( self )
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
-        
+
         intraSource = self.getIntradayDataSource()
         threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
-        
+
         currentData = self.getCurrentDataSource()
         threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )
-        
+
         threads.start()
-    
+
     def _updateView(self):
         self.ui.refreshPB.setEnabled( True )
-        
+
         rangeText = self.ui.rangeCB.currentText()
         _LOGGER.debug( "updating chart data, range[%s]", rangeText )
-        
+
         intraSource = self.getIntradayDataSource()
         dataFrame = intraSource.getWorksheet()
 
@@ -116,7 +116,10 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
 
+        value     = currentSource.getRecentValue( self.isin )
+        change    = currentSource.getRecentChange( self.isin )
         refPrice  = priceColumn[ 0 ]
+        timestamp = timeColumn.iloc[-1]
 
         timeData = list(timeColumn)
         self.addPriceLine( timeData, priceColumn )
@@ -127,9 +130,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         refY = [ refPrice, refPrice ]
         self.addPriceLine( refX, refY, style="--" )
 
-        value     = currentSource.getRecentValue( self.isin )
-        change    = currentSource.getRecentChange( self.isin )
-        timestamp = timeColumn.iloc[-1]
+        self.ui.dataChart.setPriceFormatCoord( timeData, priceColumn, refPrice )
 
         self.ui.valueLabel.setText( str(value) )
         self.ui.changeLabel.setText( str(change) + "%" )

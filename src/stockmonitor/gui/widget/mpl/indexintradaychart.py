@@ -45,12 +45,25 @@ class IndexIntradayChart( MplCanvas ):
 #             self.figure.set_visible( False )
 
         self.pricePlot.cla()
-        
+
         self._configurePlot( self.pricePlot, "Price" )
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
         self.figure.autofmt_xdate()
+
+    def setPriceFormatCoord( self, xdata, ydata, refValue ):
+        xformatter = self.pricePlot.xaxis.get_major_formatter()
+
+#         def format_coord(x, y):
+        def format_coord(x, _):
+            xtimestamp = pandas.Timestamp( x, unit='D' )
+            xindex = get_index( xdata, xtimestamp )
+            yvalue = ydata[ xindex ]
+            change = ( yvalue / refValue - 1 ) * 100
+            return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
+
+        self.pricePlot.format_coord = format_coord
 
     def addPriceSecondaryY(self, yLabel, firstToSecondFunction, secondToFirstFunction):
         secay = self.pricePlot.secondary_yaxis( 'right', functions=(firstToSecondFunction, secondToFirstFunction) )
@@ -125,3 +138,12 @@ def _generate_ticks(xdata, number):
         ts = pandas.Timestamp( currTs, unit="s" )
         ticks.append( ts )
     return ticks
+
+
+def get_index( xdata, xvalue ):
+    dataSize = len( xdata )
+    for i in range(0, dataSize):
+        currData = xdata[ i ]
+        if xvalue < currData:
+            return i - 1
+    return dataSize - 1
