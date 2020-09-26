@@ -26,33 +26,27 @@ import datetime
 
 from typing import List
 
-import pandas
-
-from .mplcanvas import matplotlib, MplCanvas
+from .baseintradaychart import BaseIntradayChart
+from .baseintradaychart import _configure_plot, _update_plot, get_index_float
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class StockIntradayChart( MplCanvas ):
+class StockIntradayChart( BaseIntradayChart ):
 
     def __init__(self, parentWidget=None):
-        super().__init__(parentWidget, 10, 10, 80)
+        super().__init__(parentWidget)
 
         self.pricePlot  = self.figure.add_subplot(2, 1, 1)      ## matplotlib.axes._subplots.AxesSubplot
         self.volumePlot = self.figure.add_subplot(2, 1, 2)      ## matplotlib.axes._subplots.AxesSubplot
-
         self.clearPlot()
 
     def clearPlot(self):
-#         if self.figure.get_visible() is True:
-#             self.figure.set_visible( False )
+        super().clearPlot()
 
-        self.pricePlot.cla()
-        self.volumePlot.cla()
-
-        self._configurePlot( self.pricePlot, "Price" )
-        self._configurePlot( self.volumePlot, "Volume" )
+        _configure_plot( self.pricePlot, "Price" )
+        _configure_plot( self.volumePlot, "Volume" )
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
@@ -63,8 +57,7 @@ class StockIntradayChart( MplCanvas ):
 
         def format_coord(x, _):
 #         def format_coord(x, y):
-            xtimestamp = pandas.Timestamp( x, unit='D' )
-            xindex = get_index( xdata, xtimestamp )
+            xindex = get_index_float( xdata, x )
             yvalue = ydata[ xindex ]
             change = ( yvalue / refValue - 1 ) * 100
             return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
@@ -76,8 +69,7 @@ class StockIntradayChart( MplCanvas ):
 
         def format_coord(x, _):
 #         def format_coord(x, y):
-            xtimestamp = pandas.Timestamp( x, unit='D' )
-            xindex = get_index( xdata, xtimestamp )
+            xindex = get_index_float( xdata, x )
             yvalue = ydata[ xindex ]
             return 'x=' + xformatter.format_data(x) + ' y=%i' % yvalue
 
@@ -107,67 +99,3 @@ class StockIntradayChart( MplCanvas ):
 
         if self.figure.get_visible() is False:
             self.figure.set_visible( True )
-
-    def _configurePlot(self, plot, ylabel):
-        plot.set_xlabel( 'Time', fontsize=14 )
-        plot.set_ylabel( ylabel, fontsize=14 )
-
-        plot.margins( y=0.2 )
-        plot.set_xmargin(0.0)      ## prevents empty space between first tick and y axis
-
-
-def _update_plot(xdata, plot ):
-    ticks = _generate_ticks(xdata, 12)
-    plot.set_xticks( ticks )
-
-    setLongFormat = False
-    if len(ticks) > 1:
-        timeSpan = ticks[-1] - ticks[0]
-        if timeSpan > datetime.timedelta( days=2 ):
-            setLongFormat = True
-
-    if setLongFormat is True:
-        formatter = matplotlib.dates.DateFormatter('%d-%m-%Y')
-        plot.xaxis.set_major_formatter( formatter )
-    else:
-        formatter = matplotlib.dates.DateFormatter('%H:%M:%S')
-        plot.xaxis.set_major_formatter( formatter )
-
-    ### hide first and last major tick (next to plot edges)
-#     xticks = plot.xaxis.get_major_ticks()
-#     xticks[0].label1.set_visible(False)
-    ##xticks[-1].label1.set_visible(False)
-
-    plot.relim(True)
-    plot.autoscale_view()
-
-
-def _generate_ticks(xdata, number):
-    if number < 1:
-        return list()
-    start = xdata[0].timestamp()
-    tzoffset = start - pandas.Timestamp( start, unit="s" ).timestamp()
-    if number < 2:
-        middle = (start + xdata[-1].timestamp()) / 2 + tzoffset
-        ts = pandas.Timestamp( middle, unit="s" )
-        ticks = [ts]
-        return ticks
-#         print("data:", self.xdata, type(self.xdata))
-    delta = (xdata[-1].timestamp() - start) / (number - 1)
-    ticks = list()
-    ticks.append( xdata[0] )
-    currTs = start + tzoffset
-    for _ in range(1, number):
-        currTs += delta
-        ts = pandas.Timestamp( currTs, unit="s" )
-        ticks.append( ts )
-    return ticks
-
-
-def get_index( xdata, xvalue ):
-    dataSize = len( xdata )
-    for i in range(0, dataSize):
-        currData = xdata[ i ]
-        if xvalue < currData:
-            return i - 1
-    return dataSize - 1
