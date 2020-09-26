@@ -138,13 +138,13 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         timestamp = timeColumn.iloc[-1]
 
         timeData = list(timeColumn)
-        self.addPriceLine( timeData, priceColumn )
+        self.ui.dataChart.addPriceLine( timeData, priceColumn )
 
-        self.addPriceSecondaryY( refPrice )
+        self.ui.dataChart.addPriceSecondaryY( refPrice )
 
         refX = [ timeData[0], timeData[-1] ]
         refY = [ refPrice, refPrice ]
-        self.addPriceLine( refX, refY, style="--" )
+        self.ui.dataChart.addPriceLine( refX, refY, style="--" )
 
         walletStock = self.dataObject.wallet[ self.ticker ]
         if walletStock is not None:
@@ -152,7 +152,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
                 amount, buy_unit_price = walletStock.calc2()
                 if amount > 0:
                     refY = [ buy_unit_price, buy_unit_price ]
-                    self.addPriceLine( refX, refY, color='black', style="--" )
+                    self.ui.dataChart.addPriceLine( refX, refY, color='black', style="--" )
 
             if self.ui.showTransactionsCB.isChecked():
                 currTransactions = walletStock.currentTransactions()
@@ -160,12 +160,12 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
                     amount         = item[0]
                     buy_unit_price = item[1]
                     refY = [ buy_unit_price, buy_unit_price ]
-                    self.addPriceLine( refX, refY, color='blue', style="--" )
+                    self.ui.dataChart.addPriceLine( refX, refY, color='blue', style="--" )
 
-        self.addVolumeLine( timeData, volumeColumn )
+        self.ui.dataChart.addVolumeLine( timeData, volumeColumn )
 
-        self.ui.dataChart.setPriceFormatCoord( timeData, priceColumn, refPrice )
-        self.ui.dataChart.setVolumeFormatCoord( timeData, volumeColumn )
+        self.ui.dataChart.setPriceFormatCoord( refPrice )
+        self.ui.dataChart.setVolumeFormatCoord()
 
         self.ui.valueLabel.setText( str(price) )
         self.ui.changeLabel.setText( str(change) + "%" )
@@ -182,37 +182,6 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def getCurrentDataSource(self):
         return self.dataObject.gpwCurrentData
-
-#     def loadSettings(self, settings):
-#         settings.beginGroup( self.objectName() )
-#         enabled = settings.value("chart_enabled", True, type=bool)
-#         settings.endGroup()
-#
-#         self.ui.enabledCB.setChecked( enabled )
-#
-#     def saveSettings(self, settings):
-#         settings.beginGroup( self.objectName() )
-#         enabledChart = self.ui.enabledCB.isChecked()
-#         settings.setValue("chart_enabled", enabledChart)
-#         settings.endGroup()
-
-    def addPriceSecondaryY( self, referenceValue ):
-
-        def val_to_perc( y ):
-            return ( y / referenceValue - 1.0 ) * 100.0
-
-        def perc_to_val( y ):
-            return ( y / 100.0 + 1.0 ) * referenceValue
-
-        self.ui.dataChart.addPriceSecondaryY( "Change [%]", val_to_perc, perc_to_val )
-
-    def addPriceLine(self, xdata, ydata, color='r', style=None ):
-        self.ui.dataChart.addPriceLine( xdata, ydata, color, style )
-        self.ui.dataChart.refreshCanvas()
-
-    def addVolumeLine(self, xdata, ydata, color='b', style=None ):
-        self.ui.dataChart.addVolumeLine( xdata, ydata, color, style )
-        self.ui.dataChart.refreshCanvas()
 
 
 class StockChartWindow( AppWindow ):

@@ -52,7 +52,10 @@ class StockIntradayChart( BaseIntradayChart ):
         # axes up to make room for them
         self.figure.autofmt_xdate()
 
-    def setPriceFormatCoord( self, xdata, ydata, refValue ):
+    def setPriceFormatCoord( self, refValue ):
+        firstLine  = self.pricePlot.lines[0]
+        xdata      = firstLine.get_xdata()
+        ydata      = firstLine.get_ydata()
         xformatter = self.pricePlot.xaxis.get_major_formatter()
 
         def format_coord(x, _):
@@ -64,7 +67,10 @@ class StockIntradayChart( BaseIntradayChart ):
 
         self.pricePlot.format_coord = format_coord
 
-    def setVolumeFormatCoord( self, xdata, ydata ):
+    def setVolumeFormatCoord( self ):
+        firstLine  = self.volumePlot.lines[0]
+        xdata      = firstLine.get_xdata()
+        ydata      = firstLine.get_ydata()
         xformatter = self.volumePlot.xaxis.get_major_formatter()
 
         def format_coord(x, _):
@@ -75,12 +81,17 @@ class StockIntradayChart( BaseIntradayChart ):
 
         self.volumePlot.format_coord = format_coord
 
-    def addPriceSecondaryY(self, yLabel, firstToSecondFunction, secondToFirstFunction):
-        secay = self.pricePlot.secondary_yaxis( 'right', functions=(firstToSecondFunction, secondToFirstFunction) )
-        if yLabel is not None:
-            secay.set_ylabel( yLabel )
+    def addPriceSecondaryY(self, referenceValue ):
+        def val_to_perc( y ):
+            return ( y / referenceValue - 1.0 ) * 100.0
 
-    def addPriceLine(self, xdata: List[datetime.datetime], ydata, color, style=None):
+        def perc_to_val( y ):
+            return ( y / 100.0 + 1.0 ) * referenceValue
+
+        secay = self.pricePlot.secondary_yaxis( 'right', functions=(val_to_perc, perc_to_val) )
+        secay.set_ylabel( "Change [%]" )
+
+    def addPriceLine(self, xdata: List[datetime.datetime], ydata, color='r', style=None):
         line = self.pricePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
         if style is not None:
             line[0].set_linestyle( style )
@@ -90,7 +101,9 @@ class StockIntradayChart( BaseIntradayChart ):
         if self.figure.get_visible() is False:
             self.figure.set_visible( True )
 
-    def addVolumeLine(self, xdata: List[datetime.datetime], ydata, color, style=None):
+        self.refreshCanvas()
+
+    def addVolumeLine(self, xdata: List[datetime.datetime], ydata, color='b', style=None):
         line = self.volumePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
         if style is not None:
             line[0].set_linestyle( style )
@@ -99,3 +112,5 @@ class StockIntradayChart( BaseIntradayChart ):
 
         if self.figure.get_visible() is False:
             self.figure.set_visible( True )
+
+        self.refreshCanvas()

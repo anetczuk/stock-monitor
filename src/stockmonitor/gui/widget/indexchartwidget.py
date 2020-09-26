@@ -122,15 +122,15 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         timestamp = timeColumn.iloc[-1]
 
         timeData = list(timeColumn)
-        self.addPriceLine( timeData, priceColumn )
+        self.ui.dataChart.addPriceLine( timeData, priceColumn )
 
-        self.addPriceSecondaryY( refPrice )
+        self.ui.dataChart.addPriceSecondaryY( refPrice )
 
         refX = [ timeData[0], timeData[-1] ]
         refY = [ refPrice, refPrice ]
-        self.addPriceLine( refX, refY, style="--" )
+        self.ui.dataChart.addPriceLine( refX, refY, style="--" )
 
-        self.ui.dataChart.setPriceFormatCoord( timeData, priceColumn, refPrice )
+        self.ui.dataChart.setPriceFormatCoord( refPrice )
 
         self.ui.valueLabel.setText( str(value) )
         self.ui.changeLabel.setText( str(change) + "%" )
@@ -145,33 +145,6 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
     def getCurrentDataSource(self):
         return self.dataObject.gpwIndexesData
-
-#     def loadSettings(self, settings):
-#         settings.beginGroup( self.objectName() )
-#         enabled = settings.value("chart_enabled", True, type=bool)
-#         settings.endGroup()
-#
-#         self.ui.enabledCB.setChecked( enabled )
-#
-#     def saveSettings(self, settings):
-#         settings.beginGroup( self.objectName() )
-#         enabledChart = self.ui.enabledCB.isChecked()
-#         settings.setValue("chart_enabled", enabledChart)
-#         settings.endGroup()
-
-    def addPriceSecondaryY( self, referenceValue ):
-
-        def val_to_perc( y ):
-            return ( y / referenceValue - 1.0 ) * 100.0
-
-        def perc_to_val( y ):
-            return ( y / 100.0 + 1.0 ) * referenceValue
-
-        self.ui.dataChart.addPriceSecondaryY( "Change [%]", val_to_perc, perc_to_val )
-
-    def addPriceLine(self, xdata, ydata, color='r', style=None ):
-        self.ui.dataChart.addPriceLine( xdata, ydata, color, style )
-        self.ui.dataChart.refreshCanvas()
 
 
 class IndexChartWindow( AppWindow ):
