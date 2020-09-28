@@ -153,10 +153,11 @@ def _generate_ticks(xdata, number):
 
 
 def get_index_float( xdata, xvalue ):
-    xtimestamp = pandas.Timestamp( xvalue, unit='D' )
+    valueDate = matplotlib.dates.num2date( xvalue )
+    valueDate = valueDate.replace( tzinfo=None )            ## remove timezone info
     dataSize = len( xdata )
     for i in range(0, dataSize):
         currData = xdata[ i ]
-        if xtimestamp < currData:
+        if valueDate < currData:
             return i - 1
     return dataSize - 1
