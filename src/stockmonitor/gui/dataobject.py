@@ -329,6 +329,65 @@ class DataObject( QObject ):
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
 
+    # pylint: disable=R0914
+    def getAllTransactions(self):
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Kurs nabycia",
+                        "Zysk %", "Zysk", "Data nabycia" ]
+
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
+        currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        rowsList = []
+
+        for ticker, transactions in self.wallet.stockList.items():
+            tickerRow = currentStock.getRowByTicker( ticker )
+            if tickerRow.empty:
+                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
+                currTransactions = transactions.allTransactions()
+                for item in currTransactions:
+                    amount         = item[0]
+                    buy_unit_price = item[1]
+                    buy_date       = item[2]
+                    rowsList.append( ["-", ticker, amount, "-", buy_unit_price, "-", "-", buy_date] )
+                continue
+
+            currAmount = transactions.currentAmount()
+
+            currUnitValue    = 0
+            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
+            if currUnitValueRaw != "-":
+                currUnitValue = float( currUnitValueRaw )
+
+            currTransactions = transactions.allTransactions()
+            for item in currTransactions:
+                stockName = tickerRow["Nazwa"]
+
+                amount         = item[0]
+                buy_unit_price = item[1]
+                buy_date       = item[2]
+
+                currValue = currUnitValue * amount
+                buyValue  = buy_unit_price * amount
+
+                if currAmount <= 0:
+                    buy_unit_price = round( buy_unit_price, 4 )
+                    profitPnt      = "-"
+                    profit         = "-"
+                else:
+                    profit    = currValue - buyValue
+                    profitPnt = 0
+                    if buyValue != 0:
+                        profitPnt = profit / buyValue * 100.0
+
+                    buy_unit_price = round( buy_unit_price, 4 )
+                    profitPnt      = round( profitPnt, 2 )
+                    profit         = round( profit, 2 )
+
+                rowsList.append( [ stockName, ticker, amount, currUnitValue, buy_unit_price,
+                                   profitPnt, profit, buy_date ] )
+
+        dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
+        return dataFrame
+
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
         wallet: WalletData = self.wallet
 

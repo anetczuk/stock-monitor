@@ -190,6 +190,9 @@ class WalletData( persist.Versionable ):
         def items(self):
             return self.transactions
 
+        def allTransactions(self):
+            return self.transactions
+
         def add(self, amount, unitPrice, transTime=None, joinSimilar=True):
             if joinSimilar is False:
 #                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )

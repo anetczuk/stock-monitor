@@ -402,7 +402,7 @@
           </widget>
           <widget class="QWidget" name="transactionsTab">
            <attribute name="title">
-            <string>Current transactions</string>
+            <string>Transactions</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_20">
             <property name="leftMargin">
