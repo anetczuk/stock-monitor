@@ -206,9 +206,11 @@ class StockAnalysis(object):
         writer.writerow( ["recent val date:", dates_to_string(self.currDate) ] )
         writer.writerow( ["potential:", "(max - curr) / max"] )
         writer.writerow( ["relative:",  "(max - curr) / (max - min)"] )
+        writer.writerow( ["pot raise[%]:",  "(max / curr - 1.0) * 100%"] )
         writer.writerow( [] )
 
-        columnsList = ["name", "min val", "max val", "curr val", "trading[k]", "potential", "relative", "link"]
+        columnsList = [ "name", "min val", "max val", "curr val", "trading[k]",
+                        "potential", "relative", "pot raise[%]", "link" ]
         rowsList = []
 
         currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
@@ -226,10 +228,12 @@ class StockAnalysis(object):
             relVal = 0
             if stockDiff != 0:
                 relVal = raiseVal / stockDiff
+            potRaise = (maxVal / currVal - 1.0) * 100.0
             moneyLink = self.getMoneyPlLink( key )
-            potVal = round( potVal, 4 )
-            relVal = round( relVal, 4 )
-            rowsList.append( [key, minVal, maxVal, currVal, tradingVal, potVal, relVal, moneyLink] )
+            potVal   = round( potVal, 4 )
+            relVal   = round( relVal, 4 )
+            potRaise = round( potRaise, 2 )
+            rowsList.append( [key, minVal, maxVal, currVal, tradingVal, potVal, relVal, potRaise, moneyLink] )
 
         writer.writerow( columnsList )
         for row in rowsList:
