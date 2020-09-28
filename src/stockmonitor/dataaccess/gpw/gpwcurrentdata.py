@@ -82,7 +82,7 @@ class GpwCurrentStockData( WorksheetData ):
     def getTickerFromIsin(self, stockIsin):
         dataFrame = self.getWorksheet()
         rowIndexes = dataFrame[ dataFrame["isin"] == stockIsin ].index.values
-        if not rowIndexes:
+        if rowIndexes is None or len(rowIndexes) < 1:
             return None
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["Skrót"]
@@ -91,7 +91,7 @@ class GpwCurrentStockData( WorksheetData ):
     def getTickerFromName(self, stockName):
         dataFrame = self.getWorksheet()
         rowIndexes = dataFrame[ dataFrame["Nazwa"] == stockName ].index.values
-        if not rowIndexes:
+        if rowIndexes is None or len(rowIndexes) < 1:
             return None
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["Skrót"]
@@ -99,8 +99,9 @@ class GpwCurrentStockData( WorksheetData ):
 
     def getStockIsinFromTicker(self, ticker):
         dataFrame = self.getWorksheet()
-        rowIndexes = dataFrame[ dataFrame["Skrót"] == ticker ].index.values
-        if not rowIndexes:
+        reducedFrame = dataFrame[ dataFrame["Skrót"] == ticker ]
+        rowIndexes = reducedFrame.index.values
+        if rowIndexes is None or len(rowIndexes) < 1:
             _LOGGER.warning("no isin found for ticker %s", ticker)
             return None
         rowIndex = rowIndexes[0]
@@ -110,7 +111,7 @@ class GpwCurrentStockData( WorksheetData ):
     def getNameFromTicker(self, ticker):
         dataFrame = self.getWorksheet()
         rowIndexes = dataFrame[ dataFrame["Skrót"] == ticker ].index.values
-        if not rowIndexes:
+        if rowIndexes is None or len(rowIndexes) < 1:
             return None
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["Nazwa"]
