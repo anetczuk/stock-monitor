@@ -182,6 +182,14 @@ class DataObject( QObject ):
     def reorderFavGroups(self, newOrder):
         self.undoStack.push( ReorderFavGroupsCommand( self, newOrder ) )
 
+    def getAllFavs(self):
+        allFavsSet = set()
+        for group, favs in self.favs.favsList.items():
+            if group == "All":
+                continue
+            allFavsSet |= set( favs )
+        return allFavsSet
+
     def getFavStock(self, favGroup):
         stockList = self.favs.getFavs( favGroup )
         return self.gpwCurrentData.getStockData( stockList )
@@ -440,11 +448,7 @@ class DataObject( QObject ):
             self.favsGrpChanged.emit( "Wallet" )
 
     def updateAllFavsGroup(self):
-        allFavsSet = set()
-        for group, favs in self.favs.favsList.items():
-            if group == "All":
-                continue
-            allFavsSet |= set( favs )
+        allFavsSet = self.getAllFavs()
 
         currFavsSet = self.favs.getFavs( "All" )
         if currFavsSet is None:

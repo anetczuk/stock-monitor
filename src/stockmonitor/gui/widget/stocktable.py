@@ -401,6 +401,41 @@ class ToolStockColorDelegate( TableRowColorDelegate ):
         return stock_background_color( self.dataObject, ticker )
 
 
+class ToolStockProxyModel( QtCore.QSortFilterProxyModel ):
+
+    def __init__(self, parentObject=None):
+        super().__init__(parentObject)
+
+        ## 0 - no limitation
+        ## 1 - limit to favs
+        ## 2 - limit to wallet
+        self._limitResults = 0
+
+    def limitResults(self, state):
+        self._limitResults = state
+        self.invalidateFilter()
+
+    def filterAcceptsRow( self, sourceRow, sourceParent ):
+        if self._limitResults == 0:
+            return True
+
+        valueIndex = self.sourceModel().index( sourceRow, 0, sourceParent )
+        rawValue = self.sourceModel().data( valueIndex, QtCore.Qt.UserRole )
+
+        dataObject = self.parent().dataObject
+        ticker = dataObject.getTickerFromName( rawValue )
+
+        if self._limitResults == 1:
+            allFavsSet = dataObject.getAllFavs()
+            return ticker in allFavsSet
+
+        if self._limitResults == 2:
+            walletStock = dataObject.wallet.getCurrentStock()
+            return ticker in walletStock
+
+        return True
+
+
 class ToolStockTable( StockTable ):
 
     def __init__(self, parentWidget=None):
@@ -409,11 +444,19 @@ class ToolStockTable( StockTable ):
         self.setShowGrid( True )
         self.setAlternatingRowColors( False )
 
+        self.stockFilter = ToolStockProxyModel( self )
+        self.addProxyModel( self.stockFilter )
+
     def connectData(self, dataObject):
         super().connectData( dataObject )
 
         colorDecorator = ToolStockColorDelegate( self.dataObject )
         self.setColorDelegate( colorDecorator )
+
+        self.limitResults( 0 )
+
+    def limitResults(self, state):
+        self.stockFilter.limitResults( state )
 
     def _getSelectedTickers(self):
         dataAccess = self.dataObject.gpwCurrentSource.stockData

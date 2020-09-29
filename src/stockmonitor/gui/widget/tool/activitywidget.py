@@ -69,6 +69,8 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         self.ui.calculatePB.clicked.connect( self.calculate )
         self.ui.openPB.clicked.connect( self.openResults )
 
+        self.ui.limitResultsCB.currentIndexChanged.connect( self.ui.dataTable.limitResults )
+
     def connectData(self, dataObject):
         self.ui.dataTable.connectData( dataObject )
 
