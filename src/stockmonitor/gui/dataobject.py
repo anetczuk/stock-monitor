@@ -195,8 +195,8 @@ class DataObject( QObject ):
         return self.gpwCurrentData.getStockData( stockList )
 
     def getWalletStock(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Średni kurs nabycia",
-                        "Zm.do k.odn.(%)", "Zysk %", "Zysk", "Wartość", "Zysk całkowity" ]
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Zm.do k.odn.(%)",
+                        "Średni kurs nabycia", "Zysk %", "Zysk", "Wartość", "Zysk całkowity" ]
         # apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
@@ -247,8 +247,8 @@ class DataObject( QObject ):
             currValue      = round( currValue, 2 )
             totalProfit    = round( totalProfit, 2 )
 
-            rowsList.append( [ stockName, ticker, amount, currUnitValue, buy_unit_price,
-                               currChange, profitPnt, profit, currValue, totalProfit ] )
+            rowsList.append( [ stockName, ticker, amount, currUnitValue, currChange, 
+                               buy_unit_price, profitPnt, profit, currValue, totalProfit ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
