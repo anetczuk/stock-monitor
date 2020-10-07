@@ -26,6 +26,7 @@ import datetime
 from datetime import date
 import urllib
 import math
+import abc
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType
 from stockmonitor.dataaccess.gpw.gpwarchivedata import GpwArchiveData
@@ -57,8 +58,8 @@ class StockData(object):
         return self.getISINForDate( day )
 
     def getISINForDate(self, day: date) -> dict:
-        _LOGGER.info("loading recent ISIN data" )
         validDay = self.getRecentValidDay( day )
+        _LOGGER.info("loading recent ISIN data for %s", validDay )
         return self.dataProvider.getData( ArchiveDataType.ISIN, validDay )
 
     def sourceLink(self):
@@ -160,26 +161,50 @@ class StockDict:
 ## =========================================================================
 
 
-class DataLoader():
+class DataProcessor():
+    """Threaded data processor."""
 
-    def __init__(self, day):
-        self.day   = day
-        self.func  = None
+    def __init__( self, attempts=3 ):
+        self.attempts = attempts
 
-    def load(self, isinList, pool):
-        self.func  = VarCalc.calcChange1
-        return pool.map( self._calc, isinList )
+    @abc.abstractmethod
+    def processData(self, params):
+        raise NotImplementedError('You need to define this method in derived class!')
 
-    def _calc(self, isin):
-        for _ in range(0, 3):
+    def map(self, paramsList, pool):
+        return pool.map( self._calc, paramsList )
+
+    def _calc(self, params):
+        for _ in range(0, self.attempts):
             try:
-                return self._calcSingle( isin )
+                return self.processData( params )
+#             except urllib.error.HTTPError as e:
+#                 _LOGGER.info( "exception: %s", str(e) )
             except urllib.error.URLError as e:
                 _LOGGER.info( "exception: %s", str(e) )
-        return self._calcSingle( isin )
+        return self.processData( params )
 
-    def _calcSingle(self, key):
-        name, isin = key
+
+class SourceDataLoader( DataProcessor ):
+    """Threaded data loader."""
+
+    def __init__(self, source):
+        super().__init__()
+        self.source = source
+
+    def processData(self, params):
+        return self.source.load( params )
+
+
+class GpwCurrentIntradayDataLoader( DataProcessor ):
+    """Threaded data loader."""
+
+    def __init__(self, day):
+        super().__init__()
+        self.day = day
+
+    def processData(self, params):
+        name, isin   = params
         intradayData = GpwCurrentStockIntradayData( isin )
         dataFrame    = intradayData.getWorksheetForDate( self.day )
         return (name, dataFrame)
@@ -275,6 +300,7 @@ class VarCalc():
 #         priceVar     = dataColumn.quantile( 0.1 )
         return pcount
 
+    ## return list of pairs: List[ ( change sum, num of changes ) ]
     @staticmethod
     def calcChange3(dataColumn, minPercent):
         if dataColumn.count() < 2:

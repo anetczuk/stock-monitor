@@ -247,7 +247,7 @@ class DataObject( QObject ):
             currValue      = round( currValue, 2 )
             totalProfit    = round( totalProfit, 2 )
 
-            rowsList.append( [ stockName, ticker, amount, currUnitValue, currChange, 
+            rowsList.append( [ stockName, ticker, amount, currUnitValue, currChange,
                                buy_unit_price, profitPnt, profit, currValue, totalProfit ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )

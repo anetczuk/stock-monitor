@@ -21,33 +21,36 @@
 # SOFTWARE.
 #
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import QObject
+import unittest
+import datetime
+
+from stockmonitor.dataaccess.activityanalysis import GpwCurrentIntradayProvider,\
+    ActivityAnalysis, MetaStockIntradayProvider
 
 
-def get_label_url( url: str ):
-    return "<a href=\"%s\">%s</a>" % (url, url)
+## =================================================================
 
 
-def set_label_url( label: QtWidgets.QLabel, url: str ):
-    htmlText = get_label_url(url)
-    label.setText( htmlText )
+class ActivityAnalysisTest(unittest.TestCase):
 
+    def setUp(self):
+        ## Called before testfunction is executed
+        pass
 
-def find_parent(widget: QObject, objectType ):
-    if widget is None:
-        return None
-    widget = get_parent( widget )
-    while widget is not None:
-        if isinstance(widget, objectType):
-            return widget
-        widget = get_parent( widget )
-    return None
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
 
+    def test_calc_current(self):
+        dataProvider = GpwCurrentIntradayProvider()
+        analysis = ActivityAnalysis( dataProvider )
+        today = datetime.datetime.now().date()
+        results = analysis.calcActivity( today, today, 2.0 )
+        self.assertGreater( results.shape[0], 370 )
 
-def get_parent( widget: QObject ):
-    if callable(widget.parent) is False:
-        ## some objects has "parent" attribute instead of "parent" method
-        ## e.g. matplotlib's NavigationToolbar
-        return None
-    return widget.parent()
+    def test_calc_previous(self):
+        dataProvider = MetaStockIntradayProvider()
+        analysis = ActivityAnalysis( dataProvider )
+        today = datetime.date( year=2020, month=9, day=1 )
+        results = analysis.calcActivity( today, today, 2.0 )
+        self.assertGreater( results.shape[0], 370 )

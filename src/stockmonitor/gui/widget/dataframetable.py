@@ -26,6 +26,7 @@ import copy
 import re
 import io
 import csv
+import math
 
 from typing import Dict
 
@@ -51,6 +52,23 @@ _LOGGER = logging.getLogger(__name__)
 
 # pylint: disable=C0301
 TableSettingsDialogUiClass, TableSettingsDialogBaseClass = uiloader.load_ui_from_module_path( "widget/tablesettingsdialog" )
+
+
+def is_nan( value ):
+    try:
+        return math.isnan( value )
+    except TypeError:
+        return False
+
+
+def is_invalid_number( value ):
+    if value is None:
+        return True
+    if value in ("-", "--", "x"):
+        return True
+    if is_nan( value ):
+        return True
+    return False
 
 
 class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignore
@@ -393,11 +411,11 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
 #         leftData, rightData = self.convertType( leftData, rightData )
 
         ## put no-data rows on bottom
-        if leftData in ("-", "--", "x"):
+        if is_invalid_number( leftData ):
             if self.sortOrder() == Qt.AscendingOrder:
                 return False
             return True
-        if rightData in ("-", "--", "x"):
+        if is_invalid_number( rightData ):
             if self.sortOrder() == Qt.AscendingOrder:
                 return True
             return False

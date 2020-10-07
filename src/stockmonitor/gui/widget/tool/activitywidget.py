@@ -27,9 +27,10 @@ import datetime
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
-from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.stockanalysis import StockAnalysis
 from stockmonitor.gui.utils import set_label_url
+from stockmonitor.dataaccess.activityanalysis import GpwCurrentIntradayProvider,\
+    ActivityAnalysis, MetaStockIntradayProvider
 
 from ... import uiloader
 
@@ -49,7 +50,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
 
         self.recentOutput = None
 
-        toDate   = datetime.date.today()
+        toDate = datetime.date.today() - datetime.timedelta( days=1 )
         self.ui.fromDE.setDate( toDate )
         self.ui.toDE.setDate( toDate )
 
@@ -75,15 +76,33 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         self.ui.dataTable.connectData( dataObject )
 
     def calculate(self):
-        fromDate = self.ui.fromDE.date().toPyDate()
-        toDate   = self.ui.toDE.date().toPyDate()
-        thresh   = self.ui.threshSB.value()
+        self.ui.dataTable.clear()
 
-        analysis = StockAnalysis()
+        if self.ui.todayDataRB.isChecked():
+            _LOGGER.warning("calculating based on current intraday")
+            thresh = self.ui.threshSB.value()
 
-        self.recentOutput = tmp_dir + "out/output_variance.csv"
-        resultData = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )
-        self.ui.dataTable.setData( resultData )
+            dataProvider = GpwCurrentIntradayProvider()
+            analysis = ActivityAnalysis( dataProvider )
+            today = datetime.datetime.now().date()
+            resultData = analysis.calcActivity( today, today, thresh )
+            self.ui.dataTable.setData( resultData )
+
+        elif self.ui.rangeDataRB.isChecked():
+            _LOGGER.warning("calculating based on metastock intraday")
+            fromDate = self.ui.fromDE.date().toPyDate()
+            toDate   = self.ui.toDE.date().toPyDate()
+            thresh   = self.ui.threshSB.value()
+
+            dataProvider = MetaStockIntradayProvider()
+            analysis = ActivityAnalysis( dataProvider )
+            today = datetime.datetime.now().date()
+            resultData = analysis.calcActivity( fromDate, toDate, thresh )
+            self.ui.dataTable.setData( resultData )
+
+        else:
+            _LOGGER.warning("unknown state")
+
         self.ui.openPB.setEnabled( True )
 
     def openResults(self):

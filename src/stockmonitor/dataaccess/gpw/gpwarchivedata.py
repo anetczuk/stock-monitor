@@ -40,7 +40,7 @@ class GpwArchiveData:
     """Handle GPW archive data."""
 
     def getData(self, dataType: ArchiveDataType, day: datetime.date):
-        _LOGGER.debug( "getting stock data for: %s", day )
+        # _LOGGER.debug( "getting stock data for: %s", day )
         worksheet = self.getWorksheet( day )
         if worksheet is None:
             _LOGGER.warning("worksheet not found for day: %s", day)
@@ -104,7 +104,7 @@ class GpwArchiveData:
         return ret
 
     def getWorksheet(self, day: datetime.date):
-#         _LOGGER.debug( "getting data from date: %s", day )
+        _LOGGER.debug( "getting data from date: %s", day )
         dataFile = self.downloadData( day )
 
         try:

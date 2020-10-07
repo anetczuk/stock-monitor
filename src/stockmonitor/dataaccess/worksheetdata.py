@@ -114,7 +114,9 @@ class WorksheetData( BaseWorksheetData ):
 
     def downloadData(self):
         filePath = self.getDataPath()
+        self.downloadDataTo( filePath )
 
+    def downloadDataTo( self, filePath ):
         url = self.getDataUrl()
         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
 

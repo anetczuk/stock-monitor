@@ -22,6 +22,7 @@
 #
 
 import unittest
+import datetime
 from teststockmonitor.data import get_data_path
 
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
@@ -42,3 +43,10 @@ class MetaStockIntradayDataTest(unittest.TestCase):
         currData = self.dataAccess.parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 77388)
+
+    def test_access(self):
+        date_object = datetime.date( year=2020, month=9, day=21 )
+        dataAccess = MetaStockIntradayData( date_object )
+        currData = dataAccess.getWorksheet()
+        dataLen = len( currData )
+        self.assertGreater(dataLen, 70000)

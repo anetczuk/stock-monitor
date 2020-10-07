@@ -21,7 +21,13 @@
 # SOFTWARE.
 #
 
+import os
 import logging
+
+import datetime
+import tempfile
+import zipfile
+import shutil
 
 import pandas
 from pandas.core.frame import DataFrame
@@ -35,6 +41,18 @@ _LOGGER = logging.getLogger(__name__)
 
 ## https://info.bossa.pl/index.jsp?layout=intraday&page=1&news_cat_id=875&dirpath=/mstock/daily/
 class MetaStockIntradayData( WorksheetData ):
+# class MetaStockIntradayData( BaseWorksheetData ):
+
+    def __init__( self, dataDate: datetime.date=None ):
+        super().__init__()
+        if dataDate is None:
+            dataDate = self._currDate()
+        self.dataDate: datetime.date = dataDate
+
+    def getWorksheetForDate( self, dataDate: datetime.date ):
+        self.dataDate = dataDate
+        self.loadWorksheet( False )
+        return self.worksheet
 
     def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
@@ -43,11 +61,36 @@ class MetaStockIntradayData( WorksheetData ):
         dataFrame.drop( dataFrame.tail(1).index, inplace=True )
         return dataFrame
 
+    def downloadDataTo(self, filePath):
+        zipPath = filePath + ".zip"
+        super().downloadDataTo( zipPath )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            zipMember = "a_cgl.prn"
+            with zipfile.ZipFile( zipPath, 'r' ) as zip_ref:
+                zip_ref.extract( zipMember, path=tmpdir )
+                tmpFile = os.path.join( tmpdir, zipMember )
+                _LOGGER.debug( "moving extracted file[%s] to [%s]", tmpFile, filePath )
+                shutil.move( tmpFile, filePath )
+
     def getDataPath(self):
-        return tmp_dir + "data/bossa/recent_intraday_data.prn"
+        dateString = self.dataDate.isoformat()
+        return tmp_dir + "data/bossa/intraday/%s.prn" % dateString
 
     def getDataUrl(self):
-        return "https://info.bossa.pl/pub/intraday/mstock/daily//a_cgl.prn"
+        dateString = self.dataDate.isoformat()
+        return "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
+
+#         if self.dataDate == currDate:
+#             ## https://info.bossa.pl/pub/intraday/mstock/daily//tick.zip
+#             return "https://info.bossa.pl/pub/intraday/mstock/daily//tick.zip"
+#         else:
+#             ## https://info.bossa.pl/pub/intraday/mstock/daily//2020-09-28-tick.zip
+#             dateString = self.dataDate.isoformat()
+#             return "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
+
+    def _currDate(self) -> datetime.date:
+        return datetime.datetime.now().date()
 
 
 ## https://info.bossa.pl/index.jsp?layout=mstock&page=1&news_cat_id=706&dirpath=/ciagle/mstock/sesjacgl

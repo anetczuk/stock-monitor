@@ -24,7 +24,6 @@
 import os
 import logging
 import datetime
-from datetime import date
 import calendar
 import multiprocessing.dummy
 
@@ -35,12 +34,15 @@ import pandas
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import ArchiveDataType
-from stockmonitor.dataaccess.stockanalysisdata import CounterDict, StockDict, DataLoader,\
+from stockmonitor.dataaccess.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader,\
     VarCalc
 from stockmonitor.dataaccess.stockanalysisdata import StockData
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+## =======================================================================
 
 
 class StockAnalysis(object):
@@ -64,7 +66,7 @@ class StockAnalysis(object):
     def sourceLink(self):
         return self.data.sourceLink()
 
-    def loadMin(self, dataType: ArchiveDataType, fromDay: date, toDay: date):
+    def loadMin(self, dataType: ArchiveDataType, fromDay: datetime.date, toDay: datetime.date):
         nowDate = datetime.datetime.now().date()
         if fromDay >= nowDate:
             fromDay = nowDate - datetime.timedelta(days=1)
@@ -80,7 +82,7 @@ class StockAnalysis(object):
         self.minValue = ret.stock
         self.minDate  = [fromDay, toDay]
 
-    def loadMax(self, dataType: ArchiveDataType, fromDay: date, toDay: date):
+    def loadMax(self, dataType: ArchiveDataType, fromDay: datetime.date, toDay: datetime.date):
         nowDate = datetime.datetime.now().date()
         if fromDay >= nowDate:
             fromDay = nowDate - datetime.timedelta(days=1)
@@ -96,7 +98,7 @@ class StockAnalysis(object):
         self.maxValue = ret.stock
         self.maxDate  = [fromDay, toDay]
 
-    def loadSum(self, dataType: ArchiveDataType, fromDay: date, toDay: date):
+    def loadSum(self, dataType: ArchiveDataType, fromDay: datetime.date, toDay: datetime.date):
         nowDate = datetime.datetime.now().date()
         if fromDay >= nowDate:
             fromDay = nowDate - datetime.timedelta(days=1)
@@ -113,7 +115,7 @@ class StockAnalysis(object):
         self.sumValue = ret.stock
         self.sumDate  = [fromDay, toDay]
 
-    def loadCurr(self, dataType: ArchiveDataType, day: date=date.today(), offset=-1):
+    def loadCurr(self, dataType: ArchiveDataType, day: datetime.date=datetime.date.today(), offset=-1):
         _LOGGER.debug( "Loading current: %s %s %s", dataType, day, offset )
         currDay  = day + datetime.timedelta(days=offset)
         nowDate = datetime.datetime.now().date()
@@ -124,7 +126,7 @@ class StockAnalysis(object):
         self.currValue = self.data.getData( dataType, validDay )
         self.currDate  = [validDay]
 
-    def loadData(self, dataType: ArchiveDataType, day: date):
+    def loadData(self, dataType: ArchiveDataType, day: datetime.date):
         return self.data.getData( dataType, day )
 
     def calcGreatestSum(self, outFilePath=None):
@@ -375,16 +377,16 @@ class StockAnalysis(object):
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
-    def calcMonday(self, numOfWeeks=1, lastDay: date=date.today(), outFilePath=None):
+    def calcMonday(self, numOfWeeks=1, lastDay: datetime.date=datetime.date.today(), outFilePath=None):
         self.logger.info( "Calculating Monday stock" )
         return self._calcDayOfWeek( 0, numOfWeeks, lastDay, outFilePath, True )
 
-    def calcFriday(self, numOfWeeks=1, lastDay: date=date.today(), outFilePath=None):
+    def calcFriday(self, numOfWeeks=1, lastDay: datetime.date=datetime.date.today(), outFilePath=None):
         self.logger.info( "Calculating Friday stock" )
         return self._calcDayOfWeek( 4, numOfWeeks, lastDay, outFilePath, False )
 
     # pylint: disable=R0914
-    def calcWeekend(self, numOfWeeks=1, lastDay: date=date.today(), outFilePath=None):
+    def calcWeekend(self, numOfWeeks=1, lastDay: datetime.date=datetime.date.today(), outFilePath=None):
         file = outFilePath
         if file is None:
             file = tmp_dir + "out/weekend_change.csv"
@@ -453,7 +455,7 @@ class StockAnalysis(object):
         return retDataFrame
 
     # pylint: disable=R0914
-    def calcVariance(self, fromDay: date, toDay: date, outFilePath=None):
+    def calcVariance(self, fromDay: datetime.date, toDay: datetime.date, outFilePath=None):
         self.logger.debug( "Calculating stock variance in range: %s %s", fromDay, toDay )
 
         varDict = StockDict()
@@ -535,7 +537,7 @@ class StockAnalysis(object):
 
         return retDataFrame
 
-    def calcActivity(self, fromDay: date, toDay: date, thresholdPercent, outFilePath=None):
+    def calcActivity(self, fromDay: datetime.date, toDay: datetime.date, thresholdPercent, outFilePath=None):
         self.logger.debug( "Calculating stock activity in range: %s %s", fromDay, toDay )
 
         isinDict = self.data.getISINForDate( toDay )
@@ -567,8 +569,8 @@ class StockAnalysis(object):
 #                 priceVar     = priceColumn.var()
 #                 varDict.add( ticker, priceVar )
 
-            calc = DataLoader( currDate )
-            loadedData = calc.load( isinItems, pool )
+            calc = GpwCurrentIntradayDataLoader( currDate )
+            loadedData = calc.map( isinItems, pool )
             for name, dataFrame in loadedData:
                 if dataFrame is None:
                     continue
@@ -626,8 +628,8 @@ class StockAnalysis(object):
             priceAct = priceAct[1]
             #priceAct = round( priceAct, 4 )
 
-            price = dataDicts[1][key]
-            price = round( price, 4 )
+            priceVar = dataDicts[1][key]
+            priceVar = round( priceVar, 4 )
 
             volume = dataDicts[2][key]
             volume = round( volume, 4 )
@@ -638,7 +640,7 @@ class StockAnalysis(object):
 #             volume2 = dataDicts[1][key]
 #             volume2 = round( volume, 4 )
 
-            rowsList.append( [key, priceAct, price, volume, turnover, 0.0, 0.0, moneyLink] )
+            rowsList.append( [key, priceAct, priceVar, volume, turnover, 0.0, 0.0, moneyLink] )
 
         ## sort by variance
         rowsList.sort(key=lambda x: x[1], reverse=True)
@@ -655,12 +657,12 @@ class StockAnalysis(object):
 
     # ==========================================================================
 
-    def getRecentValidDay(self, fromDay: date=date.today(), checkGiven=False ):
+    def getRecentValidDay(self, fromDay: datetime.date=datetime.date.today(), checkGiven=False ):
         if checkGiven is False:
             fromDay -= datetime.timedelta(days=1)
         return self.data.getRecentValidDay( fromDay )
 
-    def getNextValidDay(self, fromDay: date=date.today() ):
+    def getNextValidDay(self, fromDay: datetime.date=datetime.date.today() ):
         return self.data.getNextValidDay( fromDay )
 
     def getMoneyPlLink(self, name):
@@ -675,7 +677,7 @@ class StockAnalysis(object):
 
     # ==========================================================================
 
-    def _calcDayOfWeek( self, numOfDay, numOfWeeks=1, lastDay: date=date.today(),
+    def _calcDayOfWeek( self, numOfDay, numOfWeeks=1, lastDay: datetime.date=datetime.date.today(),
                         outFilePath=None, validDirection=True ):
         # ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         dayName = calendar.day_name[ numOfDay ].lower()
