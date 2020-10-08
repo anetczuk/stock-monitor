@@ -24,13 +24,14 @@
 import os
 import logging
 import datetime
+import math
 import multiprocessing.dummy
 
 import csv
 import pandas
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.stockanalysisdata import StockDict, VarCalc, SourceDataLoader
+from stockmonitor.dataaccess.stockanalysisdata import VarCalc, SourceDataLoader, StockDictList
 from stockmonitor.dataaccess.stockanalysisdata import StockData
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
@@ -41,68 +42,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## =======================================================================
-
-
-# class MinMaxAnalysis:
-#
-#     def __init__(self):
-#         today = datetime.datetime.now().date()
-#         self.minDate  = [ today, today ]
-#         self.maxDate  = [ today, today ]
-#         self.currDate = [ today, today ]
-#
-#     def calcPotentials(self, outFilePath=None):
-#         _LOGGER.info( "Calculating potential" )
-#
-#         if outFilePath is None:
-#             outFilePath = tmp_dir + "out/output_potentials.csv"
-#         dirPath = os.path.dirname( outFilePath )
-#         os.makedirs( dirPath, exist_ok=True )
-#
-#         writer = csv.writer(open(outFilePath, 'w'))
-#         writer.writerow( ["min period:", dates_to_string(self.minDate) ] )
-#         writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
-#         writer.writerow( ["recent val date:", dates_to_string(self.currDate) ] )
-#         writer.writerow( ["potential:", "(max - curr) / max"] )
-#         writer.writerow( ["relative:",  "(max - curr) / (max - min)"] )
-#         writer.writerow( ["pot raise[%]:",  "(max / curr - 1.0) * 100%"] )
-#         writer.writerow( [] )
-#
-#         columnsList = [ "name", "min val", "max val", "curr val", "trading[k]",
-#                         "potential", "relative", "pot raise[%]", "link" ]
-#         rowsList = []
-#
-#         currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
-#
-#         for key, currVal in self.currValue.items():
-#             maxVal = self.maxValue.get( key )
-#             if maxVal is None or maxVal == 0:
-#                 ## new stock, ignore
-#                 continue
-#             minVal = self.minValue[ key ]
-#             tradingVal = currTrading[ key ]
-#             raiseVal = maxVal - currVal
-#             potVal = raiseVal / maxVal
-#             stockDiff = maxVal - minVal
-#             relVal = 0
-#             if stockDiff != 0:
-#                 relVal = raiseVal / stockDiff
-#             potRaise = (maxVal / currVal - 1.0) * 100.0
-#             moneyLink = self.getMoneyPlLink( key )
-#             potVal   = round( potVal, 4 )
-#             relVal   = round( relVal, 4 )
-#             potRaise = round( potRaise, 2 )
-#             rowsList.append( [key, minVal, maxVal, currVal, tradingVal, potVal, relVal, potRaise, moneyLink] )
-#
-#         writer.writerow( columnsList )
-#         for row in rowsList:
-#             writer.writerow( row )
-#
-#         retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
-#
-#         self.logger.debug( "Done" )
-#
-#         return retDataFrame
 
 
 class GpwCurrentIntradayProvider():
@@ -122,15 +61,13 @@ class GpwCurrentIntradayProvider():
         intradayData = GpwCurrentStockIntradayData( isin )
         dataFrame    = intradayData.getWorksheetForDate( self.accessDate )
         if dataFrame is None:
-            return (name, dataFrame)
+            return None
 
         ## columns: c      h      l      o      p           t      v
         priceColumn   = dataFrame[ "c" ]
         volumenColumn = dataFrame[ "v" ]
-        frame = { 'price': priceColumn, 'volumen': volumenColumn }
-        result = pandas.DataFrame( frame )
-
-        return (name, result)
+        frame = { 'name': name, 'price': priceColumn, 'volumen': volumenColumn }
+        return pandas.DataFrame( frame )
 
 
 class MetaStockIntradayProvider():
@@ -144,17 +81,20 @@ class MetaStockIntradayProvider():
 
     def map(self, isinItems, pool):
         dataFrame = pool.apply( self._loadData )
+        if dataFrame is None:
+            return []
         retList = list()
         for name, _ in isinItems:
             nameData = self._getData( dataFrame, name )
-            retList.append( nameData )
+            if nameData is not None:
+                retList.append( nameData )
         return retList
 
     def load(self, paramsList):
         dataFrame    = self._loadData()
         name         = paramsList[0]
         if dataFrame is None:
-            return (name, dataFrame)
+            return None
         return self._getData( dataFrame, name )
 
     def _loadData(self):
@@ -162,14 +102,15 @@ class MetaStockIntradayProvider():
 
     def _getData(self, dataFrame, name ):
         nameData = dataFrame[ dataFrame["name"] == name ]
+        if nameData.empty:
+            return None
         nameData.reset_index( drop=True, inplace=True )
 
         ## columns: name  unknown_1      date    time  kurs_otw       max       min      kurs  obrot  unknown_2
         priceColumn   = nameData[ "kurs" ]
         volumenColumn = nameData[ "obrot" ]
-        frame = { 'price': priceColumn, 'volumen': volumenColumn }
-        result = pandas.DataFrame( frame )
-        return (name, result)
+        frame = { 'name': name, 'price': priceColumn, 'volumen': volumenColumn }
+        return pandas.DataFrame( frame )
 
 
 class ActivityAnalysis:
@@ -177,24 +118,15 @@ class ActivityAnalysis:
     def __init__(self, dataProvider):
         self.dataProvider = dataProvider
 
-    # pylint: disable=R0914
+    # pylint: disable=R0914, R0915
     def calcActivity(self, fromDay: datetime.date, toDay: datetime.date, thresholdPercent, outFilePath=None):
         _LOGGER.debug( "Calculating stock activity in range: %s %s", fromDay, toDay )
 
-        isinDict = self.getISINForDate( toDay )
-#         isinList = isinDict.values()
-        isinItems = isinDict.items()
-
-        dataDicts = list()
-        dataDicts.append( StockDict() )
-        dataDicts.append( StockDict() )
-        dataDicts.append( StockDict() )
-        dataDicts.append( StockDict() )
-        dataDicts.append( StockDict() )
-        dataDicts.append( StockDict() )
-        dataDicts.append( StockDict() )
-
         pool = multiprocessing.dummy.Pool( 6 )
+
+        dataDicts = StockDictList()
+        isinDict = self.getISINForDate( toDay )
+        isinItems = isinDict.items()
 
         currDate = fromDay
         currDate -= datetime.timedelta(days=1)
@@ -202,83 +134,102 @@ class ActivityAnalysis:
             currDate += datetime.timedelta(days=1)
 
             self.dataProvider.setDate( currDate )
-            loadedData = self.dataProvider.map( isinItems, pool )
+            dataframeList = self.dataProvider.map( isinItems, pool )
 
-            for name, dataFrame in loadedData:
+            for dataFrame in dataframeList:
                 if dataFrame is None:
                     continue
-
+                nameColumn = dataFrame['name']
+                name = nameColumn.iloc[0]
                 _LOGGER.debug( "calculating results for: %s %s, len: %s", currDate, name, dataFrame.shape[0] )
 
                 priceColumn = dataFrame["price"]
+                priceSize = priceColumn.shape[0]
+                if priceSize < 1:
+                    ## no data -- skip
+                    continue
+
+                minValue = priceColumn.min()
+                if math.isnan( minValue ) is False:
+                    dataDicts["min price"].minValue( name, minValue )                                  ## min value
+
+                maxValue = priceColumn.max()
+                if math.isnan( maxValue ) is False:
+                    dataDicts["max price"].maxValue( name, maxValue )                                  ## max value
+
+                dataDicts["curr price"][name] = priceColumn.iloc[ priceSize - 1 ]
+
+                volumenColumn = dataFrame["volumen"]
+                tradingColumn = priceColumn * volumenColumn / 1000
+                calcRet = VarCalc.calcSum( tradingColumn )
+                dataDicts["trading [kPLN]"].add( name, calcRet )                                   ## trading
+
+                dataDicts["potential"][name]   = 0.0
+                dataDicts["relative"][name]    = 0.0
+                dataDicts["pot raise %"][name] = 0.0
+
                 calcRet = VarCalc.calcChange3(priceColumn, thresholdPercent)
-                dataDicts[0].add( name, calcRet[1] )                                ## price activity
+                dataDicts["price activity"].add( name, calcRet[1] )                           ## price activity
 
                 priceChangeColumn = calculate_change( priceColumn )
                 calcRet = priceChangeColumn.sum()
-                dataDicts[1].add( name, calcRet )                                   ## price change sum
+                dataDicts["price change sum"].add( name, calcRet )                            ## price change sum
 
                 calcRet = priceChangeColumn.std() * len( priceColumn )
-                dataDicts[2].add( name, calcRet )                                   ## price change deviation
+                if math.isnan( calcRet ):
+                    calcRet = 0.0
+                dataDicts["price change deviation"].add( name, calcRet )                      ## price change deviation
 
-                volumenColumn = dataFrame["volumen"]
-                turnoverColumn = priceColumn * volumenColumn
-                calcRet = turnoverColumn.std()
-                dataDicts[4].add( name, calcRet )                                   ## turnover
+        namesSet = dataDicts.subkeys()
+        for name in namesSet:
+            minVal  = dataDicts["min price"][name]
+            maxVal  = dataDicts["max price"][name]
+            currVal = dataDicts["curr price"][name]
+            if currVal == 0:
+                continue
 
-                calcRet = VarCalc.calcSum(volumenColumn)
-                dataDicts[5].add( name, calcRet )                                   ## total volume
+            raiseVal = maxVal - currVal
+            potVal = raiseVal / maxVal
+            stockDiff = maxVal - minVal
+            relVal = 0.0
+            if stockDiff != 0:
+                relVal = raiseVal / stockDiff
+            potRaise = (maxVal / currVal - 1.0) * 100.0
+            potVal   = round( potVal, 4 )
+            relVal   = round( relVal, 4 )
+            potRaise = round( potRaise, 2 )
 
-                tradingColumn = priceColumn * volumenColumn / 1000
-                calcRet = VarCalc.calcSum( tradingColumn )
-                dataDicts[6].add( name, calcRet )                                   ## trading
+            dataDicts["potential"][name] = potVal
+            dataDicts["relative"][name] = relVal
+            dataDicts["pot raise %"][name] = potRaise
+
+            val = dataDicts["price change sum"][name]
+            dataDicts["price change sum"][name] = round( val, 4 )
+
+            val = dataDicts["price change deviation"][name]
+            dataDicts["price change deviation"][name] = round( val, 4 )
+
+            val = dataDicts["trading [kPLN]"][name]
+            dataDicts["trading [kPLN]"][name] = round( val, 4 )
+
+        ## =========================
 
         file = outFilePath
         if file is None:
             file = tmp_dir + "out/output_activity.csv"
-        dirPath = os.path.dirname( file )
-        os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
-        writer.writerow( ["price activity:", ("count( local_max - local_min > threshold )") ] )
-        writer.writerow( ["price  change deviation::", ("price_change.stddev * len( price_change )") ] )
-        writer.writerow( [] )
+        headerList = list()
+        headerList.append( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
+        headerList.append( ["potential:", "(max - curr) / max"] )
+        headerList.append( ["relative:",  "(max - curr) / (max - min)"] )
+        headerList.append( ["pot raise[%]:",  "(max / curr - 1.0) * 100%"] )
+        headerList.append( ["price activity:", ("count( local_max - local_min > threshold )") ] )
+        headerList.append( ["price change deviation:", ("price_change.stddev * len( price_change )") ] )
+        headerList.append( [] )
 
-        columnsList = [ "name", "price activity",
-                        "price change sum", "price change deviation",
-                        "total volume", "trading [kPLN]" ]
+        retDataFrame = dataDicts.generateDataFrame( namesSet )
 
-        rowsList = []
-
-        for key in dataDicts[0].keys():
-#             trading = tradDict[ key ]
-
-            priceAct = dataDicts[0][key]
-            #priceAct = round( priceAct, 4 )
-
-            priceChangeAvg = dataDicts[1][key]
-            priceChangeAvg = round( priceChangeAvg, 4 )
-
-            priceChangeVar = dataDicts[2][key]
-            priceChangeVar = round( priceChangeVar, 4 )
-
-            volumeSum = dataDicts[5][key]
-            volumeSum = round( volumeSum, 4 )
-
-            tradingSum = dataDicts[6][key]
-            tradingSum = round( tradingSum, 4 )
-
-            rowsList.append( [key, priceAct, priceChangeAvg, priceChangeVar, volumeSum, tradingSum] )
-
-        ## sort by variance
-        rowsList.sort(key=lambda x: x[1], reverse=True)
-
-        writer.writerow( columnsList )
-        for row in rowsList:
-            writer.writerow( row )
-
-        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+        write_to_csv( file, headerList, retDataFrame )
 
         _LOGGER.debug( "Done" )
 
@@ -286,8 +237,12 @@ class ActivityAnalysis:
 
     ## returns Dict[ name, isin ]
     def getISINForDate( self, toDay ):
-        isinProvider = StockData()
-        return isinProvider.getISINForDate( toDay )
+        dataProvider = StockData()
+        return dataProvider.getISINForDate( toDay )
+
+#     def getCurrent( self ):
+#         dataProvider = StockData()
+#         return dataProvider.getISINForDate( toDay )
 
 
 def calculate_change( dataSeries ):
@@ -301,3 +256,19 @@ def calculate_change( dataSeries ):
         diff = ( dataSeries[i] / dataSeries[i - 1] - 1.0 ) * 100.0
         retList.append( diff )
     return pandas.Series( retList )
+
+
+def write_to_csv( file, headerList, dataFrame ):
+    dirPath = os.path.dirname( file )
+    os.makedirs( dirPath, exist_ok=True )
+
+    with open(file, 'w') as f:
+        writer = csv.writer( f )
+        for row in headerList:
+            writer.writerow( row )
+
+        writer.writerow( dataFrame.columns )
+        rowsList = dataFrame.values.tolist()
+        rowsList.sort( key=lambda x: x[0], reverse=True )           ## sort
+        for row in rowsList:
+            writer.writerow( row )

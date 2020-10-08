@@ -76,7 +76,12 @@ class WorksheetData( BaseWorksheetData ):
         if forceRefresh is False:
             forceRefresh = not os.path.exists( dataPath )
         if forceRefresh:
-            self.downloadData()
+            try:
+                self.downloadData()
+            except urllib.error.HTTPError:
+                self.worksheet = None
+                self.grabTimestamp = None
+                return
 
         if not os.path.exists( dataPath ):
             _LOGGER.warning( "could not find required file[%s]", dataPath )

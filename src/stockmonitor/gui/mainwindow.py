@@ -87,9 +87,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.trayIcon = trayicon.TrayIcon(self)
         self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
 
-        self.ui.minmaxwidget.connectData( self.data )
-        self.ui.sumwidget.connectData( self.data )
-        self.ui.variancewidget.connectData( self.data )
         self.ui.activitywidget.connectData( self.data )
         self.ui.daywidget.connectData( self.data )
 

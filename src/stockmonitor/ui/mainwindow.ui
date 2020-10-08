@@ -42,36 +42,6 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="minmaxTab">
-           <attribute name="title">
-            <string>MinMax</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_6">
-            <item>
-             <widget class="MinMaxWidget" name="minmaxwidget" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="sumTab">
-           <attribute name="title">
-            <string>Sum</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_7">
-            <item>
-             <widget class="SumWidget" name="sumwidget" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="varianceTab">
-           <attribute name="title">
-            <string>Variance</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_8">
-            <item>
-             <widget class="VarianceWidget" name="variancewidget" native="true"/>
-            </item>
-           </layout>
-          </widget>
           <widget class="QWidget" name="activityTab">
            <attribute name="title">
             <string>Activity</string>
@@ -589,24 +559,6 @@
    <class>NotesWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.noteswidget</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>MinMaxWidget</class>
-   <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.tool.minmaxwidget</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SumWidget</class>
-   <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.tool.sumwidget</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>VarianceWidget</class>
-   <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.tool.variancewidget</header>
    <container>1</container>
   </customwidget>
   <customwidget>

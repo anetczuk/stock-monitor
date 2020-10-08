@@ -27,6 +27,7 @@ from datetime import date
 import urllib
 import math
 import abc
+import pandas
 
 from stockmonitor.dataaccess.datatype import ArchiveDataType
 from stockmonitor.dataaccess.gpw.gpwarchivedata import GpwArchiveData
@@ -89,6 +90,9 @@ class StockDict:
     def __getitem__(self, key):
         return self.stock[key]
 
+    def __setitem__(self, key, value):
+        self.stock[key] = value
+
     def __delitem__(self, key):
         del self.stock[key]
 
@@ -99,9 +103,19 @@ class StockDict:
         for key, value in dataDict:
             self.add( key, value )
 
+    def set(self, key, value):
+        self.stock[ key ] = value
+
     def add(self, key, value):
         if key in self.stock:
             self.stock[ key ] += value
+            return
+        self.stock[ key ] = value
+
+    def maxValue(self, key, value):
+        if key in self.stock:
+            maxVal = max( self.stock[ key ], value )
+            self.stock[ key ] = maxVal
             return
         self.stock[ key ] = value
 
@@ -109,21 +123,19 @@ class StockDict:
         if data is None:
             return
         for key, val in data.items():
-            if key not in self.stock:
-                self.stock[ key ] = val
-                continue
-            if self.stock[ key ] < val:
-                self.stock[ key ] = val
+            self.maxValue( key, val )
+
+    def minValue(self, key, value):
+        if key in self.stock:
+            self.stock[ key ] = min( self.stock[ key ], value )
+            return
+        self.stock[ key ] = value
 
     def min(self, data: dict):
         if data is None:
             return
         for key, val in data.items():
-            if key not in self.stock:
-                self.stock[ key ] = val
-                continue
-            if self.stock[ key ] > val:
-                self.stock[ key ] = val
+            self.minValue( key, val )
 
     def sum(self, data: dict, factor=1.0):
         if data is None:
@@ -156,6 +168,41 @@ class StockDict:
         diffDict.abs()
         diffDict.div( avgDict )
         return diffDict
+
+
+class StockDictList():
+
+    def __init__(self):
+        self.dataDict = dict()
+
+    def __getitem__(self, key):
+        return self.get( key )
+
+    def subkeys(self):
+        retList = set()
+        for subdict in self.dataDict.values():
+            subkeys = subdict.keys()
+            retList |= subkeys
+        return retList
+
+    def get(self, key):
+        data = self.dataDict.get( key, None )
+        if data is None:
+            self.dataDict[ key ] = StockDict()
+        return self.dataDict[ key ]
+
+    def generateDataFrame( self, namesSet ):
+        keysList = self.dataDict.keys()
+        columnsList = ["name"] + list( keysList )
+        rowsList = []
+        for name in namesSet:
+            dataRow = [ name ]
+            for column in keysList:
+                value = self.dataDict[ column ][ name ]
+                dataRow.append( value )
+            rowsList.append( dataRow )
+        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+        return retDataFrame
 
 
 ## =========================================================================
