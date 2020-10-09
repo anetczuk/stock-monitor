@@ -298,8 +298,8 @@ class DataObject( QObject ):
 
     # pylint: disable=R0914
     def getWalletTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Kurs nabycia",
-                        "Zysk %", "Zysk", "Data nabycia" ]
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", "Kurs",
+                        "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
@@ -313,10 +313,10 @@ class DataObject( QObject ):
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 currTransactions = transactions.currentTransactions()
                 for item in currTransactions:
-                    amount         = item[0]
-                    buy_unit_price = item[1]
-                    buy_date       = item[2]
-                    rowsList.append( ["-", ticker, amount, "-", buy_unit_price, "-", "-", buy_date] )
+                    trans_amount     = item[0]
+                    trans_unit_price = item[1]
+                    trans_date       = item[2]
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", trans_date] )
                 continue
 
             currUnitValue    = 0
@@ -328,82 +328,82 @@ class DataObject( QObject ):
             for item in currTransactions:
                 stockName = tickerRow["Nazwa"]
 
-                amount         = item[0]
-                buy_unit_price = item[1]
-                buy_date       = item[2]
+                trans_amount     = item[0]
+                trans_unit_price = item[1]
+                trans_date       = item[2]
 
-                currValue = currUnitValue * amount
-                buyValue  = buy_unit_price * amount
+                currValue = currUnitValue * trans_amount
+                buyValue  = trans_unit_price * trans_amount
                 profit    = currValue - buyValue
                 profitPnt = 0
                 if buyValue != 0:
                     profitPnt = profit / buyValue * 100.0
 
-                buy_unit_price = round( buy_unit_price, 4 )
+                trans_unit_price = round( trans_unit_price, 4 )
                 profitPnt      = round( profitPnt, 2 )
                 profit         = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, amount, currUnitValue, buy_unit_price,
-                                   profitPnt, profit, buy_date ] )
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, currUnitValue,
+                                   profitPnt, profit, trans_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
 
     # pylint: disable=R0914
     def getAllTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Kurs nabycia",
-                        "Zysk %", "Zysk", "Data nabycia" ]
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", "Kurs",
+                        "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
         for ticker, transactions in self.wallet.stockList.items():
-            tickerRow = currentStock.getRowByTicker( ticker )
-            if tickerRow.empty:
+            stockRow = currentStock.getRowByTicker( ticker )
+            if stockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 currTransactions = transactions.allTransactions()
                 for item in currTransactions:
-                    amount         = item[0]
-                    buy_unit_price = item[1]
-                    buy_date       = item[2]
-                    rowsList.append( ["-", ticker, amount, "-", buy_unit_price, "-", "-", buy_date] )
+                    trans_amount     = item[0]
+                    trans_unit_price = item[1]
+                    trans_date       = item[2]
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", trans_date] )
                 continue
 
             currAmount = transactions.currentAmount()
 
             currUnitValue    = 0
-            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
+            currUnitValueRaw = stockRow.iloc[currUnitValueIndex]
             if currUnitValueRaw != "-":
                 currUnitValue = float( currUnitValueRaw )
 
             currTransactions = transactions.allTransactions()
             for item in currTransactions:
-                stockName = tickerRow["Nazwa"]
+                stockName = stockRow["Nazwa"]
 
-                amount         = item[0]
-                buy_unit_price = item[1]
-                buy_date       = item[2]
-
-                currValue = currUnitValue * amount
-                buyValue  = buy_unit_price * amount
+                trans_amount     = item[0]
+                trans_unit_price = item[1]
+                trans_date       = item[2]
 
                 if currAmount <= 0:
-                    buy_unit_price = round( buy_unit_price, 4 )
-                    profitPnt      = "-"
-                    profit         = "-"
+                    trans_unit_price = round( trans_unit_price, 4 )
+                    profitPnt        = "-"
+                    profit           = "-"
                 else:
+                    currValue = abs( currUnitValue * trans_amount )
+                    buyValue  = abs( trans_unit_price * trans_amount )
+    
                     profit    = currValue - buyValue
                     profitPnt = 0
                     if buyValue != 0:
                         profitPnt = profit / buyValue * 100.0
 
-                    buy_unit_price = round( buy_unit_price, 4 )
-                    profitPnt      = round( profitPnt, 2 )
-                    profit         = round( profit, 2 )
+                    trans_unit_price = round( trans_unit_price, 4 )
+                    profitPnt        = round( profitPnt, 2 )
+                    profit           = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, amount, currUnitValue, buy_unit_price,
-                                   profitPnt, profit, buy_date ] )
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, currUnitValue,
+                                   profitPnt, profit, trans_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
