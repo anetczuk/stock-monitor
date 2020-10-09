@@ -253,12 +253,13 @@ class DataObject( QObject ):
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
 
-    def getWalletProfit(self):
+    def getWalletState(self):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
 
-        walletProfit  = 0
-        overallProfit = 0
+        walletValue   = 0.0
+        walletProfit  = 0.0
+        overallProfit = 0.0
         for ticker, transactions in self.wallet.stockList.items():
             amount, buy_unit_price = transactions.calc2()
 
@@ -283,15 +284,17 @@ class DataObject( QObject ):
             profit    = currValue - buyValue
             profit   -= currCommission
 
-            walletProfit  += profit
+            walletValue  += currValue
+            walletProfit += profit
 
             totalProfit    = transactions.transactionsProfit()
             totalProfit   += currValue - currCommission
             overallProfit += totalProfit
 
+        walletValue   = round( walletValue, 2 )
         walletProfit  = round( walletProfit, 2 )
         overallProfit = round( overallProfit, 2 )
-        return ( walletProfit, overallProfit )
+        return ( walletValue, walletProfit, overallProfit )
 
     # pylint: disable=R0914
     def getWalletTransactions(self):

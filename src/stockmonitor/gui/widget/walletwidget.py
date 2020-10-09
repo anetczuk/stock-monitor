@@ -107,6 +107,7 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         self.soldOutFilter = WalletProxyModel()
         self.ui.walletTable.addProxyModel( self.soldOutFilter )
 
+        self.ui.walletValueLabel.setStyleSheet("font-weight: bold")
         self.ui.walletProfitLabel.setStyleSheet("font-weight: bold")
         self.ui.overallProfitLabel.setStyleSheet("font-weight: bold")
 
@@ -133,9 +134,11 @@ class WalletWidget( QtBaseClass ):           # type: ignore
             return
         self.ui.walletTable.setData( stock )
 
-        profit = self.dataObject.getWalletProfit()
-        walletProfit = profit[0]
-        overallProfit = profit[1]
+        profit = self.dataObject.getWalletState()
+        walletValue   = profit[0]
+        walletProfit  = profit[1]
+        overallProfit = profit[2]
+        self.ui.walletValueLabel.setText( str(walletValue) )
         self.ui.walletProfitLabel.setText( str(walletProfit) )
         self.ui.overallProfitLabel.setText( str(overallProfit) )
 
