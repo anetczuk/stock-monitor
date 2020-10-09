@@ -45,9 +45,13 @@ def load_object( inputFile, codeVersion, defaultValue=None ):
     try:
         _LOGGER.info( "loading data from: %s", inputFile )
         with open( inputFile, 'rb') as fp:
-            return RenamingUnpickler(codeVersion, fp).load()
+            unpickler = RenamingUnpickler(codeVersion, fp)
+            return unpickler.load()
 #             return pickle.load(fp)
     except FileNotFoundError:
+        _LOGGER.exception("failed to load")
+        return defaultValue
+    except AttributeError:
         _LOGGER.exception("failed to load")
         return defaultValue
     except Exception:
