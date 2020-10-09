@@ -256,6 +256,7 @@ class WalletData( persist.Versionable ):
             currUnitPrice = currValue / currAmount
             return ( currAmount, currUnitPrice )
 
+        ## current stock in wallet (similar to mb calculation)
         def currentTransactions(self):
             ## Buy value raises then current unit price rises
             ## Sell value raises then current unit price decreases
@@ -292,40 +293,25 @@ class WalletData( persist.Versionable ):
 
             return retList
 
-        def calc2(self):
+        ## average value of current amount of stock
+        def currentTransactionsAvg(self):
             ## Buy value raises then current unit price rises
             ## Sell value raises then current unit price decreases
-            stockAmount = 0
 
-            for item in self.transactions:
-                stockAmount += item[0]
-
-            if stockAmount <= 0:
-                ## ignore no wallet stock transaction
+            transList = self.currentTransactions()
+            if not transList:
                 return (0, 0)
 
             currAmount = 0
             currValue  = 0
-            for item in self.transactions:
-                amount = item[0]
-                if amount <= 0:
-                    ## ignore sell transaction
-                    continue
-
+            for transItem in transList:
+                amount     = transItem[0]
+                unit_price = transItem[1]
                 currAmount += amount
+                currValue  += amount * unit_price
 
-                amountDiff = currAmount - stockAmount
-                if amountDiff > 0:
-                    restAmount = amount - amountDiff
-                    if restAmount <= 0:
-                        break
-                    amount = restAmount
-
-                unit_price = item[1]
-                currValue += amount * unit_price
-
-            currUnitPrice = currValue / stockAmount
-            return ( stockAmount, currUnitPrice )
+            currUnitPrice = currValue / currAmount
+            return ( currAmount, currUnitPrice )
 
         @staticmethod
         def _sortDate( tuple1, tuple2 ):
@@ -405,7 +391,7 @@ class WalletData( persist.Versionable ):
             if key is None:
                 _LOGGER.warning("found wallet None key")
                 continue
-            val = hist.calc2()
+            val = hist.currentTransactionsAvg()
             if val is not None:
                 ret.append( (key, val[0], val[1]) )
         return ret

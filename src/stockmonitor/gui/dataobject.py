@@ -204,7 +204,7 @@ class DataObject( QObject ):
         rowsList = []
 
         for ticker, transactions in self.wallet.stockList.items():
-            amount, buy_unit_price = transactions.calc2()
+            amount, buy_unit_price = transactions.currentTransactionsAvg()
             currentStockRow = currentStock.getRowByTicker( ticker )
 
             if currentStockRow.empty:
@@ -261,7 +261,7 @@ class DataObject( QObject ):
         walletProfit  = 0.0
         overallProfit = 0.0
         for ticker, transactions in self.wallet.stockList.items():
-            amount, buy_unit_price = transactions.calc2()
+            amount, buy_unit_price = transactions.currentTransactionsAvg()
 
             if amount == 0:
                 totalProfit    = transactions.transactionsProfit()
@@ -305,6 +305,8 @@ class DataObject( QObject ):
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
+        ticker: str
+        transactions: WalletData.History
         for ticker, transactions in self.wallet.stockList.items():
             tickerRow = currentStock.getRowByTicker( ticker )
             if tickerRow.empty:

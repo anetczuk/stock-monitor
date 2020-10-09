@@ -26,6 +26,7 @@ import logging
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets, QtGui
 
+from stockmonitor.gui.dataobject import WalletData
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist
@@ -146,10 +147,10 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         refY = [ refPrice, refPrice ]
         self.ui.dataChart.addPriceLine( refX, refY, style="--" )
 
-        walletStock = self.dataObject.wallet[ self.ticker ]
+        walletStock: WalletData = self.dataObject.wallet[ self.ticker ]
         if walletStock is not None:
             if self.ui.showWalletCB.isChecked():
-                amount, buy_unit_price = walletStock.calc2()
+                amount, buy_unit_price = walletStock.currentTransactionsAvg()
                 if amount > 0:
                     refY = [ buy_unit_price, buy_unit_price ]
                     self.ui.dataChart.addPriceLine( refX, refY, color='black', style="--" )
