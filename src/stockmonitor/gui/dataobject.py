@@ -53,7 +53,7 @@ from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
 from stockmonitor.gui.datatypes import UserContainer, StockData,\
     GpwStockIntradayMap, GpwIndexIntradayMap, FavData, WalletData,\
-    broker_commission
+    broker_commission, TransHistory
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -306,8 +306,10 @@ class DataObject( QObject ):
         rowsList = []
 
         ticker: str
-        transactions: WalletData.History
+        transactions: TransHistory
         for ticker, transactions in self.wallet.stockList.items():
+#             if ticker == "PCX":
+#                 print( "xxxxx:\n", transactions.items() )
             tickerRow = currentStock.getRowByTicker( ticker )
             if tickerRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
@@ -392,7 +394,7 @@ class DataObject( QObject ):
                 else:
                     currValue = abs( currUnitValue * trans_amount )
                     buyValue  = abs( trans_unit_price * trans_amount )
-    
+
                     profit    = currValue - buyValue
                     profitPnt = 0
                     if buyValue != 0:

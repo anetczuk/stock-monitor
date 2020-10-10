@@ -23,9 +23,6 @@
 
 import unittest
 
-import datetime
-import pickle
-
 from stockmonitor.gui.dataobject import DataObject
 
 

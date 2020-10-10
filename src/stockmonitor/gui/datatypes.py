@@ -173,173 +173,239 @@ class FavData( persist.Versionable ):
         self.favsList[group] = groupList
 
 
-class WalletData( persist.Versionable ):
+## =======================================================
 
-    class History():
 
-        def __init__(self):
-            ## amount, unit_price, transaction time
-            self.transactions: List[ Tuple[int, float, datetime] ] = list()
+class TransHistory():
 
-        def size(self):
-            return len( self.transactions )
+    def __init__(self):
+        ## amount, unit_price, transaction time
+        ## most recent transaction on top (with index 0)
+        self.transactions: List[ Tuple[int, float, datetime] ] = list()
 
-        def clear(self):
-            self.transactions.clear()
+    def __getitem__(self, index):
+        return self.transactions[ index ]
 
-        def items(self):
-            return self.transactions
+    def __setitem__(self, index, value):
+        self.transactions[ index ] = value
 
-        def allTransactions(self):
-            return self.transactions
+    def __len__(self):
+        return len( self.transactions )
 
-        def add(self, amount, unitPrice, transTime=None, joinSimilar=True):
-            if joinSimilar is False:
+    def size(self):
+        return len( self.transactions )
+
+    def clear(self):
+        self.transactions.clear()
+
+    def items(self):
+        return self.transactions
+
+    def allTransactions(self):
+        return self.transactions
+
+    def currentAmount(self):
+        stockAmount = 0
+        for item in self.transactions:
+            stockAmount += item[0]
+        return stockAmount
+
+    def append(self, amount, unitPrice, transTime=None):
+        self.transactions.insert( 0, (amount, unitPrice, transTime) )
+
+    def appendItem(self, item):
+        self.transactions.insert( 0, (item[0], item[1], item[2]) )
+
+    def appendList(self, itemList):
+        for item in itemList:
+            self.appendItem( item )
+        self.sort()
+
+    def add(self, amount, unitPrice, transTime=None, joinSimilar=True):
+        if joinSimilar is False:
 #                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
-                self.transactions.append( (amount, unitPrice, transTime) )
-                self.sort()
-                return
-            similarIndex = self._findSimilar( unitPrice, transTime )
-            if similarIndex < 0:
+            self.append( amount, unitPrice, transTime )
+            self.sort()
+            return
+        similarIndex = self._findSimilar( unitPrice, transTime )
+        if similarIndex < 0:
 #                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
-                self.transactions.append( (amount, unitPrice, transTime) )
-                self.sort()
+            self.append( amount, unitPrice, transTime )
+            self.sort()
+            return
+        _LOGGER.debug( "joining transaction: %s %s %s", amount, unitPrice, transTime )
+        self.addAmount( similarIndex, amount )
+
+    def addAmount(self, index, value):
+        item = self.transactions[ index ]
+        newAmount = item[0] + value
+        self.transactions[ index ] = ( newAmount, item[1], item[2] )
+
+    def calcAvg(self):
+        ## Buy value raises then current unit price rises
+        ## Sell value raises then current unit price decreases
+        currAmount = 0
+        currValue  = 0
+
+        for amount, unit_price, _ in self.transactions:
+            currAmount += amount
+            currValue  += amount * unit_price
+
+        if currAmount == 0:
+            ## ignore no wallet stock transaction
+            return (0, 0)
+
+        currUnitPrice = currValue / currAmount
+        return ( currAmount, currUnitPrice )
+
+    def transactionsProfit(self, considerCommission=True):
+        profitValue = 0
+        for amount, unit_price, transTime in self.transactions:
+            ## positive amount: buy  -- decrease transactions sum
+            ## negative amount: sell -- increase transactions sum
+            currValue = amount * unit_price
+            profitValue -= currValue
+            if considerCommission:
+                commission = broker_commission( currValue, transTime )
+                profitValue -= commission
+        return profitValue
+
+    def currentTransactions(self):
+        return self.currentTransactionsBestFit()
+#         return self.currentTransactionsRecent()
+
+    ## current stock in wallet (similar to mb calculation)
+    def currentTransactionsRecent(self) -> List[ Tuple[int, float, datetime] ]:
+        ## Buy value raises then current unit price rises
+        ## Sell value raises then current unit price decreases
+
+        stockAmount = self.currentAmount()
+        if stockAmount <= 0:
+            ## ignore no wallet stock transaction
+            return []
+
+        retList = TransHistory()
+
+        currAmount = 0
+        for item in self.transactions:
+            amount = item[0]
+            if amount <= 0:
+                ## ignore sell transaction
+                continue
+
+            currAmount += amount
+
+            amountDiff = currAmount - stockAmount
+            if amountDiff > 0:
+                restAmount = amount - amountDiff
+                if restAmount <= 0:
+                    break
+                amount = restAmount
+
+            retList.append( amount, item[1], item[2] )
+
+        return retList.items()
+
+    def currentTransactionsBestFit(self) -> List[ Tuple[int, float, datetime] ]:
+        ## Buy value raises then current unit price rises
+        ## Sell value raises then current unit price decreases
+        currTransactions = TransHistory()
+        for item in reversed( self.transactions ):
+            amount = item[0]
+            if amount > 0:
+                currTransactions.appendItem( item )
+                continue
+            currTransactions.reduceCheapest( -amount )
+        return currTransactions.transactions
+
+    ## average value of current amount of stock
+    def currentTransactionsAvg(self):
+        ## Buy value raises then current unit price rises
+        ## Sell value raises then current unit price decreases
+
+        transList = self.currentTransactions()
+        if not transList:
+            return (0, 0)
+
+        currAmount = 0
+        currValue  = 0
+        for transItem in transList:
+            amount     = transItem[0]
+            unit_price = transItem[1]
+            currAmount += amount
+            currValue  += amount * unit_price
+
+        currUnitPrice = currValue / currAmount
+        return ( currAmount, currUnitPrice )
+
+    def reduceCheapest(self, amount):
+        while amount > 0:
+            bestIndex = self.findCheapest()
+            if bestIndex < 0:
+                _LOGGER.warning( "invalid index %s", bestIndex )
                 return
-            _LOGGER.debug( "joining transaction: %s %s %s", amount, unitPrice, transTime )
-            similar = self.transactions[ similarIndex ]
-            newAmount = similar[0] + amount
-            self.transactions[ similarIndex ] = ( newAmount, similar[1], similar[2] )
+            ## reduce amount
+            bestItem = self.transactions[ bestIndex ]
+            if bestItem[0] > amount:
+                self.addAmount(bestIndex, -amount)
+                return
 
-        def sort(self):
-            ## sort by date -- recent date first
-#             def sort_alias(a, b):
-#                 return self._sortDate(a, b)
-#             compare = functools.cmp_to_key( self._sortDate )
-# #             compare = functools.cmp_to_key( sort_alias )
-# #             self.transactions.sort( key=sort_alias, reverse=True )
-#             self.transactions = sorted( self.transactions, key=compare, reverse=True )
-# #             self.transactions.sort(key=lambda x: (x[2] is None, x[2]), reverse=True)
-            self.transactions.sort( key=self._sortKey, reverse=True )
+            ## bestItem[0] <= amount
+            amount -= bestItem[0]
+            del self.transactions[ bestIndex ]
 
-        def currentAmount(self):
-            stockAmount = 0
-            for item in self.transactions:
-                stockAmount += item[0]
-            return stockAmount
+        if amount > 0:
+            _LOGGER.warning( "invalid case %s", amount )
 
-        def transactionsProfit(self, considerCommission=True):
-            profitValue = 0
-            for amount, unit_price, transTime in self.transactions:
-                ## positive amount: buy  -- decrease transactions sum
-                ## negative amount: sell -- increase transactions sum
-                currValue = amount * unit_price
-                profitValue -= currValue
-                if considerCommission:
-                    commission = broker_commission( currValue, transTime )
-                    profitValue -= commission
-            return profitValue
-
-        def calc(self):
-            ## Buy value raises then current unit price rises
-            ## Sell value raises then current unit price decreases
-            currAmount = 0
-            currValue  = 0
-
-            for amount, unit_price, _ in self.transactions:
-                currAmount += amount
-                currValue  += amount * unit_price
-
-            if currAmount == 0:
-                ## ignore no wallet stock transaction
-                return (0, 0)
-
-            currUnitPrice = currValue / currAmount
-            return ( currAmount, currUnitPrice )
-
-        ## current stock in wallet (similar to mb calculation)
-        def currentTransactions(self):
-            ## Buy value raises then current unit price rises
-            ## Sell value raises then current unit price decreases
-            stockAmount = 0
-
-            for item in self.transactions:
-                stockAmount += item[0]
-
-            retList = []
-
-            if stockAmount <= 0:
-                ## ignore no wallet stock transaction
-                return retList
-
-            currAmount = 0
-            for item in self.transactions:
-                amount = item[0]
-                if amount <= 0:
-                    ## ignore sell transaction
-                    continue
-
-                currAmount += amount
-
-                amountDiff = currAmount - stockAmount
-                if amountDiff > 0:
-                    restAmount = amount - amountDiff
-                    if restAmount <= 0:
-                        break
-                    amount = restAmount
-
-                row = list( item )
-                row[0] = amount
-                retList.append( tuple( row ) )
-
-            return retList
-
-        ## average value of current amount of stock
-        def currentTransactionsAvg(self):
-            ## Buy value raises then current unit price rises
-            ## Sell value raises then current unit price decreases
-
-            transList = self.currentTransactions()
-            if not transList:
-                return (0, 0)
-
-            currAmount = 0
-            currValue  = 0
-            for transItem in transList:
-                amount     = transItem[0]
-                unit_price = transItem[1]
-                currAmount += amount
-                currValue  += amount * unit_price
-
-            currUnitPrice = currValue / currAmount
-            return ( currAmount, currUnitPrice )
-
-        @staticmethod
-        def _sortDate( tuple1, tuple2 ):
-            date1 = tuple1[2]
-            if date1 is None:
-                return 1
-            date2 = tuple2[2]
-            if date2 is None:
-                return -1
-            return date1 < date2
-
-        @staticmethod
-        def _sortKey( tupleValue ):
-            retDate = tupleValue[2]
-            if retDate is None:
-                return datetime.min
-            return retDate
-
-        def _findSimilar(self, unit_price, trans_date):
-            for i in range( len( self.transactions ) ):
-                item = self.transactions[i]
-                if item[1] != unit_price:
-                    continue
-                diff = item[2] - trans_date
-                # print("diff:", item[2], trans_date, diff)
-                if diff < timedelta( minutes=5 ) and diff > -timedelta( minutes=5 ):
-                    return i
+    def findCheapest(self):
+        cSize = self.size()
+        if cSize < 1:
             return -1
+        bestIndex = 0
+        bestPrice = self.transactions[0][1]
+        for i in range(1, cSize):
+            currPrice = self.transactions[i][1]
+            if currPrice < bestPrice:
+                bestPrice = currPrice
+                bestIndex = i
+        return bestIndex
+
+    def _findSimilar(self, unit_price, trans_date):
+        for i in range( len( self.transactions ) ):
+            item = self.transactions[i]
+            if item[1] != unit_price:
+                continue
+            diff = item[2] - trans_date
+            # print("diff:", item[2], trans_date, diff)
+            if diff < timedelta( minutes=5 ) and diff > -timedelta( minutes=5 ):
+                return i
+        return -1
+
+    def sort(self):
+        self.transactions.sort( key=self._sortKey, reverse=True )
+
+    @staticmethod
+    def _sortDate( tuple1, tuple2 ):
+        date1 = tuple1[2]
+        if date1 is None:
+            return 1
+        date2 = tuple2[2]
+        if date2 is None:
+            return -1
+        return date1 < date2
+
+    @staticmethod
+    def _sortKey( tupleValue ):
+        retDate = tupleValue[2]
+        if retDate is None:
+            return datetime.min
+        return retDate
+
+
+## =======================================================
+
+
+class WalletData( persist.Versionable ):
 
     ## 0 - first version
     ## 1 - dict instead of list
@@ -348,7 +414,7 @@ class WalletData( persist.Versionable ):
 
     def __init__(self):
         ## ticker, amount, unit price
-        self.stockList: Dict[ str, self.History ] = dict()
+        self.stockList: Dict[ str, TransHistory ] = dict()
 
     def _convertstate_(self, dict_, dictVersion_ ):
         _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
@@ -373,7 +439,7 @@ class WalletData( persist.Versionable ):
         # pylint: disable=W0201
         self.__dict__ = dict_
 
-    def __getitem__(self, ticker) -> 'History':
+    def __getitem__(self, ticker) -> TransHistory:
         return self.stockList.get( ticker, None )
 
     def size(self):
@@ -382,7 +448,7 @@ class WalletData( persist.Versionable ):
     def clear(self):
         self.stockList.clear()
 
-    def transactions(self, ticker) -> 'History':
+    def transactions(self, ticker) -> TransHistory:
         return self.stockList.get( ticker, None )
 
     def items(self) -> List[ Tuple[str, int, float] ]:
@@ -399,7 +465,7 @@ class WalletData( persist.Versionable ):
     def add( self, ticker, amount, unitPrice, transTime: datetime=datetime.today(), joinSimilar=True ):
         transactions = self.stockList.get( ticker, None )
         if transactions is None:
-            transactions = self.History()
+            transactions = TransHistory()
             self.stockList[ ticker ] = transactions
         _LOGGER.debug( "adding transaction: %s %s %s %s", ticker, amount, unitPrice, transTime )
         transactions.add( amount, unitPrice, transTime, joinSimilar )
@@ -417,7 +483,8 @@ class UserContainer():
 
     ## 0 - first version
     ## 1 - wallet added
-    _class_version = 1
+    ## 2 - extract History class from WalletData
+    _class_version = 2
 
     def __init__(self):
         self.favs   = FavData()
