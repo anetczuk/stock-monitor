@@ -87,7 +87,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
             analysis = ActivityAnalysis( dataProvider )
             today = datetime.datetime.now().date()
             self.recentOutput = tmp_dir + "out/output_activity.csv"
-            resultData = analysis.calcActivity( today, today, thresh, self.recentOutput )
+            resultData = analysis.calcActivity( today, today, thresh, self.recentOutput, True )
 
             self.ui.dataTable.setData( resultData )
 
