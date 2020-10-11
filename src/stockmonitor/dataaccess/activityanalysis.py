@@ -31,7 +31,7 @@ import csv
 import pandas
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.stockanalysisdata import VarCalc, SourceDataLoader, StockDictList
+from stockmonitor.dataaccess.stockanalysisdata import VarCalc, SourceDataLoader, StatsDict
 from stockmonitor.dataaccess.stockanalysisdata import StockData
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
@@ -52,6 +52,7 @@ class GpwCurrentIntradayProvider():
     def setDate(self, date):
         self.accessDate = date
 
+    ## returns list
     def map(self, isinItems, pool):
         calc = SourceDataLoader( self )
         return calc.map( isinItems, pool )
@@ -79,20 +80,26 @@ class MetaStockIntradayProvider():
     def setDate(self, date):
         self.accessDate = date
 
+    ## returns list
     def map(self, isinItems, pool):
         dataFrame = pool.apply( self._loadData )
         if dataFrame is None:
             return []
-        retList = list()
+
+        retLsit = []
+#         subFrame = dataFrame[ ["name", "kurs", "obrot"] ]
+        subFrame = dataFrame.rename( columns={ 'kurs': 'price', 'obrot': 'volumen' } )
         for name, _ in isinItems:
-            nameData = self._getData( dataFrame, name )
-            if nameData is not None:
-                retList.append( nameData )
-        return retList
+            nameData = subFrame[ subFrame["name"].eq( name ) ]
+            if nameData.empty:
+                continue
+            nameData.reset_index( drop=True, inplace=True )
+            retLsit.append( nameData )
+        return retLsit
 
     def load(self, paramsList):
-        dataFrame    = self._loadData()
-        name         = paramsList[0]
+        dataFrame = self._loadData()
+        name      = paramsList[0]
         if dataFrame is None:
             return None
         return self._getData( dataFrame, name )
@@ -124,7 +131,7 @@ class ActivityAnalysis:
 
         pool = multiprocessing.dummy.Pool( 6 )
 
-        dataDicts = StockDictList()
+        dataDicts = StatsDict()
         isinDict = self.getISINForDate( toDay )
         isinItems = isinDict.items()
 
@@ -136,12 +143,14 @@ class ActivityAnalysis:
             self.dataProvider.setDate( currDate )
             dataframeList = self.dataProvider.map( isinItems, pool )
 
+            _LOGGER.debug( "calculating results for: %s", currDate )
+
             for dataFrame in dataframeList:
                 if dataFrame is None:
                     continue
                 nameColumn = dataFrame['name']
                 name = nameColumn.iloc[0]
-                _LOGGER.debug( "calculating results for: %s %s, len: %s", currDate, name, dataFrame.shape[0] )
+#                 _LOGGER.debug( "calculating results for: %s %s, len: %s", currDate, name, dataFrame.shape[0] )
 
                 priceColumn = dataFrame["price"]
                 priceSize = priceColumn.shape[0]
@@ -149,42 +158,45 @@ class ActivityAnalysis:
                     ## no data -- skip
                     continue
 
+                dataSubdict = dataDicts[ name ]
+
                 minValue = priceColumn.min()
                 if math.isnan( minValue ) is False:
-                    dataDicts["min price"].minValue( name, minValue )                                  ## min value
+                    dataSubdict.minValue( "min price", minValue )                                  ## min value
 
                 maxValue = priceColumn.max()
                 if math.isnan( maxValue ) is False:
-                    dataDicts["max price"].maxValue( name, maxValue )                                  ## max value
+                    dataSubdict.maxValue( "max price", maxValue )                                  ## max value
 
-                dataDicts["curr price"][name] = priceColumn.iloc[ priceSize - 1 ]
+                dataSubdict["curr price"] = priceColumn.iloc[ priceSize - 1 ]
 
                 volumenColumn = dataFrame["volumen"]
                 tradingColumn = priceColumn * volumenColumn / 1000
                 calcRet = VarCalc.calcSum( tradingColumn )
-                dataDicts["trading [kPLN]"].add( name, calcRet )                                   ## trading
+                dataSubdict.add( "trading [kPLN]", calcRet )                                   ## trading
 
-                dataDicts["potential"][name]   = 0.0
-                dataDicts["relative"][name]    = 0.0
-                dataDicts["pot raise %"][name] = 0.0
+                dataSubdict["potential"]   = 0.0
+                dataSubdict["relative"]    = 0.0
+                dataSubdict["pot raise %"] = 0.0
 
                 calcRet = VarCalc.calcChange3(priceColumn, thresholdPercent)
-                dataDicts["price activity"].add( name, calcRet[1] )                           ## price activity
+                dataSubdict.add( "price activity", calcRet[1] )                           ## price activity
 
                 priceChangeColumn = calculate_change( priceColumn )
                 calcRet = priceChangeColumn.sum()
-                dataDicts["price change sum"].add( name, calcRet )                            ## price change sum
+                dataSubdict.add( "price change sum", calcRet )                            ## price change sum
 
                 calcRet = priceChangeColumn.std() * len( priceColumn )
                 if math.isnan( calcRet ):
                     calcRet = 0.0
-                dataDicts["price change deviation"].add( name, calcRet )                      ## price change deviation
+                dataSubdict.add( "price change deviation", calcRet )                      ## price change deviation
 
-        namesSet = dataDicts.subkeys()
+        namesSet = dataDicts.keys()
         for name in namesSet:
-            minVal  = dataDicts["min price"][name]
-            maxVal  = dataDicts["max price"][name]
-            currVal = dataDicts["curr price"][name]
+            dataSubdict = dataDicts[ name ]
+            minVal      = dataSubdict["min price"]
+            maxVal      = dataSubdict["max price"]
+            currVal     = dataSubdict["curr price"]
             if currVal == 0:
                 continue
 
@@ -199,18 +211,18 @@ class ActivityAnalysis:
             relVal   = round( relVal, 4 )
             potRaise = round( potRaise, 2 )
 
-            dataDicts["potential"][name] = potVal
-            dataDicts["relative"][name] = relVal
-            dataDicts["pot raise %"][name] = potRaise
+            dataSubdict["potential"]   = potVal
+            dataSubdict["relative"]    = relVal
+            dataSubdict["pot raise %"] = potRaise
 
-            val = dataDicts["price change sum"][name]
-            dataDicts["price change sum"][name] = round( val, 4 )
+            val = dataSubdict["price change sum"]
+            dataSubdict["price change sum"] = round( val, 4 )
 
-            val = dataDicts["price change deviation"][name]
-            dataDicts["price change deviation"][name] = round( val, 4 )
+            val = dataSubdict["price change deviation"]
+            dataSubdict["price change deviation"] = round( val, 4 )
 
-            val = dataDicts["trading [kPLN]"][name]
-            dataDicts["trading [kPLN]"][name] = round( val, 4 )
+            val = dataSubdict["trading [kPLN]"]
+            dataSubdict["trading [kPLN]"] = round( val, 4 )
 
         ## =========================
 

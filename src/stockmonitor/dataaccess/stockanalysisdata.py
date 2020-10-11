@@ -205,6 +205,95 @@ class StockDictList():
         return retDataFrame
 
 
+class StatsDict():
+
+    class SubDict():
+
+        def __init__(self):
+            self.valueDict = dict()
+
+        def __getitem__(self, key):
+            return self.valueDict[ key ]
+
+        def __setitem__(self, key, value):
+            self.valueDict[ key ] = value
+
+        def keys(self):
+            return self.valueDict.keys()
+
+        def values(self):
+            return self.valueDict.values()
+
+        def minValue(self, key, value):
+            currVal = self.valueDict.get(key)
+            if currVal is None:
+                self.valueDict[ key ] = value
+            else:
+                if currVal > value:
+                    self.valueDict[ key ] = value
+
+        def maxValue(self, key, value):
+            currVal = self.valueDict.get(key)
+            if currVal is None:
+                self.valueDict[ key ] = value
+            else:
+                if currVal < value:
+                    self.valueDict[ key ] = value
+
+        def add(self, key, value):
+            currVal = self.valueDict.get(key)
+            if currVal is None:
+                self.valueDict[ key ] = value
+            else:
+                self.valueDict[ key ] = currVal + value
+
+    ## =====================================================================
+
+    def __init__(self):
+        self.dataDict = dict()
+
+    def __getitem__(self, key):
+        data = self.dataDict.get( key, None )
+        if data is None:
+            self.dataDict[ key ] = StatsDict.SubDict()
+        return self.dataDict[ key ]
+#         return self.get( key )
+
+    def keys(self):
+        return self.dataDict.keys()
+
+#     def subkeys(self):
+#         retList = set()
+#         for subdict in self.dataDict.values():
+#             subkeys = subdict.keys()
+#             retList |= subkeys
+#         return retList
+
+#     def get(self, key):
+#         data = self.dataDict.get( key, None )
+#         if data is None:
+#             self.dataDict[ key ] = StockDict()
+#         return self.dataDict[ key ]
+
+    def generateDataFrame( self, namesSet ):
+        firstValue = list(self.dataDict.values())[0]
+        keysList = firstValue.keys()
+#         keysList = self.dataDict.keys()
+        columnsList = ["name"] + list( keysList )
+        rowsList = []
+        for name in namesSet:
+            dataRow = [ name ]
+            nameValues = self.dataDict[ name ]
+#             for column in keysList:
+#                 value = nameValues[ column ]
+#                 dataRow.append( value )
+#             rowsList.append( dataRow )
+            values = list( nameValues.values() )
+            rowsList.append( dataRow + values )
+        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+        return retDataFrame
+
+
 ## =========================================================================
 
 
@@ -218,6 +307,7 @@ class DataProcessor():
     def processData(self, params):
         raise NotImplementedError('You need to define this method in derived class!')
 
+    ## returns list
     def map(self, paramsList, pool):
         return pool.map( self._calc, paramsList )
 
