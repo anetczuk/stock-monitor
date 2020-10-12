@@ -134,7 +134,7 @@ class ActivityAnalysis:
         pool = multiprocessing.dummy.Pool( 6 )
 
         dataDicts = StatsDict()
-        isinDict = self.getISINForDate( toDay )
+        isinDict  = self.getISINForDate( toDay )
         isinItems = isinDict.items()
 
         currDate = fromDay
@@ -147,17 +147,16 @@ class ActivityAnalysis:
             if forceRecalc is False:
                 dateString = currDate.isoformat()
                 picklePath = tmp_dir + "data/activity/%s.pickle" % dateString
-                dataframeList = persist.load_object_simple( picklePath, None )
-                if dataframeList is None:
-                    self.dataProvider.setDate( currDate )
-                    dataframeList = self.dataProvider.map( isinItems, pool )
-                    persist.store_object_simple(dataframeList, picklePath)
+                dataPair = persist.load_object_simple( picklePath, None )
+                if dataPair is None:
+                    _LOGGER.debug( "no precalculated data found -- calculating" )
+                    dataPair = self.precalculateData( currDate, isinItems, pool )
+                    persist.store_object_simple(dataPair, picklePath)
             else:
-                self.dataProvider.setDate( currDate )
-                dataframeList = self.dataProvider.map( isinItems, pool )
+                dataPair = self.precalculateData( currDate, isinItems, pool )
 
             _LOGGER.debug( "calculating results for: %s", currDate )
-            self.calculateData( dataframeList, thresholdPercent, dataDicts )
+            self.calculateActivity( dataPair, thresholdPercent, dataDicts )
 
         namesSet = dataDicts.keys()
         for name in namesSet:
@@ -215,7 +214,8 @@ class ActivityAnalysis:
 
         return retDataFrame
 
-    def calculateData(self, dataframeList, thresholdPercent, dataDicts):
+    def calculateActivity(self, dataPair, thresholdPercent, dataDicts):
+        dataframeList, subDict = dataPair
         for dataFrame in dataframeList:
             if dataFrame is None:
                 continue
@@ -229,40 +229,37 @@ class ActivityAnalysis:
                 ## no data -- skip
                 continue
 
-            dataSubdict = dataDicts[ name ]
+            dataSubdict    = dataDicts[ name ]
+            precalcSubdict = subDict[ name ]
 
-            minValue = priceColumn.min()
-            if math.isnan( minValue ) is False:
-                dataSubdict.minValue( "min price", minValue )                                  ## min value
+            minValue = precalcSubdict["min price"]
+            dataSubdict.minValue( "min price", minValue )                                  ## min value
 
-            maxValue = priceColumn.max()
-            if math.isnan( maxValue ) is False:
-                dataSubdict.maxValue( "max price", maxValue )                                  ## max value
+            maxValue = precalcSubdict["max price"]
+            dataSubdict.maxValue( "max price", maxValue )                                  ## max value
 
-            dataSubdict["curr price"] = priceColumn.iloc[ priceSize - 1 ]
+            dataSubdict["curr price"] = precalcSubdict["curr price"]
 
-            volumenColumn = dataFrame["volumen"]
-            tradingColumn = priceColumn * volumenColumn / 1000
-            calcRet = VarCalc.calcSum( tradingColumn )
+            calcRet = precalcSubdict["trading [kPLN]"]
             dataSubdict.add( "trading [kPLN]", calcRet )                                   ## trading
 
-            dataSubdict["potential"]   = 0.0
-            dataSubdict["relative"]    = 0.0
-            dataSubdict["pot raise %"] = 0.0
+            dataSubdict["potential"]   = precalcSubdict["potential"]
+            dataSubdict["relative"]    = precalcSubdict["relative"]
+            dataSubdict["pot raise %"] = precalcSubdict["pot raise %"]
 
             calcRet = VarCalc.calcChange3(priceColumn, thresholdPercent)
             dataSubdict.add( "price activity", calcRet[1] )                           ## price activity
 
-            priceChangeColumn = calculate_change( priceColumn )
-            calcRet = priceChangeColumn.sum()
+            calcRet = precalcSubdict["price change sum"]
             dataSubdict.add( "price change sum", calcRet )                            ## price change sum
 
-            calcRet = priceChangeColumn.std() * len( priceColumn )
-            if math.isnan( calcRet ):
-                calcRet = 0.0
+            calcRet = precalcSubdict["price change deviation"]
             dataSubdict.add( "price change deviation", calcRet )                      ## price change deviation
 
-    def calculateDataDict(self, dataframeList, thresholdPercent):
+    def precalculateData(self, currDate, isinItems, pool):
+        self.dataProvider.setDate( currDate )
+        dataframeList = self.dataProvider.map( isinItems, pool )
+        
         dataDicts = StatsDict()
 
         for dataFrame in dataframeList:
@@ -282,25 +279,22 @@ class ActivityAnalysis:
 
             minValue = priceColumn.min()
             if math.isnan( minValue ) is False:
-                dataSubdict["min price"] = minValue                                  ## min value
+                dataSubdict["min price"] = minValue                              ## min value
 
             maxValue = priceColumn.max()
             if math.isnan( maxValue ) is False:
-                dataSubdict["max price"] = maxValue                                  ## max value
+                dataSubdict["max price"] = maxValue                              ## max value
 
             dataSubdict["curr price"] = priceColumn.iloc[ priceSize - 1 ]
 
             volumenColumn = dataFrame["volumen"]
             tradingColumn = priceColumn * volumenColumn / 1000
             calcRet = VarCalc.calcSum( tradingColumn )
-            dataSubdict["trading [kPLN]"] = calcRet                                   ## trading
+            dataSubdict["trading [kPLN]"] = calcRet                              ## trading
 
             dataSubdict["potential"]   = 0.0
             dataSubdict["relative"]    = 0.0
             dataSubdict["pot raise %"] = 0.0
-
-            calcRet = VarCalc.calcChange3(priceColumn, thresholdPercent)
-            dataSubdict["price activity"] = calcRet[1]                           ## price activity
 
             priceChangeColumn = calculate_change( priceColumn )
             calcRet = priceChangeColumn.sum()
@@ -311,7 +305,7 @@ class ActivityAnalysis:
                 calcRet = 0.0
             dataSubdict["price change deviation"] = calcRet                      ## price change deviation
 
-        return dataDicts
+        return ( dataframeList, dataDicts )
 
     ## returns Dict[ name, isin ]
     def getISINForDate( self, toDay ):

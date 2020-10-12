@@ -276,7 +276,11 @@ class StatsDict():
 #         return self.dataDict[ key ]
 
     def generateDataFrame( self, namesSet ):
-        firstValue = list(self.dataDict.values())[0]
+        nameValues = self.dataDict.values()
+        if not nameValues:
+            # empty
+            return pandas.DataFrame()
+        firstValue = list(nameValues)[0]
         keysList = firstValue.keys()
 #         keysList = self.dataDict.keys()
         columnsList = ["name"] + list( keysList )
