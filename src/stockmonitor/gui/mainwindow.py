@@ -65,6 +65,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.refreshAction.triggered.connect( self.refreshStockDataForce )
         self.addAction( self.refreshAction )
 
+        self.ui.walletValueLabel.setStyleSheet("font-weight: bold")
+        self.ui.walletProfitLabel.setStyleSheet("font-weight: bold")
+        self.ui.overallProfitLabel.setStyleSheet("font-weight: bold")
+
         ## =============================================================
 
         undoStack = self.data.undoStack
@@ -117,6 +121,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.data.favsChanged.connect( self._handleFavsChange )
         self.data.stockDataChanged.connect( self._updateStockViews )
+        self.data.stockDataChanged.connect( self._updateWalletSummary )
+        self.data.walletDataChanged.connect( self._updateWalletSummary )
         self.data.stockHeadersChanged.connect( self._handleStockHeadersChange )
 
         self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
@@ -195,6 +201,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def refreshView(self):
         self._updateStockViews()
+        self._updateWalletSummary()
         self.ui.stockFullTable.updateData()
         self.ui.stockFullTable.updateView()
         self.ui.walletwidget.updateView()
@@ -226,6 +233,19 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.stockRefreshPB.setEnabled( True )
 
         self.setStatusMessage( "Stock data refreshed" )
+
+    def _updateWalletSummary(self):
+#         self.ui.walletValueLabel.setText( "None" )
+#         self.ui.walletProfitLabel.setText( "None" )
+#         self.ui.overallProfitLabel.setText( "None" )
+
+        profit = self.data.getWalletState()
+        walletValue   = profit[0]
+        walletProfit  = profit[1]
+        overallProfit = profit[2]
+        self.ui.walletValueLabel.setText( str(walletValue) )
+        self.ui.walletProfitLabel.setText( str(walletProfit) )
+        self.ui.overallProfitLabel.setText( str(overallProfit) )
 
     def _handleStockHeadersChange(self):
         self.triggerSaveTimer()
