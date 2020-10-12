@@ -302,5 +302,38 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>fromDE</sender>
+   <signal>dateTimeChanged(QDateTime)</signal>
+   <receiver>rangeDataRB</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>301</x>
+     <y>53</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>205</x>
+     <y>53</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toDE</sender>
+   <signal>dateTimeChanged(QDateTime)</signal>
+   <receiver>rangeDataRB</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>409</x>
+     <y>53</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>205</x>
+     <y>53</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
