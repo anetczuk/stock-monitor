@@ -298,7 +298,8 @@ class DataObject( QObject ):
 
     # pylint: disable=R0914
     def getWalletTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", "Kurs",
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", 
+                        "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
@@ -310,25 +311,30 @@ class DataObject( QObject ):
         for ticker, transactions in self.wallet.stockList.items():
 #             if ticker == "PCX":
 #                 print( "xxxxx:\n", transactions.items() )
-            tickerRow = currentStock.getRowByTicker( ticker )
-            if tickerRow.empty:
+            currentStockRow = currentStock.getRowByTicker( ticker )
+            if currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 currTransactions = transactions.currentTransactions()
                 for item in currTransactions:
                     trans_amount     = item[0]
                     trans_unit_price = item[1]
                     trans_date       = item[2]
-                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", trans_date] )
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
                 continue
 
             currUnitValue    = 0
-            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
+            currUnitValueRaw = currentStockRow.iloc[currUnitValueIndex]
             if currUnitValueRaw != "-":
                 currUnitValue = float( currUnitValueRaw )
 
+            currChangeRaw = currentStockRow.iloc[ 12 ]
+            currChange    = 0
+            if currChangeRaw != "-":
+                currChange = float( currChangeRaw )
+
             currTransactions = transactions.currentTransactions()
             for item in currTransactions:
-                stockName = tickerRow["Nazwa"]
+                stockName = currentStockRow["Nazwa"]
 
                 trans_amount     = item[0]
                 trans_unit_price = item[1]
@@ -345,7 +351,8 @@ class DataObject( QObject ):
                 profitPnt      = round( profitPnt, 2 )
                 profit         = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, currUnitValue,
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, 
+                                   currUnitValue, currChange,
                                    profitPnt, profit, trans_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
@@ -353,7 +360,8 @@ class DataObject( QObject ):
 
     # pylint: disable=R0914
     def getAllTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", "Kurs",
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", 
+                        "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
@@ -361,27 +369,32 @@ class DataObject( QObject ):
         rowsList = []
 
         for ticker, transactions in self.wallet.stockList.items():
-            stockRow = currentStock.getRowByTicker( ticker )
-            if stockRow.empty:
+            currentStockRow = currentStock.getRowByTicker( ticker )
+            if currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 currTransactions = transactions.allTransactions()
                 for item in currTransactions:
                     trans_amount     = item[0]
                     trans_unit_price = item[1]
                     trans_date       = item[2]
-                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", trans_date] )
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
                 continue
 
             currAmount = transactions.currentAmount()
 
             currUnitValue    = 0
-            currUnitValueRaw = stockRow.iloc[currUnitValueIndex]
+            currUnitValueRaw = currentStockRow.iloc[currUnitValueIndex]
             if currUnitValueRaw != "-":
                 currUnitValue = float( currUnitValueRaw )
 
+            currChangeRaw = currentStockRow.iloc[ 12 ]
+            currChange    = 0
+            if currChangeRaw != "-":
+                currChange = float( currChangeRaw )
+
             currTransactions = transactions.allTransactions()
             for item in currTransactions:
-                stockName = stockRow["Nazwa"]
+                stockName = currentStockRow["Nazwa"]
 
                 trans_amount     = item[0]
                 trans_unit_price = item[1]
@@ -404,7 +417,8 @@ class DataObject( QObject ):
                     profitPnt        = round( profitPnt, 2 )
                     profit           = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, currUnitValue,
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, 
+                                   currUnitValue, currChange,
                                    profitPnt, profit, trans_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
