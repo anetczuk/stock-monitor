@@ -284,10 +284,12 @@ class StockFullTable( StockTable ):
         return self.getSelectedData( 3 )                ## ticker
 
     def settingsAccepted(self):
-        self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
+        if self.dataObject is not None:
+            self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
 
     def settingsRejected(self):
-        self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
+        if self.dataObject is not None:
+            self.dataObject.gpwCurrentHeaders = self.pandaModel.customHeader
 
 
 ## ====================================================================

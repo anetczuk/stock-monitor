@@ -208,7 +208,8 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         _LOGGER.info("updating tab: %s", tabName)
         tabIndex = self.findTabIndex( tabName )
         pageWidget: SinglePageWidget = self.ui.data_tabs.widget( tabIndex )
-        pageWidget.updateView()
+        if pageWidget is not None:
+            pageWidget.updateView()
 
     def updateOrder(self):
         if self.dataObject is None:

@@ -46,6 +46,7 @@ class AddFavCommand( QUndoCommand ):
         self.setText( "Add Fav: " + str(newItems) + " to Group: " + str(newName) )
 
     def redo(self):
+        _LOGGER.info( "adding fav: %s %s", self.newItems, self.newName)
         super().redo()
         self.favsObj.addFav( self.newName, self.newItems )
         self.dataObject.favsGrpChanged.emit( self.newName )
