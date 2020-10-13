@@ -91,6 +91,9 @@ class MetaStockIntradayData( WorksheetData ):
 
     def _currDate(self) -> datetime.date:
         return datetime.datetime.now().date()
+    
+    def sourceLink(self):
+        return "https://info.bossa.pl/notowania/pliki/intraday/metastock/"
 
 
 ## https://info.bossa.pl/index.jsp?layout=mstock&page=1&news_cat_id=706&dirpath=/ciagle/mstock/sesjacgl
@@ -98,3 +101,6 @@ class MetaStockEODData:
 
     def __init__(self):
         pass
+    
+    def sourceLink(self):
+        return "https://info.bossa.pl/notowania/metastock/"
