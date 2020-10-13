@@ -1,6 +1,8 @@
 # Stock Monitor
 
-Monitor and tools for Stock Exchange. Aggregates data from several sources in one place. Manages wallet adn favorite stocks.
+Monitor and tools for Stock Exchange. 
+
+Aggregates data from several sources in one place. Manages wallet and favorite stocks.
 
 
 ## Features
@@ -23,8 +25,8 @@ Monitor and tools for Stock Exchange. Aggregates data from several sources in on
 
 ## Disclaimer
 
-Depending on source data presented stock data may be delayed in relation to real time values.
-Author is not responsible for any financial loss caused by misunderstanding data presented by the application. 
+Depending on data source, presented stock values may be delayed in relation to real time values.
+Author is not responsible for any financial loss caused by misunderstanding of data presented by the application. 
 
 
 ## Known issues:
@@ -35,6 +37,7 @@ Author is not responsible for any financial loss caused by misunderstanding data
 
 ### Examples of not obvious Python mechanisms
 
+- processing data in background thread preventing GUI blockage
 - chaining redo/undo commands (*addfavcommand.py*)
 - loading of UI files and inheriting from it
 - properly killing (Ctrl+C) PyQt (*sigint.py*)
