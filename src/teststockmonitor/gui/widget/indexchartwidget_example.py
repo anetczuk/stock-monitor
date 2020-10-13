@@ -36,6 +36,7 @@ except ImportError as error:
 import sys
 import logging
 
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
@@ -43,6 +44,8 @@ from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayD
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.indexchartwidget import IndexChartWindow
+from stockmonitor.gui.resources import get_root_path
+from stockmonitor.gui.utils import render_to_pixmap
 
 from teststockmonitor.data import get_data_path
 
@@ -82,8 +85,17 @@ setup_interrupt_handling()
 dataObject = prepare_dataobject()
 
 widget = IndexChartWindow()
-widget.connectData( dataObject, "PL9999999987" )
+widget.connectData( dataObject, "PL9999999987" )        ## wig20
 widget.resize( 1024, 768 )
 widget.show()
+
+
+def make_screen():
+    _LOGGER.info("making screenshot")
+    root_path = get_root_path()
+    render_to_pixmap( widget, root_path + "/tmp/indexchartwindow-big.png" )
+
+
+QtCore.QTimer.singleShot(3000, make_screen)
 
 sys.exit( app.exec_() )

@@ -21,7 +21,7 @@
 # SOFTWARE.
 #
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import QObject
 
 
@@ -51,3 +51,12 @@ def get_parent( widget: QObject ):
         ## e.g. matplotlib's NavigationToolbar
         return None
     return widget.parent()
+
+
+def render_to_pixmap( widget: QtWidgets.QWidget, outputPath=None ):
+    rectangle = widget.geometry()
+    pixmap = QtGui.QPixmap( rectangle.size() )
+    widget.render( pixmap, QtCore.QPoint(), QtGui.QRegion(rectangle) )
+    if outputPath is not None:
+        pixmap.save( outputPath )
+    return pixmap

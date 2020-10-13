@@ -76,7 +76,11 @@ window.disableSaving()
 window.setWindowTitle( window.windowTitle() )
 if args.loadUserData:
     window.loadData()
+else:
+    window.data.addFav("abc", ["ALR"])
+    window.data.addFav("abc", ["CDR"])
 window.loadSettings()
+window.refreshView()
 window.show()
 
 exitCode = app.exec_()
