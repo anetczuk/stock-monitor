@@ -123,39 +123,43 @@ class MetaStockIntradayProvider():
 
 class ActivityAnalysis:
 
-    def __init__(self, dataProvider):
+    def __init__(self, dataProvider, pool=None):
         self.dataProvider = dataProvider
+        
+        self.forceRecalc    = None
+        self.isinItems      = None
+        self.thresholdPrcnt = None
+        if pool is None:
+            pool = multiprocessing.dummy.Pool( 6 )
+        self.pool           = pool
 
     # pylint: disable=R0914
     def calcActivity( self, fromDay: datetime.date, toDay: datetime.date, thresholdPercent,
                       outFilePath=None, forceRecalc=False ):
         _LOGGER.debug( "Calculating stock activity in range: %s %s", fromDay, toDay )
 
-        pool = multiprocessing.dummy.Pool( 6 )
+        self.forceRecalc = forceRecalc
 
-        dataDicts = StatsDict()
-        isinDict  = self.getISINForDate( toDay )
-        isinItems = isinDict.items()
+        dataDicts           = StatsDict()
+        isinDict            = self.getISINForDate( toDay )
+        self.isinItems      = isinDict.items()
+        self.thresholdPrcnt = thresholdPercent
 
+        # === load precalculated data ===
+
+        dataPairList = []
         currDate = fromDay
         currDate -= datetime.timedelta(days=1)
         while currDate < toDay:
             currDate += datetime.timedelta(days=1)
+            dataPair  = self.getPrecalcData( currDate )
+            dataPairList.append( dataPair )
+            
+        # === calculate activity ===
 
-            _LOGGER.debug( "loading data for: %s", currDate )
-
-            if forceRecalc is False:
-                dateString = currDate.isoformat()
-                picklePath = tmp_dir + "data/activity/%s.pickle" % dateString
-                dataPair = persist.load_object_simple( picklePath, None )
-                if dataPair is None:
-                    _LOGGER.debug( "no precalculated data found -- calculating" )
-                    dataPair = self.precalculateData( currDate, isinItems, pool )
-                    persist.store_object_simple(dataPair, picklePath)
-            else:
-                dataPair = self.precalculateData( currDate, isinItems, pool )
-
-            _LOGGER.debug( "calculating results for: %s", currDate )
+        for dataTuple in dataPairList:
+            _LOGGER.debug( "calculating results for %s", dataTuple[2] )
+            dataPair = ( dataTuple[0], dataTuple[1] )
             self.calculateActivity( dataPair, thresholdPercent, dataDicts )
 
         namesSet = dataDicts.keys()
@@ -167,8 +171,8 @@ class ActivityAnalysis:
             if currVal == 0:
                 continue
 
-            raiseVal = maxVal - currVal
-            potVal = raiseVal / maxVal
+            raiseVal  = maxVal - currVal
+            potVal    = raiseVal / maxVal
             stockDiff = maxVal - minVal
             relVal = 0.0
             if stockDiff != 0:
@@ -256,9 +260,25 @@ class ActivityAnalysis:
             calcRet = precalcSubdict["price change deviation"]
             dataSubdict.add( "price change deviation", calcRet )                      ## price change deviation
 
-    def precalculateData(self, currDate, isinItems, pool):
+    def getPrecalcData(self, currDate):
+        _LOGGER.debug( "loading data for: %s", currDate )
+
+        if self.forceRecalc is False:
+            dateString = currDate.isoformat()
+            picklePath = tmp_dir + "data/activity/%s.pickle" % dateString
+            dataPair = persist.load_object_simple( picklePath, None )
+            if dataPair is None:
+                _LOGGER.debug( "no precalculated data found -- precalculating" )
+                dataPair = self.precalculateData( currDate )
+                persist.store_object_simple(dataPair, picklePath)
+        else:
+            dataPair = self.precalculateData( currDate )
+            
+        return list( dataPair ) + [ currDate ]
+            
+    def precalculateData(self, currDate):
         self.dataProvider.setDate( currDate )
-        dataframeList = self.dataProvider.map( isinItems, pool )
+        dataframeList = self.dataProvider.map( self.isinItems, self.pool )
         
         dataDicts = StatsDict()
 

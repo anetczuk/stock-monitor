@@ -122,6 +122,10 @@ class QThreadList( QtCore.QObject ):
         worker.thread.finished.connect( self._threadFinished )
         self.threads.append( worker )
 
+#     def map(self, func, argsList):
+#         for arg in argsList:
+#             self.appendFunction( func, arg )
+
     def start(self):
         _LOGGER.info( "starting threads" )
         for thr in self.threads:
@@ -148,6 +152,9 @@ class QThreadMeasuredList( QThreadList ):
         super().__init__( parent )
         self.startTime = None
 
+    def deleteOnFinish(self):
+        self.finished.connect( self.deleteLater )
+
     def start(self):
         self.startTime = datetime.datetime.now()
         super().start()
@@ -157,6 +164,13 @@ class QThreadMeasuredList( QThreadList ):
         endTime = datetime.datetime.now()
         diffTime = endTime - self.startTime
         _LOGGER.info( "computation time: %s", diffTime )
+
+    @staticmethod
+    def calculate( parent, function, args=None ):
+        threads = QThreadMeasuredList( parent )
+        threads.deleteOnFinish()
+        threads.appendFunction( function, args )
+        threads.start()
 
 
 ## ====================================================================

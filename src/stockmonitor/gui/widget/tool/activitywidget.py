@@ -34,6 +34,7 @@ from stockmonitor.dataaccess.activityanalysis import GpwCurrentIntradayProvider,
     ActivityAnalysis, MetaStockIntradayProvider
 
 from ... import uiloader
+from stockmonitor.gui import threadlist
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_module_path( __file__ )
@@ -79,8 +80,13 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         self.ui.dataTable.connectData( dataObject )
 
     def calculate(self):
+        self.ui.calculatePB.setEnabled( False )
+        self.ui.openPB.setEnabled( False )
         self.ui.dataTable.clear()
 
+        threadlist.QThreadMeasuredList.calculate( self, self.calculateData )
+
+    def calculateData(self):
         if self.ui.todayDataRB.isChecked():
             _LOGGER.warning("calculating based on current intraday")
             thresh = self.ui.threshSB.value()
@@ -110,6 +116,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         else:
             _LOGGER.warning("unknown state")
 
+        self.ui.calculatePB.setEnabled( True )
         self.ui.openPB.setEnabled( True )
 
     def openResults(self):
