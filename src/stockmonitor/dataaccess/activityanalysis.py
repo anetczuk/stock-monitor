@@ -125,7 +125,7 @@ class ActivityAnalysis:
 
     def __init__(self, dataProvider, pool=None):
         self.dataProvider = dataProvider
-        
+
         self.forceRecalc    = None
         self.isinItems      = None
         self.thresholdPrcnt = None
@@ -154,7 +154,7 @@ class ActivityAnalysis:
             currDate += datetime.timedelta(days=1)
             dataPair  = self.getPrecalcData( currDate )
             dataPairList.append( dataPair )
-            
+
         # === calculate activity ===
 
         for dataTuple in dataPairList:
@@ -273,13 +273,13 @@ class ActivityAnalysis:
                 persist.store_object_simple(dataPair, picklePath)
         else:
             dataPair = self.precalculateData( currDate )
-            
+
         return list( dataPair ) + [ currDate ]
-            
+
     def precalculateData(self, currDate):
         self.dataProvider.setDate( currDate )
         dataframeList = self.dataProvider.map( self.isinItems, self.pool )
-        
+
         dataDicts = StatsDict()
 
         for dataFrame in dataframeList:

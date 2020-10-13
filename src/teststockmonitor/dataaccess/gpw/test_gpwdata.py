@@ -40,7 +40,7 @@ class GpwIndicatorsDataTest(unittest.TestCase):
     def test_getWorksheet(self):
         currData = self.dataAccess.getWorksheet()
         dataLen = len( currData )
-        self.assertEqual(dataLen, 436)
+        self.assertGreaterEqual(dataLen, 400)
 
 
 class GpwIsinMapDataTest(unittest.TestCase):

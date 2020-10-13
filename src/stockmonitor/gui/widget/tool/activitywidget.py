@@ -29,12 +29,12 @@ from PyQt5.QtGui import QDesktopServices
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.stockanalysis import StockAnalysis
-from stockmonitor.gui.utils import set_label_url
 from stockmonitor.dataaccess.activityanalysis import GpwCurrentIntradayProvider,\
     ActivityAnalysis, MetaStockIntradayProvider
+from stockmonitor.gui import threadlist
+from stockmonitor.gui.utils import set_label_url
 
 from ... import uiloader
-from stockmonitor.gui import threadlist
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_module_path( __file__ )
@@ -73,7 +73,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         self.ui.openPB.clicked.connect( self.openResults )
 
         self.ui.limitResultsCB.currentIndexChanged.connect( self.ui.dataTable.limitResults )
-        
+
         self.ui.todayDataRB.click()
 
     def connectData(self, dataObject):
@@ -103,7 +103,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         resultData = analysis.calcActivity( today, today, thresh, self.recentOutput, True )
 
         self.ui.dataTable.setData( resultData )
-        
+
         self.ui.calculatePB.setEnabled( True )
         self.ui.openPB.setEnabled( True )
 
@@ -122,7 +122,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         resultData = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )
 
         self.ui.dataTable.setData( resultData )
-        
+
         self.ui.calculatePB.setEnabled( True )
         self.ui.openPB.setEnabled( True )
 

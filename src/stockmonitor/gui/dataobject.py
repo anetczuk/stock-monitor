@@ -298,7 +298,7 @@ class DataObject( QObject ):
 
     # pylint: disable=R0914
     def getWalletTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", 
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
@@ -351,7 +351,7 @@ class DataObject( QObject ):
                 profitPnt      = round( profitPnt, 2 )
                 profit         = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, 
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price,
                                    currUnitValue, currChange,
                                    profitPnt, profit, trans_date ] )
 
@@ -360,7 +360,7 @@ class DataObject( QObject ):
 
     # pylint: disable=R0914
     def getAllTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", 
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
@@ -417,7 +417,7 @@ class DataObject( QObject ):
                     profitPnt        = round( profitPnt, 2 )
                     profit           = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, 
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price,
                                    currUnitValue, currChange,
                                    profitPnt, profit, trans_date ] )
 
