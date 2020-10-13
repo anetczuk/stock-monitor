@@ -80,42 +80,49 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         self.ui.dataTable.connectData( dataObject )
 
     def calculate(self):
+        if self.ui.todayDataRB.isChecked():
+            _LOGGER.warning("calculating based on current intraday")
+            threadlist.QThreadMeasuredList.calculate( self, self._calculateCurr )
+        elif self.ui.rangeDataRB.isChecked():
+            _LOGGER.warning("calculating based on metastock intraday")
+            threadlist.QThreadMeasuredList.calculate( self, self._calculatePrev )
+        else:
+            _LOGGER.warning("unknown state")
+
+    def _calculateCurr(self):
         self.ui.calculatePB.setEnabled( False )
         self.ui.openPB.setEnabled( False )
         self.ui.dataTable.clear()
 
-        threadlist.QThreadMeasuredList.calculate( self, self.calculateData )
+        thresh = self.ui.threshSB.value()
 
-    def calculateData(self):
-        if self.ui.todayDataRB.isChecked():
-            _LOGGER.warning("calculating based on current intraday")
-            thresh = self.ui.threshSB.value()
+        dataProvider = GpwCurrentIntradayProvider()
+        analysis = ActivityAnalysis( dataProvider )
+        today = datetime.datetime.now().date()
+        self.recentOutput = tmp_dir + "out/output_activity.csv"
+        resultData = analysis.calcActivity( today, today, thresh, self.recentOutput, True )
 
-            dataProvider = GpwCurrentIntradayProvider()
-            analysis = ActivityAnalysis( dataProvider )
-            today = datetime.datetime.now().date()
-            self.recentOutput = tmp_dir + "out/output_activity.csv"
-            resultData = analysis.calcActivity( today, today, thresh, self.recentOutput, True )
+        self.ui.dataTable.setData( resultData )
+        
+        self.ui.calculatePB.setEnabled( True )
+        self.ui.openPB.setEnabled( True )
 
-            self.ui.dataTable.setData( resultData )
+    def _calculatePrev(self):
+        self.ui.calculatePB.setEnabled( False )
+        self.ui.openPB.setEnabled( False )
+        self.ui.dataTable.clear()
 
-        elif self.ui.rangeDataRB.isChecked():
-            _LOGGER.warning("calculating based on metastock intraday")
-            fromDate = self.ui.fromDE.date().toPyDate()
-            toDate   = self.ui.toDE.date().toPyDate()
-            thresh   = self.ui.threshSB.value()
+        fromDate = self.ui.fromDE.date().toPyDate()
+        toDate   = self.ui.toDE.date().toPyDate()
+        thresh   = self.ui.threshSB.value()
 
-            dataProvider = MetaStockIntradayProvider()
-            analysis = ActivityAnalysis( dataProvider )
-            today = datetime.datetime.now().date()
-            self.recentOutput = tmp_dir + "out/output_activity.csv"
-            resultData = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )
+        dataProvider = MetaStockIntradayProvider()
+        analysis = ActivityAnalysis( dataProvider )
+        self.recentOutput = tmp_dir + "out/output_activity.csv"
+        resultData = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )
 
-            self.ui.dataTable.setData( resultData )
-
-        else:
-            _LOGGER.warning("unknown state")
-
+        self.ui.dataTable.setData( resultData )
+        
         self.ui.calculatePB.setEnabled( True )
         self.ui.openPB.setEnabled( True )
 
