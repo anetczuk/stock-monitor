@@ -159,9 +159,6 @@ class PriceChartWindow( AppWindow ):
         self.chart.connectData(dataObject, ticker)
         self._setStockName()
 
-#     def updateData(self):
-#         self.chart.updateData()
-
     def _setStockName(self):
         name = self.chart.dataObject.getNameFromTicker( self.chart.ticker )
         if name is None:
