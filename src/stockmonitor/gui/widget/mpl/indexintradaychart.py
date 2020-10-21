@@ -24,7 +24,7 @@
 import logging
 
 from .baseintradaychart import BaseIntradayChart
-from .baseintradaychart import _configure_plot, _update_plot, get_index_float
+from .baseintradaychart import _configure_plot, _update_plot
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,21 +46,6 @@ class IndexIntradayChart( BaseIntradayChart ):
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
         self.figure.autofmt_xdate()
-
-    def setPriceFormatCoord( self, refValue ):
-        firstLine  = self.pricePlot.lines[0]
-        xdata      = firstLine.get_xdata()
-        ydata      = firstLine.get_ydata()
-        xformatter = self.pricePlot.xaxis.get_major_formatter()
-
-#         def format_coord(x, y):
-        def format_coord(x, _):
-            xindex = get_index_float( xdata, x )
-            yvalue = ydata[ xindex ]
-            change = ( yvalue / refValue - 1 ) * 100
-            return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
-
-        self.pricePlot.format_coord = format_coord
 
     def addPriceSecondaryY( self, referenceValue ):
         def val_to_perc( y ):

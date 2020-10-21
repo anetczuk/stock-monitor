@@ -29,6 +29,7 @@ from PyQt5 import QtWidgets, QtGui
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist
+from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord
 
 from .. import uiloader
 
@@ -126,7 +127,7 @@ class PriceChartWidget(QtBaseClass):                    # type: ignore
         timeData = list(timeColumn)
         self.ui.dataChart.addPriceLine( timeData, priceColumn )
 
-        self.ui.dataChart.setPriceFormatCoord()
+        set_ref_format_coord( self.ui.dataChart.pricePlot )
 
         intraSource = self.getIntradayDataSource()
         set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )

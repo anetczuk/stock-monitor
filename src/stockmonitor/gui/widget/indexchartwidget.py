@@ -29,6 +29,7 @@ from PyQt5 import QtWidgets, QtGui
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist
+from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord
 
 from .. import uiloader
 
@@ -130,7 +131,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         refY = [ refPrice, refPrice ]
         self.ui.dataChart.addPriceLine( refX, refY, style="--" )
 
-        self.ui.dataChart.setPriceFormatCoord( refPrice )
+        set_ref_format_coord( self.ui.dataChart.pricePlot, refPrice )
 
         self.ui.valueLabel.setText( str(value) )
         self.ui.changeLabel.setText( str(change) + "%" )

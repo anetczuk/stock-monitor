@@ -50,23 +50,6 @@ class PriceIntradayChart( BaseIntradayChart ):
         # axes up to make room for them
         self.figure.autofmt_xdate()
 
-    def setPriceFormatCoord( self, refValue=None ):
-        firstLine  = self.pricePlot.lines[0]
-        xdata      = firstLine.get_xdata()
-        ydata      = firstLine.get_ydata()
-        xformatter = self.pricePlot.xaxis.get_major_formatter()
-
-        def format_coord(x, _):
-#         def format_coord(x, y):
-            xindex = get_index_float( xdata, x )
-            yvalue = ydata[ xindex ]
-            if refValue is not None:
-                change = ( yvalue / refValue - 1 ) * 100
-                return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
-            return 'x=' + xformatter.format_data(x) + ' y=%1.4f' % ( yvalue )
-
-        self.pricePlot.format_coord = format_coord
-
     def addPriceSecondaryY(self, referenceValue ):
         def val_to_perc( y ):
             return ( y / referenceValue - 1.0 ) * 100.0
@@ -108,21 +91,6 @@ class StockIntradayChart( BaseIntradayChart ):
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
         self.figure.autofmt_xdate()
-
-    def setPriceFormatCoord( self, refValue ):
-        firstLine  = self.pricePlot.lines[0]
-        xdata      = firstLine.get_xdata()
-        ydata      = firstLine.get_ydata()
-        xformatter = self.pricePlot.xaxis.get_major_formatter()
-
-        def format_coord(x, _):
-#         def format_coord(x, y):
-            xindex = get_index_float( xdata, x )
-            yvalue = ydata[ xindex ]
-            change = ( yvalue / refValue - 1 ) * 100
-            return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
-
-        self.pricePlot.format_coord = format_coord
 
     def setVolumeFormatCoord( self ):
         firstLine  = self.volumePlot.lines[0]

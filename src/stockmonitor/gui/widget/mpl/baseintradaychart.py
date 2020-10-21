@@ -161,3 +161,36 @@ def get_index_float( xdata, xvalue ):
         if valueDate < currData:
             return i - 1
     return dataSize - 1
+
+
+def set_ref_format_coord( plot, refValue=None ):
+    firstLine  = plot.lines[0]
+    xdata      = firstLine.get_xdata()
+    ydata      = firstLine.get_ydata()
+    xformatter = plot.xaxis.get_major_formatter()
+
+    def format_coord(x, _):
+#         def format_coord(x, y):
+        xindex = get_index_float( xdata, x )
+        yvalue = ydata[ xindex ]
+        if refValue is not None:
+            change = ( yvalue / refValue - 1 ) * 100
+            return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
+        return 'x=' + xformatter.format_data(x) + ' y=%1.4f' % ( yvalue )
+
+    plot.format_coord = format_coord
+
+
+def set_int_format_coord( plot ):
+    firstLine  = plot.lines[0]
+    xdata      = firstLine.get_xdata()
+    ydata      = firstLine.get_ydata()
+    xformatter = plot.xaxis.get_major_formatter()
+
+    def format_coord(x, _):
+#         def format_coord(x, y):
+        xindex = get_index_float( xdata, x )
+        yvalue = ydata[ xindex ]
+        return 'x=' + xformatter.format_data(x) + ' y=%i' % yvalue
+
+    plot.format_coord = format_coord
