@@ -22,6 +22,7 @@
 #
 
 import logging
+import abc
 
 from PyQt5.QtCore import Qt
 
@@ -83,7 +84,7 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
     def repaintData(self):
         self.updateData( False )
 
-    def updateData(self, forceRefresh):
+    def updateData(self, forceRefresh=False):
         self.ui.refreshPB.setEnabled( False )
 
         threads = threadlist.QThreadMeasuredList( self )
@@ -106,19 +107,16 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
 
     def _updateView(self):
         self.ui.refreshPB.setEnabled( True )
-        rangeText = self.ui.rangeCB.currentText()
-        dataFrame = self.dataObject.getWalletStockValueData( self.ticker, rangeText )
+        dataFrame = self._getDataFrame()
         if dataFrame is None:
             return
 
+        rangeText = self.ui.rangeCB.currentText()
         _LOGGER.debug( "updating chart data, range[%s] ticker[%s]", rangeText, self.ticker )
 
         self.clearData()
         if dataFrame is None:
             return
-
-        currentData = self.getCurrentDataSource()
-        currentData.loadWorksheet()
 
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
@@ -140,10 +138,33 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
     def getCurrentDataSource(self):
         return self.dataObject.gpwCurrentData
 
+    @abc.abstractmethod
+    def _getDataFrame(self):
+        raise NotImplementedError('You need to define this method in derived class!')
 
-def create_window( dataObject, ticker, parent=None ):
+
+class StockValueChartWidget( ValueChartWidget ):
+
+    def _getDataFrame(self):
+        rangeText = self.ui.rangeCB.currentText()
+        dataFrame = self.dataObject.getWalletStockValueData( self.ticker, rangeText )
+        return dataFrame
+
+
+class StockProfitChartWidget( ValueChartWidget ):
+
+    def _getDataFrame(self):
+        rangeText = self.ui.rangeCB.currentText()
+        dataFrame = self.dataObject.getWalletStockProfitData( self.ticker, rangeText )
+        return dataFrame
+
+
+## ==================================================================================
+
+
+def create_window( dataObject, ticker, chartWidgetClass, parent=None ):
     chartWindow = AppWindow( parent )
-    chart = ValueChartWidget( chartWindow )
+    chart = chartWidgetClass( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
 
@@ -158,3 +179,11 @@ def create_window( dataObject, ticker, parent=None ):
     chartWindow.show()
 
     return chartWindow
+
+
+def create_stockvalue_window( dataObject, ticker, parent=None ):
+    return create_window(dataObject, ticker, StockValueChartWidget, parent)
+
+
+def create_stockprofit_window( dataObject, ticker, parent=None ):
+    return create_window(dataObject, ticker, StockProfitChartWidget, parent)

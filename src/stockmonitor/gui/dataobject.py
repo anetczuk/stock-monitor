@@ -253,6 +253,7 @@ class DataObject( QObject ):
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
 
+    ## wallet summary: wallet value, wallet profit, overall profit
     def getWalletState(self):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
@@ -436,23 +437,12 @@ class DataObject( QObject ):
         startDateTime = stockData.iloc[0, 0]        ## first date
         startDate = startDateTime.date()
 
-        transList = list()
-        for item in transactions:
-            transTime = item[2]
-            transDate = transTime.date()
-            if transDate < startDate:
-                continue
-            transList.append( item )
+        transList = transactions.transactionsAfter( startDate )
 
         amountBefore = transactions.amountBeforeDate( startDate )
         dataFrame = stockData[ ["t", "c"] ].copy()
 
-        if len( transList ) < 1:
-            dataFrame[ "c" ] = dataFrame[ "c" ] * amountBefore
-            return dataFrame
-
-        rowsNum = dataFrame.shape[0]
-
+        rowsNum    = dataFrame.shape[0]
         rowIndex   = 0
         currAmount = amountBefore
 
@@ -472,53 +462,54 @@ class DataObject( QObject ):
 
         return dataFrame
 
-#     def getWalletStockProfitData(self, ticker, rangeCode):
-#         transactions: TransHistory = self.wallet.transactions( ticker )
-#         if transactions is None:
-#             return None
-#
-#         isin = self.getStockIsinFromTicker( ticker )
-#         intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
-#         stockData = intraSource.getWorksheet()
-#
-#         startDateTime = stockData.iloc[0, 0]        ## first date
-#         startDate = startDateTime.date()
-#
-#         transList = list()
-#         for item in transactions:
-#             transTime = item[2]
-#             transDate = transTime.date()
-#             if transDate < startDate:
-#                 continue
-#             transList.append( item )
-#
-#         amountBefore = transactions.amountBeforeDate( startDate )
-#         dataFrame = stockData[ ["t", "c"] ].copy()
-#
-#         if len( transList ) < 1:
-#             dataFrame[ "c" ] = dataFrame[ "c" ] * amountBefore
-#             return dataFrame
-#
-#         rowsNum = dataFrame.shape[0]
-#
-#         rowIndex   = 0
-#         currAmount = amountBefore
-#
-#         for item in reversed( transList ):
-#             transTime = item[2]
-#             while rowIndex < rowsNum:
-#                 if dataFrame.at[ rowIndex, "t" ] < transTime:
-#                     dataFrame.at[ rowIndex, "c" ] = dataFrame.at[ rowIndex, "c" ] * currAmount
-#                     rowIndex += 1
-#                 else:
-#                     break
-#             currAmount += item[0]
-#
-#         while rowIndex < rowsNum:
-#             dataFrame.at[ rowIndex, "c" ] = dataFrame.at[ rowIndex, "c" ] * currAmount
-#             rowIndex += 1
-#
-#         return dataFrame
+    def getWalletStockProfitData(self, ticker, rangeCode):
+        transactions: TransHistory = self.wallet.transactions( ticker )
+        if transactions is None:
+            return None
+
+        isin = self.getStockIsinFromTicker( ticker )
+        intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
+        stockData = intraSource.getWorksheet()
+
+        startDateTime = stockData.iloc[0, 0]        ## first date
+        startDate = startDateTime.date()
+
+        transBefore  = transactions.transactionsBefore( startDate )
+        pendingTrans = transactions.transactionsAfter( startDate )
+
+        dataFrame = stockData[ ["t", "c"] ].copy()
+        rowsNum   = dataFrame.shape[0]
+        rowIndex  = 0
+
+        for item in reversed( pendingTrans ):
+            transTime = item[2]
+            amountBefore = transBefore.currentAmount()
+            totalProfit  = transBefore.transactionsProfit()
+            while rowIndex < rowsNum:
+                stockTime = dataFrame.at[ rowIndex, "t" ]
+                if stockTime < transTime:
+                    if amountBefore > 0:
+                        profit = totalProfit - broker_commission( amountBefore, stockTime )
+                        dataFrame.at[ rowIndex, "c" ] = dataFrame.at[ rowIndex, "c" ] * amountBefore + profit
+                    else:
+                        dataFrame.at[ rowIndex, "c" ] = totalProfit
+                    rowIndex += 1
+                else:
+                    break
+            transBefore.appendItem( item )
+
+        amountBefore = transBefore.currentAmount()
+        totalProfit  = transBefore.transactionsProfit()
+        while rowIndex < rowsNum:
+            stockTime = dataFrame.at[ rowIndex, "t" ]
+            if amountBefore > 0:
+                profit = totalProfit - broker_commission( amountBefore, stockTime )
+                dataFrame.at[ rowIndex, "c" ] = dataFrame.at[ rowIndex, "c" ] * amountBefore + profit
+            else:
+                dataFrame.at[ rowIndex, "c" ] = totalProfit
+            rowIndex += 1
+
+        return dataFrame
 
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
         wallet: WalletData = self.wallet

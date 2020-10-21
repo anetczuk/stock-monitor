@@ -36,7 +36,8 @@ from stockmonitor.dataaccess.convert import convert_float, convert_int,\
 
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
-from stockmonitor.gui.widget.valuechartwidget import create_window
+from stockmonitor.gui.widget.valuechartwidget import create_stockvalue_window,\
+    create_stockprofit_window
 
 from .. import uiloader
 
@@ -82,9 +83,9 @@ class WalletStockTable( StockTable ):
                 valueChartAction.setData( tickersList )
                 valueChartAction.triggered.connect( self.openStockValueChart )
 
-#                 profitChartAction = insert_new_action(contextMenu, "Open profit chart", 1)
-#                 profitChartAction.setData( tickersList )
-#                 profitChartAction.triggered.connect( self.openStockProfitChart )
+                profitChartAction = insert_new_action(contextMenu, "Open total profit chart", 2)
+                profitChartAction.setData( tickersList )
+                profitChartAction.triggered.connect( self.openStockProfitChart )
         return contextMenu
 
     def openStockValueChart(self):
@@ -95,19 +96,17 @@ class WalletStockTable( StockTable ):
         if is_iterable( tickersList ) is False:
             tickersList = list( tickersList )
         for ticker in tickersList:
-            create_window( self.dataObject, ticker, self )
+            create_stockvalue_window( self.dataObject, ticker, self )
 
-#     def openStockProfitChart(self):
-#         if self.dataObject is None:
-#             return
-#         parentAction = self.sender()
-#         tickersList = parentAction.data()
-#         if is_iterable( tickersList ) is False:
-#             tickersList = list( tickersList )
-#         for ticker in tickersList:
-#             chartWidget = ValueChartWindow( self )
-#             chartWidget.connectData( self.dataObject, ticker )
-#             chartWidget.show()
+    def openStockProfitChart(self):
+        if self.dataObject is None:
+            return
+        parentAction = self.sender()
+        tickersList = parentAction.data()
+        if is_iterable( tickersList ) is False:
+            tickersList = list( tickersList )
+        for ticker in tickersList:
+            create_stockprofit_window( self.dataObject, ticker, self )
 
     def importTransactions(self):
         if self.dataObject is None:

@@ -90,7 +90,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
     def repaintData(self):
         self.updateData( False )
 
-    def updateData(self, forceRefresh):
+    def updateData(self, forceRefresh=False):
         self.ui.refreshPB.setEnabled( False )
 
         threads = threadlist.QThreadMeasuredList( self )

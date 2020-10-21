@@ -346,6 +346,29 @@ class TransHistory():
         currUnitPrice = currValue / currAmount
         return ( currAmount, currUnitPrice )
 
+    def transactionsAfter(self, startDate) -> 'TransHistory':
+        transList = list()
+        for item in self.transactions:
+            transTime = item[2]
+            transDate = transTime.date()
+            if transDate < startDate:
+                continue
+            transList.append( item )
+        retTrans = TransHistory()
+        retTrans.appendList( transList )
+        return retTrans
+
+    def transactionsBefore(self, endtDate) -> 'TransHistory':
+        transList = list()
+        for item in self.transactions:
+            transTime = item[2]
+            transDate = transTime.date()
+            if transDate < endtDate:
+                transList.append( item )
+        retTrans = TransHistory()
+        retTrans.appendList( transList )
+        return retTrans
+
     def reduceCheapest(self, amount):
         while amount > 0:
             bestIndex = self.findCheapest()
