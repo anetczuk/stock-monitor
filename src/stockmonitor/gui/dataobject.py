@@ -209,7 +209,7 @@ class DataObject( QObject ):
 
             if currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
-                rowsList.append( ["-", ticker, amount, "-", buy_unit_price, "-", "-", "-", "-"] )
+                rowsList.append( ["-", ticker, amount, "-", buy_unit_price, "-", "-", "-", "-", "-"] )
                 continue
 
             stockName = currentStockRow["Nazwa"]
@@ -217,7 +217,7 @@ class DataObject( QObject ):
             if amount == 0:
                 totalProfit = transactions.transactionsProfit()
                 totalProfit = round( totalProfit, 2 )
-                rowsList.append( [stockName, ticker, amount, "-", "-", "-", "-", "-", totalProfit] )
+                rowsList.append( [stockName, ticker, amount, "-", "-", "-", "-", "-", 0, totalProfit] )
                 continue
 
             currUnitValueRaw = currentStockRow.iloc[ currUnitValueIndex ]
