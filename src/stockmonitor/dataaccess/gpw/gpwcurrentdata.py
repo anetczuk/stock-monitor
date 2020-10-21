@@ -102,7 +102,7 @@ class GpwCurrentStockData( WorksheetData ):
         reducedFrame = dataFrame[ dataFrame["Skrót"] == ticker ]
         rowIndexes = reducedFrame.index.values
         if rowIndexes is None or len(rowIndexes) < 1:
-            _LOGGER.warning("no isin found for ticker %s", ticker)
+            _LOGGER.warning("no isin found for ticker %s\n%s", ticker, dataFrame)
             return None
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["isin"]

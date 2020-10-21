@@ -210,7 +210,15 @@ class TransHistory():
             stockAmount += item[0]
         return stockAmount
 
-    def append(self, amount, unitPrice, transTime=None):
+    def amountBeforeDate(self, transDate):
+        stockAmount = 0
+        for item in self.transactions:
+            itemDate = item[2].date()
+            if itemDate < transDate:
+                stockAmount += item[0]
+        return stockAmount
+
+    def append(self, amount, unitPrice, transTime: datetime=None):
         self.transactions.insert( 0, (amount, unitPrice, transTime) )
 
     def appendItem(self, item):

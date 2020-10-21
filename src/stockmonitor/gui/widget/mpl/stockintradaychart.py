@@ -33,6 +33,63 @@ from .baseintradaychart import _configure_plot, _update_plot, get_index_float
 _LOGGER = logging.getLogger(__name__)
 
 
+class PriceIntradayChart( BaseIntradayChart ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+
+        self.pricePlot  = self.figure.add_subplot(1, 1, 1)      ## matplotlib.axes._subplots.AxesSubplot
+        self.clearPlot()
+
+    def clearPlot(self):
+        super().clearPlot()
+
+        _configure_plot( self.pricePlot, "Price" )
+
+        # rotates and right aligns the x labels, and moves the bottom of the
+        # axes up to make room for them
+        self.figure.autofmt_xdate()
+
+    def setPriceFormatCoord( self, refValue=None ):
+        firstLine  = self.pricePlot.lines[0]
+        xdata      = firstLine.get_xdata()
+        ydata      = firstLine.get_ydata()
+        xformatter = self.pricePlot.xaxis.get_major_formatter()
+
+        def format_coord(x, _):
+#         def format_coord(x, y):
+            xindex = get_index_float( xdata, x )
+            yvalue = ydata[ xindex ]
+            if refValue is not None:
+                change = ( yvalue / refValue - 1 ) * 100
+                return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
+            return 'x=' + xformatter.format_data(x) + ' y=%1.4f' % ( yvalue )
+
+        self.pricePlot.format_coord = format_coord
+
+    def addPriceSecondaryY(self, referenceValue ):
+        def val_to_perc( y ):
+            return ( y / referenceValue - 1.0 ) * 100.0
+
+        def perc_to_val( y ):
+            return ( y / 100.0 + 1.0 ) * referenceValue
+
+        secay = self.pricePlot.secondary_yaxis( 'right', functions=(val_to_perc, perc_to_val) )
+        secay.set_ylabel( "Change [%]" )
+
+    def addPriceLine(self, xdata: List[datetime.datetime], ydata, color='r', style=None):
+        line = self.pricePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
+        if style is not None:
+            line[0].set_linestyle( style )
+
+        _update_plot( xdata, self.pricePlot )
+
+        if self.figure.get_visible() is False:
+            self.figure.set_visible( True )
+
+        self.refreshCanvas()
+
+
 class StockIntradayChart( BaseIntradayChart ):
 
     def __init__(self, parentWidget=None):

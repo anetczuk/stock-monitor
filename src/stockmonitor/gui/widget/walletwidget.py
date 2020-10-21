@@ -24,6 +24,7 @@
 import logging
 import tempfile
 import codecs
+from typing import List
 
 import pandas
 
@@ -33,9 +34,11 @@ from PyQt5.QtWidgets import QFileDialog
 from stockmonitor.dataaccess.convert import convert_float, convert_int,\
     apply_on_column
 
-from .. import uiloader
+from stockmonitor.gui.widget.stocktable import StockTable
+from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
+from stockmonitor.gui.widget.pricechartwidget import PriceChartWindow
 
-from .stocktable import StockTable
+from .. import uiloader
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,12 +73,43 @@ class WalletStockTable( StockTable ):
         super().__init__(parentWidget)
         self.setObjectName("walletstocktable")
 
-#     def createContextMenu(self):
-#         contextMenu = super().createContextMenu()
-#         if self.dataObject is not None:
-#             importTransAction = insert_new_action(contextMenu, "Import mb transactions", 1)
-#             importTransAction.triggered.connect( self.importTransactions )
-#         return contextMenu
+    def createContextMenu(self):
+        contextMenu = super().createContextMenu()
+        if self.dataObject is not None:
+            tickersList = self._getSelectedTickers()
+            if tickersList:
+                valueChartAction = insert_new_action(contextMenu, "Open value chart", 1)
+                valueChartAction.setData( tickersList )
+                valueChartAction.triggered.connect( self.openStockValueChart )
+
+#                 profitChartAction = insert_new_action(contextMenu, "Open profit chart", 1)
+#                 profitChartAction.setData( tickersList )
+#                 profitChartAction.triggered.connect( self.openStockProfitChart )
+        return contextMenu
+
+    def openStockValueChart(self):
+        if self.dataObject is None:
+            return
+        parentAction = self.sender()
+        tickersList = parentAction.data()
+        if is_iterable( tickersList ) is False:
+            tickersList = list( tickersList )
+        for ticker in tickersList:
+            chartWidget = PriceChartWindow( self )
+            chartWidget.connectData( self.dataObject, ticker )
+            chartWidget.show()
+
+#     def openStockProfitChart(self):
+#         if self.dataObject is None:
+#             return
+#         parentAction = self.sender()
+#         tickersList = parentAction.data()
+#         if is_iterable( tickersList ) is False:
+#             tickersList = list( tickersList )
+#         for ticker in tickersList:
+#             chartWidget = PriceChartWindow( self )
+#             chartWidget.connectData( self.dataObject, ticker )
+#             chartWidget.show()
 
     def importTransactions(self):
         if self.dataObject is None:
@@ -90,6 +124,11 @@ class WalletStockTable( StockTable ):
 
     def _getSelectedTickers(self):
         return self.getSelectedData( 1 )                ## ticker
+
+    ## returns list of isins
+    def _getSelectedIsins(self) -> List[str]:
+        selectedData = self.getSelectedData( 12 )                ## isin
+        return list( selectedData )
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )

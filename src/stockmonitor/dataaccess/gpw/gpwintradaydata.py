@@ -90,6 +90,7 @@ class GpwCurrentStockIntradayData( WorksheetData ):
                 currWorksheet = currData.getWorksheet()
                 lastRow = currWorksheet.iloc[-1]
                 dataFrame = dataFrame.append( lastRow )
+                dataFrame.reset_index( drop=True, inplace=True )
 
             return dataFrame
 
