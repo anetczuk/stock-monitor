@@ -24,7 +24,6 @@
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets, QtGui
 
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url
@@ -148,26 +147,20 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         return self.dataObject.gpwIndexesData
 
 
-class IndexChartWindow( AppWindow ):
+def create_window( dataObject, isin, parent=None ):
+    chartWindow = AppWindow( parent )
+    chart = IndexChartWidget( chartWindow )
+    chartWindow.addWidget( chart )
+    chartWindow.refreshAction.triggered.connect( chart.refreshData )
 
-    def __init__(self, parentWidget=None):
-        super().__init__( parentWidget )
+    chart.connectData(dataObject, isin)
 
-        self.chart = IndexChartWidget( self )
-        self.addWidget( self.chart )
+    currentSource = chart.getCurrentDataSource()
+    name = currentSource.getNameFromIsin( isin )
+    title = name + " [" + isin + "]"
+    chartWindow.setWindowTitleSuffix( "- " + title )
+    chart.ui.nameLabel.setText( name )
 
-        self.refreshAction = QtWidgets.QAction(self)
-        self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
-        self.refreshAction.triggered.connect( self.chart.refreshData )
-        self.addAction( self.refreshAction )
+    chartWindow.show()
 
-    def connectData(self, dataObject, isin):
-        self.chart.connectData( dataObject, isin )
-        self._setStockName()
-
-    def _setStockName(self):
-        currentSource = self.chart.getCurrentDataSource()
-        name = currentSource.getNameFromIsin( self.chart.isin )
-        title = name + " [" + self.chart.isin + "]"
-        self.setWindowTitleSuffix( "- " + title )
-        self.chart.ui.nameLabel.setText( name )
+    return chartWindow

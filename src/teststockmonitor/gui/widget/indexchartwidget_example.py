@@ -43,7 +43,7 @@ import stockmonitor.logger as logger
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.dataobject import DataObject
-from stockmonitor.gui.widget.indexchartwidget import IndexChartWindow
+from stockmonitor.gui.widget.indexchartwidget import create_window
 from stockmonitor.gui.resources import get_root_path
 from stockmonitor.gui.utils import render_to_pixmap
 
@@ -84,10 +84,8 @@ setup_interrupt_handling()
 
 dataObject = prepare_dataobject()
 
-widget = IndexChartWindow()
-widget.connectData( dataObject, "PL9999999987" )        ## wig20
+widget = create_window( dataObject, "PL9999999987" )        ## wig20
 widget.resize( 1024, 768 )
-widget.show()
 
 
 def make_screen():

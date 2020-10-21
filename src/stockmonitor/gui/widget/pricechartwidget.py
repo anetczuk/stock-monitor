@@ -24,7 +24,6 @@
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets, QtGui
 
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url
@@ -142,27 +141,20 @@ class PriceChartWidget(QtBaseClass):                    # type: ignore
         return self.dataObject.gpwCurrentData
 
 
-class PriceChartWindow( AppWindow ):
+def create_window( dataObject, ticker, parent=None ):
+    chartWindow = AppWindow( parent )
+    chart = PriceChartWidget( chartWindow )
+    chartWindow.addWidget( chart )
+    chartWindow.refreshAction.triggered.connect( chart.refreshData )
 
-    def __init__(self, parentWidget=None):
-        super().__init__( parentWidget )
+    chart.connectData(dataObject, ticker)
 
-        self.chart = PriceChartWidget( self )
-        self.addWidget( self.chart )
+    name = dataObject.getNameFromTicker( ticker )
+    if name is not None:
+        title = name + " [" + ticker + "]"
+        chartWindow.setWindowTitleSuffix( "- " + title )
+        chart.ui.stockLabel.setText( name )
 
-        self.refreshAction = QtWidgets.QAction(self)
-        self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
-        self.refreshAction.triggered.connect( self.chart.refreshData )
-        self.addAction( self.refreshAction )
+    chartWindow.show()
 
-    def connectData(self, dataObject, ticker):
-        self.chart.connectData(dataObject, ticker)
-        self._setStockName()
-
-    def _setStockName(self):
-        name = self.chart.dataObject.getNameFromTicker( self.chart.ticker )
-        if name is None:
-            return
-        title = name + " [" + self.chart.ticker + "]"
-        self.setWindowTitleSuffix( "- " + title )
-        self.chart.ui.stockLabel.setText( name )
+    return chartWindow

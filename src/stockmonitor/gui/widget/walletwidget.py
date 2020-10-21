@@ -36,7 +36,7 @@ from stockmonitor.dataaccess.convert import convert_float, convert_int,\
 
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
-from stockmonitor.gui.widget.pricechartwidget import PriceChartWindow
+from stockmonitor.gui.widget.pricechartwidget import create_window
 
 from .. import uiloader
 
@@ -95,9 +95,7 @@ class WalletStockTable( StockTable ):
         if is_iterable( tickersList ) is False:
             tickersList = list( tickersList )
         for ticker in tickersList:
-            chartWidget = PriceChartWindow( self )
-            chartWidget.connectData( self.dataObject, ticker )
-            chartWidget.show()
+            create_window( self.dataObject, ticker, self )
 
 #     def openStockProfitChart(self):
 #         if self.dataObject is None:

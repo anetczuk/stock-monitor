@@ -34,10 +34,9 @@ from PyQt5.QtGui import QDesktopServices
 
 from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
-from stockmonitor.gui.widget.stockchartwidget import StockChartWindow
-from stockmonitor.gui.widget.indexchartwidget import IndexChartWindow
 
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
+from stockmonitor.gui.widget import stockchartwidget, indexchartwidget
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -129,9 +128,7 @@ class StockTable( DataFrameTable ):
         if is_iterable( tickerList ) is False:
             tickerList = list( tickerList )
         for ticker in tickerList:
-            chartWidget = StockChartWindow( self )
-            chartWidget.connectData( self.dataObject, ticker )
-            chartWidget.show()
+            stockchartwidget.create_window( self.dataObject, ticker, self )
 
     def _addFavActions(self, contextMenu):
         favsActions = []
@@ -361,9 +358,7 @@ class StockIndexesTable( StockTable ):
         if is_iterable( isinList ) is False:
             isinList = list( isinList )
         for isin in isinList:
-            chartWidget = IndexChartWindow( self )
-            chartWidget.connectData( self.dataObject, isin )
-            chartWidget.show()
+            indexchartwidget.create_window( self.dataObject, isin, self )
 
 #     def _getSelectedTickers(self):
 #         dataAccess = self.dataObject.gpwIndexesData

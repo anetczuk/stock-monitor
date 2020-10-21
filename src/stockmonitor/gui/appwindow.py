@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QVBoxLayout
@@ -53,6 +54,10 @@ class AppWindow( QWidget ):
             chartIcon = load_chart_icon( iconTheme )
             self.setWindowIcon( chartIcon )
             break
+
+        self.refreshAction = QtWidgets.QAction(self)
+        self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
+        self.addAction( self.refreshAction )
 
     def setWindowTitleSuffix( self, suffix="" ):
         if len(suffix) < 1:
