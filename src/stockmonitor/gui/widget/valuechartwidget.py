@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
 
 
-class PriceChartWidget(QtBaseClass):                    # type: ignore
+class ValueChartWidget(QtBaseClass):                    # type: ignore
 
 #     updateFinished = QtCore.pyqtSignal()
 
@@ -143,7 +143,7 @@ class PriceChartWidget(QtBaseClass):                    # type: ignore
 
 def create_window( dataObject, ticker, parent=None ):
     chartWindow = AppWindow( parent )
-    chart = PriceChartWidget( chartWindow )
+    chart = ValueChartWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
 

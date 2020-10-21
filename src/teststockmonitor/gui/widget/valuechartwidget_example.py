@@ -43,7 +43,7 @@ import stockmonitor.logger as logger
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.widget.pricechartwidget import create_window
+from stockmonitor.gui.widget.valuechartwidget import create_window
 from stockmonitor.gui.resources import get_root_path
 from stockmonitor.gui.utils import render_to_pixmap
 
