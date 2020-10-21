@@ -627,7 +627,7 @@ def broker_commission( value, transTime=None ):
     elif isinstance(transTime, datetime):
         transTime = transTime.date()
 
-    if transTime > date( year=2020, month=9, day=9 ):
+    if transTime > date( year=2020, month=10, day=6 ):
         minCommission = 5.0
     commission = abs( value ) * 0.0039
     commission = max( commission, minCommission )
