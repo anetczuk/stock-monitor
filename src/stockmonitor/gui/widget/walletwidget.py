@@ -36,8 +36,7 @@ from stockmonitor.dataaccess.convert import convert_float, convert_int,\
 
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
-from stockmonitor.gui.widget.valuechartwidget import create_stockvalue_window,\
-    create_stockprofit_window
+from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window
 
 from .. import uiloader
 
@@ -79,24 +78,25 @@ class WalletStockTable( StockTable ):
         if self.dataObject is not None:
             tickersList = self._getSelectedTickers()
             if tickersList:
-                valueChartAction = insert_new_action(contextMenu, "Open value chart", 1)
-                valueChartAction.setData( tickersList )
-                valueChartAction.triggered.connect( self.openStockValueChart )
-
-                profitChartAction = insert_new_action(contextMenu, "Open total profit chart", 2)
+                profitChartAction = insert_new_action(contextMenu, "Open total profit chart", 1)
                 profitChartAction.setData( tickersList )
                 profitChartAction.triggered.connect( self.openStockProfitChart )
+
+#                 valueChartAction = insert_new_action(contextMenu, "Open value chart", 1)
+#                 valueChartAction.setData( tickersList )
+#                 valueChartAction.triggered.connect( self.openStockValueChart )
+
         return contextMenu
 
-    def openStockValueChart(self):
-        if self.dataObject is None:
-            return
-        parentAction = self.sender()
-        tickersList = parentAction.data()
-        if is_iterable( tickersList ) is False:
-            tickersList = list( tickersList )
-        for ticker in tickersList:
-            create_stockvalue_window( self.dataObject, ticker, self )
+#     def openStockValueChart(self):
+#         if self.dataObject is None:
+#             return
+#         parentAction = self.sender()
+#         tickersList = parentAction.data()
+#         if is_iterable( tickersList ) is False:
+#             tickersList = list( tickersList )
+#         for ticker in tickersList:
+#             create_stockvalue_window( self.dataObject, ticker, self )
 
     def openStockProfitChart(self):
         if self.dataObject is None:
