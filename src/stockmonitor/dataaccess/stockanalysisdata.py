@@ -58,6 +58,7 @@ class StockData(object):
         day = date.today() - datetime.timedelta(days=1)
         return self.getISINForDate( day )
 
+    ## returns Dict[ name, isin ]
     def getISINForDate(self, day: date) -> dict:
         validDay = self.getRecentValidDay( day )
         _LOGGER.info("loading recent ISIN data for %s", validDay )

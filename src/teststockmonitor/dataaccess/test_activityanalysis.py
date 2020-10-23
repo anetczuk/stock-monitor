@@ -22,10 +22,58 @@
 #
 
 import unittest
+import logging
 import datetime
 
+from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.activityanalysis import GpwCurrentIntradayProvider,\
     ActivityAnalysis, MetaStockIntradayProvider
+from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
+from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
+
+
+_LOGGER = logging.getLogger(__name__)
+
+
+## =================================================================
+
+
+class GpwCurrentIntradayProviderMock( GpwCurrentIntradayProvider ):
+
+    def _loadData(self, isin):
+#         name, isin   = paramsList
+        intradayData = GpwCurrentStockIntradayData( "PLOPTTC00011" )
+
+        def data_path():
+            return get_data_path( "cdr.chart.04-09.txt" )
+
+        intradayData.getDataPath = data_path           # type: ignore
+        intradayData.parseDataFromDefaultFile()
+        return intradayData.getWorksheet()
+
+
+class MetaStockIntradayProviderMock( MetaStockIntradayProvider ):
+
+    def _loadData(self):
+        intradayData = MetaStockIntradayData()
+
+        def data_path():
+            return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
+
+        intradayData.getDataPath = data_path           # type: ignore
+        intradayData.parseDataFromDefaultFile()
+        return intradayData.getWorksheet()
+
+
+class ActivityAnalysisMock( ActivityAnalysis ):
+
+    def getPrecalcData(self, currDate):
+        _LOGGER.debug( "loading data for: %s", currDate )
+        dataPair = self.precalculateData( currDate )
+        return list( dataPair ) + [ currDate ]
+
+    def getISINForDate( self, toDay ):
+        return { "CDPROJEKT": "PLOPTTC00011" }
 
 
 ## =================================================================
@@ -42,15 +90,29 @@ class ActivityAnalysisTest(unittest.TestCase):
         pass
 
     def test_calc_current(self):
-        dataProvider = GpwCurrentIntradayProvider()
-        analysis = ActivityAnalysis( dataProvider )
+        dataProvider = GpwCurrentIntradayProviderMock()
+        analysis = ActivityAnalysisMock( dataProvider )
         today = datetime.datetime.now().date()
         results = analysis.calcActivity( today, today, 2.0 )
-        self.assertGreater( results.shape[0], 370 )
+        self.assertEqual( results.shape[0], 1 )
+        row = results.iloc[0]
+        self.assertEqual( row["name"], "CDPROJEKT" )
+        self.assertEqual( row["potential"], 0.0181 )
+        self.assertEqual( row["relative"], 0.3251 )
+        self.assertEqual( row["price activity"], 4 )
+        self.assertEqual( row["price change sum"], 2.3499 )
+        self.assertEqual( row["price change deviation"], 224.8795 )
 
     def test_calc_previous(self):
-        dataProvider = MetaStockIntradayProvider()
-        analysis = ActivityAnalysis( dataProvider )
+        dataProvider = MetaStockIntradayProviderMock()
+        analysis = ActivityAnalysisMock( dataProvider )
         today = datetime.date( year=2020, month=9, day=1 )
         results = analysis.calcActivity( today, today, 2.0 )
-        self.assertGreater( results.shape[0], 370 )
+        self.assertEqual( results.shape[0], 1 )
+        row = results.iloc[0]
+        self.assertEqual( row["name"], "CDPROJEKT" )
+        self.assertEqual( row["potential"], 0.0169 )
+        self.assertEqual( row["relative"], 0.9211 )
+        self.assertEqual( row["price activity"], 0 )
+        self.assertEqual( row["price change sum"], -0.6337 )
+        self.assertEqual( row["price change deviation"], 82.3829 )

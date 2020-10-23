@@ -59,9 +59,8 @@ class GpwCurrentIntradayProvider():
         return calc.map( isinItems, pool )
 
     def load(self, paramsList):
-        name, isin   = paramsList
-        intradayData = GpwCurrentStockIntradayData( isin )
-        dataFrame    = intradayData.getWorksheetForDate( self.accessDate )
+        name, isin = paramsList
+        dataFrame  = self._loadData( isin )
         if dataFrame is None:
             return None
 
@@ -70,6 +69,11 @@ class GpwCurrentIntradayProvider():
         volumenColumn = dataFrame[ "v" ]
         frame = { 'name': name, 'price': priceColumn, 'volumen': volumenColumn }
         return pandas.DataFrame( frame )
+
+    def _loadData(self, isin):
+        intradayData = GpwCurrentStockIntradayData( isin )
+        dataFrame    = intradayData.getWorksheetForDate( self.accessDate )
+        return dataFrame
 
 
 class MetaStockIntradayProvider():
@@ -277,8 +281,7 @@ class ActivityAnalysis:
         return list( dataPair ) + [ currDate ]
 
     def precalculateData(self, currDate):
-        self.dataProvider.setDate( currDate )
-        dataframeList = self.dataProvider.map( self.isinItems, self.pool )
+        dataframeList = self._loadData( currDate )
 
         dataDicts = StatsDict()
 
@@ -326,6 +329,11 @@ class ActivityAnalysis:
             dataSubdict["price change deviation"] = calcRet                      ## price change deviation
 
         return ( dataframeList, dataDicts )
+
+    def _loadData(self, currDate):
+        self.dataProvider.setDate( currDate )
+        dataframeList = self.dataProvider.map( self.isinItems, self.pool )
+        return dataframeList
 
     ## returns Dict[ name, isin ]
     def getISINForDate( self, toDay ):
