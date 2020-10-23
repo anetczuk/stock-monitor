@@ -42,7 +42,7 @@ _LOGGER = logging.getLogger(__name__)
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
 
 
-class ValueChartWidget(QtBaseClass):                    # type: ignore
+class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
 
 #     updateFinished = QtCore.pyqtSignal()
 
@@ -51,9 +51,6 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
-
-        self.dataObject = None
-        self.ticker = None
 
         if parentWidget is not None:
             bgcolor = parentWidget.palette().color(parentWidget.backgroundRole())
@@ -68,12 +65,6 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
-
-    def connectData(self, dataObject, ticker):
-        self.dataObject = dataObject
-        self.ticker     = ticker
-        self.dataObject.stockDataChanged.connect( self.updateData )
-        self.updateData( True )
 
     def clearData(self):
         self.ui.dataChart.clearPlot()
@@ -91,32 +82,25 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
-        intraSource = self.getIntradayDataSource()
-        threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
-
-#         currentData = self.getCurrentDataSource()
-#         threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )
+        intraSources = self.getDataSources()
+        for source in intraSources:
+            threads.appendFunction( source.getWorksheet, [forceRefresh] )
 
         threads.start()
 
-#         intraSource = self.getIntradayDataSource()
-#         intraSource.getWorksheet( forceRefresh )
-#         currentData = self.getCurrentDataSource()
-#         currentData.loadWorksheet( forceRefresh )
-#         self._updateView()
-
     def _updateView(self):
+        self.clearData()
+        
+        sourceLink = self.getDataSourceLink()
+        set_label_url( self.ui.sourceLabel, sourceLink )
+        
         self.ui.refreshPB.setEnabled( True )
         dataFrame = self._getDataFrame()
         if dataFrame is None:
+            _LOGGER.warning( "no data received" )
             return
 
         rangeText = self.ui.rangeCB.currentText()
-        _LOGGER.debug( "updating chart data, range[%s] ticker[%s]", rangeText, self.ticker )
-
-        self.clearData()
-        if dataFrame is None:
-            return
 
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
@@ -125,22 +109,48 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
         self.ui.dataChart.addPriceLine( timeData, priceColumn )
 
         set_ref_format_coord( self.ui.dataChart.pricePlot )
+        _LOGGER.debug( "updating chart data done, range[%s]", rangeText )
 
-        intraSource = self.getIntradayDataSource()
-        set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
+    @abc.abstractmethod
+    def getDataSources(self):
+        raise NotImplementedError('You need to define this method in derived class!')
 
-    def getIntradayDataSource(self):
-        rangeText = self.ui.rangeCB.currentText()
-        isin = self.dataObject.getStockIsinFromTicker( self.ticker )
-        intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
-        return intraSource
-
-    def getCurrentDataSource(self):
-        return self.dataObject.gpwCurrentData
+    @abc.abstractmethod
+    def getDataSourceLink(self):
+        raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
     def _getDataFrame(self):
         raise NotImplementedError('You need to define this method in derived class!')
+    
+    
+class ValueChartWidget( ValueChartBasicWidget ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+
+        self.dataObject = None
+        self.ticker = None
+
+    def connectData(self, dataObject, ticker):
+        self.dataObject = dataObject
+        self.ticker     = ticker
+        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.updateData( True )
+
+    def getDataSources(self):
+        intraSource = self.getTickerDataSource()
+        return [ intraSource ]
+
+    def getDataSourceLink(self):
+        intraSource = self.getTickerDataSource()
+        return intraSource.sourceLink()
+    
+    def getTickerDataSource(self):
+        rangeText = self.ui.rangeCB.currentText()
+        isin = self.dataObject.getStockIsinFromTicker( self.ticker )
+        intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+        return intraSource
 
 
 class StockValueChartWidget( ValueChartWidget ):
@@ -156,6 +166,37 @@ class StockProfitChartWidget( ValueChartWidget ):
     def _getDataFrame(self):
         rangeText = self.ui.rangeCB.currentText()
         dataFrame = self.dataObject.getWalletStockProfitData( self.ticker, rangeText )
+        return dataFrame
+
+
+class StockWalletChartWidget( ValueChartBasicWidget ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+
+        self.dataObject = None
+
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.updateData( True )
+
+    def getDataSources(self):
+        retList = []
+        rangeText = self.ui.rangeCB.currentText()
+        walletTickers = self.dataObject.wallet.tickers()
+        for ticker in walletTickers:
+            isin = self.dataObject.getStockIsinFromTicker( ticker )
+            intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+            retList.append( intraSource )
+        return retList
+
+    def getDataSourceLink(self):
+        return "?"
+
+    def _getDataFrame(self):
+        rangeText = self.ui.rangeCB.currentText()
+        dataFrame = self.dataObject.getWalletTotalProfitData( rangeText )
         return dataFrame
 
 
@@ -187,3 +228,20 @@ def create_stockvalue_window( dataObject, ticker, parent=None ):
 
 def create_stockprofit_window( dataObject, ticker, parent=None ):
     return create_window(dataObject, ticker, StockProfitChartWidget, parent)
+
+
+def create_walletprofit_window( dataObject, parent=None ):
+    chartWindow = AppWindow( parent )
+    chart = StockWalletChartWidget( chartWindow )
+    chartWindow.addWidget( chart )
+    chartWindow.refreshAction.triggered.connect( chart.refreshData )
+
+    chart.connectData(dataObject)
+
+    title = "Wallet"
+    chartWindow.setWindowTitleSuffix( "- " + title )
+    chart.ui.stockLabel.setText( title )
+
+    chartWindow.show()
+
+    return chartWindow

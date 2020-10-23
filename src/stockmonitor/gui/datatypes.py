@@ -479,6 +479,9 @@ class WalletData( persist.Versionable ):
     def clear(self):
         self.stockList.clear()
 
+    def tickers(self):
+        return self.stockList.keys()
+
     def transactions(self, ticker) -> TransHistory:
         return self.stockList.get( ticker, None )
 

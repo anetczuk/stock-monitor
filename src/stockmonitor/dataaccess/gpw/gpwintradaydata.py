@@ -69,6 +69,7 @@ class GpwCurrentStockIntradayData( WorksheetData ):
             json_dict = json_data[0]
             data_field = json_dict.get("data", None)
             if data_field is None:
+                _LOGGER.warning("no 'data' field found")
                 return None
 #             print("xxx:", data_field)
 
@@ -88,9 +89,10 @@ class GpwCurrentStockIntradayData( WorksheetData ):
                 currData = GpwCurrentStockIntradayData( self.isin )
                 currData.dataTime = self.dataTime
                 currWorksheet = currData.getWorksheet()
-                lastRow = currWorksheet.iloc[-1]
-                dataFrame = dataFrame.append( lastRow )
-                dataFrame.reset_index( drop=True, inplace=True )
+                if currWorksheet is not None:
+                    lastRow = currWorksheet.iloc[-1]
+                    dataFrame = dataFrame.append( lastRow )
+                    dataFrame.reset_index( drop=True, inplace=True )
 
             return dataFrame
 

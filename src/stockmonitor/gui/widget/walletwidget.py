@@ -36,7 +36,7 @@ from stockmonitor.dataaccess.convert import convert_float, convert_int,\
 
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
-from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window
+from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window, create_walletprofit_window
 
 from .. import uiloader
 
@@ -146,6 +146,7 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         self.ui.importMBPB.clicked.connect( self.ui.walletTable.importTransactions )
 
         self.ui.soldOutCB.stateChanged.connect( self._handleSoldOut )
+        self.ui.totalProfitChartPB.clicked.connect( self._openWalletProfitChart )
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
@@ -169,6 +170,11 @@ class WalletWidget( QtBaseClass ):           # type: ignore
     def _handleSoldOut(self):
         incluideSoldOut = self.ui.soldOutCB.isChecked()
         self.soldOutFilter.includeSoldOut( incluideSoldOut )
+        
+    def _openWalletProfitChart(self):
+        if self.dataObject is None:
+            return
+        create_walletprofit_window( self.dataObject, self )
 
 
 def import_mb_transactions( dataObject, filePath ):

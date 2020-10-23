@@ -470,6 +470,8 @@ class DataObject( QObject ):
         isin = self.getStockIsinFromTicker( ticker )
         intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
         stockData = intraSource.getWorksheet()
+        if stockData is None:
+            return None
 
         startDateTime = stockData.iloc[0, 0]        ## first date
         startDate = startDateTime.date()
@@ -510,6 +512,57 @@ class DataObject( QObject ):
             rowIndex += 1
 
         return dataFrame
+    
+    def getWalletTotalProfitData(self, rangeCode):
+        mergedList = None
+        for ticker in self.wallet.tickers():
+            stockData = self.getWalletStockProfitData( ticker, rangeCode )
+            if stockData is None:
+                continue
+            if mergedList is None:
+                mergedList = stockData.values.tolist()
+                continue
+            
+            retSize = len( mergedList )
+            if retSize < 1:
+                mergedList = stockData.values.tolist()
+                continue 
+            
+            stockSize = stockData.shape[0]
+            if stockSize < 1:
+                continue
+            
+            ## merge data frames
+            newList = []
+
+            i = 0
+            j = 0
+            while i < retSize and j < stockSize:
+                currTime  = mergedList[ i ][ 0 ]
+                stockTime = stockData.at[ j, "t" ]
+                if stockTime < currTime:
+                    prevIndex = max( i - 1, 0 )
+                    newValue = mergedList[ prevIndex ][ 1 ] + stockData.at[ j, "c" ]
+                    rowList = [ stockTime, newValue ]
+                    newList.append( rowList )
+                    j += 1
+                elif stockTime == currTime:
+                    newValue = mergedList[ i ][ 1 ] + stockData.at[ j, "c" ]
+                    rowList = [ stockTime, newValue ]
+                    newList.append( rowList )
+                    i += 1
+                    j += 1
+                else:
+                    prevIndex = max( j - 1, 0 )
+                    newValue = mergedList[ i ][ 1 ] + stockData.at[ prevIndex, "c" ]
+                    rowList = [ currTime, newValue ]
+                    newList.append( rowList )
+                    i += 1
+            
+            mergedList = newList
+            
+        retData = DataFrame( mergedList, columns=["t", "c"] )
+        return retData
 
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
         wallet: WalletData = self.wallet
