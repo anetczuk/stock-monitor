@@ -108,6 +108,7 @@ if __name__ == '__main__':
                         help='Module with tests, e.g. module.submodule.test_file.test_class.test_method, wildcard * allowed' )
     parser.add_argument('-r', '--repeat', action='store', type=int, default=0, help='Repeat tests given number of times' )
     parser.add_argument('-ut', '--untilfailure', action="store_true", help='Run tests in loop until failure' )
+    parser.add_argument('-v', '--verbose', action="store_true", help='Verbose output' )
     parser.add_argument('-cov', '--coverage', action="store_true", help='Measure code coverage' )
     parser.add_argument('--profile', action="store_true", help='Profile the code' )
     parser.add_argument('--pfile', action='store', default=None, help='Profile the code and output data to file' )
@@ -135,6 +136,10 @@ if __name__ == '__main__':
         ##coverageData.load()
         coverageData.start()
 
+    verbosity = 1
+    if args.verbose:
+        verbosity = 2
+
     if args.runtest:
         ## not empty
         suite = match_tests( args.runtest )
@@ -160,19 +165,19 @@ if __name__ == '__main__':
             while True:
                 print( "Tests iteration:", counter )
                 counter += 1
-                testResult = unittest.TextTestRunner().run(suite)
+                testResult = unittest.TextTestRunner(verbosity=verbosity).run(suite)
                 if testResult.wasSuccessful() is False:
                     break
                 print( "\n" )
         elif testsRepeats > 0:
             for counter in range(1, testsRepeats + 1):
                 print( "Tests iteration:", counter )
-                testResult = unittest.TextTestRunner().run(suite)
+                testResult = unittest.TextTestRunner(verbosity=verbosity).run(suite)
                 if testResult.wasSuccessful() is False:
                     break
                 print( "\n" )
         else:
-            unittest.TextTestRunner().run(suite)
+            unittest.TextTestRunner(verbosity=verbosity).run(suite)
 
     finally:
         ## stop profiler
