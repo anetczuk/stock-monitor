@@ -90,10 +90,10 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
 
     def _updateView(self):
         self.clearData()
-        
+
         sourceLink = self.getDataSourceLink()
         set_label_url( self.ui.sourceLabel, sourceLink )
-        
+
         self.ui.refreshPB.setEnabled( True )
         dataFrame = self._getDataFrame()
         if dataFrame is None:
@@ -122,8 +122,9 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
     @abc.abstractmethod
     def _getDataFrame(self):
         raise NotImplementedError('You need to define this method in derived class!')
-    
-    
+
+
+# pylint: disable=W0223
 class ValueChartWidget( ValueChartBasicWidget ):
 
     def __init__(self, parentWidget=None):
@@ -145,7 +146,7 @@ class ValueChartWidget( ValueChartBasicWidget ):
     def getDataSourceLink(self):
         intraSource = self.getTickerDataSource()
         return intraSource.sourceLink()
-    
+
     def getTickerDataSource(self):
         rangeText = self.ui.rangeCB.currentText()
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )

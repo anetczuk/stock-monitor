@@ -170,7 +170,7 @@ class WalletWidget( QtBaseClass ):           # type: ignore
     def _handleSoldOut(self):
         incluideSoldOut = self.ui.soldOutCB.isChecked()
         self.soldOutFilter.includeSoldOut( incluideSoldOut )
-        
+
     def _openWalletProfitChart(self):
         if self.dataObject is None:
             return

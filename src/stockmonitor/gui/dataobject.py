@@ -512,7 +512,7 @@ class DataObject( QObject ):
             rowIndex += 1
 
         return dataFrame
-    
+
     def getWalletTotalProfitData(self, rangeCode):
         mergedList = None
         for ticker in self.wallet.tickers():
@@ -522,16 +522,16 @@ class DataObject( QObject ):
             if mergedList is None:
                 mergedList = stockData.values.tolist()
                 continue
-            
+
             retSize = len( mergedList )
             if retSize < 1:
                 mergedList = stockData.values.tolist()
-                continue 
-            
+                continue
+
             stockSize = stockData.shape[0]
             if stockSize < 1:
                 continue
-            
+
             ## merge data frames
             newList = []
 
@@ -558,9 +558,9 @@ class DataObject( QObject ):
                     rowList = [ currTime, newValue ]
                     newList.append( rowList )
                     i += 1
-            
+
             mergedList = newList
-            
+
         retData = DataFrame( mergedList, columns=["t", "c"] )
         return retData
 
