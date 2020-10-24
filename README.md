@@ -12,6 +12,7 @@ Aggregates data from several sources in one place. Manages wallet and favorite s
 - listing stock financial reports dates (https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie)
 - listing dividends dates (https://www.stockwatch.pl/dywidendy/)
 - presenting global common indexes (https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy)
+- ESPI reports (https://www.gpw.pl/komunikaty)
 - stock wallet
 - favorities
 - stock charts with full history 
@@ -37,7 +38,9 @@ Author is not responsible for any financial loss caused by misunderstanding of d
 
 ### Examples of not obvious Python mechanisms
 
+- scrapping data from Html using *pandas* (tables) and *BeautifulSoup* (lists) 
 - processing data in background thread preventing GUI blockage
+- elided QLabel (*elidedlabel.py*)
 - chaining redo/undo commands (*addfavcommand.py*)
 - loading of UI files and inheriting from it
 - properly killing (Ctrl+C) PyQt (*sigint.py*)
@@ -52,6 +55,7 @@ Author is not responsible for any financial loss caused by misunderstanding of d
 - (https://gpwbenchmark.pl/notowania)
 - (https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy)
 - (https://www.gpw.pl/wskazniki)
+- (https://www.gpw.pl/komunikaty)
 - (https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie)
 - (https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane)
 - (https://www.stockwatch.pl/dywidendy/)

@@ -94,6 +94,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.activitywidget.connectData( self.data )
         self.ui.daywidget.connectData( self.data )
 
+        self.ui.espiList.connectData( self.data )
+
         self.ui.gpwIndexesTable.connectData( self.data )
 
         self.ui.stockFullTable.connectData( self.data )
@@ -113,6 +115,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.globalIndexesSourceLabel.setOpenExternalLinks(True)
         indexesDataAccess = self.data.globalIndexesData
         set_label_url( self.ui.globalIndexesSourceLabel, indexesDataAccess.sourceLink() )
+
+        self.ui.espiSourceLabel.setOpenExternalLinks(True)
+        set_label_url( self.ui.espiSourceLabel, self.data.gpwESPIData.sourceLink() )
 
         self.ui.stockSourceLabel.setOpenExternalLinks(True)
         set_label_url( self.ui.stockSourceLabel, self.data.gpwCurrentSource.stockData.sourceLink() )
@@ -217,6 +222,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
     def _updateStockViews(self):
         _LOGGER.info( "handling stock change" )
         self._updateStockTimestamp()
+
+        self.ui.espiList.updateView()
 
         data = self.data.gpwIndexesData.getWorksheet()
         self.ui.gpwIndexesTable.setData( data )

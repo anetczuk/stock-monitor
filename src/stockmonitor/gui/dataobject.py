@@ -54,6 +54,7 @@ from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCom
 from stockmonitor.gui.datatypes import UserContainer, StockData,\
     GpwStockIntradayMap, GpwIndexIntradayMap, FavData, WalletData,\
     broker_commission, TransHistory
+from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -100,6 +101,8 @@ class DataObject( QObject ):
         self.gpwCurrentSource     = StockData( GpwCurrentStockData() )
         self.gpwStockIntradayData = GpwStockIntradayMap()
         self.gpwIndexIntradayData = GpwIndexIntradayMap()
+
+        self.gpwESPIData     = GpwESPIData()
 
         self.gpwIndexesData     = GpwCurrentIndexesData()
         self.globalIndexesData  = GlobalIndexesData()
@@ -673,6 +676,7 @@ class DataObject( QObject ):
         retList.append( self.gpwCurrentSource )
         retList.append( self.gpwStockIntradayData )
         retList.append( self.gpwIndexIntradayData )
+        retList.append( self.gpwESPIData )
         retList.append( self.gpwIndexesData )
         retList.append( self.globalIndexesData )
         retList.append( self.gpwIndicatorsData )
