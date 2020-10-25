@@ -119,9 +119,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="showTransactionsCB">
+      <widget class="QCheckBox" name="showTransactionsLevelsCB">
        <property name="text">
-        <string>Current transactions</string>
+        <string>Current trans levels</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="showTransactionsPointsCB">
+       <property name="text">
+        <string>Trans points</string>
        </property>
       </widget>
      </item>

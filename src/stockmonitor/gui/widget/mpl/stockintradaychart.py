@@ -128,6 +128,17 @@ class StockIntradayChart( BaseIntradayChart ):
 
         self.refreshCanvas()
 
+    def addPricePoint( self, xdata: datetime.datetime, ydata, color='r', marker=".", markersize=12, annotation=None ):
+        self.pricePlot.plot_date( xdata, ydata, color, marker=marker, markersize=markersize, antialiased=True )
+
+        if annotation is not None:
+            self.pricePlot.annotate( annotation, (xdata, ydata), textcoords="offset pixels", xytext=(1, 1), fontsize=16 )
+
+        if self.figure.get_visible() is False:
+            self.figure.set_visible( True )
+
+        self.refreshCanvas()
+
     def addVolumeLine(self, xdata: List[datetime.datetime], ydata, color='b', style=None):
         line = self.volumePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
         if style is not None:

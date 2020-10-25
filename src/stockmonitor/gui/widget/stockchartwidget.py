@@ -68,9 +68,11 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.stockLabel.setStyleSheet("font-weight: bold")
 
         self.ui.showWalletCB.setChecked( False )
-        self.ui.showTransactionsCB.setChecked( False )
         self.ui.showWalletCB.stateChanged.connect( self.repaintData )
-        self.ui.showTransactionsCB.stateChanged.connect( self.repaintData )
+        self.ui.showTransactionsLevelsCB.setChecked( False )
+        self.ui.showTransactionsLevelsCB.stateChanged.connect( self.repaintData )
+        self.ui.showTransactionsPointsCB.setChecked( False )
+        self.ui.showTransactionsPointsCB.stateChanged.connect( self.repaintData )
 
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
@@ -156,13 +158,25 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
                     refY = [ buy_unit_price, buy_unit_price ]
                     self.ui.dataChart.addPriceLine( refX, refY, color='black', style="--" )
 
-            if self.ui.showTransactionsCB.isChecked():
+            if self.ui.showTransactionsLevelsCB.isChecked():
                 currTransactions = walletStock.currentTransactions()
                 for item in currTransactions:
-                    amount         = item[0]
                     buy_unit_price = item[1]
                     refY = [ buy_unit_price, buy_unit_price ]
                     self.ui.dataChart.addPriceLine( refX, refY, color='blue', style="--" )
+
+            if self.ui.showTransactionsPointsCB.isChecked():
+                allTransactions = walletStock.allTransactions()
+                for item in allTransactions:
+                    trans_time     = item[2]
+                    if trans_time < timeData[0]:
+                        continue
+                    amount         = item[0]
+                    buy_unit_price = item[1]
+                    if amount > 0:
+                        self.ui.dataChart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="+" )
+                    else:
+                        self.ui.dataChart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="-" )
 
         self.ui.dataChart.addVolumeLine( timeData, volumeColumn )
 
