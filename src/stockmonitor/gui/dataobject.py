@@ -562,6 +562,14 @@ class DataObject( QObject ):
                     newList.append( rowList )
                     i += 1
 
+            lastStockValue = stockData.at[ stockSize - 1, "c" ]
+            while i < retSize:
+                currTime  = mergedList[ i ][ 0 ]
+                newValue = mergedList[ i ][ 1 ] + lastStockValue
+                rowList = [ currTime, newValue ]
+                newList.append( rowList )
+                i += 1
+
             mergedList = newList
 
         retData = DataFrame( mergedList, columns=["t", "c"] )

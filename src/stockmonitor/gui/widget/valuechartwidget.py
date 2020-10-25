@@ -91,6 +91,9 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         threads.start()
 
     def _updateView(self):
+        rangeText = self.ui.rangeCB.currentText()
+        _LOGGER.debug( "updating chart, range[%s]", rangeText )
+
         self.clearData()
 
         sourceLink = self.getDataSourceLink()
@@ -107,8 +110,6 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         if dataFrame is None:
             _LOGGER.warning( "no data received" )
             return
-
-        rangeText = self.ui.rangeCB.currentText()
 
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
@@ -207,7 +208,7 @@ class StockWalletChartWidget( ValueChartBasicWidget ):
 
 #         retList = []
 #         walletTickers = self.dataObject.wallet.tickers()
-#         for ticker in walletTickers:        
+#         for ticker in walletTickers:
 #             isin = self.dataObject.getStockIsinFromTicker( ticker )
 #             for i in range(0, self.ui.rangeCB.count()):
 #                 rangeText = self.ui.rangeCB.itemText( i )
