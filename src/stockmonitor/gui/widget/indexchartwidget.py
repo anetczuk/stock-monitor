@@ -88,8 +88,13 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
-        intraSource = self.getIntradayDataSource()
-        threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+#         intraSource = self.getIntradayDataSource()
+#         threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+
+        for i in range(0, self.ui.rangeCB.count()):
+            rangeText = self.ui.rangeCB.itemText( i )
+            intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin, rangeText )
+            threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
 
         currentData = self.getCurrentDataSource()
         threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )

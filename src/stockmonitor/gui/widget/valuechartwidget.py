@@ -59,6 +59,8 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         self.toolbar = NavigationToolbar(self.ui.dataChart, self)
         self.ui.toolbarLayout.addWidget( self.toolbar )
 
+        self.ui.sourceTextLabel.hide()
+        self.ui.sourceLabel.hide()
         self.ui.sourceLabel.setOpenExternalLinks(True)
 
         self.ui.stockLabel.setStyleSheet("font-weight: bold")
@@ -92,7 +94,13 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         self.clearData()
 
         sourceLink = self.getDataSourceLink()
-        set_label_url( self.ui.sourceLabel, sourceLink )
+        if sourceLink is not None:
+            self.ui.sourceTextLabel.show()
+            self.ui.sourceLabel.show()
+            set_label_url( self.ui.sourceLabel, sourceLink )
+        else:
+            self.ui.sourceTextLabel.hide()
+            self.ui.sourceLabel.hide()
 
         self.ui.refreshPB.setEnabled( True )
         dataFrame = self._getDataFrame()
@@ -140,8 +148,13 @@ class ValueChartWidget( ValueChartBasicWidget ):
         self.updateData( True )
 
     def getDataSources(self):
-        intraSource = self.getTickerDataSource()
-        return [ intraSource ]
+        retList = []
+        for i in range(0, self.ui.rangeCB.count()):
+            rangeText = self.ui.rangeCB.itemText( i )
+            isin = self.dataObject.getStockIsinFromTicker( self.ticker )
+            intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+            retList.append( intraSource )
+        return retList
 
     def getDataSourceLink(self):
         intraSource = self.getTickerDataSource()
@@ -192,8 +205,18 @@ class StockWalletChartWidget( ValueChartBasicWidget ):
             retList.append( intraSource )
         return retList
 
+#         retList = []
+#         walletTickers = self.dataObject.wallet.tickers()
+#         for ticker in walletTickers:        
+#             isin = self.dataObject.getStockIsinFromTicker( ticker )
+#             for i in range(0, self.ui.rangeCB.count()):
+#                 rangeText = self.ui.rangeCB.itemText( i )
+#                 intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+#                 retList.append( intraSource )
+#         return retList
+
     def getDataSourceLink(self):
-        return "?"
+        return None
 
     def _getDataFrame(self):
         rangeText = self.ui.rangeCB.currentText()

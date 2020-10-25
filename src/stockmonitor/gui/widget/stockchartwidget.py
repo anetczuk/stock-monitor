@@ -97,19 +97,19 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
-        intraSource = self.getIntradayDataSource()
-        threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+#         intraSource = self.getIntradayDataSource()
+#         threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+
+        for i in range(0, self.ui.rangeCB.count()):
+            rangeText = self.ui.rangeCB.itemText( i )
+            isin = self.dataObject.getStockIsinFromTicker( self.ticker )
+            intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+            threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
 
         currentData = self.getCurrentDataSource()
         threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )
 
         threads.start()
-
-#         intraSource = self.getIntradayDataSource()
-#         intraSource.getWorksheet( forceRefresh )
-#         currentData = self.getCurrentDataSource()
-#         currentData.loadWorksheet( forceRefresh )
-#         self._updateView()
 
     def _updateView(self):
         self.ui.refreshPB.setEnabled( True )
