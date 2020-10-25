@@ -132,7 +132,8 @@ class StockIntradayChart( BaseIntradayChart ):
         self.pricePlot.plot_date( xdata, ydata, color, marker=marker, markersize=markersize, antialiased=True )
 
         if annotation is not None:
-            self.pricePlot.annotate( annotation, (xdata, ydata), textcoords="offset pixels", xytext=(1, 1), fontsize=16 )
+            self.pricePlot.annotate( annotation, (xdata, ydata),
+                                     textcoords="offset pixels", xytext=(1, 1), fontsize=16 )
 
         if self.figure.get_visible() is False:
             self.figure.set_visible( True )
