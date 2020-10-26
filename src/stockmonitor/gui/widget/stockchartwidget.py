@@ -71,7 +71,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.showWalletCB.stateChanged.connect( self.repaintData )
         self.ui.showTransactionsLevelsCB.setChecked( False )
         self.ui.showTransactionsLevelsCB.stateChanged.connect( self.repaintData )
-        self.ui.showTransactionsPointsCB.setChecked( False )
+        self.ui.showTransactionsPointsCB.setChecked( True )
         self.ui.showTransactionsPointsCB.stateChanged.connect( self.repaintData )
 
         self.ui.refreshPB.clicked.connect( self.refreshData )
