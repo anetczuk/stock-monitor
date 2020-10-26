@@ -33,7 +33,7 @@ from stockmonitor.gui.utils import get_parent
 _LOGGER = logging.getLogger(__name__)
 
 
-# pylint: disable=R0915
+# pylint: disable=R0915,R0912
 def load_state(window: QMainWindow, settings: QSettings):
     settings.beginGroup( window.objectName() )
     geometry = settings.value("geometry")
@@ -70,6 +70,15 @@ def load_state(window: QMainWindow, settings: QSettings):
         state = settings.value("checkState")
         if state is not None:
             w.setCheckState( int(state) )
+        settings.endGroup()
+
+    widgets = window.findChildren( QtWidgets.QSpinBox )
+    widgetsList = sort_widgets( widgets )
+    for w, wKey in widgetsList:
+        settings.beginGroup( wKey )
+        state = settings.value("value")
+        if state is not None:
+            w.setValue( int(state) )
         settings.endGroup()
 
     widgets = window.findChildren( QtWidgets.QTabWidget )
@@ -159,6 +168,13 @@ def save_state(window: QMainWindow, settings: QSettings):
     for w, wKey in widgetsList:
         settings.beginGroup( wKey )
         settings.setValue("checkState", w.checkState() )
+        settings.endGroup()
+
+    widgets = window.findChildren( QtWidgets.QSpinBox )
+    widgetsList = sort_widgets( widgets )
+    for w, wKey in widgetsList:
+        settings.beginGroup( wKey )
+        settings.setValue("value", w.value() )
         settings.endGroup()
 
     widgets = window.findChildren( QtWidgets.QTabWidget )

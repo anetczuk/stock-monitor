@@ -64,6 +64,8 @@ class ESPIListWidget( QtBaseClass ):                        # type: ignore
 
         self.dataObject = None
 
+        self.ui.messagesNumSB.valueChanged.connect( self._setMessagesLimit )
+
     def connectData(self, dataObject):
         self.dataObject = dataObject
         self.dataObject.stockDataChanged.connect( self.updateView )
@@ -202,3 +204,10 @@ class ESPIListWidget( QtBaseClass ):                        # type: ignore
         row = dataFrame.iloc[ currentRow ]
         isin = row["isin"]
         return isin
+
+    def _setMessagesLimit(self, limit):
+        if self.dataObject is None:
+            _LOGGER.warning("unable to set limit")
+            return
+        espiData = self.dataObject.gpwESPIData
+        espiData.setLimit( limit )

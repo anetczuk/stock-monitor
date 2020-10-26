@@ -39,6 +39,13 @@ _LOGGER = logging.getLogger(__name__)
 ## https://www.gpw.pl/komunikaty
 class GpwESPIData( WorksheetData ):
 
+    def __init__(self):
+        super().__init__()
+        self.messagesLimit = 30
+
+    def setLimit(self, number):
+        self.messagesLimit = number
+
     def parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
 
@@ -83,11 +90,10 @@ class GpwESPIData( WorksheetData ):
 
     def getDataUrl(self):
         offset = 0
-        limit  = 30
         url = "https://www.gpw.pl/ajaxindex.php" \
               "?action=GPWEspiReportUnion&start=ajaxSearch&page=komunikaty&format=html&lang=PL&letter=" \
               "&offset=" + str(offset) + \
-              "&limit=" + str(limit) + \
+              "&limit="  + str(self.messagesLimit) + \
               "&categoryRaports%5B%5D=EBI&categoryRaports%5B%5D=ESPI" \
               "&typeRaports%5B%5D=RB&typeRaports%5B%5D=P&typeRaports%5B%5D=Q&typeRaports%5B%5D=O&typeRaports%5B%5D=R" \
               "&search-xs=&searchText=&date="
