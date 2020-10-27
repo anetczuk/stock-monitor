@@ -176,12 +176,15 @@ class FavData( persist.Versionable ):
 ## =======================================================
 
 
+## amount, unit_price, transaction time
+Transaction = Tuple[int, float, datetime]
+
+
 class TransHistory():
 
     def __init__(self):
-        ## amount, unit_price, transaction time
         ## most recent transaction on top (with index 0)
-        self.transactions: List[ Tuple[int, float, datetime] ] = list()
+        self.transactions: List[ Transaction ] = list()
 
     def __getitem__(self, index):
         return self.transactions[ index ]
@@ -278,12 +281,12 @@ class TransHistory():
                 profitValue -= commission
         return profitValue
 
-    def currentTransactions(self):
+    def currentTransactions(self) -> List[ Transaction ]:
         return self.currentTransactionsBestFit()
 #         return self.currentTransactionsRecent()
 
     ## current stock in wallet (similar to mb calculation)
-    def currentTransactionsRecent(self) -> List[ Tuple[int, float, datetime] ]:
+    def currentTransactionsRecent(self) -> List[ Transaction ]:
         ## Buy value raises then current unit price rises
         ## Sell value raises then current unit price decreases
 
@@ -314,7 +317,7 @@ class TransHistory():
 
         return retList.items()
 
-    def currentTransactionsBestFit(self) -> List[ Tuple[int, float, datetime] ]:
+    def currentTransactionsBestFit(self) -> List[ Transaction ]:
         ## Buy value raises then current unit price rises
         ## Sell value raises then current unit price decreases
         currTransactions = TransHistory()
@@ -326,7 +329,25 @@ class TransHistory():
             currTransactions.reduceCheapest( -amount )
         return currTransactions.transactions
 
+    def sellTransactions(self) -> List[ Tuple[Transaction, Transaction] ]:
+        ## Buy value raises then current unit price rises
+        ## Sell value raises then current unit price decreases
+        retList = list()
+        currTransactions = TransHistory()
+        for item in reversed( self.transactions ):
+            amount = item[0]
+            if amount > 0:
+                currTransactions.appendItem( item )
+                continue
+            reducedBuy = currTransactions.reduceCheapest( -amount )
+            for buy in reducedBuy:
+                sell = ( -buy[0], item[1], item[2] )
+                pair = ( buy, sell )
+                retList.append( pair )
+        return retList
+
     ## average value of current amount of stock
+    ## returns pair: (amount, unit_price)
     def currentTransactionsAvg(self):
         ## Buy value raises then current unit price rises
         ## Sell value raises then current unit price decreases
@@ -369,24 +390,31 @@ class TransHistory():
         retTrans.appendList( transList )
         return retTrans
 
-    def reduceCheapest(self, amount):
+    ## returns reduced buy transactions
+    def reduceCheapest(self, amount) -> List[ Transaction ]:
+        retList: List[ Transaction ] = []
         while amount > 0:
             bestIndex = self.findCheapest()
             if bestIndex < 0:
                 _LOGGER.warning( "invalid index %s", bestIndex )
-                return
+                return retList
             ## reduce amount
             bestItem = self.transactions[ bestIndex ]
             if bestItem[0] > amount:
                 self.addAmount(bestIndex, -amount)
-                return
+                unit_price = bestItem[1]
+                trans_time = bestItem[2]
+                retList.append( ( amount, unit_price, trans_time ) )
+                return retList
 
             ## bestItem[0] <= amount
             amount -= bestItem[0]
+            retList.append( self.transactions[ bestIndex ] )
             del self.transactions[ bestIndex ]
 
         if amount > 0:
             _LOGGER.warning( "invalid case %s", amount )
+        return retList
 
     def findCheapest(self):
         cSize = self.size()
@@ -486,12 +514,12 @@ class WalletData( persist.Versionable ):
         return self.stockList.get( ticker, None )
 
     def items(self) -> List[ Tuple[str, int, float] ]:
-        ret = list()
+        ret: List[ Tuple[str, int, float] ] = list()
         for key, hist in self.stockList.items():
             if key is None:
                 _LOGGER.warning("found wallet None key")
                 continue
-            val = hist.currentTransactionsAvg()
+            val = hist.currentTransactionsAvg()     # pair: (amount, unit_price)
             if val is not None:
                 ret.append( (key, val[0], val[1]) )
         return ret

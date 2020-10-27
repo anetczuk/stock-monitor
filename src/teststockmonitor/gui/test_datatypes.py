@@ -25,10 +25,10 @@ import unittest
 
 import datetime
 import pickle
-from typing import List, Tuple
+from typing import List
 
 from stockmonitor.gui.dataobject import WalletData, FavData
-from stockmonitor.gui.datatypes import TransHistory
+from stockmonitor.gui.datatypes import Transaction, TransHistory
 
 
 class FavDataTest(unittest.TestCase):
@@ -61,7 +61,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append(  5, 20.0 )
         data.append( -5, 30.0 )
 
-        transList: List[ Tuple[int, float, datetime] ] = data.currentTransactionsBestFit()
+        transList: List[ Transaction ] = data.currentTransactionsBestFit()
         self.assertEqual( len( transList ), 0 )
 
     def test_currentTransactionsBestFit_01(self):
@@ -71,7 +71,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append(  5, 20.0 )
         data.append( -5, 30.0 )
 
-        transList: List[ Tuple[int, float, datetime] ] = data.currentTransactionsBestFit()
+        transList: List[ Transaction ] = data.currentTransactionsBestFit()
         self.assertEqual( len( transList ), 2 )
 
         trans = transList[0]
@@ -97,7 +97,7 @@ class TransHistoryTest(unittest.TestCase):
 
         self.assertEqual( data.currentAmount(), 0 )
 
-        transList: List[ Tuple[int, float, datetime] ] = data.currentTransactionsBestFit()
+        transList: List[ Transaction ] = data.currentTransactionsBestFit()
         self.assertEqual( len( transList ), 0 )
 
     def test_currentTransactionsBestFit_03(self):
@@ -112,7 +112,7 @@ class TransHistoryTest(unittest.TestCase):
 
         self.assertEqual( data.currentAmount(), 200 )
 
-        transList: List[ Tuple[int, float, datetime] ] = data.currentTransactionsBestFit()
+        transList: List[ Transaction ] = data.currentTransactionsBestFit()
         self.assertEqual( len( transList ), 1 )
 
         trans = transList[0]

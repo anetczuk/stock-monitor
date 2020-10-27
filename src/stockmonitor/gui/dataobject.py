@@ -301,7 +301,7 @@ class DataObject( QObject ):
         return ( walletValue, walletProfit, overallProfit )
 
     # pylint: disable=R0914
-    def getWalletTransactions(self):
+    def getWalletBuyTransactions(self):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
@@ -358,6 +358,59 @@ class DataObject( QObject ):
                 rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price,
                                    currUnitValue, currChange,
                                    profitPnt, profit, trans_date ] )
+
+        dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
+        return dataFrame
+
+    def getWalletSellTransactions(self):
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna",
+                        "Kurs sprzedaży", "Zm.do k.odn.(%)",
+                        "Zysk %", "Zysk", "Data transakcji" ]
+
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
+        rowsList = []
+
+        ticker: str
+        transactions: TransHistory
+        for ticker, transactions in self.wallet.stockList.items():
+#             if ticker == "PCX":
+#                 print( "xxxxx:\n", transactions.items() )
+            currentStockRow = currentStock.getRowByTicker( ticker )
+            if currentStockRow.empty:
+                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
+                currTransactions = transactions.sellTransactions()
+                for buy, sell in currTransactions:
+                    trans_amount     = buy[0]
+                    trans_unit_price = buy[1]
+                    trans_date       = buy[2]
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
+                continue
+
+            currChange    = "-"
+
+            currTransactions = transactions.sellTransactions()
+            for buy, sell in currTransactions:
+                stockName = currentStockRow["Nazwa"]
+
+                trans_amount    = buy[0]
+                buy_unit_price  = buy[1]
+                sell_unit_price = sell[1]
+                sell_date       = sell[2]
+
+                currValue = sell_unit_price * trans_amount
+                buyValue  = buy_unit_price * trans_amount
+                profit    = currValue - buyValue
+                profitPnt = 0
+                if buyValue != 0:
+                    profitPnt = profit / buyValue * 100.0
+
+                buy_unit_price = round( buy_unit_price, 4 )
+                profitPnt      = round( profitPnt, 2 )
+                profit         = round( profit, 2 )
+
+                rowsList.append( [ stockName, ticker, -trans_amount, buy_unit_price,
+                                   sell_unit_price, currChange,
+                                   profitPnt, profit, sell_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame

@@ -53,7 +53,7 @@ class TransactionsWidget( QtBaseClass ):           # type: ignore
 
         self.dataObject = None
 
-        self.ui.reduceToCurrentCB.stateChanged.connect( self.updateView )
+        self.ui.transactionsScopeCB.currentIndexChanged.connect( self.updateView )
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
@@ -69,10 +69,12 @@ class TransactionsWidget( QtBaseClass ):           # type: ignore
             return
         _LOGGER.info("updating view")
         transactions = None
-        showCurrent = self.ui.reduceToCurrentCB.isChecked()
-        if showCurrent:
-            transactions = self.dataObject.getWalletTransactions()
-        else:
+        currIndex = self.ui.transactionsScopeCB.currentIndex()
+        if currIndex == 0:
+            transactions = self.dataObject.getWalletBuyTransactions()
+        elif currIndex == 1:
+            transactions = self.dataObject.getWalletSellTransactions()
+        elif currIndex == 2:
             transactions = self.dataObject.getAllTransactions()
         if transactions is None:
             self.ui.transactionsTable.clear()
