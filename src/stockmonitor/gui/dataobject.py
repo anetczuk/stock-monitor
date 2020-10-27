@@ -198,9 +198,13 @@ class DataObject( QObject ):
         return self.gpwCurrentData.getStockData( stockList )
 
     def getWalletStock(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Zm.do k.odn.(%)",
-                        "Średni kurs nabycia", "Zysk %", "Zysk", "Wartość", "Zysk całkowity" ]
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Zm.do k.odn.[%]",
+                        "Średni kurs nabycia", "Wartość [PLN]", "Zm.do k.odn.[PLN]", "Udział [%]",
+                        "Zysk [PLN]", "Zysk [%]", "Zysk całkowity [PLN]" ]
         # apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
+
+        walletState = self.getWalletState()
+        walletValue = walletState[0]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
@@ -212,7 +216,9 @@ class DataObject( QObject ):
 
             if currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
-                rowsList.append( ["-", ticker, amount, "-", buy_unit_price, "-", "-", "-", "-", "-"] )
+                rowsList.append( ["-", ticker, amount, buy_unit_price, "-",
+                                  "-", "-", "-", "-",
+                                  "-", "-", "-"] )
                 continue
 
             stockName = currentStockRow["Nazwa"]
@@ -220,7 +226,9 @@ class DataObject( QObject ):
             if amount == 0:
                 totalProfit = transactions.transactionsProfit()
                 totalProfit = round( totalProfit, 2 )
-                rowsList.append( [stockName, ticker, amount, "-", "-", "-", "-", "-", 0, totalProfit] )
+                rowsList.append( [stockName, ticker, amount, "-", "-",
+                                  "-", 0, 0, "-",
+                                  "-", "-", totalProfit] )
                 continue
 
             currUnitValueRaw = currentStockRow.iloc[ currUnitValueIndex ]
@@ -229,29 +237,38 @@ class DataObject( QObject ):
                 currUnitValue = float( currUnitValueRaw )
 
             currChangeRaw = currentStockRow.iloc[ 12 ]
-            currChange    = 0
+            currChangePnt = 0
             if currChangeRaw != "-":
-                currChange = float( currChangeRaw )
+                currChangePnt = float( currChangeRaw )
 
             currValue = currUnitValue * amount
+
+            ## ( curr_unit_price - ref_unit_price ) * unit_price * amount
+            valueChange = currChangePnt / 100.0 * currValue
+
             buyValue  = buy_unit_price * amount
             profit    = currValue - buyValue
             profitPnt = 0
             if buyValue != 0:
                 profitPnt = profit / buyValue * 100.0
 
+            participation = currValue / walletValue * 100.0
+
             totalProfit  = transactions.transactionsProfit()
             totalProfit += currValue - broker_commission( currValue )
 
             buy_unit_price = round( buy_unit_price, 4 )
-            currChange     = round( currChange, 2 )
+            currChangePnt  = round( currChangePnt, 2 )
+            valueChange    = round( valueChange, 2 )
             profitPnt      = round( profitPnt, 2 )
             profit         = round( profit, 2 )
             currValue      = round( currValue, 2 )
+            participation  = round( participation, 2 )
             totalProfit    = round( totalProfit, 2 )
 
-            rowsList.append( [ stockName, ticker, amount, currUnitValue, currChange,
-                               buy_unit_price, profitPnt, profit, currValue, totalProfit ] )
+            rowsList.append( [ stockName, ticker, amount, currUnitValue, currChangePnt,
+                               buy_unit_price, currValue, valueChange, participation,
+                               profit, profitPnt, totalProfit ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame

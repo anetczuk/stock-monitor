@@ -177,6 +177,9 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         create_walletprofit_window( self.dataObject, self )
 
 
+##=============================================================
+
+
 def import_mb_transactions( dataObject, filePath ):
     ## imported transaction values are not affected by borker's commission
     ## real sell profit is transaction value decreased by broker's commission
