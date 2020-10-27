@@ -197,6 +197,7 @@ class DataObject( QObject ):
         stockList = self.favs.getFavs( favGroup )
         return self.gpwCurrentData.getStockData( stockList )
 
+    # pylint: disable=R0914
     def getWalletStock(self):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Zm.do k.odn.[%]",
                         "Średni kurs nabycia", "Wartość [PLN]", "Zm.do k.odn.[PLN]", "Udział [%]",
@@ -234,25 +235,6 @@ class DataObject( QObject ):
 
             stockName = currentStockRow["Nazwa"]
 
-            if amount == 0:
-                totalProfit = transactions.transactionsProfit()
-                totalProfit = round( totalProfit, 2 )
-                rowDict = {}
-                rowDict[ columnsList[ 0] ] = stockName
-                rowDict[ columnsList[ 1] ] = ticker
-                rowDict[ columnsList[ 2] ] = amount
-                rowDict[ columnsList[ 3] ] = "-"
-                rowDict[ columnsList[ 4] ] = "-"
-                rowDict[ columnsList[ 5] ] = "-"
-                rowDict[ columnsList[ 6] ] = 0
-                rowDict[ columnsList[ 7] ] = 0
-                rowDict[ columnsList[ 8] ] = "-"
-                rowDict[ columnsList[ 9] ] = "-"
-                rowDict[ columnsList[10] ] = "-"
-                rowDict[ columnsList[11] ] = totalProfit
-                rowsList.append( rowDict )
-                continue
-
             currUnitValueRaw = currentStockRow.iloc[ currUnitValueIndex ]
             currUnitValue    = 0
             if currUnitValueRaw != "-":
@@ -268,13 +250,13 @@ class DataObject( QObject ):
             ## ( curr_unit_price - ref_unit_price ) * unit_price * amount
             valueChange = currChangePnt / 100.0 * currValue
 
+            participation = currValue / walletValue * 100.0
+
             buyValue  = buy_unit_price * amount
             profit    = currValue - buyValue
             profitPnt = 0
             if buyValue != 0:
                 profitPnt = profit / buyValue * 100.0
-
-            participation = currValue / walletValue * 100.0
 
             totalProfit  = transactions.transactionsProfit()
             totalProfit += currValue - broker_commission( currValue )
