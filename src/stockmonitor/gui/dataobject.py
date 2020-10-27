@@ -216,9 +216,20 @@ class DataObject( QObject ):
 
             if currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
-                rowsList.append( ["-", ticker, amount, buy_unit_price, "-",
-                                  "-", "-", "-", "-",
-                                  "-", "-", "-"] )
+                rowDict = {}
+                rowDict[ columnsList[ 0] ] = "-"
+                rowDict[ columnsList[ 1] ] = ticker
+                rowDict[ columnsList[ 2] ] = amount
+                rowDict[ columnsList[ 3] ] = buy_unit_price
+                rowDict[ columnsList[ 4] ] = "-"
+                rowDict[ columnsList[ 5] ] = "-"
+                rowDict[ columnsList[ 6] ] = "-"
+                rowDict[ columnsList[ 7] ] = "-"
+                rowDict[ columnsList[ 8] ] = "-"
+                rowDict[ columnsList[ 9] ] = "-"
+                rowDict[ columnsList[10] ] = "-"
+                rowDict[ columnsList[11] ] = "-"
+                rowsList.append( rowDict )
                 continue
 
             stockName = currentStockRow["Nazwa"]
@@ -226,9 +237,20 @@ class DataObject( QObject ):
             if amount == 0:
                 totalProfit = transactions.transactionsProfit()
                 totalProfit = round( totalProfit, 2 )
-                rowsList.append( [stockName, ticker, amount, "-", "-",
-                                  "-", 0, 0, "-",
-                                  "-", "-", totalProfit] )
+                rowDict = {}
+                rowDict[ columnsList[ 0] ] = stockName
+                rowDict[ columnsList[ 1] ] = ticker
+                rowDict[ columnsList[ 2] ] = amount
+                rowDict[ columnsList[ 3] ] = "-"
+                rowDict[ columnsList[ 4] ] = "-"
+                rowDict[ columnsList[ 5] ] = "-"
+                rowDict[ columnsList[ 6] ] = 0
+                rowDict[ columnsList[ 7] ] = 0
+                rowDict[ columnsList[ 8] ] = "-"
+                rowDict[ columnsList[ 9] ] = "-"
+                rowDict[ columnsList[10] ] = "-"
+                rowDict[ columnsList[11] ] = totalProfit
+                rowsList.append( rowDict )
                 continue
 
             currUnitValueRaw = currentStockRow.iloc[ currUnitValueIndex ]
@@ -257,20 +279,22 @@ class DataObject( QObject ):
             totalProfit  = transactions.transactionsProfit()
             totalProfit += currValue - broker_commission( currValue )
 
-            buy_unit_price = round( buy_unit_price, 4 )
-            currChangePnt  = round( currChangePnt, 2 )
-            valueChange    = round( valueChange, 2 )
-            profitPnt      = round( profitPnt, 2 )
-            profit         = round( profit, 2 )
-            currValue      = round( currValue, 2 )
-            participation  = round( participation, 2 )
-            totalProfit    = round( totalProfit, 2 )
+            rowDict = {}
+            rowDict[ columnsList[ 0] ] = stockName
+            rowDict[ columnsList[ 1] ] = ticker
+            rowDict[ columnsList[ 2] ] = amount
+            rowDict[ columnsList[ 3] ] = round( currUnitValue, 2 )
+            rowDict[ columnsList[ 4] ] = round( currChangePnt, 2 )
+            rowDict[ columnsList[ 5] ] = round( buy_unit_price, 4 )
+            rowDict[ columnsList[ 6] ] = round( currValue, 2 )
+            rowDict[ columnsList[ 7] ] = round( valueChange, 2 )
+            rowDict[ columnsList[ 8] ] = round( participation, 2 )
+            rowDict[ columnsList[ 9] ] = round( profit, 2 )
+            rowDict[ columnsList[10] ] = round( profitPnt, 2 )
+            rowDict[ columnsList[11] ] = round( totalProfit, 2 )
+            rowsList.append( rowDict )
 
-            rowsList.append( [ stockName, ticker, amount, currUnitValue, currChangePnt,
-                               buy_unit_price, currValue, valueChange, participation,
-                               profit, profitPnt, totalProfit ] )
-
-        dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
+        dataFrame = DataFrame( rowsList )
         return dataFrame
 
     ## wallet summary: wallet value, wallet profit, overall profit
