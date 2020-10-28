@@ -35,8 +35,6 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
 
 from stockmonitor import persist
-from stockmonitor.dataaccess.datatype import CurrentDataType
-# from stockmonitor.dataaccess.gpw.gpwdata import GpwIsinMapData
 from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
@@ -208,7 +206,6 @@ class DataObject( QObject ):
         walletValue = walletState[0]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-        currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
         for ticker, transactions in self.wallet.stockList.items():
@@ -235,10 +232,7 @@ class DataObject( QObject ):
 
             stockName = currentStockRow["Nazwa"]
 
-            currUnitValueRaw = currentStockRow.iloc[ currUnitValueIndex ]
-            currUnitValue    = 0
-            if currUnitValueRaw != "-":
-                currUnitValue = float( currUnitValueRaw )
+            currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
             currChangeRaw = currentStockRow.iloc[ 12 ]
             currChangePnt = 0
@@ -282,7 +276,6 @@ class DataObject( QObject ):
     ## wallet summary: wallet value, wallet profit, overall profit
     def getWalletState(self):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-        currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
 
         walletValue   = 0.0
         walletProfit  = 0.0
@@ -300,10 +293,7 @@ class DataObject( QObject ):
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 continue
 
-            currUnitValueRaw = tickerRow.iloc[currUnitValueIndex]
-            currUnitValue    = 0
-            if currUnitValueRaw != "-":
-                currUnitValue = float( currUnitValueRaw )
+            currUnitValue = GpwCurrentStockData.unitPrice( tickerRow )
 
             currValue = currUnitValue * amount
             currCommission = broker_commission( currValue )
@@ -330,7 +320,6 @@ class DataObject( QObject ):
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-        currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
         ticker: str
@@ -349,10 +338,7 @@ class DataObject( QObject ):
                     rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
                 continue
 
-            currUnitValue    = 0
-            currUnitValueRaw = currentStockRow.iloc[currUnitValueIndex]
-            if currUnitValueRaw != "-":
-                currUnitValue = float( currUnitValueRaw )
+            currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
             currChangeRaw = currentStockRow.iloc[ 12 ]
             currChange    = 0
@@ -445,7 +431,6 @@ class DataObject( QObject ):
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-        currUnitValueIndex = currentStock.getColumnIndex( CurrentDataType.RECENT_TRANS )
         rowsList = []
 
         for ticker, transactions in self.wallet.stockList.items():
@@ -462,10 +447,7 @@ class DataObject( QObject ):
 
             currAmount = transactions.currentAmount()
 
-            currUnitValue    = 0
-            currUnitValueRaw = currentStockRow.iloc[currUnitValueIndex]
-            if currUnitValueRaw != "-":
-                currUnitValue = float( currUnitValueRaw )
+            currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
             currChangeRaw = currentStockRow.iloc[ 12 ]
             currChange    = 0

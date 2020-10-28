@@ -79,6 +79,8 @@ if args.loadUserData:
 else:
     window.data.addFav("abc", ["ALR"])
     window.data.addFav("abc", ["CDR"])
+    window.data.wallet.add("CDR", 10, 300)
+    window.data.wallet.add("XXX", 10, 300)
 window.loadSettings()
 window.refreshView()
 window.show()

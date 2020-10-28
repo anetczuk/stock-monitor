@@ -24,6 +24,7 @@
 import unittest
 
 from stockmonitor.gui.dataobject import DataObject
+from teststockmonitor import data
 
 
 class DataObjectTest(unittest.TestCase):
@@ -92,3 +93,11 @@ class DataObjectTest(unittest.TestCase):
 
         dataobject.addFav( "xxx", ["aaa", "bbb"] )
         self.assertEqual( dataobject.undoStack.count(), 2 )
+
+    def test_getWalletStock(self):
+        dataobject = DataObject()
+        dataPath = data.get_data_path( "recent_data_TKO.xls" )
+        dataobject.gpwCurrentSource.stockData.parseWorksheetFromFile( dataPath )
+        dataobject.wallet.add( "CDR", 1, 300.0 )
+        stock = dataobject.getWalletStock()
+        self.assertEqual( stock is not None, True )

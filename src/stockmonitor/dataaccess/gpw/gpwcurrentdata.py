@@ -148,20 +148,6 @@ class GpwCurrentStockData( WorksheetData ):
 
     # ==========================================================================
 
-    def getColumnIndex(self, dataType: CurrentDataType):
-        switcher = {
-            CurrentDataType.NAME:               2,
-            CurrentDataType.TICKER:             3,
-            CurrentDataType.CURRENCY:           4,
-            CurrentDataType.RECENT_TRANS_TIME:  5,
-            CurrentDataType.REFERENCE:          6,
-            CurrentDataType.OPENING:            8,
-            CurrentDataType.MIN:                9,
-            CurrentDataType.MAX:               10,
-            CurrentDataType.RECENT_TRANS:      11
-        }
-        return switcher.get(dataType, None)
-
     def extractColumn(self, worksheet, colIndex):
         # name col: 1
         # rows are indexed by 0, first row is header
@@ -235,6 +221,44 @@ class GpwCurrentStockData( WorksheetData ):
 
     def sourceLink(self):
         return "https://www.gpw.pl/akcje"
+
+    @staticmethod
+    def getColumnIndex(dataType: CurrentDataType):
+        switcher = {
+            CurrentDataType.NAME:               2,
+            CurrentDataType.TICKER:             3,
+            CurrentDataType.CURRENCY:           4,
+            CurrentDataType.RECENT_TRANS_TIME:  5,
+            CurrentDataType.REFERENCE:          6,
+            CurrentDataType.TKO:                7,
+            CurrentDataType.OPENING:            8,
+            CurrentDataType.MIN:                9,
+            CurrentDataType.MAX:               10,
+            CurrentDataType.RECENT_TRANS:      11
+        }
+        return switcher.get(dataType, None)
+
+    @staticmethod
+    def unitPrice( dataRow ):
+        ## current value
+        currUnitValueIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        currUnitValueRaw = dataRow.iloc[currUnitValueIndex]
+        if currUnitValueRaw != "-":
+            return float( currUnitValueRaw )
+
+        ## TKO
+        tkoIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.TKO )
+        tkoValueRaw = dataRow.iloc[tkoIndex]
+        if tkoValueRaw != "-":
+            return float( tkoValueRaw )
+
+        ## reference value
+        refValueIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.REFERENCE )
+        refValueRaw = dataRow.iloc[refValueIndex]
+        if refValueRaw != "-":
+            return float( refValueRaw )
+
+        return 0.0
 
 
 # ============================================================================

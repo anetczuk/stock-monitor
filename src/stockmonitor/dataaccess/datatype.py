@@ -69,6 +69,7 @@ class CurrentDataType(Enum):
     CURRENCY = ()           ## waluta
     RECENT_TRANS_TIME = ()  ## czas ostatniej transakcji
     REFERENCE = ()          ## kurs odniesienia
+    TKO = ()                ## TKO
     OPENING = ()            ## kurs otwarcia
     MIN = ()                ## kurs minimalny
     MAX = ()                ## kurs maksymalny
