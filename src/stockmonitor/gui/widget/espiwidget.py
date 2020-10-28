@@ -41,6 +41,8 @@ DetailsUiClass, DetailsBaseClass = uiloader.load_ui_from_module_path( "widget/es
 
 class ESPIDetails( DetailsBaseClass ):                      # type: ignore
 
+    resized = QtCore.pyqtSignal()
+
     def __init__(self, dataRow, parentWidget=None):
         super().__init__(parentWidget)
         self.ui = DetailsUiClass()
@@ -48,8 +50,18 @@ class ESPIDetails( DetailsBaseClass ):                      # type: ignore
 
         self.ui.company.setOpenExternalLinks(True)
         self.ui.company.setUrl( dataRow["url"], dataRow["name"] )
+        self.ui.company.adjustSize()
         self.ui.date.setText( str( dataRow["date"] ) )
+
         self.ui.title.setText( dataRow["title"] )
+        self.ui.title.viewport().setAutoFillBackground(False)
+
+        QtCore.QTimer.singleShot( 50, self.adjustHeight )
+
+    def adjustHeight(self):
+        docSize = self.ui.title.document()
+        self.ui.title.setFixedHeight( docSize.size().height() + 3 )
+        self.resized.emit()
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
@@ -93,7 +105,7 @@ class ESPIListWidget( QtBaseClass ):                        # type: ignore
     def addItem(self, row):
         item = QtWidgets.QListWidgetItem()
         details = ESPIDetails( row, self )
-        item.setSizeHint( details.sizeHint() )
+        details.resized.connect( lambda: item.setSizeHint( details.sizeHint() ) )
 
         ticker = self.dataObject.getTickerFromIsin( row["isin"] )
         bgColor = stocktable.stock_background_color( self.dataObject, ticker )
