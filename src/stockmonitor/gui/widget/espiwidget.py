@@ -55,13 +55,15 @@ class ESPIDetails( DetailsBaseClass ):                      # type: ignore
 
         self.ui.title.setText( dataRow["title"] )
         self.ui.title.viewport().setAutoFillBackground(False)
-
-        QtCore.QTimer.singleShot( 50, self.adjustHeight )
+        self.ui.title.adjustSize()
 
     def adjustHeight(self):
         docSize = self.ui.title.document()
         self.ui.title.setFixedHeight( docSize.size().height() + 3 )
         self.resized.emit()
+
+    def showEvent( self, event ):
+        QtCore.QTimer.singleShot( 50, self.adjustHeight )
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
