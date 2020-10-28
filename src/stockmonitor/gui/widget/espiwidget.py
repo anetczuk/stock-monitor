@@ -120,10 +120,7 @@ class ESPIListWidget( QtBaseClass ):                        # type: ignore
             self.openLink()
 
     def openLink(self):
-        currentRow = self.ui.espiList.currentRow()
-        espiData = self.dataObject.gpwESPIData
-        dataFrame = espiData.getWorksheet()
-        row = dataFrame.iloc[ currentRow ]
+        row = self._currentRow()
         urlLink = row["url"]
         url = QtCore.QUrl(urlLink)
         QDesktopServices.openUrl( url )
@@ -223,12 +220,15 @@ class ESPIListWidget( QtBaseClass ):                        # type: ignore
         return self.dataObject.getTickerFromIsin( isin )
 
     def _currentISIN(self):
+        row = self._currentRow()
+        isin = row["isin"]
+        return isin
+
+    def _currentRow(self):
         currentRow = self.ui.espiList.currentRow()
         espiData = self.dataObject.gpwESPIData
         dataFrame = espiData.getWorksheet()
-        row = dataFrame.iloc[ currentRow ]
-        isin = row["isin"]
-        return isin
+        return dataFrame.iloc[ currentRow ]
 
     def _setMessagesLimit(self, limit):
         if self.dataObject is None:
