@@ -115,6 +115,19 @@ class ESPIListWidget( QtBaseClass ):                        # type: ignore
         self.ui.espiList.addItem( item )
         self.ui.espiList.setItemWidget( item, details )
 
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Enter or event.key() == QtCore.Qt.Key_Return:
+            self.openLink()
+
+    def openLink(self):
+        currentRow = self.ui.espiList.currentRow()
+        espiData = self.dataObject.gpwESPIData
+        dataFrame = espiData.getWorksheet()
+        row = dataFrame.iloc[ currentRow ]
+        urlLink = row["url"]
+        url = QtCore.QUrl(urlLink)
+        QDesktopServices.openUrl( url )
+
     def contextMenuEvent( self, _ ):
         contextMenu = self.createContextMenu()
         if contextMenu is None:
