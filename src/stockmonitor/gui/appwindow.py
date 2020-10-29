@@ -59,6 +59,11 @@ class AppWindow( QWidget ):
         self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
         self.addAction( self.refreshAction )
 
+        self.cancelAction = QtWidgets.QAction(self)
+        self.cancelAction.setShortcuts( QtGui.QKeySequence.Cancel )
+        self.cancelAction.triggered.connect( self.close )
+        self.addAction( self.cancelAction )
+
     def setWindowTitleSuffix( self, suffix="" ):
         if len(suffix) < 1:
             self.setWindowTitle( suffix )
