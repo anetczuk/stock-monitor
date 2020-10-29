@@ -62,7 +62,8 @@ class ESPIDetails( DetailsBaseClass ):                      # type: ignore
         self.ui.title.setFixedHeight( docSize.size().height() + 3 )
         self.resized.emit()
 
-    def showEvent( self, event ):
+    def showEvent( self, _ ):
+#     def showEvent( self, event ):
         QtCore.QTimer.singleShot( 50, self.adjustHeight )
 
 
