@@ -22,6 +22,7 @@
 #
 
 import logging
+import datetime
 
 from PyQt5.QtCore import Qt
 
@@ -134,6 +135,10 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         refX = [ timeData[0], timeData[-1] ]
         refY = [ refPrice, refPrice ]
         self.ui.dataChart.addPriceLine( refX, refY, style="--" )
+
+        currTime = datetime.datetime.now() - datetime.timedelta(minutes=15)
+        if currTime < timeData[-1]:
+            self.ui.dataChart.pricePlot.axvline( x=currTime, color="black", linestyle="--" )
 
         set_ref_format_coord( self.ui.dataChart.pricePlot, refPrice )
 
