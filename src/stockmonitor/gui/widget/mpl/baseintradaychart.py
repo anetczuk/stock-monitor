@@ -48,6 +48,7 @@ class BaseIntradayChart( MplCanvas ):
         allaxes = self.figure.get_axes()
         for ax in allaxes:
             ax.cla()
+        self._removeMouseIndicators()
 
     def _onPlotUpdateMouseIndicators( self, event ):
         plot = event.inaxes
@@ -69,11 +70,11 @@ class BaseIntradayChart( MplCanvas ):
         xindex = get_index_float( xdata, event.xdata )
         yvalue = ydata[ xindex ]
 
-        indicators = self.mouseIndicators.get( event.inaxes, None )
+        indicators = self.mouseIndicators.get( plot, None )
         if indicators is None:
-            indicators = [ event.inaxes.axhline( y=yvalue, color="y", linestyle="--" ),
-                           event.inaxes.axvline( x=event.xdata, color="y", linestyle="--" ) ]
-            self.mouseIndicators[ event.inaxes ] = indicators
+            indicators = [ plot.axhline( y=yvalue, color="y", linestyle="--" ),
+                           plot.axvline( x=event.xdata, color="y", linestyle="--" ) ]
+            self.mouseIndicators[ plot ] = indicators
         else:
             indicators[0].set_data( [0, 1], [yvalue, yvalue] )
             indicators[1].set_data( [event.xdata, event.xdata], [0, 1] )
