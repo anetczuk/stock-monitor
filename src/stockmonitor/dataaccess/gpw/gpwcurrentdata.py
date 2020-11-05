@@ -35,6 +35,7 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
     BaseWorksheetData
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -290,9 +291,11 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
         if dataFrame is None:
             _LOGGER.warning("no worksheet found")
             return None
-        retRows = dataFrame.loc[ dataFrame.iloc[:, 12] == isin ]
+        isinColumn = dataFrame.iloc[:, 12]
+        retRows = dataFrame.loc[ isinColumn == isin ]
         return retRows.squeeze()            ## convert 1 row dataframe to series
 
+    @synchronized
     def loadWorksheet(self, forceRefresh=False):
         self.worksheet = DataFrame()
         for dataAccess in self.dataList:

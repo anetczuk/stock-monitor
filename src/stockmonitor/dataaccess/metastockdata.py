@@ -61,9 +61,9 @@ class MetaStockIntradayData( WorksheetData ):
         dataFrame.drop( dataFrame.tail(1).index, inplace=True )
         return dataFrame
 
-    def downloadDataTo(self, filePath):
+    def _downloadDataTo(self, filePath):
         zipPath = filePath + ".zip"
-        super().downloadDataTo( zipPath )
+        super()._downloadDataTo( zipPath )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             zipMember = "a_cgl.prn"

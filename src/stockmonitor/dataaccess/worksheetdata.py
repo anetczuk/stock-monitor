@@ -31,6 +31,7 @@ import urllib
 from pandas.core.frame import DataFrame
 
 from stockmonitor import persist
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,6 +52,7 @@ class BaseWorksheetData( metaclass=abc.ABCMeta ):
     def __init__(self):
         self.worksheet: DataFrame = None
 
+    @synchronized
     def getWorksheet(self, forceRefresh=False) -> DataFrame:
         if self.worksheet is None or forceRefresh is True:
 #             _LOGGER.info("state: %s %s", (self.worksheet is None), (forceRefresh is True) )
@@ -71,6 +73,7 @@ class WorksheetData( BaseWorksheetData ):
         super().__init__()
         self.grabTimestamp: datetime.datetime = None
 
+    @synchronized
     def loadWorksheet(self, forceRefresh=False):
         dataPath = self.getDataPath()
         if forceRefresh is False:
@@ -87,7 +90,7 @@ class WorksheetData( BaseWorksheetData ):
             return
 
         _LOGGER.debug( "loading recent data from file[%s], force: %s", dataPath, forceRefresh )
-        self.loadObjectData( forceRefresh )
+        self._loadObjectData( forceRefresh )
         if self.worksheet is None:
             self.grabTimestamp = None
             return
@@ -98,7 +101,7 @@ class WorksheetData( BaseWorksheetData ):
             return
         self.grabTimestamp = persist.load_object_simple( timestampPath, None )
 
-    def loadObjectData(self, forceRefresh=False):
+    def _loadObjectData(self, forceRefresh=False):
         picklePath = self.getPicklePath()
         if forceRefresh is False:
             forceRefresh = not os.path.exists( picklePath )
@@ -118,9 +121,9 @@ class WorksheetData( BaseWorksheetData ):
 
     def downloadData(self):
         filePath = self.getDataPath()
-        self.downloadDataTo( filePath )
+        self._downloadDataTo( filePath )
 
-    def downloadDataTo( self, filePath ):
+    def _downloadDataTo( self, filePath ):
         url = self.getDataUrl()
         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
 
@@ -135,6 +138,7 @@ class WorksheetData( BaseWorksheetData ):
         _LOGGER.info( "parsing raw data: %s", dataPath )
         self.parseWorksheetFromFile( dataPath )
 
+    @synchronized
     def parseWorksheetFromFile(self, dataPath: str):
         self.worksheet = self.parseDataFromFile( dataPath )
 
