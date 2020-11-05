@@ -30,6 +30,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
 from stockmonitor.dataaccess.convert import apply_on_column, convert_timestamp_datetime
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,6 +55,7 @@ class GpwCurrentStockIntradayData( WorksheetData ):
 #             return data
 #         return super().getWorksheet( True )
 
+    @synchronized
     def getWorksheetForDate(self, dataDate):
         self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
         self.loadWorksheet( False )

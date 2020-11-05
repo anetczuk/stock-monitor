@@ -34,6 +34,7 @@ from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ class MetaStockIntradayData( WorksheetData ):
             dataDate = self._currDate()
         self.dataDate: datetime.date = dataDate
 
+    @synchronized
     def getWorksheetForDate( self, dataDate: datetime.date ):
         self.dataDate = dataDate
         self.loadWorksheet( False )
