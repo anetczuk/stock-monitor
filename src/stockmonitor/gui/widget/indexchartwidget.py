@@ -137,7 +137,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.dataChart.addPriceLine( refX, refY, style="--" )
 
         currTime = datetime.datetime.now() - datetime.timedelta(minutes=15)
-        if currTime < timeData[-1]:
+        if currTime < timeData[-1] and currTime > timeData[0]:
             self.ui.dataChart.pricePlot.axvline( x=currTime, color="black", linestyle="--" )
 
         set_ref_format_coord( self.ui.dataChart.pricePlot, refPrice )
