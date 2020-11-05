@@ -124,12 +124,13 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         value     = currentSource.getRecentValue( self.isin )
         change    = currentSource.getRecentChange( self.isin )
-        refPrice  = priceColumn[ 0 ]
         timestamp = timeColumn.iloc[-1]
 
         timeData = list(timeColumn)
         self.ui.dataChart.addPriceLine( timeData, priceColumn )
 
+#         refPrice = priceColumn[ 0 ]
+        refPrice = self.getReferenceValue()
         self.ui.dataChart.addPriceSecondaryY( refPrice )
 
         refX = [ timeData[0], timeData[-1] ]
@@ -147,6 +148,14 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.timeLabel.setText( str(timestamp) )
 
         set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
+
+    def getReferenceValue(self):
+        intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin, "14D" )
+        dataFrame = intraSource.getWorksheet()
+        if dataFrame is None:
+            return None
+        priceColumn = dataFrame["c"]
+        return priceColumn.iloc[-2]
 
     def getIntradayDataSource(self):
         rangeText = self.ui.rangeCB.currentText()
