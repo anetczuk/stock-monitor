@@ -53,6 +53,7 @@ if __name__ != '__main__':
 
 parser = argparse.ArgumentParser(description='Stock Monitor Example')
 parser.add_argument('-lud', '--loadUserData', action='store_const', const=True, default=False, help='Load user data' )
+parser.add_argument('--minimized', action='store_const', const=True, default=False, help='Start minimized' )
 
 args = parser.parse_args()
 
@@ -83,7 +84,12 @@ else:
     window.data.wallet.add("XXX", 10, 300)
 window.loadSettings()
 window.refreshView()
-window.show()
+
+if args.minimized is True or window.appSettings.startMinimized is True:
+    ## starting minimized
+    pass
+else:
+    window.show()
 
 exitCode = app.exec_()
 

@@ -34,22 +34,27 @@ class AppSettings():
 
     def __init__(self):
         self.trayIcon = trayicon.TrayIconTheme.WHITE
+        self.startMinimized = False
 
     def loadSettings(self, settings):
         settings.beginGroup( "app_settings" )
 
         trayName = settings.value("trayIcon", None, type=str)
         self.trayIcon = trayicon.TrayIconTheme.findByName( trayName )
-
         if self.trayIcon is None:
             self.trayIcon = trayicon.TrayIconTheme.WHITE
+
+        self.startMinimized = settings.value("startMinimized", None, type=bool)
+        if self.startMinimized is None:
+            self.startMinimized = True
 
         settings.endGroup()
 
     def saveSettings(self, settings):
         settings.beginGroup( "app_settings" )
 
-        settings.setValue("trayIcon", self.trayIcon.name)
+        settings.setValue( "trayIcon", self.trayIcon.name )
+        settings.setValue( "startMinimized", self.startMinimized )
 
         settings.endGroup()
 
@@ -81,8 +86,10 @@ class SettingsDialog(QtBaseClass):           # type: ignore
 
         index = trayicon.TrayIconTheme.indexOf( self.appSettings.trayIcon )
         self.ui.trayThemeCB.setCurrentIndex( index )
-
         self.ui.trayThemeCB.currentIndexChanged.connect( self._trayThemeChanged )
+
+        self.ui.startMinimizedCB.setChecked( self.appSettings.startMinimized )
+        self.ui.startMinimizedCB.stateChanged.connect( self._startMinimizedChanged )
 
     ## =====================================================
 
@@ -90,6 +97,10 @@ class SettingsDialog(QtBaseClass):           # type: ignore
         selectedTheme = self.ui.trayThemeCB.currentData()
         self.appSettings.trayIcon = selectedTheme
         self.iconThemeChanged.emit( selectedTheme )
+
+    def _startMinimizedChanged(self):
+        value = self.ui.startMinimizedCB.isChecked()
+        self.appSettings.startMinimized = value
 
     ## =====================================================
 
