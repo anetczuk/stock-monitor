@@ -97,6 +97,9 @@ class TrayIcon(QSystemTrayIcon):
         self.showMessage("Stock Monitor", message, QSystemTrayIcon.NoIcon, timeout)
 
     def drawNumber( self, number, numColor=QColor("red") ):
+        self.drawString( number, fontSize=256 + 128, color=numColor )
+
+    def drawString( self, content, fontSize=256, color=QColor("red") ):
         icon = self.icon()
 
         pixmap = icon.pixmap( 512, 512 )
@@ -105,11 +108,11 @@ class TrayIcon(QSystemTrayIcon):
         painter = QPainter( pixmap )
 
         font = painter.font()
-        font.setPixelSize( 256 + 128 )
+        font.setPixelSize( fontSize )
         painter.setFont(font)
 
         path = QPainterPath()
-        path.addText( 0, 0, font, str(number) )
+        path.addText( 0, 0, font, content )
         pathBBox = path.boundingRect()
 
         xOffset = ( pixSize.width() - pathBBox.width() ) / 2 - pathBBox.left()
@@ -122,10 +125,10 @@ class TrayIcon(QSystemTrayIcon):
         pathPen.setWidth( 180 )
         painter.strokePath( path, pathPen )
 
-        painter.fillPath( path, QBrush(numColor) )
+        painter.fillPath( path, QBrush(color) )
 
         ## make number bolder
-        pathPen = QPen( numColor )
+        pathPen = QPen( color )
         pathPen.setWidth( 20 )
         painter.strokePath( path, pathPen )
 

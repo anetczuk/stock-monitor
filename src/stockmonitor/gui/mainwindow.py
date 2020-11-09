@@ -69,6 +69,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.walletProfitLabel.setStyleSheet("font-weight: bold")
         self.ui.overallProfitLabel.setStyleSheet("font-weight: bold")
 
+        self.tickTimer = QtCore.QTimer( self )
+        self.tickTimer.timeout.connect( self.updateTrayIndicator )
+        self.tickTimer.start( 60 * 1000 )                           ## every minute
+
         ## =============================================================
 
         undoStack = self.data.undoStack
@@ -304,11 +308,24 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.setWindowIcon( appIcon )
         self.trayIcon.setIcon( appIcon )
 
+        self.updateTrayIndicator()
+
         ## update charts icon
         chartIcon = load_chart_icon( theme )
         widgets = self.findChildren( AppWindow )
         for w in widgets:
             w.setWindowIcon( chartIcon )
+
+    def updateTrayIndicator(self):
+        self.data.gpwIndexesData.refreshData()
+        isin = "PL9999999987"                                               ## wig20
+        recentChange = self.data.gpwIndexesData.getRecentChange( isin )
+        if recentChange < 0:
+            value = str( recentChange )
+            self.trayIcon.drawString( value, 256, QtGui.QColor("red") )
+        else:
+            value = str( recentChange )
+            self.trayIcon.drawString( value, 256, QtGui.QColor("lime") )
 
     def getIconTheme(self) -> trayicon.TrayIconTheme:
         return self.appSettings.trayIcon
