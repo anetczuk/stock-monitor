@@ -321,7 +321,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         isin = "PL9999999987"                                               ## wig20
         recentChange = self.data.gpwIndexesData.getRecentChange( isin )
         if recentChange < 0:
-            value = str( recentChange )
+            value = str( -recentChange )
             self.trayIcon.drawString( value, 256, QtGui.QColor("red") )
         else:
             value = str( recentChange )
