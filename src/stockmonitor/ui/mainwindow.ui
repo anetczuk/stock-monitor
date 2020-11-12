@@ -569,6 +569,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionSave_data"/>
+    <addaction name="actionLogs"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -612,8 +613,19 @@
     <string>Ctrl+S</string>
    </property>
   </action>
+  <action name="actionLogs">
+   <property name="text">
+    <string>Logs</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>NotesWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.noteswidget</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>StockFullTable</class>
    <extends>QTableView</extends>
@@ -623,12 +635,6 @@
    <class>FavsWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.favswidget</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>NotesWidget</class>
-   <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.noteswidget</header>
    <container>1</container>
   </customwidget>
   <customwidget>

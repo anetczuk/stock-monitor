@@ -37,11 +37,14 @@ import sys
 import logging
 import argparse
 
+# from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.mainwindow import MainWindow
+from stockmonitor.gui.widget.logwidget import create_window
+# from stockmonitor.gui.resources import get_root_path
+# from stockmonitor.gui.utils import render_to_pixmap
 
 
 ## ============================= main section ===================================
@@ -51,9 +54,9 @@ if __name__ != '__main__':
     sys.exit(0)
 
 
-parser = argparse.ArgumentParser(description='Stock Monitor Example')
-parser.add_argument('-lud', '--loadUserData', action='store_const', const=True, default=False, help='Load user data' )
-parser.add_argument('--minimized', action='store_const', const=True, default=False, help='Start minimized' )
+parser = argparse.ArgumentParser(description='Work Log Example')
+# parser.add_argument('-lud', '--loadUserData', action='store_const', const=True, default=False, help='Load user data' )
+# parser.add_argument('--minimized', action='store_const', const=True, default=False, help='Start minimized' )
 
 args = parser.parse_args()
 
@@ -68,35 +71,16 @@ _LOGGER.debug( "Starting the application" )
 
 
 app = QApplication(sys.argv)
-app.setApplicationName("StockMonitor")
+app.setApplicationName("WorkLog")
 app.setOrganizationName("arnet")
-app.setQuitOnLastWindowClosed( False )
+app.setQuitOnLastWindowClosed( True )
 
 setup_interrupt_handling()
 
-window = MainWindow()
-window.setWindowTitleSuffix( "Preview" )
-window.disableSaving()
-window.setWindowTitle( window.windowTitle() )
-if args.loadUserData:
-    window.loadData()
-else:
-    window.data.addFav("abc", ["ALR"])
-    window.data.addFav("abc", ["CDR"])
-    window.data.wallet.add("CDR", 10, 300)
-    window.data.wallet.add("XXX", 10, 300)
-window.loadSettings()
-window.refreshView()
+window = create_window()
 
-if args.minimized is True or window.appSettings.startMinimized is True:
-    ## starting minimized
-    pass
-else:
-    window.show()
+# window.setWindowTitleSuffix( "Preview" )
+# window.setWindowTitle( window.windowTitle() )
 
 exitCode = app.exec_()
-
-if exitCode == 0:
-    window.saveSettings()
-
 sys.exit( exitCode )

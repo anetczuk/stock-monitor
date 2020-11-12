@@ -29,6 +29,7 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 
 from stockmonitor.gui.appwindow import AppWindow
+from stockmonitor.gui.widget import logwidget
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
 from stockmonitor.gui.trayicon import load_main_icon, load_chart_icon
 from stockmonitor.gui.utils import set_label_url
@@ -88,6 +89,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.menuEdit.removeAction( self.ui.actionRedo )
 
         self.ui.actionSave_data.triggered.connect( self.saveData )
+        self.ui.actionLogs.triggered.connect( self.openLogsWindow )
         self.ui.actionOptions.triggered.connect( self.openSettingsDialog )
 
         ## =============================================================
@@ -368,6 +370,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.saveData()
 
     ## ====================================================================
+
+    def openLogsWindow(self):
+        logwidget.create_window( self )
 
     def openSettingsDialog(self):
         dialog = SettingsDialog( self.appSettings, self )
