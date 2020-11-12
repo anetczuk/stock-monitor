@@ -231,8 +231,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.ui.espiList.updateView()
 
-        data = self.data.gpwIndexesData.getWorksheet()
-        self.ui.gpwIndexesTable.setData( data )
+        self._updateGpwIndexes()
 
         data = self.data.globalIndexesData.getWorksheet()
         self.ui.globalIndexesTable.setData( data )
@@ -246,6 +245,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.stockRefreshPB.setEnabled( True )
 
         self.setStatusMessage( "Stock data refreshed" )
+
+    def _updateGpwIndexes(self):
+        data = self.data.gpwIndexesData.getWorksheet()
+        self.ui.gpwIndexesTable.setData( data )
 
     def _updateWalletSummary(self):
 #         self.ui.walletValueLabel.setText( "None" )
@@ -332,6 +335,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 #         if absVal < 1.0:
 #             value = value[1:]
         self.trayIcon.drawStringAuto( value, indicateColor )
+        self._updateGpwIndexes()
 
     def getIconTheme(self) -> trayicon.TrayIconTheme:
         return self.appSettings.trayIcon

@@ -103,7 +103,7 @@ class TrayIcon(QSystemTrayIcon):
         fontSize = 256 + 128
         cLen = len( content )
         if cLen == 1:
-            ## e.g. 8            
+            ## e.g. 8
             fontSize = 256 + 128
         elif cLen == 2:
             ## e.g. 88
