@@ -233,6 +233,9 @@ class TransHistory():
         self.sort()
 
     def add(self, amount, unitPrice, transTime=None, joinSimilar=True):
+        sameIndex = self._findSame( unitPrice, transTime, amount )
+        if sameIndex > -1:
+            return
         if joinSimilar is False:
 #                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
             self.append( amount, unitPrice, transTime )
@@ -428,6 +431,18 @@ class TransHistory():
                 bestPrice = currPrice
                 bestIndex = i
         return bestIndex
+
+    def _findSame(self, unit_price, trans_date, amount):
+        for i in range( len( self.transactions ) ):
+            itemAmount, itemPrice, itemTime = self.transactions[i]
+            if itemAmount != amount:
+                continue
+            if itemPrice != unit_price:
+                continue
+            if itemTime != trans_date:
+                continue
+            return i
+        return -1
 
     def _findSimilar(self, unit_price, trans_date):
         for i in range( len( self.transactions ) ):

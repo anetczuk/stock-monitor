@@ -23,6 +23,9 @@
 
 import unittest
 
+from pandas.core.frame import DataFrame
+
+from stockmonitor.gui.datatypes import WalletData, TransHistory
 from stockmonitor.gui.dataobject import DataObject
 from teststockmonitor import data
 
@@ -101,3 +104,26 @@ class DataObjectTest(unittest.TestCase):
         dataobject.wallet.add( "CDR", 1, 300.0 )
         stock = dataobject.getWalletStock()
         self.assertEqual( stock is not None, True )
+
+    def test_importWalletTransactions(self):
+        importedData = DataFrame( {'trans_time': ['28.10.2020 09:10:07'],
+                                   'name': ["CCC"],
+                                   'k_s': ['S'],
+                                   'amount': [10],
+                                   'unit_price': ['10.2'] } )
+        dataObject = DataObject()
+        wallet: WalletData = dataObject.wallet
+        self.assertEqual( wallet.size(), 0 )
+
+        dataObject.importWalletTransactions( importedData, True )
+        self.assertEqual( wallet.size(), 1 )
+
+        trans: TransHistory = wallet["CCC"]
+        self.assertEqual( len( trans ), 1 )
+        self.assertEqual( trans[0][0], -10 )
+
+        dataObject.importWalletTransactions( importedData, True )
+
+        self.assertEqual( wallet.size(), 1 )
+        self.assertEqual( len( trans ), 1 )
+        self.assertEqual( trans[0][0], -10 )
