@@ -322,12 +322,16 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.data.gpwIndexesData.refreshData()
         isin = "PL9999999987"                                               ## wig20
         recentChange = self.data.gpwIndexesData.getRecentChange( isin )
+        indicateColor = None
         if recentChange < 0:
-            value = str( -recentChange )
-            self.trayIcon.drawString( value, 256, QtGui.QColor("red") )
+            indicateColor = QtGui.QColor("red")
         else:
-            value = str( recentChange )
-            self.trayIcon.drawString( value, 256, QtGui.QColor("lime") )
+            indicateColor = QtGui.QColor("lime")
+        absVal = abs( recentChange )
+        value = str( absVal )
+#         if absVal < 1.0:
+#             value = value[1:]
+        self.trayIcon.drawStringAuto( value, indicateColor )
 
     def getIconTheme(self) -> trayicon.TrayIconTheme:
         return self.appSettings.trayIcon

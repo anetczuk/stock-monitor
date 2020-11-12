@@ -99,6 +99,26 @@ class TrayIcon(QSystemTrayIcon):
     def drawNumber( self, number, numColor=QColor("red") ):
         self.drawString( number, fontSize=256 + 128, color=numColor )
 
+    def drawStringAuto( self, content, color=QColor("red") ):
+        fontSize = 256 + 128
+        cLen = len( content )
+        if cLen == 1:
+            ## e.g. 8            
+            fontSize = 256 + 128
+        elif cLen == 2:
+            ## e.g. 88
+            fontSize = 256
+        elif cLen == 3:
+            ## e.g. 8.8
+            fontSize = 256
+        elif cLen == 4:
+            ## e.g. 8.88
+            fontSize = 224
+        else:
+            ## e.g. 88.88
+            fontSize = 192
+        self.drawString( content, fontSize, color )
+
     def drawString( self, content, fontSize=256, color=QColor("red") ):
         icon = self.icon()
 
@@ -120,11 +140,10 @@ class TrayIcon(QSystemTrayIcon):
 
         path.translate( xOffset, yOffset )
 
-#         pathPen = QPen(QColor("black"))
+        ## paint shadow
         pathPen = QPen( QColor(0, 0, 0, 200) )
         pathPen.setWidth( 180 )
         painter.strokePath( path, pathPen )
-
         painter.fillPath( path, QBrush(color) )
 
         ## make number bolder
