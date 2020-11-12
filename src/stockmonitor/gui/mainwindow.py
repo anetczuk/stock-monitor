@@ -327,7 +327,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         recentChange = self.data.gpwIndexesData.getRecentChange( isin )
         indicateColor = None
         if recentChange < 0:
-            indicateColor = QtGui.QColor("red")
+            indicateColor = QtGui.QColor(255, 96, 32)
         else:
             indicateColor = QtGui.QColor("lime")
         absVal = abs( recentChange )
