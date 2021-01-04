@@ -155,7 +155,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         if dataFrame is None:
             return None
         priceColumn = dataFrame["c"]
-        return priceColumn.iloc[-2]
+        return priceColumn.iloc[-1]
 
     def getIntradayDataSource(self):
         rangeText = self.ui.rangeCB.currentText()

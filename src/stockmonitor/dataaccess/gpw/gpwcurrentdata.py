@@ -248,10 +248,10 @@ class GpwCurrentStockData( WorksheetData ):
             return float( currUnitValueRaw )
 
         ## TKO
-        tkoIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.TKO )
-        tkoValueRaw = dataRow.iloc[tkoIndex]
-        if tkoValueRaw != "-":
-            return float( tkoValueRaw )
+#        tkoIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.TKO )
+#        tkoValueRaw = dataRow.iloc[tkoIndex]
+#        if tkoValueRaw != "-":
+#            return float( tkoValueRaw )
 
         ## reference value
         refValueIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.REFERENCE )
