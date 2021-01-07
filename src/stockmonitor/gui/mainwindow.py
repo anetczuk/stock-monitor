@@ -95,7 +95,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         ## =============================================================
 
         self.trayIcon = trayicon.TrayIcon(self)
-        self._updateIconTheme( trayicon.TrayIconTheme.WHITE )
+        self._setIconTheme( trayicon.TrayIconTheme.WHITE )
 
         self.ui.activitywidget.connectData( self.data )
         self.ui.daywidget.connectData( self.data )
@@ -148,7 +148,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         #qApp.saveStateRequest.connect( self.saveSession )
         #qApp.aboutToQuit.connect( self.saveOnQuit )
 
-        self.applySettings()
+#         self.applySettings()
         self.trayIcon.show()
 
         self.setWindowTitle()
@@ -303,24 +303,20 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def setIconTheme(self, theme: trayicon.TrayIconTheme):
         _LOGGER.debug("setting tray theme: %r", theme)
-        self._setTrayIndicator( theme )
+        self._setIconTheme( theme )
+        self.updateTrayIndicator()
 
-    def _setTrayIndicator(self, theme: trayicon.TrayIconTheme):
-        self._updateIconTheme( theme )
-
-    def _updateIconTheme(self, theme: trayicon.TrayIconTheme):
+    def _setIconTheme(self, theme: trayicon.TrayIconTheme):
         appIcon = load_main_icon( theme )
         self.setWindowIcon( appIcon )
         self.trayIcon.setIcon( appIcon )
-
-        self.updateTrayIndicator()
 
         ## update charts icon
         chartIcon = load_chart_icon( theme )
         widgets = self.findChildren( AppWindow )
         for w in widgets:
             w.setWindowIcon( chartIcon )
-
+    
     def updateTrayIndicator(self):
         self.data.gpwIndexesData.refreshData()
         isin = "PL9999999987"                                               ## wig20

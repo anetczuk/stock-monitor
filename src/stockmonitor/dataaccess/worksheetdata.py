@@ -84,6 +84,9 @@ class WorksheetData( BaseWorksheetData ):
             except urllib.error.HTTPError:
                 self.worksheet     = None
                 self.grabTimestamp = None
+            except urllib.error.URLError:
+                self.worksheet     = None
+                self.grabTimestamp = None
 
         if not os.path.exists( dataPath ):
             _LOGGER.warning( "could not find required file[%s]", dataPath )
