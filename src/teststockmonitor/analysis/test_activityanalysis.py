@@ -26,7 +26,7 @@ import logging
 import datetime
 
 from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.activityanalysis import GpwCurrentIntradayProvider,\
+from stockmonitor.analysis.activityanalysis import GpwCurrentIntradayProvider,\
     ActivityAnalysis, MetaStockIntradayProvider
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData

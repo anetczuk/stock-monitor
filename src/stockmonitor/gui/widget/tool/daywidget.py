@@ -28,7 +28,7 @@ from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.stockanalysis import StockAnalysis
+from stockmonitor.analysis.stockanalysis import StockAnalysis
 from stockmonitor.gui.utils import set_label_url
 
 from ... import uiloader

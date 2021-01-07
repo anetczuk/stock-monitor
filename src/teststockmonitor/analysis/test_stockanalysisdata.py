@@ -25,7 +25,7 @@ import unittest
 # import datetime
 import pandas
 
-from stockmonitor.dataaccess.stockanalysisdata import VarCalc
+from stockmonitor.analysis.stockanalysisdata import VarCalc
 
 
 ## =================================================================

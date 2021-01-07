@@ -31,12 +31,12 @@ import csv
 import pandas
 
 from stockmonitor import persist
+from stockmonitor.analysis.stockanalysisdata import VarCalc, SourceDataLoader, StatsDict
+from stockmonitor.analysis.stockanalysisdata import StockData
+from stockmonitor.analysis.stockanalysis import dates_to_string
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.stockanalysisdata import VarCalc, SourceDataLoader, StatsDict
-from stockmonitor.dataaccess.stockanalysisdata import StockData
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
-from stockmonitor.dataaccess.stockanalysis import dates_to_string
 
 
 _LOGGER = logging.getLogger(__name__)

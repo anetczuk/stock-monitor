@@ -34,9 +34,9 @@ import pandas
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import ArchiveDataType
-from stockmonitor.dataaccess.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader,\
+from stockmonitor.analysis.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader,\
     VarCalc
-from stockmonitor.dataaccess.stockanalysisdata import StockData
+from stockmonitor.analysis.stockanalysisdata import StockData
 
 
 _LOGGER = logging.getLogger(__name__)
