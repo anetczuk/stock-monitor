@@ -233,13 +233,13 @@ class TransHistory():
         self.sort()
 
     def add(self, amount, unitPrice, transTime=None, joinSimilar=True):
-        sameIndex = self._findSame( unitPrice, transTime, amount )
-        if sameIndex > -1:
-            return
         if joinSimilar is False:
 #                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
             self.append( amount, unitPrice, transTime )
             self.sort()
+            return
+        sameIndex = self._findSame( unitPrice, transTime, amount )
+        if sameIndex > -1:
             return
         similarIndex = self._findSimilar( unitPrice, transTime )
         if similarIndex < 0:
@@ -399,7 +399,9 @@ class TransHistory():
         while amount > 0:
             bestIndex = self.findCheapest()
             if bestIndex < 0:
-                _LOGGER.warning( "invalid index %s", bestIndex )
+                ## if this happens then it means there is problem with importing transactions history
+                ## perhaps the importer didn't recognized or badly merged transactions
+                _LOGGER.error( "invalid index %s %s", bestIndex, self.size() )
                 return retList
             ## reduce amount
             bestItem = self.transactions[ bestIndex ]
@@ -487,7 +489,7 @@ class WalletData( persist.Versionable ):
     _class_version = 2
 
     def __init__(self):
-        ## ticker, amount, unit price
+        ## ticker, TransHistory
         self.stockList: Dict[ str, TransHistory ] = dict()
 
     def _convertstate_(self, dict_, dictVersion_ ):
@@ -540,12 +542,20 @@ class WalletData( persist.Versionable ):
         return ret
 
     def add( self, ticker, amount, unitPrice, transTime: datetime=datetime.today(), joinSimilar=True ):
-        transactions = self.stockList.get( ticker, None )
+        transactions: TransHistory = self.stockList.get( ticker, None )
         if transactions is None:
             transactions = TransHistory()
             self.stockList[ ticker ] = transactions
         _LOGGER.debug( "adding transaction: %s %s %s %s", ticker, amount, unitPrice, transTime )
         transactions.add( amount, unitPrice, transTime, joinSimilar )
+
+    def addTransaction( self, ticker, transaction: Transaction, joinSimilar=True ):
+        self.add( ticker, transaction[0], transaction[1], transaction[2], joinSimilar )
+
+    def addWallet(self, wallet: 'WalletData', joinSimilar=True):
+        for ticker, hist in wallet.stockList.items():
+            for trans in hist.transactions:
+                self.addTransaction(ticker, trans, joinSimilar)
 
     def getCurrentStock(self) -> List[ str ]:
         ret = list()

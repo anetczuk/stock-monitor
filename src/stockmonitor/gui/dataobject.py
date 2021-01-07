@@ -634,10 +634,8 @@ class DataObject( QObject ):
         return retData
 
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
-        wallet: WalletData = self.wallet
-
-        if addTransactions is False:
-            wallet.clear()
+#         wallet: WalletData = self.wallet
+        importWallet = WalletData()
 
         for _, row in dataFrame.iterrows():
             transTime  = row['trans_time']
@@ -661,9 +659,16 @@ class DataObject( QObject ):
                 continue
 
             if oper == "K":
-                wallet.add( ticker,  amount, unit_price, dateObject )
+                importWallet.add( ticker,  amount, unit_price, dateObject, False )
             elif oper == "S":
-                wallet.add( ticker, -amount, unit_price, dateObject )
+                importWallet.add( ticker, -amount, unit_price, dateObject, False )
+
+        if addTransactions:
+            ## merge wallets
+            self.wallet.addWallet( importWallet )
+        else:
+            ## replace wallet
+            self.userContainer.wallet = importWallet
 
         self.walletDataChanged.emit()
 

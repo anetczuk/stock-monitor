@@ -22,18 +22,12 @@
 #
 
 import logging
-import tempfile
-import codecs
 from typing import List
-
-import pandas
 
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QFileDialog
 
-from stockmonitor.dataaccess.convert import convert_float, convert_int,\
-    apply_on_column
-
+from stockmonitor.dataaccess.transactionsloader import load_mb_transactions
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
 from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window, create_walletprofit_window
@@ -181,70 +175,17 @@ class WalletWidget( QtBaseClass ):           # type: ignore
 
 
 def import_mb_transactions( dataObject, filePath ):
-    ## imported transaction values are not affected by borker's commission
-    ## real sell profit is transaction value decreased by broker's commission
-    ## real buy cost is transaction value increased by broker's commission
-    ## broker commission: greater of 5PLN and 0.39%
-
-    ##
-    ## find line in file and remove header information leaving raw data
-    ##
-    tmpfile = tempfile.NamedTemporaryFile( mode='w+t' )
-    headerFound = False
-    historyFound = False
-    currentFound = False
-
-    with codecs.open(filePath, 'r', encoding='utf-8', errors='replace') as srcFile:
-        for line in srcFile:
-            if headerFound:
-                tmpfile.write(line)
-            elif "Czas transakcji" in line:
-                headerFound = True
-            elif "Historia transakcji" in line:
-                historyFound = True
-            elif "Transakcje bie" in line:
-                currentFound = True
-    tmpfile.seek(0)
-
-    sourceFile = None
-    if headerFound:
-        sourceFile = tmpfile
-    else:
-        sourceFile = filePath
-
-    if historyFound:
+    importedData, state = load_mb_transactions( filePath )
+    
+    print("importing:\n", importedData)
+    
+    if state == 0:
         ## load history transactions
         _LOGGER.debug( "opening transactions: %s", filePath )
-        importedData = load_mb_transactions( sourceFile )
         dataObject.importWalletTransactions( importedData )
-        tmpfile.close()
-    elif currentFound:
+    elif state == 1:
         ## add transactions
         _LOGGER.debug( "opening transactions: %s", filePath )
-        importedData = load_mb_transactions( sourceFile )
         dataObject.importWalletTransactions( importedData, True )
-        tmpfile.close()
     else:
         _LOGGER.warning( "invalid import file: %s", filePath )
-
-
-def load_mb_transactions( sourceFile ):
-    dataFrame = pandas.read_csv( sourceFile, names=["trans_time", "name", "stock_id", "k_s", "amount",
-                                                    "unit_price", "unit_currency", "price", "currency"],
-                                 sep=r'[;\t]', decimal=',', thousands=' ', engine='python', encoding='utf_8' )
-
-#     print( "raw data:\n", dataFrame )
-
-    apply_on_column( dataFrame, 'name', str )
-
-    #### fix names to match GPW names
-    ## XTRADEBDM -> XTB
-    ## CELONPHARMA -> CLNPHARMA
-    dataFrame["name"].replace({"XTRADEBDM": "XTB", "CELONPHARMA": "CLNPHARMA"}, inplace=True)
-
-    apply_on_column( dataFrame, 'amount', convert_int )
-
-    apply_on_column( dataFrame, 'unit_price', convert_float )
-    apply_on_column( dataFrame, 'price', convert_float )
-
-    return dataFrame

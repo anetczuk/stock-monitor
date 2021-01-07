@@ -24,10 +24,14 @@
 import unittest
 
 from pandas.core.frame import DataFrame
+import codecs
 
 from stockmonitor.gui.datatypes import WalletData, TransHistory
 from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.dataaccess.transactionsloader import load_mb_transactions,\
+    parse_mb_transactions_data
 from teststockmonitor import data
+from teststockmonitor.data import get_data_path
 
 
 class DataObjectTest(unittest.TestCase):
@@ -127,3 +131,19 @@ class DataObjectTest(unittest.TestCase):
         self.assertEqual( wallet.size(), 1 )
         self.assertEqual( len( trans ), 1 )
         self.assertEqual( trans[0][0], -10 )
+
+    def test_importWalletTransactions_sametime(self):
+        transactionsPath = get_data_path( "transactions_bad_separator.csv" )
+        
+        with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
+            importedData = parse_mb_transactions_data( srcFile )
+        
+        dataObject = DataObject()
+        dataObject.importWalletTransactions( importedData )
+        
+        wallet: WalletData = dataObject.wallet
+        self.assertEqual( wallet.size(), 1 )
+
+        trans: TransHistory = wallet["ENT"]
+        amount = trans.currentAmount()
+        self.assertEqual( amount, 0 )
