@@ -98,6 +98,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self._setIconTheme( trayicon.TrayIconTheme.WHITE )
 
         self.ui.activitywidget.connectData( self.data )
+        self.ui.volumenwidget.connectData( self.data )
         self.ui.daywidget.connectData( self.data )
 
         self.ui.espiList.connectData( self.data )

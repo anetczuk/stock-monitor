@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -40,7 +40,7 @@
         <item>
          <widget class="QTabWidget" name="toolsTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="activityTab">
            <attribute name="title">
@@ -49,6 +49,16 @@
            <layout class="QVBoxLayout" name="verticalLayout_21">
             <item>
              <widget class="ActivityWidget" name="activitywidget" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="volumenTab">
+           <attribute name="title">
+            <string>Volumen</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="VolumenWidget" name="volumenwidget" native="true"/>
             </item>
            </layout>
           </widget>
@@ -615,7 +625,7 @@
   </action>
   <action name="actionLogs">
    <property name="text">
-    <string>Logs</string>
+    <string>&amp;Logs</string>
    </property>
   </action>
  </widget>
@@ -699,6 +709,12 @@
    <class>ESPIListWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.espiwidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VolumenWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.tool.volumenwidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

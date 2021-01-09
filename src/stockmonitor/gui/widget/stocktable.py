@@ -456,6 +456,9 @@ class ToolStockTable( StockTable ):
         self.stockFilter.limitResults( state )
 
     def _getSelectedTickers(self):
+        if self.dataObject is None:
+            _LOGGER.warning("no dataobject present (set to None)")
+            return list()
         dataAccess = self.dataObject.gpwCurrentSource.stockData
         selectedData = self.getSelectedData( 0 )                ## stock name
         tickersList = set()

@@ -88,11 +88,12 @@ else:
 window.loadSettings()
 window.refreshView()
 
-if args.minimized is True or window.appSettings.startMinimized is True:
-    ## starting minimized
-    pass
-else:
-    window.show()
+window.show()
+# if args.minimized is True or window.appSettings.startMinimized is True:
+#     ## starting minimized
+#     pass
+# else:
+#     window.show()
 
 exitCode = app.exec_()
 

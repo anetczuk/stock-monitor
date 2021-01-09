@@ -225,6 +225,12 @@ class StatsDict():
         def values(self):
             return self.valueDict.values()
 
+        def get(self, field, defaultValue = None):
+            currVal = self.valueDict.get(field)
+            if currVal is None:
+                return defaultValue
+            return currVal
+
         def minValue(self, key, value):
             currVal = self.valueDict.get(key)
             if currVal is None:
@@ -241,17 +247,39 @@ class StatsDict():
                 if currVal < value:
                     self.valueDict[ key ] = value
 
-        def add(self, key, value):
-            currVal = self.valueDict.get(key)
+        def add(self, field, value):
+            currVal = self.valueDict.get( field )
             if currVal is None:
-                self.valueDict[ key ] = value
+                self.valueDict[ field ] = value
             else:
-                self.valueDict[ key ] = currVal + value
+                self.valueDict[ field ] = currVal + value
+                
+        def addElems(self, fieldsDict: 'SubDict'):
+            fieldsSet = fieldsDict.keys()
+            for field in fieldsSet:
+                value = fieldsDict[ field ]
+                self.add( field, value )
+
+        def div(self, field, value):
+            currVal = self.valueDict.get(field)
+            if currVal is None:
+                self.valueDict[ field ] = 0
+            else:
+                self.valueDict[ field ] = currVal / value
+
+        def divFields(self, value):
+            fieldsSet = self.valueDict.keys()
+            for field in fieldsSet:
+                self.div( field, value )
+                
+        ## pprint
+        def printData(self, indent=0):
+            StatsDict.pprint( self.valueDict, indent )
 
     ## =====================================================================
 
     def __init__(self):
-        self.dataDict = dict()
+        self.dataDict = dict()      ## ticker => fields dict
 
     def __getitem__(self, key):
         data = self.dataDict.get( key, None )
@@ -276,6 +304,39 @@ class StatsDict():
 #             self.dataDict[ key ] = StockDict()
 #         return self.dataDict[ key ]
 
+    def addValue(self, field, value):
+        for fieldsDict in self.dataDict.values():
+            fieldsDict.add( field, value )
+        
+    def add(self, field, dataDict: 'StatsDict'):
+        namesSet = dataDict.keys()
+        for name in namesSet:
+            fieldsDict = dataDict[ name ]
+            fieldValue = fieldsDict.get( field, 0 )
+            currFields = self[ name ]
+            currFields.add( field, fieldValue )
+
+    def rem(self, field, dataDict: 'StatsDict'):
+#         for fieldsDict in self.dataDict.values():
+#             fieldsDict.divFields( value )
+        namesSet = dataDict.keys()
+        for name in namesSet:
+            fieldsDict = dataDict[ name ]
+            fieldValue = fieldsDict.get( field, 0 )
+            currFields = self[ name ]
+            currFields.add( field, -fieldValue )
+
+    def addElems(self, dataDict: 'StatsDict'):
+        namesSet = dataDict.keys()
+        for name in namesSet:
+            fieldsDict = dataDict[ name ]
+            currFields = self[ name ]
+            currFields.addElems( fieldsDict )
+
+    def divFields(self, value):
+        for fieldsDict in self.dataDict.values():
+            fieldsDict.divFields( value )
+
     def generateDataFrame( self, namesSet ):
         nameValues = self.dataDict.values()
         if not nameValues:
@@ -297,6 +358,28 @@ class StatsDict():
             rowsList.append( dataRow + values )
         retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
         return retDataFrame
+    
+    ## pprint
+    def printData(self, indent=0):
+        StatsDict.pprint( self.dataDict, indent )
+
+    @staticmethod
+    def pprint(d, indent=0):
+        if d is None:
+            print('\t' * indent + "None")
+            return
+        if len(d) == 0:
+            print('\t' * indent + "Empty")
+            return
+            
+        for key, value in d.items():
+            print('\t' * indent + str(key))
+            if isinstance( value, dict ):
+                StatsDict.pprint( value, indent+1 )
+            elif isinstance( value, StatsDict.SubDict ):
+                StatsDict.pprint( value.valueDict, indent+1 )
+            else:
+                print('\t' * (indent+1) + str(value))
 
 
 ## =========================================================================
