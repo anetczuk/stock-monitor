@@ -39,13 +39,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="totalProfitChartPB">
-       <property name="text">
-        <string>Total profit chart</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -62,13 +55,6 @@
       <widget class="QLabel" name="label">
        <property name="text">
         <string>broker commission: greater of 5PLN and 0.39%</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="importMBPB">
-       <property name="text">
-        <string>Import mb transactions</string>
        </property>
       </widget>
      </item>

@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -591,8 +591,25 @@
     <addaction name="separator"/>
     <addaction name="actionOptions"/>
    </widget>
+   <widget class="QMenu" name="menuWallet">
+    <property name="title">
+     <string>Wa&amp;llet</string>
+    </property>
+    <widget class="QMenu" name="menuMatch_transactions">
+     <property name="title">
+      <string>&amp;Match transactions</string>
+     </property>
+     <addaction name="actionMatch_oldest"/>
+     <addaction name="actionMatch_best"/>
+     <addaction name="actionMatch_recent"/>
+    </widget>
+    <addaction name="menuMatch_transactions"/>
+    <addaction name="actionTotal_profit_chart"/>
+    <addaction name="actionImport_mb_transactions"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuWallet"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionExit">
@@ -626,6 +643,43 @@
   <action name="actionLogs">
    <property name="text">
     <string>&amp;Logs</string>
+   </property>
+  </action>
+  <action name="actionImport_mb_transactions">
+   <property name="text">
+    <string>&amp;Import mb transactions</string>
+   </property>
+  </action>
+  <action name="actionTotal_profit_chart">
+   <property name="text">
+    <string>&amp;Total profit chart</string>
+   </property>
+  </action>
+  <action name="actionMatch_oldest">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Match oldest</string>
+   </property>
+  </action>
+  <action name="actionMatch_best">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Match &amp;best</string>
+   </property>
+  </action>
+  <action name="actionMatch_recent">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Match &amp;recent profit</string>
    </property>
   </action>
  </widget>

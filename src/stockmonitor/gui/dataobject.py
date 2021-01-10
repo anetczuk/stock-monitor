@@ -51,7 +51,7 @@ from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
 from stockmonitor.gui.datatypes import UserContainer, StockData,\
     GpwStockIntradayMap, GpwIndexIntradayMap, FavData, WalletData,\
-    broker_commission, TransHistory
+    broker_commission, TransHistory, TransactionMatchMode
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 
 
@@ -195,6 +195,25 @@ class DataObject( QObject ):
         stockList = self.favs.getFavs( favGroup )
         return self.gpwCurrentData.getStockData( stockList )
 
+    ## ======================================================================
+    
+    def transactionsMatchMode(self):
+        return self.userContainer.transactionsMatchMode
+    
+    def matchTransactionsOldest(self):
+        self.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
+        self.walletDataChanged.emit()
+    
+    def matchTransactionsBest(self):
+        self.userContainer.transactionsMatchMode = TransactionMatchMode.BEST
+        self.walletDataChanged.emit()
+    
+    def matchTransactionsRecent(self):
+        self.userContainer.transactionsMatchMode = TransactionMatchMode.RECENT_PROFIT
+        self.walletDataChanged.emit()
+
+    ## ======================================================================
+
     # pylint: disable=R0914
     def getWalletStock(self):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Zm.do k.odn.[%]",
@@ -207,9 +226,11 @@ class DataObject( QObject ):
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
+        
+        transMode = self.userContainer.transactionsMatchMode
 
         for ticker, transactions in self.wallet.stockList.items():
-            amount, buy_unit_price = transactions.currentTransactionsAvg()
+            amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
             currentStockRow = currentStock.getRowByTicker( ticker )
 
             if currentStockRow.empty:
@@ -277,11 +298,13 @@ class DataObject( QObject ):
     def getWalletState(self):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
 
+        transMode = self.userContainer.transactionsMatchMode
+
         walletValue   = 0.0
         walletProfit  = 0.0
         overallProfit = 0.0
         for ticker, transactions in self.wallet.stockList.items():
-            amount, buy_unit_price = transactions.currentTransactionsAvg()
+            amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
 
             if amount == 0:
                 totalProfit    = transactions.transactionsProfit()
@@ -322,6 +345,8 @@ class DataObject( QObject ):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
 
+        transMode = self.userContainer.transactionsMatchMode
+
         ticker: str
         transactions: TransHistory
         for ticker, transactions in self.wallet.stockList.items():
@@ -330,7 +355,7 @@ class DataObject( QObject ):
             currentStockRow = currentStock.getRowByTicker( ticker )
             if currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
-                currTransactions = transactions.currentTransactions()
+                currTransactions = transactions.currentTransactions( transMode )
                 for item in currTransactions:
                     trans_amount     = item[0]
                     trans_unit_price = item[1]
@@ -345,7 +370,7 @@ class DataObject( QObject ):
             if currChangeRaw != "-":
                 currChange = float( currChangeRaw )
 
-            currTransactions = transactions.currentTransactions()
+            currTransactions = transactions.currentTransactions( transMode )
             for item in currTransactions:
                 stockName = currentStockRow["Nazwa"]
 
@@ -379,6 +404,8 @@ class DataObject( QObject ):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
 
+        transMode = self.userContainer.transactionsMatchMode
+
         ticker: str
         transactions: TransHistory
         for ticker, transactions in self.wallet.stockList.items():
@@ -387,7 +414,7 @@ class DataObject( QObject ):
             currentStockRow = currentStock.getRowByTicker( ticker )
             if currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
-                currTransactions = transactions.sellTransactions()
+                currTransactions = transactions.sellTransactions( transMode )
                 for buy, sell in currTransactions:
                     trans_amount     = buy[0]
                     trans_unit_price = buy[1]
@@ -397,7 +424,7 @@ class DataObject( QObject ):
 
             currChange    = "-"
 
-            currTransactions = transactions.sellTransactions()
+            currTransactions = transactions.sellTransactions( transMode )
             for buy, sell in currTransactions:
                 stockName = currentStockRow["Nazwa"]
 

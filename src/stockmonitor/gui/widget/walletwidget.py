@@ -137,10 +137,7 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         self.soldOutFilter = WalletProxyModel()
         self.ui.walletTable.addProxyModel( self.soldOutFilter )
 
-        self.ui.importMBPB.clicked.connect( self.ui.walletTable.importTransactions )
-
         self.ui.soldOutCB.stateChanged.connect( self._handleSoldOut )
-        self.ui.totalProfitChartPB.clicked.connect( self._openWalletProfitChart )
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
@@ -161,14 +158,17 @@ class WalletWidget( QtBaseClass ):           # type: ignore
             return
         self.ui.walletTable.setData( stock )
 
-    def _handleSoldOut(self):
-        incluideSoldOut = self.ui.soldOutCB.isChecked()
-        self.soldOutFilter.includeSoldOut( incluideSoldOut )
+    def importMBTransactions(self):
+        self.ui.walletTable.importTransactions()
 
-    def _openWalletProfitChart(self):
+    def openWalletProfitChart(self):
         if self.dataObject is None:
             return
         create_walletprofit_window( self.dataObject, self )
+
+    def _handleSoldOut(self):
+        incluideSoldOut = self.ui.soldOutCB.isChecked()
+        self.soldOutFilter.includeSoldOut( incluideSoldOut )
 
 
 ##=============================================================

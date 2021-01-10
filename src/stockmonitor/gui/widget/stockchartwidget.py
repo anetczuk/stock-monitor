@@ -150,16 +150,18 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         refY = [ refPrice, refPrice ]
         self.ui.dataChart.addPriceLine( refX, refY, style="--" )
 
-        walletStock: WalletData = self.dataObject.wallet[ self.ticker ]
+        transMode = self.dataObject.transactionsMatchMode()
+
+        walletStock: TransHistory = self.dataObject.wallet[ self.ticker ]
         if walletStock is not None:
             if self.ui.showWalletCB.isChecked():
-                amount, buy_unit_price = walletStock.currentTransactionsAvg()
+                amount, buy_unit_price = walletStock.currentTransactionsAvg( transMode )
                 if amount > 0:
                     refY = [ buy_unit_price, buy_unit_price ]
                     self.ui.dataChart.addPriceLine( refX, refY, color='black', style="--" )
 
             if self.ui.showTransactionsLevelsCB.isChecked():
-                currTransactions = walletStock.currentTransactions()
+                currTransactions = walletStock.currentTransactions( transMode )
                 for item in currTransactions:
                     buy_unit_price = item[1]
                     refY = [ buy_unit_price, buy_unit_price ]

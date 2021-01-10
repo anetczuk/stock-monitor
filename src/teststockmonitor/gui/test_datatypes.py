@@ -28,7 +28,8 @@ import pickle
 from typing import List
 
 from stockmonitor.gui.dataobject import WalletData, FavData
-from stockmonitor.gui.datatypes import Transaction, TransHistory
+from stockmonitor.gui.datatypes import Transaction, TransHistory,\
+    TransactionMatchMode
 
 
 class FavDataTest(unittest.TestCase):
@@ -55,70 +56,6 @@ class TransHistoryTest(unittest.TestCase):
         ## Called after testfunction was executed
         pass
 
-    def test_currentTransactionsBestFit_sold(self):
-        data = TransHistory()
-        ## reverse order
-        data.append(  5, 20.0 )
-        data.append( -5, 30.0 )
-
-        transList: List[ Transaction ] = data.currentTransactionsBestFit()
-        self.assertEqual( len( transList ), 0 )
-
-    def test_currentTransactionsBestFit_01(self):
-        data = TransHistory()
-        ## reverse order
-        data.append( 10, 10.0 )
-        data.append(  5, 20.0 )
-        data.append( -5, 30.0 )
-
-        transList: List[ Transaction ] = data.currentTransactionsBestFit()
-        self.assertEqual( len( transList ), 2 )
-
-        trans = transList[0]
-        self.assertEqual( trans[0],  5 )
-        self.assertEqual( trans[1], 20.0 )
-        trans = transList[1]
-        self.assertEqual( trans[0],  5 )
-        self.assertEqual( trans[1], 10.0 )
-
-    def test_currentTransactionsBestFit_02(self):
-        data = TransHistory()
-        ## reverse order
-        transList = \
-            [ ( -9, 195.5, datetime.datetime(2020, 9, 25, 11, 48, 52)),
-              (  9, 168.0, datetime.datetime(2020, 9, 23, 12, 14, 8)),
-              (-12, 165.0, datetime.datetime(2020, 7, 13, 10, 7, 12)),
-              (  6, 148.0, datetime.datetime(2020, 7, 8, 9, 48, 54)),
-              (  6, 153.0, datetime.datetime(2020, 7, 7, 15, 11, 23)),
-              (-22, 99.0, datetime.datetime(2020, 6, 12, 15, 36, 43)),
-              ( 12, 88.0, datetime.datetime(2020, 6, 9, 10, 27, 4)),
-              ( 10, 90.2, datetime.datetime(2020, 6, 8, 11, 28, 47)) ]
-        data.appendList( transList )
-
-        self.assertEqual( data.currentAmount(), 0 )
-
-        transList: List[ Transaction ] = data.currentTransactionsBestFit()
-        self.assertEqual( len( transList ), 0 )
-
-    def test_currentTransactionsBestFit_03(self):
-        data = TransHistory()
-        ## reverse order
-        transList = \
-            [ ( -400, 3.72, datetime.datetime(2020, 10, 5, 15, 41, 33)),
-              (  400, 3.17, datetime.datetime(2020, 9, 25, 13, 11, 31)),
-              (  200, 4.1, datetime.datetime(2020, 8, 31, 9, 11, 26)) ]
-
-        data.appendList( transList )
-
-        self.assertEqual( data.currentAmount(), 200 )
-
-        transList: List[ Transaction ] = data.currentTransactionsBestFit()
-        self.assertEqual( len( transList ), 1 )
-
-        trans = transList[0]
-        self.assertEqual( trans[0], 200 )
-        self.assertEqual( trans[1], 4.1 )
-
     def test_amountBeforeDate(self):
         data = TransHistory()
         ## reverse order
@@ -133,6 +70,180 @@ class TransHistoryTest(unittest.TestCase):
         amount = data.amountBeforeDate( datetime.date( year=2020, month=5, day=3 ) )
         self.assertEqual( amount, 9 )
 
+    def test_matchTransactionsRecent01(self):
+        data = TransHistory()
+        
+        ## reverse order
+        transList = \
+            [ ( -200, 3.5, datetime.datetime(2020, 10, 5, 15, 41, 33)),
+              (  300, 2.0, datetime.datetime(2020, 9, 25, 13, 11, 31)),
+              (  200, 3.0, datetime.datetime(2020, 8, 31,  9, 11, 26)),
+              (  100, 4.0, datetime.datetime(2020, 8, 25, 13, 11, 31)) ]
+
+        data.appendList( transList )
+
+        self.assertEqual( data.currentAmount(), 400 )
+        
+        transList: TransactionsMatch = data.matchTransactionsRecent()
+        buyList: BuyTransactionsMatch = transList[0]
+        self.assertEqual( len( buyList ), 2 )
+
+        trans = buyList[0]
+        self.assertEqual( trans[0], 300 )
+        self.assertEqual( trans[1], 2.0 )
+        trans = buyList[1]
+        self.assertEqual( trans[0], 100 )
+        self.assertEqual( trans[1], 3.0 )
+
+    def test_matchTransactionsBestFit_sold(self):
+        data = TransHistory()
+        ## reverse order
+        data.append(  5, 20.0 )
+        data.append( -5, 30.0 )
+
+        transList: TransactionsMatch = data.matchTransactionsBestFit()
+        buyList = transList[0]
+        self.assertEqual( len( buyList ), 0 )
+
+    def test_matchTransactionsBestFit_01(self):
+        data = TransHistory()
+        ## reverse order
+        data.append( 10, 10.0 )
+        data.append(  5, 20.0 )
+        data.append( -5, 30.0 )
+
+        transList: TransactionsMatch = data.matchTransactionsBestFit()
+        buyList = transList[0]
+        self.assertEqual( len( buyList ), 2 )
+
+        trans = buyList[0]
+        self.assertEqual( trans[0],  5 )
+        self.assertEqual( trans[1], 20.0 )
+        trans = buyList[1]
+        self.assertEqual( trans[0],  5 )
+        self.assertEqual( trans[1], 10.0 )
+
+    def test_matchTransactionsBestFit_02(self):
+        data = TransHistory()
+        ## reverse order
+        transList = \
+            [ ( -9, 195.5, datetime.datetime(2020, 9, 25, 11, 48, 52)),
+              (  9, 168.0, datetime.datetime(2020, 9, 23, 12, 14, 8)),
+              (-12, 165.0, datetime.datetime(2020, 7, 13, 10, 7, 12)),
+              (  6, 148.0, datetime.datetime(2020, 7, 8, 9, 48, 54)),
+              (  6, 153.0, datetime.datetime(2020, 7, 7, 15, 11, 23)),
+              (-22,  99.0, datetime.datetime(2020, 6, 12, 15, 36, 43)),
+              ( 12,  88.0, datetime.datetime(2020, 6, 9, 10, 27, 4)),
+              ( 10,  90.2, datetime.datetime(2020, 6, 8, 11, 28, 47)) ]
+        data.appendList( transList )
+
+        self.assertEqual( data.currentAmount(), 0 )
+
+        transList: TransactionsMatch = data.matchTransactionsBestFit()
+        buyList = transList[0]
+        self.assertEqual( len( buyList ), 0 )
+
+    def test_matchTransactionsBestFit_03(self):
+        data = TransHistory()
+        ## reverse order
+        transList = \
+            [ ( -400, 3.72, datetime.datetime(2020, 10, 5, 15, 41, 33)),
+              (  400, 3.17, datetime.datetime(2020, 9, 25, 13, 11, 31)),
+              (  200, 4.1,  datetime.datetime(2020, 8, 31, 9, 11, 26)) ]
+
+        data.appendList( transList )
+
+        self.assertEqual( data.currentAmount(), 200 )
+
+        transList: TransactionsMatch = data.matchTransactionsBestFit()
+        buyList = transList[0]
+        self.assertEqual( len( buyList ), 1 )
+
+        trans = buyList[0]
+        self.assertEqual( trans[0], 200 )
+        self.assertEqual( trans[1], 4.1 )
+        
+    def test_matchTransactionsRecentProfit_01(self):
+        data = TransHistory()
+        
+        ## reverse order
+        transList = \
+            [ ( -100, 3.5, datetime.datetime(2020, 10, 5, 15, 41, 33)),
+              (  300, 4.0, datetime.datetime(2020, 9, 25, 13, 11, 31)),
+              (  200, 3.0, datetime.datetime(2020, 8, 31,  9, 11, 26)),
+              (  100, 2.0, datetime.datetime(2020, 8, 25, 13, 11, 31)) ]
+
+        data.appendList( transList )
+
+        self.assertEqual( data.currentAmount(), 500 )
+        
+        transList: TransactionsMatch = data.matchTransactionsRecentProfit()
+        buyList = transList[0]
+        self.assertEqual( len( buyList ), 3 )
+
+        trans = buyList[1]
+        self.assertEqual( trans[0], 100 )
+        self.assertEqual( trans[1], 3.0 )
+
+    def test_sellTransactions_bestFit_01(self):
+        data = TransHistory()
+        matchMode = TransactionMatchMode.BEST
+        
+        ## reverse order
+        transList = \
+            [ ( -400, 3.72, datetime.datetime(2020, 10, 5, 15, 41, 33)),
+              (  400, 3.17, datetime.datetime(2020, 9, 25, 13, 11, 31)),
+              (  200, 4.1,  datetime.datetime(2020, 8, 31, 9, 11, 26)) ]
+
+        data.appendList( transList )
+
+        self.assertEqual( data.currentAmount(), 200 )
+
+        transList: SellTransactionsMatch = data.sellTransactions( matchMode )
+
+        self.assertEqual( len( transList ), 1 )
+
+        sellTrans = transList[0][1]
+        self.assertEqual( sellTrans[0], -400 )
+        self.assertEqual( sellTrans[1],  3.72 )
+
+        buyTrans = transList[0][0]
+        self.assertEqual( buyTrans[0], 400 )
+        self.assertEqual( buyTrans[1], 3.17 )
+        
+    def test_sellTransactions_bestFit_02(self):
+        data = TransHistory()
+        matchMode = TransactionMatchMode.BEST
+        
+        ## reverse order
+        transList = \
+            [ ( -400, 3.72, datetime.datetime(2020, 10, 5, 15, 41, 33)),
+              (  300, 3.0,  datetime.datetime(2020, 9, 25, 13, 11, 31)),
+              (  200, 4.1,  datetime.datetime(2020, 8, 31,  9, 11, 26)),
+              (  150, 2.0,  datetime.datetime(2020, 8, 25, 13, 11, 31)) ]
+
+        data.appendList( transList )
+
+        self.assertEqual( data.currentAmount(), 250 )
+
+        transList: SellTransactionsMatch = data.sellTransactions( matchMode )
+
+        self.assertEqual( len( transList ), 2 )
+
+        sellTrans = transList[0][1]
+        self.assertEqual( sellTrans[0], -150 )
+        self.assertEqual( sellTrans[1],  3.72 )
+        buyTrans = transList[0][0]
+        self.assertEqual( buyTrans[0], 150 )
+        self.assertEqual( buyTrans[1], 2.0 )
+        
+        sellTrans = transList[1][1]
+        self.assertEqual( sellTrans[0], -250 )
+        self.assertEqual( sellTrans[1],  3.72 )
+        buyTrans = transList[1][0]
+        self.assertEqual( buyTrans[0], 250 )
+        self.assertEqual( buyTrans[1], 3.0 )        
+        
 
 class WalletDataTest(unittest.TestCase):
     def setUp(self):
@@ -159,6 +270,8 @@ class WalletDataTest(unittest.TestCase):
 
     def test_add_buy(self):
         dataobject = WalletData()
+        matchMode = TransactionMatchMode.BEST
+        
         self.assertEqual( dataobject.size(), 0 )
 
         dataobject.add( "xxx", 1, 20.0 )
@@ -169,7 +282,7 @@ class WalletDataTest(unittest.TestCase):
 
         self.assertEqual( dataobject.transactions("xxx").size(), 2 )
 
-        items = dataobject.items()
+        items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 2 )
@@ -177,6 +290,8 @@ class WalletDataTest(unittest.TestCase):
 
     def test_add_buy_similar(self):
         dataobject = WalletData()
+        matchMode = TransactionMatchMode.BEST
+        
         self.assertEqual( dataobject.size(), 0 )
 
         dataobject.add( "xxx", 1, 20.0 )
@@ -184,7 +299,7 @@ class WalletDataTest(unittest.TestCase):
 
         self.assertEqual( dataobject.transactions("xxx").size(), 1 )
 
-        items = dataobject.items()
+        items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 4 )
@@ -192,6 +307,8 @@ class WalletDataTest(unittest.TestCase):
 
     def test_add_sell_1(self):
         dataobject = WalletData()
+        matchMode = TransactionMatchMode.BEST
+        
         dataobject.add( "xxx", 1, 20.0 )
         self.assertEqual( dataobject.size(), 1 )
 
@@ -201,7 +318,7 @@ class WalletDataTest(unittest.TestCase):
         dataobject.add( "xxx", -1, 10.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        items = dataobject.items()
+        items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
@@ -209,6 +326,8 @@ class WalletDataTest(unittest.TestCase):
 
     def test_add_sell_2(self):
         dataobject = WalletData()
+        matchMode = TransactionMatchMode.BEST
+        
         dataobject.add( "xxx", 1, 10.0 )
         self.assertEqual( dataobject.size(), 1 )
 
@@ -218,7 +337,7 @@ class WalletDataTest(unittest.TestCase):
         dataobject.add( "xxx", -1, 20.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        items = dataobject.items()
+        items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
@@ -226,6 +345,8 @@ class WalletDataTest(unittest.TestCase):
 
     def test_add_sell_3(self):
         dataobject = WalletData()
+        matchMode = TransactionMatchMode.BEST
+        
         dataobject.add( "xxx", 1, 20.0 )
         self.assertEqual( dataobject.size(), 1 )
 
@@ -235,7 +356,7 @@ class WalletDataTest(unittest.TestCase):
         dataobject.add( "xxx", -1, 15.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        items = dataobject.items()
+        items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
@@ -243,13 +364,15 @@ class WalletDataTest(unittest.TestCase):
 
     def test_add_sell_4(self):
         dataobject = WalletData()
+        matchMode = TransactionMatchMode.BEST
+        
         dataobject.add( "xxx", 2, 10.0 )
         self.assertEqual( dataobject.size(), 1 )
 
         dataobject.add( "xxx", -1, 20.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        items = dataobject.items()
+        items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
