@@ -25,10 +25,10 @@ import logging
 
 from PyQt5.QtCore import Qt
 
-from stockmonitor.gui.dataobject import WalletData
+from stockmonitor.gui import threadlist
+from stockmonitor.gui.datatypes import TransHistory
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url
-from stockmonitor.gui import threadlist
 from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord,\
     set_int_format_coord
 

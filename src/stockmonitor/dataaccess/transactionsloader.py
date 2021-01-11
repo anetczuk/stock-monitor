@@ -66,17 +66,17 @@ def load_mb_transactions( filePath ):
 
     importedData = parse_mb_transactions_data( tmpfile )
     ## print("importing:", importedData)
-    
+
     tmpfile.close()
-    
+
     if historyFound:
         ## load history transactions
         return ( importedData, 0 )
     elif currentFound:
         ## add transactions
         return ( importedData, 1 )
-    else:
-        return ( None, -1 )
+    # else
+    return ( None, -1 )
 
 
 def parse_mb_transactions_data( sourceFile ):
@@ -104,7 +104,7 @@ def parse_mb_transactions_data( sourceFile ):
 
 def fix_separator( sourceFile ):
     tmpfile = tempfile.NamedTemporaryFile( mode='w+t' )
-    
+
 #     with codecs.open(sourceFilePath, 'r', encoding='utf-8', errors='replace') as srcFile:
     for line in sourceFile:
         colonsNum = line.count( "," )
@@ -114,7 +114,7 @@ def fix_separator( sourceFile ):
             line = replace_nth( line, ",", ".", 6 )
             line = line.replace( ",", ";" )
         tmpfile.write(line)
-                
+
     tmpfile.seek(0)
     return tmpfile
 
@@ -130,5 +130,5 @@ def replace_nth(stringData, sub, repl, occurence):
         i += 1
     # If i is equal to n we found nth match so replace
     if i == occurence:
-        return stringData[:find] + repl + stringData[find+len(sub):]
+        return stringData[:find] + repl + stringData[find + len(sub):]
     return stringData

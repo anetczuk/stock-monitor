@@ -53,6 +53,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
     logger: logging.Logger = None
     appTitle = "Stock Monitor"
 
+    # pylint: disable=R0915
     def __init__(self):
         super().__init__()
         self.ui = UiTargetClass()
@@ -88,10 +89,10 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.menuEdit.removeAction( self.ui.actionUndo )
         self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
         self.ui.menuEdit.removeAction( self.ui.actionRedo )
-        
+
         self.ui.actionTotal_profit_chart.triggered.connect( self.ui.walletwidget.openWalletProfitChart )
         self.ui.actionImport_mb_transactions.triggered.connect( self.ui.walletwidget.importMBTransactions )
-        
+
         self.ui.actionMatch_oldest.triggered.connect( self.data.matchTransactionsOldest )
         self.ui.actionMatch_best.triggered.connect( self.data.matchTransactionsBest )
         self.ui.actionMatch_recent.triggered.connect( self.data.matchTransactionsRecent )
@@ -333,7 +334,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         widgets = self.findChildren( AppWindow )
         for w in widgets:
             w.setWindowIcon( chartIcon )
-    
+
     def updateTrayIndicator(self):
         self.data.gpwIndexesData.refreshData()
         isin = "PL9999999987"                                               ## wig20

@@ -24,7 +24,6 @@
 import os
 import logging
 import datetime
-import math
 import multiprocessing.dummy
 
 import csv
@@ -156,7 +155,7 @@ class VolumenAnalysis:
             dayPair = self.getPrecalcData( currDate )
             dataPairList.append( dayPair )
             currDate += datetime.timedelta(days=1)
-            
+
 #             dayDict = dayPair[1]
 #             dayDict["ATLANTIS"].printData()
 #                 #print( "aaaa:", priceColumn, volumenColumn, volSum, tradingSum )
@@ -172,22 +171,22 @@ class VolumenAnalysis:
             dataDict.add( "volumen_sum", dayData )
             dataDict.add( "trading_sum", dayData )
             rawData = dataTuple[0]
-            if len( rawData ) > 0:
+            if rawData:
                 validDataNum += 1
         if validDataNum < 1:
             validDataNum = 1
-        
+
         lastDayDict = lastDayTuple[1]
 
         namesSet = dataDict.keys() | lastDayDict.keys()
         for name in namesSet:
             dataSubdict = dataDict[ name ]
-            
+
             ## set default values if missing (e.g. in case of no trading in certain stocks)
             dataSubdict.add( "volumen_sum", 0 )
             dataSubdict.add( "trading_sum", 0.0 )
 
-            ## get values            
+            ## get values
             dataVolumen = dataSubdict.get( "volumen_sum", 0 )
             dataTrading = dataSubdict.get( "trading_sum", 0 )
             dataSubdict["trading_sum"]  = round( dataTrading, 4 )
@@ -199,11 +198,11 @@ class VolumenAnalysis:
             lastTrading = lastDaySubdict.get( "trading_sum", 0 )
 #             if lastVolumen == 0:
 #                 continue
-            
+
             dataVolumenAvg = dataVolumen / validDataNum
             dataSubdict["volumen_avg"]    = round( dataVolumenAvg, 4 )
             dataSubdict["recent_vol_sum"] = lastVolumen
-            
+
             if dataVolumen != 0:
                 potentialVol = lastVolumen / dataVolumenAvg
                 dataSubdict["volumen_pot"] = round( potentialVol, 4 )
@@ -212,11 +211,11 @@ class VolumenAnalysis:
                     dataSubdict["volumen_pot"] = float("inf")
                 else:
                     dataSubdict["volumen_pot"] = 0.0
-            
+
             dataTradingAvg = dataTrading / validDataNum
             dataSubdict["trading_avg"]     = round( dataTradingAvg, 4 )
             dataSubdict["recent_trad_sum"] = round( lastTrading, 4 )
-            
+
             if dataTrading != 0:
                 potentialTrad = lastTrading / dataTradingAvg
                 dataSubdict["trading_pot"] = round( potentialTrad, 4 )
@@ -225,13 +224,13 @@ class VolumenAnalysis:
                     dataSubdict["trading_pot"] = float("inf")
                 else:
                     dataSubdict["trading_pot"] = 0.0
- 
+
         ## =========================
- 
+
         file = outFilePath
         if file is None:
             file = tmp_dir + "out/output_volumen.csv"
- 
+
         headerList = list()
         headerList.append( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
         headerList.append( ["value_sum:", "sum_value{fromDay, toDay-1}"] )
@@ -239,13 +238,13 @@ class VolumenAnalysis:
         headerList.append( ["recent_val:", "sum_value{toDay}"] )
         headerList.append( ["value_pot:", "recent_val / value_avg"] )
         headerList.append( [] )
- 
+
         retDataFrame = dataDict.generateDataFrame( namesSet )
- 
+
         write_to_csv( file, headerList, retDataFrame )
- 
+
         _LOGGER.debug( "Done" )
- 
+
         return retDataFrame
 
     ## returns list: [raw data, precalc data, date]
@@ -268,7 +267,7 @@ class VolumenAnalysis:
     ## returns tuple: (raw data, precalc data)
     def precalculateData(self, currDate):
         ## dataframe wit columns: name, price, volumen
-        
+
         dataDicts = StatsDict()
         dataframeList = self._loadData( currDate )
         for dataFrame in dataframeList:
@@ -279,7 +278,7 @@ class VolumenAnalysis:
 #                 _LOGGER.debug( "calculating results for: %s %s, len: %s", currDate, name, dataFrame.shape[0] )
 
             dataSubdict = dataDicts[ name ]
-            
+
             priceColumn = dataFrame["price"]
             priceSize = priceColumn.shape[0]
             if priceSize < 1:

@@ -176,9 +176,9 @@ class WalletWidget( QtBaseClass ):           # type: ignore
 
 def import_mb_transactions( dataObject, filePath ):
     importedData, state = load_mb_transactions( filePath )
-    
+
     print("importing:\n", importedData)
-    
+
     if state == 0:
         ## load history transactions
         _LOGGER.debug( "opening transactions: %s", filePath )

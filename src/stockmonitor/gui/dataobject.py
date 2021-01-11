@@ -196,18 +196,18 @@ class DataObject( QObject ):
         return self.gpwCurrentData.getStockData( stockList )
 
     ## ======================================================================
-    
+
     def transactionsMatchMode(self):
         return self.userContainer.transactionsMatchMode
-    
+
     def matchTransactionsOldest(self):
         self.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
         self.walletDataChanged.emit()
-    
+
     def matchTransactionsBest(self):
         self.userContainer.transactionsMatchMode = TransactionMatchMode.BEST
         self.walletDataChanged.emit()
-    
+
     def matchTransactionsRecent(self):
         self.userContainer.transactionsMatchMode = TransactionMatchMode.RECENT_PROFIT
         self.walletDataChanged.emit()
@@ -226,7 +226,7 @@ class DataObject( QObject ):
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
-        
+
         transMode = self.userContainer.transactionsMatchMode
 
         for ticker, transactions in self.wallet.stockList.items():
@@ -297,37 +297,37 @@ class DataObject( QObject ):
     ## wallet summary: wallet value, wallet profit, gain, overall profit
     def getWalletState(self, includeCommission=True):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
- 
+
         transMode = self.userContainer.transactionsMatchMode
- 
+
         walletValue   = 0.0
         walletProfit  = 0.0
         totalGain     = 0.0
         for ticker, transactions in self.wallet.stockList.items():
             amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
- 
+
             stockGain  = transactions.transactionsGain( transMode, includeCommission )
             totalGain += stockGain
-             
+
             if amount == 0:
                 continue
- 
+
             tickerRow = currentStock.getRowByTicker( ticker )
             if tickerRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 continue
- 
+
             currUnitValue = GpwCurrentStockData.unitPrice( tickerRow )
- 
+
             stockValue     = currUnitValue * amount
             stockProfit    = stockValue
             stockProfit   -= buy_unit_price * amount
             if includeCommission:
                 stockProfit -= broker_commission( stockValue )
- 
+
             walletValue   += stockValue
             walletProfit  += stockProfit
- 
+
         walletValue   = round( walletValue, 2 )
         walletProfit  = round( walletProfit, 2 )
         totalGain     = round( totalGain, 2 )
