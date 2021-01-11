@@ -294,47 +294,46 @@ class DataObject( QObject ):
         dataFrame = DataFrame( rowsList )
         return dataFrame
 
-    ## wallet summary: wallet value, wallet profit, overall profit
-    def getWalletState(self):
+    ## wallet summary: wallet value, wallet profit, gain, overall profit
+    def getWalletState(self, includeCommission=True):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-
+ 
         transMode = self.userContainer.transactionsMatchMode
-
+ 
         walletValue   = 0.0
         walletProfit  = 0.0
-        overallProfit = 0.0
+        totalGain     = 0.0
         for ticker, transactions in self.wallet.stockList.items():
             amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
-
+ 
+            stockGain  = transactions.transactionsGain( transMode, includeCommission )
+            totalGain += stockGain
+             
             if amount == 0:
-                totalProfit    = transactions.transactionsProfit()
-                overallProfit += totalProfit
                 continue
-
+ 
             tickerRow = currentStock.getRowByTicker( ticker )
             if tickerRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 continue
-
+ 
             currUnitValue = GpwCurrentStockData.unitPrice( tickerRow )
-
-            currValue = currUnitValue * amount
-            currCommission = broker_commission( currValue )
-            buyValue  = buy_unit_price * amount
-            profit    = currValue - buyValue
-            profit   -= currCommission
-
-            walletValue  += currValue
-            walletProfit += profit
-
-            totalProfit    = transactions.transactionsProfit()
-            totalProfit   += currValue - currCommission
-            overallProfit += totalProfit
-
+ 
+            stockValue     = currUnitValue * amount
+            stockProfit    = stockValue
+            stockProfit   -= buy_unit_price * amount
+            if includeCommission:
+                stockProfit -= broker_commission( stockValue )
+ 
+            walletValue   += stockValue
+            walletProfit  += stockProfit
+ 
         walletValue   = round( walletValue, 2 )
         walletProfit  = round( walletProfit, 2 )
+        totalGain     = round( totalGain, 2 )
+        overallProfit = walletProfit + totalGain
         overallProfit = round( overallProfit, 2 )
-        return ( walletValue, walletProfit, overallProfit )
+        return ( walletValue, walletProfit, totalGain, overallProfit )
 
     # pylint: disable=R0914
     def getWalletBuyTransactions(self):

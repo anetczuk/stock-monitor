@@ -32,6 +32,7 @@ from stockmonitor.dataaccess.transactionsloader import load_mb_transactions,\
     parse_mb_transactions_data
 from teststockmonitor import data
 from teststockmonitor.data import get_data_path
+import datetime
 
 
 class DataObjectTest(unittest.TestCase):
@@ -108,6 +109,60 @@ class DataObjectTest(unittest.TestCase):
         dataobject.wallet.add( "CDR", 1, 300.0 )
         stock = dataobject.getWalletStock()
         self.assertEqual( stock is not None, True )
+
+    def test_getWalletState_oldest(self):
+        dataobject = DataObject()
+        dataobject.matchTransactionsOldest()
+        
+        dataPath = data.get_data_path( "recent_data_TKO.xls" )
+        dataobject.gpwCurrentSource.stockData.parseWorksheetFromFile( dataPath )
+        
+        ## CDP curr price: 360.0 (from recent_data_TKO.xls)
+        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )
+        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
+        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
+        
+        walletVal, walletProfit, gain, overallProfit = dataobject.getWalletState( False )
+        self.assertEqual( walletVal, 360.0 )
+        self.assertEqual( walletProfit, 160.0 )
+        self.assertEqual( gain, 40.0 )
+        self.assertEqual( overallProfit, 200.0 )
+
+    def test_getWalletState_best(self):
+        dataobject = DataObject()
+        dataobject.matchTransactionsBest()
+        
+        dataPath = data.get_data_path( "recent_data_TKO.xls" )
+        dataobject.gpwCurrentSource.stockData.parseWorksheetFromFile( dataPath )
+        
+        ## CDP curr price: 360.0 (from recent_data_TKO.xls)
+        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )
+        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
+        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
+        
+        walletVal, walletProfit, gain, overallProfit = dataobject.getWalletState( False )
+        self.assertEqual( walletVal, 360.0 )
+        self.assertEqual( walletProfit, 100.0 )
+        self.assertEqual( gain, 100.0 )
+        self.assertEqual( overallProfit, 200.0 )
+
+    def test_getWalletState_recent(self):
+        dataobject = DataObject()
+        dataobject.matchTransactionsRecent()
+        
+        dataPath = data.get_data_path( "recent_data_TKO.xls" )
+        dataobject.gpwCurrentSource.stockData.parseWorksheetFromFile( dataPath )
+        
+        ## CDP curr price: 360.0 (from recent_data_TKO.xls)
+        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )
+        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
+        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
+        
+        walletVal, walletProfit, gain, overallProfit = dataobject.getWalletState( False )
+        self.assertEqual( walletVal, 360.0 )
+        self.assertEqual( walletProfit, 160.0 )
+        self.assertEqual( gain, 40.0 )
+        self.assertEqual( overallProfit, 200.0 )
 
     def test_importWalletTransactions(self):
         importedData = DataFrame( {'trans_time': ['28.10.2020 09:10:07'],

@@ -70,6 +70,22 @@ class TransHistoryTest(unittest.TestCase):
         amount = data.amountBeforeDate( datetime.date( year=2020, month=5, day=3 ) )
         self.assertEqual( amount, 9 )
 
+    def test_transactionsProfit(self):
+        data = TransHistory()
+        ## reverse order
+        data.append( 10, 10.0, datetime.datetime( year=2020, month=5, day=5 ) )
+        data.append( -8, 20.0, datetime.datetime( year=2020, month=5, day=3 ) )
+        data.append(  9, 30.0, datetime.datetime( year=2020, month=5, day=1 ) )
+        data.sort()
+        
+        data.transactionsProfit( False )
+
+        amount = data.amountBeforeDate( datetime.date( year=2020, month=5, day=4 ) )
+        self.assertEqual( amount, 1 )
+
+        amount = data.amountBeforeDate( datetime.date( year=2020, month=5, day=3 ) )
+        self.assertEqual( amount, 9 )
+
     def test_matchTransactionsRecent01(self):
         data = TransHistory()
         
@@ -217,10 +233,10 @@ class TransHistoryTest(unittest.TestCase):
         
         ## reverse order
         transList = \
-            [ ( -400, 3.72, datetime.datetime(2020, 10, 5, 15, 41, 33)),
-              (  300, 3.0,  datetime.datetime(2020, 9, 25, 13, 11, 31)),
-              (  200, 4.1,  datetime.datetime(2020, 8, 31,  9, 11, 26)),
-              (  150, 2.0,  datetime.datetime(2020, 8, 25, 13, 11, 31)) ]
+            [ ( -400, 4.0, datetime.datetime(2020, 10, 5, 15, 41, 33)),
+              (  300, 3.0, datetime.datetime(2020, 9, 25, 13, 11, 31)),
+              (  200, 5.0, datetime.datetime(2020, 8, 31,  9, 11, 26)),
+              (  150, 2.0, datetime.datetime(2020, 8, 25, 13, 11, 31)) ]
 
         data.appendList( transList )
 
@@ -232,17 +248,35 @@ class TransHistoryTest(unittest.TestCase):
 
         sellTrans = transList[0][1]
         self.assertEqual( sellTrans[0], -150 )
-        self.assertEqual( sellTrans[1],  3.72 )
+        self.assertEqual( sellTrans[1],  4.0 )
         buyTrans = transList[0][0]
         self.assertEqual( buyTrans[0], 150 )
         self.assertEqual( buyTrans[1], 2.0 )
         
         sellTrans = transList[1][1]
         self.assertEqual( sellTrans[0], -250 )
-        self.assertEqual( sellTrans[1],  3.72 )
+        self.assertEqual( sellTrans[1],  4.0 )
         buyTrans = transList[1][0]
         self.assertEqual( buyTrans[0], 250 )
         self.assertEqual( buyTrans[1], 3.0 )        
+        
+    def test_transactionsGain_best(self):
+        data = TransHistory()
+        matchMode = TransactionMatchMode.BEST
+        
+        ## reverse order
+        transList = \
+            [ ( -40, 5.0, datetime.datetime(2020, 10, 5, 15, 41, 33)),
+              (  30, 3.0, datetime.datetime(2020, 9, 25, 13, 11, 31)),
+              (  20, 4.0, datetime.datetime(2020, 8, 31,  9, 11, 26)),
+              (  20, 2.0, datetime.datetime(2020, 8, 25, 13, 11, 31)) ]
+
+        data.appendList( transList )
+
+        self.assertEqual( data.currentAmount(), 30 )
+
+        gainValue = data.transactionsGain( matchMode, False )
+        self.assertEqual( gainValue, 100.0 )                     ## 20*3 + 20*2
         
 
 class WalletDataTest(unittest.TestCase):

@@ -514,6 +514,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Gain:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="gainLabel">
+        <property name="text">
+         <string>None</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Overall profit:</string>
