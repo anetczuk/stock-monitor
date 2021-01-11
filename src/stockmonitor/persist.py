@@ -89,6 +89,10 @@ def load_object_simple( inputFile, defaultValue=None ):
     except FileNotFoundError:
         _LOGGER.exception( "failed to load: %s", inputFile )
         return defaultValue
+    except ModuleNotFoundError:
+        ## class moved to other module
+        _LOGGER.exception( "failed to load: %s", inputFile )
+        return defaultValue
 
 
 def store_object_simple( inputObject, outputFile ):
