@@ -37,6 +37,7 @@ from stockmonitor.analysis.stockanalysis import dates_to_string
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
+from stockmonitor.dataaccess.datatype import CurrentDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -52,6 +53,10 @@ class GpwCurrentIntradayProvider():
 
     def setDate(self, date):
         self.accessDate = date
+
+    def getReferenceValue(self, name ):
+        ## intraday provider already current stock values
+        return None
 
     ## returns list
     def map(self, isinItems, pool):
@@ -79,11 +84,25 @@ class GpwCurrentIntradayProvider():
 class MetaStockIntradayProvider():
 
     def __init__(self):
-        self.accessDate = None
-        self.intradayData = MetaStockIntradayData()
+        self.accessDate      = None
+        self.intradayData    = MetaStockIntradayData()
+        self.refDataProvider = None
 
     def setDate(self, date):
         self.accessDate = date
+
+    def getReferenceValue(self, name ):
+        if self.refDataProvider is None:
+            return None
+        ticker    = self.refDataProvider.getTickerFieldByName( name )
+        if ticker is None:
+            return None
+        dataRow    = self.refDataProvider.getRowByTicker( ticker )
+        colIndex   = self.refDataProvider.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        stockValue = dataRow.iloc[ colIndex ]
+#         print("wwwwwwwwwwwwww:\n", dataRow)
+#         print("xxxxxxxxxxxxxx:", name, ticker, stockValue)
+        return stockValue
 
     ## returns list
     def map(self, isinItems, pool):
@@ -164,14 +183,18 @@ class ActivityAnalysis:
         for dataTuple in dataPairList:
             _LOGGER.debug( "calculating results for %s", dataTuple[2] )
             dataPair = ( dataTuple[0], dataTuple[1] )
-            self.calculateActivity( dataPair, thresholdPercent, dataDicts )
+            self.calculateActivityForDay( dataPair, thresholdPercent, dataDicts )
 
         namesSet = dataDicts.keys()
         for name in namesSet:
             dataSubdict = dataDicts[ name ]
             minVal      = dataSubdict["min price"]
             maxVal      = dataSubdict["max price"]
-            currVal     = dataSubdict["curr price"]
+            currVal     = dataSubdict["ref price"]
+            refVal      = self.dataProvider.getReferenceValue( name )
+            if refVal is not None:
+                dataSubdict["ref price"] = refVal
+                currVal = refVal
             if currVal == 0:
                 continue
 
@@ -205,11 +228,16 @@ class ActivityAnalysis:
         if file is None:
             file = tmp_dir + "out/output_activity.csv"
 
+        refValueDate = toDay
+        if self.dataProvider.refDataProvider is not None:
+            refValueDate = datetime.datetime.today().date()
+
         headerList = list()
-        headerList.append( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
-        headerList.append( ["potential:", "(max - curr) / max"] )
-        headerList.append( ["relative:",  "(max - curr) / (max - min)"] )
-        headerList.append( ["pot raise[%]:",  "(max / curr - 1.0) * 100%"] )
+        headerList.append( ["analysis period:", dates_to_string( [fromDay, toDay] ) ] )
+        headerList.append( ["reference value date:", str( refValueDate ) ] )
+        headerList.append( ["potential:", "(max - ref) / max"] )
+        headerList.append( ["relative:",  "(max - ref) / (max - min)"] )
+        headerList.append( ["pot raise[%]:",  "(max / ref - 1.0) * 100%"] )
         headerList.append( ["price activity:", ("count( local_max - local_min > threshold )") ] )
         headerList.append( ["price change deviation:", ("price_change.stddev * len( price_change )") ] )
         headerList.append( [] )
@@ -222,7 +250,7 @@ class ActivityAnalysis:
 
         return retDataFrame
 
-    def calculateActivity(self, dataPair, thresholdPercent, dataDicts):
+    def calculateActivityForDay(self, dataPair, thresholdPercent, dataDicts):
         dataframeList, subDict = dataPair
         for dataFrame in dataframeList:
             if dataFrame is None:
@@ -246,7 +274,7 @@ class ActivityAnalysis:
             maxValue = precalcSubdict["max price"]
             dataSubdict.maxValue( "max price", maxValue )                                  ## max value
 
-            dataSubdict["curr price"] = precalcSubdict["curr price"]
+            dataSubdict["ref price"] = precalcSubdict["ref price"]
 
             calcRet = precalcSubdict["trading [kPLN]"]
             dataSubdict.add( "trading [kPLN]", calcRet )                                   ## trading
@@ -308,7 +336,7 @@ class ActivityAnalysis:
             if math.isnan( maxValue ) is False:
                 dataSubdict["max price"] = maxValue                              ## max value
 
-            dataSubdict["curr price"] = priceColumn.iloc[ priceSize - 1 ]
+            dataSubdict["ref price"] = priceColumn.iloc[ priceSize - 1 ]         ## get last value
 
             volumenColumn = dataFrame["volumen"]
             tradingColumn = priceColumn * volumenColumn / 1000
