@@ -300,9 +300,10 @@ class DataObject( QObject ):
 
         transMode = self.userContainer.transactionsMatchMode
 
-        walletValue   = 0.0
-        walletProfit  = 0.0
-        totalGain     = 0.0
+        walletValue    = 0.0
+        refWalletValue = 0.0
+        walletProfit   = 0.0
+        totalGain      = 0.0
         for ticker, transactions in self.wallet.stockList.items():
             amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
 
@@ -327,13 +328,23 @@ class DataObject( QObject ):
 
             walletValue   += stockValue
             walletProfit  += stockProfit
+            
+            refUnitValue  = GpwCurrentStockData.unitReferencePrice( tickerRow )
+            referenceValue = refUnitValue * amount
+            refWalletValue += referenceValue
 
-        walletValue   = round( walletValue, 2 )
-        walletProfit  = round( walletProfit, 2 )
-        totalGain     = round( totalGain, 2 )
-        overallProfit = walletProfit + totalGain
-        overallProfit = round( overallProfit, 2 )
-        return ( walletValue, walletProfit, totalGain, overallProfit )
+        walletValue    = round( walletValue, 2 )
+        walletProfit   = round( walletProfit, 2 )
+        refWalletValue = round( refWalletValue, 2 )
+        if refWalletValue != 0.0:
+            referenceFactor = walletValue / refWalletValue - 1
+            changeToRef = "%s%%" % round( referenceFactor * 100, 2 )
+        else:
+            changeToRef = "--"
+        totalGain      = round( totalGain, 2 )
+        overallProfit  = walletProfit + totalGain
+        overallProfit  = round( overallProfit, 2 )
+        return ( walletValue, walletProfit, changeToRef, totalGain, overallProfit )
 
     # pylint: disable=R0914
     def getWalletBuyTransactions(self):

@@ -254,11 +254,15 @@ class GpwCurrentStockData( WorksheetData ):
 #            return float( tkoValueRaw )
 
         ## reference value
+        return GpwCurrentStockData.unitReferencePrice( dataRow )
+
+    @staticmethod
+    def unitReferencePrice( dataRow ):
+        ## reference value
         refValueIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.REFERENCE )
         refValueRaw = dataRow.iloc[refValueIndex]
         if refValueRaw != "-":
             return float( refValueRaw )
-
         return 0.0
 
 

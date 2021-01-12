@@ -69,6 +69,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.ui.walletValueLabel.setStyleSheet("font-weight: bold")
         self.ui.walletProfitLabel.setStyleSheet("font-weight: bold")
+        self.ui.changeToRefLabel.setStyleSheet("font-weight: bold")
         self.ui.gainLabel.setStyleSheet("font-weight: bold")
         self.ui.overallProfitLabel.setStyleSheet("font-weight: bold")
 
@@ -274,10 +275,12 @@ class MainWindow( QtBaseClass ):           # type: ignore
         profit = self.data.getWalletState()
         walletValue   = profit[0]
         walletProfit  = profit[1]
-        gain          = profit[2]
-        overallProfit = profit[3]
+        changeToRef   = profit[2]
+        gain          = profit[3]
+        overallProfit = profit[4]
         self.ui.walletValueLabel.setText( str(walletValue) )
         self.ui.walletProfitLabel.setText( str(walletProfit) )
+        self.ui.changeToRefLabel.setText( str(changeToRef) )
         self.ui.gainLabel.setText( str(gain) )
         self.ui.overallProfitLabel.setText( str(overallProfit) )
 
