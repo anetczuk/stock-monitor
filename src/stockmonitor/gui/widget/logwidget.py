@@ -26,6 +26,7 @@ import logging
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QApplication
 
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
@@ -97,5 +98,10 @@ def create_window( parent=None ):
     logWindow = AppWindow( parent )
     widget = LogWidget( logWindow )
     logWindow.addWidget( widget )
+    logWindow.move( 0, 0 )
+    
+    deskRec = QApplication.desktop().screenGeometry()
+    deskWidth = deskRec.width()
+    logWindow.resize( deskWidth, 600 )
     logWindow.show()
     return logWindow
