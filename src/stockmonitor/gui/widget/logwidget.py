@@ -73,7 +73,7 @@ class LogWidget( QtBaseClass ):           # type: ignore
         verticalBar = self.ui.textEdit.verticalScrollBar()
         vertValue = verticalBar.value()
         atBottom = (vertValue == verticalBar.maximum())
-        
+
         with open(self.logFile, "r") as myfile:
             fileText = myfile.read()
             self.ui.textEdit.setText( str(fileText) )
@@ -99,7 +99,7 @@ def create_window( parent=None ):
     widget = LogWidget( logWindow )
     logWindow.addWidget( widget )
     logWindow.move( 0, 0 )
-    
+
     deskRec = QApplication.desktop().screenGeometry()
     deskWidth = deskRec.width()
     logWindow.resize( deskWidth, 600 )
