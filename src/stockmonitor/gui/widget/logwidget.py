@@ -72,8 +72,8 @@ class LogWidget( QtBaseClass ):           # type: ignore
     def updateLogView(self):
         verticalBar = self.ui.textEdit.verticalScrollBar()
         vertValue = verticalBar.value()
-        atBottom = vertValue == verticalBar.maximum()
-
+        atBottom = (vertValue == verticalBar.maximum())
+        
         with open(self.logFile, "r") as myfile:
             fileText = myfile.read()
             self.ui.textEdit.setText( str(fileText) )
