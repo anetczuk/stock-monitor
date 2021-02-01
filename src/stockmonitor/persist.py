@@ -81,6 +81,15 @@ def store_object( inputObject, outputFile ):
     return True
 
 
+def store_backup( inputObject, outputFile ):
+    if store_object( inputObject, outputFile ) is False:
+        return False
+    ## backup data
+    storedZipFile = outputFile + ".zip"
+    backup_files( [outputFile], storedZipFile )
+    return True
+
+
 def load_object_simple( inputFile, defaultValue=None ):
     try:
         _LOGGER.info( "loading data from: %s", inputFile )
@@ -198,6 +207,12 @@ class Versionable( metaclass=abc.ABCMeta ):
         else:
             self._convertstate_( dict_, version_present_in_pickle )
 
-    @abc.abstractmethod
     def _convertstate_(self, dict_, dictVersion_ ):
-        raise NotImplementedError('You need to define this method in derived class!')
+        # pylint: disable=E1101
+        _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
+        # pylint: disable=W0201
+        self.__dict__ = dict_
+
+#     @abc.abstractmethod
+#     def _convertstate_(self, dict_, dictVersion_ ):
+#         raise NotImplementedError('You need to define this method in derived class!')
