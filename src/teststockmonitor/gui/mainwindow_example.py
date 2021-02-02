@@ -42,6 +42,7 @@ from PyQt5.QtWidgets import QApplication
 import stockmonitor.logger as logger
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.mainwindow import MainWindow
+from stockmonitor.gui.datatypes import MarkerEntry
 
 
 ## ============================= main section ===================================
@@ -83,8 +84,21 @@ if args.loadUserData:
 else:
     window.data.addFav("abc", ["ALR"])
     window.data.addFav("abc", ["CDR"])
+
     window.data.wallet.add("CDR", 10, 300)
     window.data.wallet.add("XXX", 10, 300)
+    window.data.wallet.add("AAA1", 10, 300)
+    window.data.wallet.add("AAA2", 10, 300)
+    window.data.wallet.add("AAA3", 10, 300)
+    window.data.wallet.add("AAA4", 10, 300)
+
+    window.data.markers.add( "ABC", 11, 22, MarkerEntry.OperationType.BUY )
+    window.data.markers.add( "XYZ", 33, 44, MarkerEntry.OperationType.BUY )
+    window.data.markers.add( "AAA1", 20, 100, MarkerEntry.OperationType.BUY )
+    window.data.markers.add( "AAA2",  5, 100, MarkerEntry.OperationType.BUY )
+    window.data.markers.add( "AAA3", 20, 100, MarkerEntry.OperationType.SELL, "red" )
+    window.data.markers.add( "AAA4",  5, 100, MarkerEntry.OperationType.SELL, "yellow" )
+
 window.loadSettings()
 window.refreshView()
 

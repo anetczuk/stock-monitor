@@ -706,6 +706,82 @@ class WalletData( persist.Versionable ):
         return ret
 
 
+## ================================================================
+
+
+class MarkerEntry():
+
+    @unique
+    class OperationType(Enum):
+        BUY  = ()
+        SELL = ()
+
+        def __new__(cls):
+            value = len(cls.__members__)  # note no + 1
+            obj = object.__new__(cls)
+            # pylint: disable=W0212
+            obj._value_ = value
+            return obj
+
+    ## ================================================
+
+    def __init__(self):
+        self.ticker = None
+        self.value = None
+        self.amount = None
+        self.operation = None
+        self.color = None
+
+    def operationName(self) -> str:
+        if self.operation is None:
+            return None
+        return self.operation.name
+
+    def printData(self) -> str:
+        return str( self.ticker ) + " " + str( self.value ) + " " + str( self.amount ) + " " + str( self.operation )
+
+
+class MarkersContainer():
+
+    def __init__(self):
+        self.markers: List[MarkerEntry] = list()
+
+    def size(self):
+        return len( self.markers )
+
+    def get(self, index ):
+        return self.markers[ index ]
+
+    def add( self, ticker, value, amount, operation: MarkerEntry.OperationType, colorName: str = None ):
+        entry = MarkerEntry()
+        entry.ticker = ticker
+        entry.value = value
+        entry.amount = amount
+        entry.operation = operation
+        entry.color = colorName
+        self.addItem( entry )
+
+    def addItem(self, entry):
+        self.markers.append( entry )
+
+    def replaceItem(self, oldEntry, newEntry):
+        _LOGGER.debug( "replacing marker %s with %s", oldEntry, newEntry )
+        for i, _ in enumerate( self.markers ):
+            currItem = self.markers[i]
+            if currItem == oldEntry:
+                self.markers[i] = newEntry
+#                 self.sort()
+                return True
+        _LOGGER.debug( "replacing failed" )
+        return False
+
+    def deleteItem(self, entry):
+        self.markers.remove( entry )
+
+
+## ================================================================
+
+
 class UserContainer():
 
     ## 0 - first version
@@ -719,6 +795,7 @@ class UserContainer():
         self.notes  = { "notes": "" }        ## default notes
         self.wallet = WalletData()
         self.transactionsMatchMode = TransactionMatchMode.BEST
+        self.markers = MarkersContainer()
 
     def store( self, outputDir ):
         changed = False

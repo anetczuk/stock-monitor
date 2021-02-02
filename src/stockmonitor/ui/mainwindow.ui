@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -456,6 +456,28 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="markersTab">
+       <attribute name="title">
+        <string>Markers</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="MarkersWidget" name="markersWidget" native="true"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="notesTab">
        <attribute name="title">
         <string>Notes</string>
@@ -797,6 +819,12 @@
    <class>VolumenWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.tool.volumenwidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MarkersWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.markerswidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

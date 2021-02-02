@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>markersWidget</class>
+ <widget class="QWidget" name="markersWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>542</width>
+    <height>425</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Markers</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="MarkersTable" name="markersTable"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MarkersTable</class>
+   <extends>QTableView</extends>
+   <header>stockmonitor.gui.widget.markerswidget</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

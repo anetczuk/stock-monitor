@@ -51,8 +51,11 @@ from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
 from stockmonitor.gui.datatypes import UserContainer, StockData,\
     GpwStockIntradayMap, GpwIndexIntradayMap, FavData, WalletData,\
-    broker_commission, TransHistory, TransactionMatchMode
+    broker_commission, TransHistory, TransactionMatchMode, MarkersContainer
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
+from stockmonitor.gui.command.addmarkercommand import AddMarkerCommand
+from stockmonitor.gui.command.editmarketcommand import EditMarketCommand
+from stockmonitor.gui.command.deletemarkercommand import DeleteMarkerCommand
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -86,6 +89,8 @@ class DataObject( QObject ):
     favsRenamed         = pyqtSignal( str, str )   ## from, to
     favsChanged         = pyqtSignal()
 
+    markersChanged      = pyqtSignal()
+
     stockDataChanged    = pyqtSignal()
     stockHeadersChanged = pyqtSignal()
     walletDataChanged   = pyqtSignal()
@@ -94,7 +99,7 @@ class DataObject( QObject ):
         super().__init__( parent )
         self.parentWidget = parent
 
-        self.userContainer      = UserContainer()                   ## user data
+        self.userContainer        = UserContainer()                   ## user data
 
         self.gpwCurrentSource     = StockData( GpwCurrentStockData() )
         self.gpwStockIntradayData = GpwStockIntradayMap()
@@ -132,12 +137,25 @@ class DataObject( QObject ):
         self.updateAllFavsGroup()
 
     @property
+    def wallet(self) -> WalletData:
+        return self.userContainer.wallet
+
+    @property
     def favs(self) -> FavData:
         return self.userContainer.favs
 
     @favs.setter
     def favs(self, newData: FavData):
         self.userContainer.favs = newData
+        return self.userContainer.wallet
+
+    @property
+    def markers(self) -> MarkersContainer:
+        return self.userContainer.markers
+
+    @markers.setter
+    def markers(self, newData: FavData):
+        self.userContainer.markers = newData
 
     @property
     def notes(self) -> Dict[str, str]:
@@ -146,10 +164,6 @@ class DataObject( QObject ):
     @notes.setter
     def notes(self, newData: Dict[str, str]):
         self.userContainer.notes = newData
-
-    @property
-    def wallet(self) -> WalletData:
-        return self.userContainer.wallet
 
     ## ======================================================================
 
@@ -194,6 +208,17 @@ class DataObject( QObject ):
     def getFavStock(self, favGroup):
         stockList = self.favs.getFavs( favGroup )
         return self.gpwCurrentData.getStockData( stockList )
+
+    ## ======================================================================
+
+    def addMarkerEntry(self, entry):
+        self.undoStack.push( AddMarkerCommand( self, entry ) )
+
+    def replaceMarkerEntry(self, oldEntry, newEntry):
+        self.undoStack.push( EditMarketCommand( self, oldEntry, newEntry ) )
+
+    def removeMarkerEntry(self, entry):
+        self.undoStack.push( DeleteMarkerCommand( self, entry ) )
 
     ## ======================================================================
 
@@ -328,7 +353,7 @@ class DataObject( QObject ):
 
             walletValue   += stockValue
             walletProfit  += stockProfit
-            
+
             refUnitValue  = GpwCurrentStockData.unitReferencePrice( tickerRow )
             referenceValue = refUnitValue * amount
             refWalletValue += referenceValue
