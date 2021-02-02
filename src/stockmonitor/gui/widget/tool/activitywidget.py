@@ -98,7 +98,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         thresh = self.ui.threshSB.value()
 
         dataProvider = GpwCurrentIntradayProvider()
-        
+
         analysis = ActivityAnalysis( dataProvider )
         today = datetime.datetime.now().date()
         self.recentOutput = tmp_dir + "out/output_activity.csv"
@@ -119,7 +119,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         thresh   = self.ui.threshSB.value()
 
         dataProvider = MetaStockIntradayProvider()
-        
+
         if self.ui.currentRefRB.isChecked():
             dataProvider.refDataProvider = self.ui.dataTable.dataObject.gpwCurrentData
         elif self.ui.rangeRefRB.isChecked():
@@ -129,7 +129,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
             self.ui.calculatePB.setEnabled( True )
             self.ui.openPB.setEnabled( True )
             return
-        
+
         analysis = ActivityAnalysis( dataProvider )
         self.recentOutput = tmp_dir + "out/output_activity.csv"
         resultData = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )

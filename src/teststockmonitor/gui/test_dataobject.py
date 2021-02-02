@@ -121,9 +121,10 @@ class DataObjectTest(unittest.TestCase):
         dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
         dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
 
-        walletVal, walletProfit, gain, overallProfit = dataobject.getWalletState( False )
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState( False )
         self.assertEqual( walletVal, 360.0 )
         self.assertEqual( walletProfit, 160.0 )
+        self.assertEqual( change, '0.0%' )
         self.assertEqual( gain, 40.0 )
         self.assertEqual( overallProfit, 200.0 )
 
@@ -139,9 +140,10 @@ class DataObjectTest(unittest.TestCase):
         dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
         dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
 
-        walletVal, walletProfit, gain, overallProfit = dataobject.getWalletState( False )
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState( False )
         self.assertEqual( walletVal, 360.0 )
         self.assertEqual( walletProfit, 100.0 )
+        self.assertEqual( change, '0.0%' )
         self.assertEqual( gain, 100.0 )
         self.assertEqual( overallProfit, 200.0 )
 
@@ -157,9 +159,10 @@ class DataObjectTest(unittest.TestCase):
         dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
         dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
 
-        walletVal, walletProfit, gain, overallProfit = dataobject.getWalletState( False )
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState( False )
         self.assertEqual( walletVal, 360.0 )
         self.assertEqual( walletProfit, 160.0 )
+        self.assertEqual( change, '0.0%' )
         self.assertEqual( gain, 40.0 )
         self.assertEqual( overallProfit, 200.0 )
 

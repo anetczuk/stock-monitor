@@ -50,11 +50,13 @@ class GpwCurrentIntradayProvider():
 
     def __init__(self):
         self.accessDate = None
+        self.refDataProvider = None
 
     def setDate(self, date):
         self.accessDate = date
 
-    def getReferenceValue(self, name ):
+#     def getReferenceValue(self, name ):
+    def getReferenceValue(self, _ ):
         ## intraday provider already current stock values
         return None
 
