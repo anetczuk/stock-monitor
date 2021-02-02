@@ -65,9 +65,15 @@ class LogWidget( QtBaseClass ):           # type: ignore
         dirPath = os.path.dirname( self.logFile )
         self.observer = Observer()
         self.observer.schedule( event_handler, path=dirPath, recursive=False )
-        self.observer.start()
 
+        QtCore.QTimer.singleShot( 1, self._initWidget )
+
+    def _initWidget(self):
         self.updateLogView()
+        verticalBar = self.ui.textEdit.verticalScrollBar()
+        verticalBar.setValue( verticalBar.maximum() )
+
+        self.observer.start()
 
     def updateLogView(self):
         verticalBar = self.ui.textEdit.verticalScrollBar()
@@ -87,10 +93,14 @@ class LogWidget( QtBaseClass ):           # type: ignore
     def closeEvent(self, event):
         self.observer.stop()
         self.observer.join()
+        self.observer = None
         super().closeEvent( event )
         self.close()
 
     def _logFileChanged(self, _):
+        if self.observer is None:
+            ## window closed -- ignore
+            return
         self.fileChanged.emit()
 
 
