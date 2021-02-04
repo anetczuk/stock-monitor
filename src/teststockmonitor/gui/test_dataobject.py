@@ -27,8 +27,8 @@ import datetime
 import codecs
 from pandas.core.frame import DataFrame
 
-from stockmonitor.gui.datatypes import WalletData, TransHistory
 from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.wallettypes import WalletData, TransHistory
 from stockmonitor.dataaccess.transactionsloader import parse_mb_transactions_data
 from teststockmonitor import data
 from teststockmonitor.data import get_data_path

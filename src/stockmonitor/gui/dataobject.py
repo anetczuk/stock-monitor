@@ -49,14 +49,17 @@ from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
-from stockmonitor.gui.datatypes import UserContainer, StockData,\
-    GpwStockIntradayMap, GpwIndexIntradayMap, FavData, WalletData,\
-    broker_commission, TransHistory, TransactionMatchMode, MarkersContainer,\
+from stockmonitor.gui.datatypes import UserContainer,\
+    FavData, WalletData,\
+    TransactionMatchMode, MarkersContainer,\
     MarkerEntry
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 from stockmonitor.gui.command.addmarkercommand import AddMarkerCommand
 from stockmonitor.gui.command.editmarketcommand import EditMarketCommand
 from stockmonitor.gui.command.deletemarkercommand import DeleteMarkerCommand
+from stockmonitor.gui.stocktypes import StockData, GpwStockIntradayMap,\
+    GpwIndexIntradayMap
+from stockmonitor.gui.wallettypes import broker_commission, TransHistory
 
 
 _LOGGER = logging.getLogger(__name__)
