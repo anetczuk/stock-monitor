@@ -137,6 +137,8 @@ class GpwCurrentStockData( WorksheetData ):
 
     def getRecentValue(self, ticker):
         row = self.getRowByTicker( ticker )
+        if len(row) < 1:
+            return None
         return row.iloc[11]
 
     def getRecentChange(self, ticker):

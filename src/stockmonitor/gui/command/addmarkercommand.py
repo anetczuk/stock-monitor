@@ -33,22 +33,22 @@ _LOGGER = logging.getLogger(__name__)
 
 class AddMarkerCommand( QUndoCommand ):
 
-    def __init__(self, dataObject, newItem, parentCommand=None):
+    def __init__(self, dataObject, newItems, parentCommand=None):
         super().__init__(parentCommand)
 
         self.dataObject = dataObject
         self.markers: MarkersContainer = self.dataObject.markers
-        self.newItem = newItem
+        self.newItems = newItems
 
-        self.setText( "Add Marker: " + str(newItem) )
+        self.setText( "Add Marker: " + str(newItems) )
 
     def redo(self):
-        _LOGGER.info( "adding marker: %s", self.newItem )
+        _LOGGER.info( "adding marker: %s", self.newItems )
         super().redo()
-        self.markers.addItem( self.newItem )
+        self.markers.addItemList( self.newItems )
         self.dataObject.markersChanged.emit()
 
     def undo(self):
-        self.markers.deleteItem( self.newItem )
+        self.markers.deleteItemsList( self.newItems )
         super().undo()
         self.dataObject.markersChanged.emit()

@@ -124,6 +124,10 @@
  </widget>
  <tabstops>
   <tabstop>tickerLE</tabstop>
+  <tabstop>operationCB</tabstop>
+  <tabstop>valueSB</tabstop>
+  <tabstop>amountSP</tabstop>
+  <tabstop>pickColorPB</tabstop>
  </tabstops>
  <resources/>
  <connections>

@@ -51,7 +51,8 @@ from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
 from stockmonitor.gui.datatypes import UserContainer, StockData,\
     GpwStockIntradayMap, GpwIndexIntradayMap, FavData, WalletData,\
-    broker_commission, TransHistory, TransactionMatchMode, MarkersContainer
+    broker_commission, TransHistory, TransactionMatchMode, MarkersContainer,\
+    MarkerEntry
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 from stockmonitor.gui.command.addmarkercommand import AddMarkerCommand
 from stockmonitor.gui.command.editmarketcommand import EditMarketCommand
@@ -211,8 +212,19 @@ class DataObject( QObject ):
 
     ## ======================================================================
 
+    def addMarkersList(self, tickersList, operation):
+        markersList = list()
+        for ticker in tickersList:
+            newMarker = MarkerEntry()
+            newMarker.ticker = ticker
+            newMarker.setOperation( operation )
+            markersList.append( newMarker )
+        self.undoStack.push( AddMarkerCommand( self, markersList ) )
+
     def addMarkerEntry(self, entry):
-        self.undoStack.push( AddMarkerCommand( self, entry ) )
+        markersList = list()
+        markersList.append( entry )
+        self.undoStack.push( AddMarkerCommand( self, markersList ) )
 
     def replaceMarkerEntry(self, oldEntry, newEntry):
         self.undoStack.push( EditMarketCommand( self, oldEntry, newEntry ) )

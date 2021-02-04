@@ -44,6 +44,8 @@ from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.mainwindow import MainWindow
 from stockmonitor.gui.datatypes import MarkerEntry
 
+from teststockmonitor.data import get_data_path
+
 
 ## ============================= main section ===================================
 
@@ -82,15 +84,24 @@ window.setWindowTitle( window.windowTitle() )
 if args.loadUserData:
     window.loadData()
 else:
+    currentStock = window.data.gpwCurrentData
+
+    def data_path():
+        return get_data_path( "test_stock_data.html" )
+
+    currentStock.getDataPath = data_path           # type: ignore
+    currentStock.parseDataFromDefaultFile()
+
     window.data.addFav("abc", ["ALR"])
     window.data.addFav("abc", ["CDR"])
 
-    window.data.wallet.add("CDR", 10, 300)
-    window.data.wallet.add("XXX", 10, 300)
-    window.data.wallet.add("AAA1", 10, 300)
-    window.data.wallet.add("AAA2", 10, 300)
-    window.data.wallet.add("AAA3", 10, 300)
-    window.data.wallet.add("AAA4", 10, 300)
+    window.data.wallet.add( "CDR", 10, 300 )
+    window.data.wallet.add( "XXX", 10, 300 )
+    window.data.wallet.add( "ABC", 10, 300 )
+#     window.data.wallet.add( "AAA1", 300, 10 )
+#     window.data.wallet.add( "AAA2", 300, 10 )
+#     window.data.wallet.add( "AAA3", 300, 10 )
+#     window.data.wallet.add( "AAA4", 300, 10 )
 
     window.data.markers.add( "ABC", 11, 22, MarkerEntry.OperationType.BUY )
     window.data.markers.add( "XYZ", 33, 44, MarkerEntry.OperationType.BUY )

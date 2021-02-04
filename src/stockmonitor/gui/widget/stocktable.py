@@ -25,7 +25,7 @@ import logging
 
 from typing import List
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QMenu, QAction, QInputDialog
 from PyQt5.QtWidgets import QLineEdit
@@ -37,6 +37,7 @@ from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColor
 
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.gui.widget import stockchartwidget, indexchartwidget
+from stockmonitor.gui.datatypes import MarkerEntry
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -84,7 +85,16 @@ class StockTable( DataFrameTable ):
         tickersList = self._getSelectedTickers()
         if tickersList:
             self._addFavActions( contextMenu )
-            contextMenu.addSeparator()
+
+        markersSubMenu = contextMenu.addMenu("Add to markers")
+        markersBuyAction = markersSubMenu.addAction( "Buy" )
+        markersBuyAction.setData( MarkerEntry.OperationType.BUY )
+        markersBuyAction.triggered.connect( self._addToMarkersAction )
+        markersBuyAction = markersSubMenu.addAction( "Sell" )
+        markersBuyAction.setData( MarkerEntry.OperationType.SELL )
+        markersBuyAction.triggered.connect( self._addToMarkersAction )
+        contextMenu.addSeparator()
+
         filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
 
@@ -167,6 +177,12 @@ class StockTable( DataFrameTable ):
             return
         tickersList = self._getSelectedTickers()
         self.dataObject.addFav( favGrp, tickersList )
+
+    def _addToMarkersAction(self):
+        parentAction = self.sender()
+        markerOperation = parentAction.data()
+        tickersList = self._getSelectedTickers()
+        self.dataObject.addMarkersList( tickersList, markerOperation )
 
     def _getGpwInfoLinks(self):
         tickersList = self._getSelectedTickers()
@@ -479,7 +495,22 @@ def wallet_background_color( dataObject, ticker ):
     return None
 
 
+def marker_background_color( dataObject, ticker ):
+    currentStock = dataObject.gpwCurrentData
+    recentValue = currentStock.getRecentValue( ticker )
+    if recentValue is None:
+        return None
+    markerColor = dataObject.markers.getBestMatchingColor( ticker, recentValue )
+    if markerColor is not None:
+        return QtGui.QColor( markerColor )
+    return None
+
+
 def stock_background_color( dataObject, ticker ):
+    markerColor = marker_background_color( dataObject, ticker )
+    if markerColor is not None:
+        return markerColor
+
     walletColor = wallet_background_color( dataObject, ticker )
     if walletColor is not None:
         return walletColor

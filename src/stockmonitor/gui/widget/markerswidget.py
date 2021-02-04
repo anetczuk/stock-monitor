@@ -114,8 +114,8 @@ class MarkersTableModel( QAbstractTableModel ):
             return rawData
 
         if role == Qt.TextAlignmentRole:
-            if index.column() == 0:
-                return None
+#             if index.column() == 0:
+#                 return None
             return Qt.AlignHCenter | Qt.AlignVCenter
 
         return None

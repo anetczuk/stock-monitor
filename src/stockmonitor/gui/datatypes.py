@@ -737,20 +737,74 @@ class MarkerEntry():
             return None
         return self.operation.name
 
+    def setOperation(self, operation ):
+        self.operation = operation
+        if self.color is not None:
+            return
+        ## set default color
+        if operation is MarkerEntry.OperationType.BUY:
+            self.color = "#FF9191"
+        elif operation is MarkerEntry.OperationType.SELL:
+            self.color = "#6FD7FF"
+
     def printData(self) -> str:
         return str( self.ticker ) + " " + str( self.value ) + " " + str( self.amount ) + " " + str( self.operation )
 
 
-class MarkersContainer():
+class MarkersContainer( persist.Versionable ):
+
+    ## 0 - first version
+    _class_version = 0
 
     def __init__(self):
         self.markers: List[MarkerEntry] = list()
+
+    def _convertstate_(self, dict_, dictVersion_ ):
+        _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
+
+        if dictVersion_ is None:
+            dictVersion_ = 0
+
+        # pylint: disable=W0201
+        self.__dict__ = dict_
 
     def size(self):
         return len( self.markers )
 
     def get(self, index ):
         return self.markers[ index ]
+
+    def getBestMatchingColor(self, ticker, stockPrice):
+        ## return best color
+        if ticker is None:
+            return None
+        bestBuy  = None
+        bestSell = None
+        for item in self.markers:
+            if item.ticker != ticker:
+                continue
+            if item.value is None:
+                ## invalid value
+                continue
+            if item.operation is MarkerEntry.OperationType.BUY:
+                ## check for cheap stock
+                if item.value < stockPrice:
+                    ## marker value is cheaper than stock value -- skip
+                    continue
+                if bestBuy is None or item.value < bestBuy.value:
+                    bestBuy = item
+            elif item.operation is MarkerEntry.OperationType.SELL:
+                ## check of expensive stock
+                if item.value > stockPrice:
+                    ## marker value is more expensive than stock value -- skip
+                    continue
+                if bestSell is None or item.value > bestSell.value:
+                    bestSell = item
+        if bestSell is not None:
+            return bestSell.color
+        if bestBuy is not None:
+            return bestBuy.color
+        return None
 
     def add( self, ticker, value, amount, operation: MarkerEntry.OperationType, colorName: str = None ):
         entry = MarkerEntry()
@@ -763,6 +817,9 @@ class MarkersContainer():
 
     def addItem(self, entry):
         self.markers.append( entry )
+
+    def addItemList(self, entries):
+        self.markers += entries
 
     def replaceItem(self, oldEntry, newEntry):
         _LOGGER.debug( "replacing marker %s with %s", oldEntry, newEntry )
@@ -778,6 +835,9 @@ class MarkersContainer():
     def deleteItem(self, entry):
         self.markers.remove( entry )
 
+    def deleteItemsList(self, entries):
+        self.markers = [x for x in self.markers if x not in entries]
+
 
 ## ================================================================
 
@@ -787,8 +847,9 @@ class UserContainer():
     ## 0 - first version
     ## 1 - wallet added
     ## 2 - extract History class from WalletData
-    ## 2 - transactions match mode
-    _class_version = 3
+    ## 3 - transactions match mode
+    ## 4 - markers
+    _class_version = 4
 
     def __init__(self):
         self.favs   = FavData()
@@ -818,6 +879,10 @@ class UserContainer():
 
         outputFile = outputDir + "/transactions_match.obj"
         if persist.store_object( self.transactionsMatchMode, outputFile ) is True:
+            changed = True
+
+        outputFile = outputDir + "/markers.obj"
+        if persist.store_object( self.markers, outputFile ) is True:
             changed = True
 
         ## backup data
@@ -853,6 +918,11 @@ class UserContainer():
         self.transactionsMatchMode = persist.load_object( inputFile, self._class_version )
         if self.transactionsMatchMode is None:
             self.transactionsMatchMode = TransactionMatchMode.BEST
+
+        inputFile = inputDir + "/markers.obj"
+        self.markers = persist.load_object( inputFile, self._class_version )
+        if self.markers is None:
+            self.markers = MarkersContainer()
 
 
 ## =========================================================================

@@ -96,11 +96,10 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
 
     def _done(self, _):
         self.entry.ticker = self.ui.tickerLE.text()
-        self.entry.operation = self.ui.operationCB.currentData()
+        operation = self.ui.operationCB.currentData()
+        self.entry.setOperation(operation)
         self.entry.value = self.ui.valueSB.value()
         self.entry.amount = self.ui.amountSP.value()
         selectedColor = self.colorDialog.selectedColor()
         if selectedColor.isValid():
             self.entry.color = selectedColor.name( QtGui.QColor.HexRgb )
-        else:
-            self.entry.color = None

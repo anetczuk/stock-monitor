@@ -28,7 +28,8 @@ import pickle
 
 from stockmonitor.gui.dataobject import WalletData, FavData
 from stockmonitor.gui.datatypes import TransHistory,\
-    TransactionMatchMode, BuyTransactionsMatch, SellTransactionsMatch, TransactionsMatch
+    TransactionMatchMode, BuyTransactionsMatch, SellTransactionsMatch, TransactionsMatch,\
+    MarkersContainer, MarkerEntry
 
 
 class FavDataTest(unittest.TestCase):
@@ -410,3 +411,75 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
         self.assertEqual( unit_price, 10.0 )
+
+
+class MarkersContainerTest(unittest.TestCase):
+    def setUp(self):
+        ## Called before testfunction is executed
+        pass
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_deleteItemsList(self):
+        data = MarkersContainer()
+        data.add( "XXX", 3.0, 100, MarkerEntry.OperationType.BUY, "red" )
+        data.add( "YYY", 3.0, 100, MarkerEntry.OperationType.BUY, "green" )
+
+        removeList = [ data.get( 1 ) ]
+        data.deleteItemsList( removeList )
+        self.assertEqual( data.size(), 1 )
+        self.assertEqual( data.get(0).ticker, "XXX" )
+
+    def test_getBestMatchingColor_empty(self):
+        data = MarkersContainer()
+        self.assertEqual( data.getBestMatchingColor( "XXX", 2.0 ), None )
+
+    def test_getBestMatchingColor_ticker(self):
+        data = MarkersContainer()
+        data.add( "XXX", 3.0, 100, MarkerEntry.OperationType.BUY, "red" )
+        data.add( "YYY", 3.0, 100, MarkerEntry.OperationType.BUY, "green" )
+
+        self.assertEqual( data.getBestMatchingColor( "XXX", 2.0 ), "red" )
+
+    def test_getBestMatchingColor_value_None(self):
+        data = MarkersContainer()
+        data.add( "XXX", None, 100, MarkerEntry.OperationType.BUY, "red" )
+
+        self.assertEqual( data.getBestMatchingColor( "XXX", 2.0 ), None )
+
+    def test_getBestMatchingColor_value_buy(self):
+        data = MarkersContainer()
+        data.add( "XXX", 3.0, 100, MarkerEntry.OperationType.BUY, "red" )
+        data.add( "XXX", 1.0, 100, MarkerEntry.OperationType.BUY, "green" )
+
+        self.assertEqual( data.getBestMatchingColor( "XXX", 2.0 ), "red" )
+
+    def test_getBestMatchingColor_value_sell(self):
+        data = MarkersContainer()
+        data.add( "XXX", 3.0, 100, MarkerEntry.OperationType.SELL, "red" )
+        data.add( "XXX", 1.0, 100, MarkerEntry.OperationType.SELL, "green" )
+
+        self.assertEqual( data.getBestMatchingColor( "XXX", 2.0 ), "green" )
+
+    def test_getBestMatchingColor_better_buy(self):
+        data = MarkersContainer()
+        data.add( "XXX", 3.0, 100, MarkerEntry.OperationType.BUY, "red" )
+        data.add( "XXX", 1.0, 100, MarkerEntry.OperationType.BUY, "green" )
+
+        self.assertEqual( data.getBestMatchingColor( "XXX", 0.5 ), "green" )
+
+    def test_getBestMatchingColor_better_sell(self):
+        data = MarkersContainer()
+        data.add( "XXX", 1.0, 100, MarkerEntry.OperationType.SELL, "red" )
+        data.add( "XXX", 3.0, 100, MarkerEntry.OperationType.SELL, "green" )
+
+        self.assertEqual( data.getBestMatchingColor( "XXX", 5.0 ), "green" )
+
+    def test_getBestMatchingColor_buy_sell(self):
+        data = MarkersContainer()
+        data.add( "XXX", 3.0, 100, MarkerEntry.OperationType.BUY, "red" )
+        data.add( "XXX", 1.0, 100, MarkerEntry.OperationType.SELL, "green" )
+
+        self.assertEqual( data.getBestMatchingColor( "XXX", 2.5 ), "green" )
