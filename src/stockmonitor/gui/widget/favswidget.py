@@ -30,7 +30,8 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMenu, QInputDialog
 from PyQt5.QtWidgets import QLineEdit
 
 from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
-from stockmonitor.gui.widget.stocktable import wallet_background_color, insert_new_action
+from stockmonitor.gui.widget.stocktable import wallet_background_color, insert_new_action,\
+    marker_background_color
 
 from .. import uiloader
 from .stocktable import StockTable, TableRowColorDelegate
@@ -55,8 +56,11 @@ class StockFavsColorDelegate( TableRowColorDelegate ):
     def background(self, index: QModelIndex ):
         sourceParent = index.parent()
         dataRow = index.row()
-        dataIndex = self.parent.index( dataRow, 3, sourceParent )       ## get name
+        dataIndex = self.parent.index( dataRow, 3, sourceParent )       ## get ticker
         ticker = dataIndex.data()
+        markerColor = marker_background_color( self.dataObject, ticker )
+        if markerColor is not None:
+            return markerColor
         return wallet_background_color( self.dataObject, ticker )
 
 

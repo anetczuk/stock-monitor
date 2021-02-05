@@ -25,16 +25,16 @@ import logging
 from typing import List
 
 from PyQt5 import QtCore
-# from PyQt5.QtCore import QModelIndex
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QFileDialog
 
 from stockmonitor.dataaccess.transactionsloader import load_mb_transactions
-# from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.stocktable import StockTable
-# from stockmonitor.gui.widget.stocktable import marker_background_color
+from stockmonitor.gui.widget.stocktable import marker_background_color
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
 from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window, create_walletprofit_window
-# from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
+from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 
 from .. import uiloader
 
@@ -65,26 +65,23 @@ class WalletProxyModel( QtCore.QSortFilterProxyModel ):
 ## ====================================================================
 
 
-# class WalletColorDelegate( TableRowColorDelegate ):
-#
-#     def __init__(self, dataObject: DataObject):
-#         super().__init__()
-#         self.dataObject = dataObject
-#
-# #     def foreground(self, index: QModelIndex ):
-# #         ## reimplement if needed
-# #         return None
-#
-#     def background(self, index: QModelIndex ):
+class WalletColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataObject: DataObject):
+        super().__init__()
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
 #         return None
-#         #TODO: uncomment
-# #         dataRow = index.row()
-# #         walletStock = self.dataObject.getWalletStock()
-# #         ticker = walletStock.iloc[dataRow, 1]
-# #         col = marker_background_color( self.dataObject, ticker )
-# #         if col is not None:
-# #             print("xxxxxxxxxxxxxxxxxxxxx:", ticker)
-# #         return col
+
+    def background(self, index: QModelIndex ):
+        sourceParent = index.parent()
+        dataRow = index.row()
+        dataIndex = self.parent.index( dataRow, 1, sourceParent )       ## get ticker
+        ticker = dataIndex.data()
+        col = marker_background_color( self.dataObject, ticker )
+        return col
 
 
 ## =================================================================
@@ -96,11 +93,11 @@ class WalletStockTable( StockTable ):
         super().__init__(parentWidget)
         self.setObjectName("walletstocktable")
 
-#     def connectData(self, dataObject):
-#         super().connectData( dataObject )
-#
-#         colorDecorator = WalletColorDelegate( dataObject )
-#         self.setColorDelegate( colorDecorator )
+    def connectData(self, dataObject):
+        super().connectData( dataObject )
+
+        colorDecorator = WalletColorDelegate( dataObject )
+        self.setColorDelegate( colorDecorator )
 
     def createContextMenu(self):
         contextMenu = super().createContextMenu()
