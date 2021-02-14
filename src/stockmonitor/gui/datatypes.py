@@ -175,7 +175,7 @@ class FavData( persist.Versionable ):
 ## ================================================================
 
 
-class MarkerEntry():
+class MarkerEntry( persist.Versionable ):
 
     @unique
     class OperationType(Enum):
@@ -191,12 +191,42 @@ class MarkerEntry():
 
     ## ================================================
 
+    ## 0 - first version
+    ## 1 - renamed field 'color' to '_color'
+    _class_version = 1
+
     def __init__(self):
         self.ticker = None
         self.value = None
         self.amount = None
         self.operation = None
         self.color = None
+
+    def _convertstate_(self, dict_, dictVersion_ ):
+        _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
+
+        if dictVersion_ is None:
+            dictVersion_ = 0
+            
+        if dictVersion_ < 1:
+            colorField = dict_.pop( "color" )
+            if colorField is not None:
+                colorField = colorField.upper()
+            dict_[ "_color" ] = colorField
+
+        # pylint: disable=W0201
+        self.__dict__ = dict_
+
+    @property
+    def color(self) -> str:
+        return self._color
+ 
+    @color.setter
+    def color(self, value: str):
+        if value is None:
+            self._color = None
+            return
+        self._color = value.upper()
 
     def operationName(self) -> str:
         if self.operation is None:
@@ -209,7 +239,8 @@ class MarkerEntry():
             return
         ## set default color
         if operation is MarkerEntry.OperationType.BUY:
-            self.color = "#FF9191"
+            self.color = "#6FD7FF"
+#             self.color = "#FF9191"
         elif operation is MarkerEntry.OperationType.SELL:
             self.color = "#6FD7FF"
 
