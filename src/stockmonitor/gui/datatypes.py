@@ -193,7 +193,8 @@ class MarkerEntry( persist.Versionable ):
 
     ## 0 - first version
     ## 1 - renamed field 'color' to '_color'
-    _class_version = 1
+    ## 2 - added 'notes' field
+    _class_version = 2
 
     def __init__(self):
         self.ticker = None
@@ -201,6 +202,7 @@ class MarkerEntry( persist.Versionable ):
         self.amount = None
         self.operation = None
         self._color = None
+        self.notes: str = None
 
     def _convertstate_(self, dict_, dictVersion_ ):
         _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
@@ -213,6 +215,9 @@ class MarkerEntry( persist.Versionable ):
             if colorField is not None:
                 colorField = colorField.upper()
             dict_[ "_color" ] = colorField
+
+        if dictVersion_ < 2:
+            dict_[ "notes" ] = None
 
         # pylint: disable=W0201
         self.__dict__ = dict_

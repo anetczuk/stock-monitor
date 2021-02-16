@@ -114,8 +114,8 @@ class MarkersTableModel( QAbstractTableModel ):
             return rawData
 
         if role == Qt.TextAlignmentRole:
-#             if index.column() == 0:
-#                 return None
+            if index.column() == 5:
+                return Qt.AlignLeft | Qt.AlignVCenter
             return Qt.AlignHCenter | Qt.AlignVCenter
 
         return None
@@ -150,11 +150,13 @@ class MarkersTableModel( QAbstractTableModel ):
             return entry.amount
         elif index == 4:
             return entry.color
+        elif index == 5:
+            return entry.notes
         return None
 
     @staticmethod
     def attributeLabels():
-        return ( "Ticker", "Typ operacji", "Kurs operacji", "Liczba", "Kolor" )
+        return ( "Ticker", "Typ operacji", "Kurs operacji", "Liczba", "Kolor", "Uwagi" )
 
 
 ## ===========================================================

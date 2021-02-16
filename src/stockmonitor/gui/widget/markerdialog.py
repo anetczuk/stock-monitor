@@ -77,6 +77,11 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
             self.ui.amountSP.setValue( self.entry.amount )
 
         self._displayColor( self.entry.color )
+        
+        if self.entry.notes is not None:
+            self.ui.notesLE.setText( self.entry.notes )
+        else:
+            self.ui.notesLE.setText( self.entry.notes )
 
 #         self.adjustSize()
 
@@ -121,7 +126,14 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
             self.entry.color = None
         else:
             self.entry.color = colorText
-
+            
+        notesText = self.ui.notesLE.text()
+        if notesText:
+            self.entry.notes = notesText
+        else:
+            ## empty string
+            self.entry.notes = None
+            
 #         selectedColor = self.colorDialog.selectedColor()
 #         if selectedColor.isValid():
 #             self.entry.color = selectedColor.name( QtGui.QColor.HexRgb )
