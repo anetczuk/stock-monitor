@@ -44,14 +44,17 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-        self.colorDialog = QtWidgets.QColorDialog( self )
-
         self.entry: MarkerEntry = None
 
         for operation in MarkerEntry.OperationType:
             self.ui.operationCB.addItem( operation.name, operation )
 
+        self.colorDialog = QtWidgets.QColorDialog( self )
+        self.colorDialog.colorSelected.connect( self._pickerColorChanged )
+
         self.ui.pickColorPB.clicked.connect( self._pickColor )
+
+        self.ui.colorLE.textChanged.connect( self._colorTextChanged )
 
         self.finished.connect( self._done )
 
@@ -72,27 +75,39 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
             self.ui.valueSB.setValue( self.entry.value )
         if self.entry.amount is not None:
             self.ui.amountSP.setValue( self.entry.amount )
-        if self.entry.color is not None:
-            currColor = QtGui.QColor( self.entry.color )
-            self.colorDialog.setCurrentColor( currColor )
-            self._updateSampleColor( self.entry.color )
+
+        self._displayColor( self.entry.color )
 
 #         self.adjustSize()
 
     def _pickColor(self):
         self.colorDialog.exec_()                                ## modal mode
-        selectedColor = self.colorDialog.selectedColor()
-        if selectedColor.isValid():
-            colorName = selectedColor.name( QtGui.QColor.HexRgb )
-            self._updateSampleColor( colorName )
-        else:
-            self._updateSampleColor( self.entry.color )
+#         selectedColor = self.colorDialog.selectedColor()
+#         if selectedColor.isValid():
+#             colorName = selectedColor.name( QtGui.QColor.HexRgb )
+#             self._displayColor( colorName )
+#         else:
+#             self._displayColor( self.entry.color )
 
-    def _updateSampleColor( self, colorName ):
-        if colorName is not None:
-            self.ui.colorSample.setStyleSheet( "background-color: %s;" % colorName )
-        else:
+    def _pickerColorChanged(self, newColor: QtGui.QColor ):
+        colorText = newColor.name( QtGui.QColor.HexRgb )
+        self._displayColor( colorText )
+
+    def _colorTextChanged( self, newText: str ):
+        self._displayColor( newText )
+
+    def _displayColor( self, value: str ):
+        if value is None:
+            self.ui.colorLE.setText("")
+            ## update color sample
             self.ui.colorSample.setStyleSheet( "" )
+            return
+
+        currColor = QtGui.QColor( value )
+        self.colorDialog.setCurrentColor( currColor )
+        self.ui.colorLE.setText( value )
+        ## update color sample
+        self.ui.colorSample.setStyleSheet( "background-color: %s;" % value )
 
     def _done(self, _):
         self.entry.ticker = self.ui.tickerLE.text()
@@ -100,6 +115,13 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
         self.entry.setOperation(operation)
         self.entry.value = self.ui.valueSB.value()
         self.entry.amount = self.ui.amountSP.value()
-        selectedColor = self.colorDialog.selectedColor()
-        if selectedColor.isValid():
-            self.entry.color = selectedColor.name( QtGui.QColor.HexRgb )
+        colorText = self.ui.colorLE.text()
+        if not colorText:
+            ## empty string
+            self.entry.color = None
+        else:
+            self.entry.color = colorText
+
+#         selectedColor = self.colorDialog.selectedColor()
+#         if selectedColor.isValid():
+#             self.entry.color = selectedColor.name( QtGui.QColor.HexRgb )

@@ -200,14 +200,14 @@ class MarkerEntry( persist.Versionable ):
         self.value = None
         self.amount = None
         self.operation = None
-        self.color = None
+        self._color = None
 
     def _convertstate_(self, dict_, dictVersion_ ):
         _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
 
         if dictVersion_ is None:
             dictVersion_ = 0
-            
+
         if dictVersion_ < 1:
             colorField = dict_.pop( "color" )
             if colorField is not None:
@@ -220,7 +220,7 @@ class MarkerEntry( persist.Versionable ):
     @property
     def color(self) -> str:
         return self._color
- 
+
     @color.setter
     def color(self, value: str):
         if value is None:
@@ -300,9 +300,9 @@ class MarkersContainer( persist.Versionable ):
                 if bestSell is None or item.value > bestSell.value:
                     bestSell = item
         if bestSell is not None:
-            return bestSell.color
+            return bestSell.color.lower()       ## lower for tests compatibility
         if bestBuy is not None:
-            return bestBuy.color
+            return bestBuy.color.lower()        ## lower for tests compatibility
         return None
 
     def add( self, ticker, value, amount, operation: MarkerEntry.OperationType, colorName: str = None ):
