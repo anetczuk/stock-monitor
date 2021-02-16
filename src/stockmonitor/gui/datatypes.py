@@ -239,10 +239,12 @@ class MarkerEntry( persist.Versionable ):
             return
         ## set default color
         if operation is MarkerEntry.OperationType.BUY:
-            self.color = "#6FD7FF"
+            self.color = "orange"
+#             self.color = "#6FD7FF"
 #             self.color = "#FF9191"
         elif operation is MarkerEntry.OperationType.SELL:
-            self.color = "#6FD7FF"
+            self.color = "orange"
+#             self.color = "#6FD7FF"
 
     def printData(self) -> str:
         return str( self.ticker ) + " " + str( self.value ) + " " + str( self.amount ) + " " + str( self.operation )
