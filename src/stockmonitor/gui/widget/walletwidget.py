@@ -75,10 +75,11 @@ class WalletColorDelegate( TableRowColorDelegate ):
         dataColumn = index.column()
         if dataColumn == 4 or dataColumn == 10:
             stockChangeString = index.data()
-            stockChange = float(stockChangeString)
-            if stockChange > 0.0:
-                return QtGui.QColor( "green" )
-#             return QtGui.QColor( "red" )
+            if stockChangeString != "-":
+                stockChange = float(stockChangeString)
+                if stockChange > 0.0:
+                    return QtGui.QColor( "green" )
+    #             return QtGui.QColor( "red" )
         return None
 
     def background(self, index: QModelIndex ):
