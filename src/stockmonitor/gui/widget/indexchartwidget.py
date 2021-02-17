@@ -155,6 +155,15 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         if dataFrame is None:
             return None
         priceColumn = dataFrame["c"]
+
+        timeColumn  = dataFrame["t"]
+        recentTime  = timeColumn.iloc[-1]
+        recentDate = recentTime.date()
+        currDate = datetime.datetime.now().date()
+        if recentDate == currDate:
+            ## after end of session, but the same day
+            return priceColumn.iloc[-2]
+        ## during the session or before the session
         return priceColumn.iloc[-1]
 
     def getIntradayDataSource(self):

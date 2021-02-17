@@ -127,18 +127,18 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         if dataFrame is None:
             return
 
-        currentData = self.getCurrentDataSource()
-        currentData.loadWorksheet()
+        currentSource = self.getCurrentDataSource()
+        currentSource.loadWorksheet()
 
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
         volumeColumn = dataFrame["v"]
 #         print( "got intraday data:", priceColumn )
 
-        price     = currentData.getRecentValue( self.ticker )
-        change    = currentData.getRecentChange( self.ticker )
+        price     = currentSource.getRecentValue( self.ticker )
+        change    = currentSource.getRecentChange( self.ticker )
         volumen   = volumeColumn.iloc[-1]
-        refPrice  = currentData.getReferenceValue( self.ticker )
+        refPrice  = currentSource.getReferenceValue( self.ticker )
         timestamp = timeColumn.iloc[-1]
 
         timeData = list(timeColumn)
