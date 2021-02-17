@@ -28,6 +28,8 @@ import sys
 import argparse
 import logging
 
+from tendo import singleton
+
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
 import stockmonitor.logger as logger
@@ -50,6 +52,14 @@ def run_app( args ):
     app.setQuitOnLastWindowClosed( False )
 
     setup_interrupt_handling()
+
+    ## check is one instance is already running
+    try:
+        singleton.SingleInstance()
+    except BaseException as e:
+        _LOGGER.info( "Already running, exiting." )
+        QMessageBox.critical( None, AppWindow.appTitle, "One instance of application is already running, exiting." )
+        return 3
 
     try:
         window = MainWindow()
