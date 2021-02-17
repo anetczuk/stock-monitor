@@ -24,7 +24,7 @@
 import logging
 from typing import List
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QFileDialog
 
@@ -71,9 +71,15 @@ class WalletColorDelegate( TableRowColorDelegate ):
         super().__init__()
         self.dataObject = dataObject
 
-#     def foreground(self, index: QModelIndex ):
-#         ## reimplement if needed
-#         return None
+    def foreground(self, index: QModelIndex ):
+        dataColumn = index.column()
+        if dataColumn == 4 or dataColumn == 10:
+            stockChangeString = index.data()
+            stockChange = float(stockChangeString)
+            if stockChange > 0.0:
+                return QtGui.QColor( "green" )
+#             return QtGui.QColor( "red" )
+        return None
 
     def background(self, index: QModelIndex ):
         sourceParent = index.parent()
