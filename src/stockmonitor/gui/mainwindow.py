@@ -22,7 +22,7 @@
 #
 
 import logging
-# import datetime
+import datetime
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QDialog
@@ -37,8 +37,8 @@ from stockmonitor.gui.utils import set_label_url
 from . import uiloader
 from . import trayicon
 from . import guistate
-from .dataobject import DataObject
 
+from .dataobject import DataObject
 from .widget.settingsdialog import SettingsDialog, AppSettings
 
 
@@ -341,6 +341,19 @@ class MainWindow( QtBaseClass ):           # type: ignore
             w.setWindowIcon( chartIcon )
 
     def updateTrayIndicator(self):
+        currDateTime = datetime.datetime.now()
+        weekDay = currDateTime.weekday()                               # 0 for Monday
+        if weekDay == 5 or weekDay == 6:
+            ## regular Saturday or Sunday -- no stock
+            return
+        currTime = currDateTime.time()
+        sessionStart = datetime.time(8, 55, 0)
+        sessionEnd   = datetime.time(17, 10, 0)
+        if currTime < sessionStart:
+            return
+        if currTime > sessionEnd:
+            return
+        
         self.data.gpwIndexesData.refreshData()
         isin = "PL9999999987"                                               ## wig20
         recentChange = self.data.gpwIndexesData.getRecentChange( isin )
