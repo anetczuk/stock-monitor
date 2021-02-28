@@ -96,7 +96,11 @@ class WorksheetData( BaseWorksheetData ):
             return
 
         _LOGGER.debug( "loading recent data from file[%s], force: %s", dataPath, forceRefresh )
-        self._loadObjectData( forceRefresh )
+        try:
+            self._loadObjectData( forceRefresh )
+        except BaseException:
+            _LOGGER.exception( "unable to load object data" )
+            return
         if self.worksheet is None:
             self.grabTimestamp = None
             return

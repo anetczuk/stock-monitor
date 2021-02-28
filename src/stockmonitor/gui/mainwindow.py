@@ -159,7 +159,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.favsWidget.removeFavGrp.connect( self.data.deleteFavGroup )
         self.ui.favsWidget.favsChanged.connect( self.triggerSaveTimer )
 
-        self.ui.stockRefreshPB.clicked.connect( self.refreshStockDataForce )
+        self.ui.refreshStockPB.clicked.connect( self.refreshStockDataForce )
+        self.ui.refreshAllPB.clicked.connect( self.refreshAllDataForce )
 
         self.ui.notesWidget.dataChanged.connect( self._handleNotesChange )
 
@@ -241,8 +242,15 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def refreshStockDataForce(self):
         self.refreshAction.setEnabled( False )
-        self.ui.stockRefreshPB.setEnabled( False )
+        self.ui.refreshAllPB.setEnabled( False )
+        self.ui.refreshStockPB.setEnabled( False )
         self.data.refreshStockData( True )
+
+    def refreshAllDataForce(self):
+        self.refreshAction.setEnabled( False )
+        self.ui.refreshAllPB.setEnabled( False )
+        self.ui.refreshStockPB.setEnabled( False )
+        self.data.refreshAllData( True )
 
     def _updateStockViews(self):
         _LOGGER.info( "handling stock change" )
@@ -261,7 +269,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.dividendswidget.refreshData()
 
         self.refreshAction.setEnabled( True )
-        self.ui.stockRefreshPB.setEnabled( True )
+        self.ui.refreshAllPB.setEnabled( True )
+        self.ui.refreshStockPB.setEnabled( True )
 
         self.setStatusMessage( "Stock data refreshed" )
 
@@ -353,7 +362,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
             return
         if currTime > sessionEnd:
             return
-        
+
         self.data.gpwIndexesData.refreshData()
         isin = "PL9999999987"                                               ## wig20
         recentChange = self.data.gpwIndexesData.getRecentChange( isin )

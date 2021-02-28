@@ -224,6 +224,9 @@ class MarkerEntry( persist.Versionable ):
 
     @property
     def color(self) -> str:
+        if self._color is None:
+            ## return default color
+            return "orange"
         return self._color
 
     @color.setter
@@ -282,8 +285,8 @@ class MarkersContainer( persist.Versionable ):
         ## return best color
         if ticker is None:
             return None
-        bestBuy  = None
-        bestSell = None
+        bestBuy: MarkerEntry  = None
+        bestSell: MarkerEntry = None
         for item in self.markers:
             if item.ticker != ticker:
                 continue

@@ -783,7 +783,7 @@ class DataObject( QObject ):
     ## ======================================================================
 
     def loadDownloadedStocks(self):
-        stockList = self.stockRefreshList()
+        stockList = self.refreshAllList()
         for func, args in stockList:
             func( *args )
 
@@ -799,27 +799,52 @@ class DataObject( QObject ):
 #         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
 #         threads.appendFunction( heavy_comp, [300000] )
 
-        stockList = self.stockRefreshList( forceRefresh )
+        stockList = self.refreshStockList( forceRefresh )
         for func, args in stockList:
             threads.appendFunction( func, args )
 
         threads.start()
 
-    def stockRefreshList(self, forceRefresh=False):
-        stockList = self.stockProviderList()
+    def refreshAllData(self, forceRefresh=True):
+#         threads = threadlist.QThreadList( self )
+#         threads = threadlist.SerialList( self )
+        threads = threadlist.QThreadMeasuredList( self )
+#         threads = threadlist.ProcessList( self )
+
+        threads.finished.connect( threads.deleteLater )
+        threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
+
+#         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
+#         threads.appendFunction( heavy_comp, [300000] )
+
+        stockList = self.refreshAllList( forceRefresh )
+        for func, args in stockList:
+            threads.appendFunction( func, args )
+
+        threads.start()
+
+    def refreshStockList(self, forceRefresh=False):
+        stockList = self.dataStockProvidersList()
+        retList = []
+        for stock in stockList:
+            retList.append( (stock.refreshData, [forceRefresh] ) )
+        return retList
+
+    def refreshAllList(self, forceRefresh=False):
+        stockList = self.dataAllProvidersList()
         retList = []
         for stock in stockList:
             retList.append( (stock.refreshData, [forceRefresh] ) )
         return retList
 
 #     def stockDownloadList(self):
-#         stockList = self.stockProviderList()
+#         stockList = self.dataAllProvidersList()
 #         retList = []
 #         for stock in stockList:
 #             retList.append( stock.downloadData )
 #         return retList
 
-    def stockProviderList(self):
+    def dataAllProvidersList(self):
         retList = []
         retList.append( self.gpwCurrentSource )
         retList.append( self.gpwStockIntradayData )
@@ -832,6 +857,15 @@ class DataObject( QObject ):
         retList.append( self.gpwReportsData )
         retList.append( self.gpwPubReportsData )
 #         retList.append( self.gpwIsinMap )
+        return retList
+
+    def dataStockProvidersList(self):
+        retList = []
+        retList.append( self.gpwCurrentSource )
+        retList.append( self.gpwStockIntradayData )
+        retList.append( self.gpwIndexIntradayData )
+        retList.append( self.gpwESPIData )
+        retList.append( self.gpwIndexesData )
         return retList
 
     @property

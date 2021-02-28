@@ -605,9 +605,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="stockRefreshPB">
+       <widget class="QPushButton" name="refreshStockPB">
         <property name="text">
-         <string>Refresh</string>
+         <string>Refresh Stock</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="refreshAllPB">
+        <property name="text">
+         <string>Refresh All</string>
         </property>
        </widget>
       </item>
