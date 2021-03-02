@@ -48,6 +48,9 @@ def download_content( url, outputPath ):
     except urllib.error.URLError as ex:
         _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
         raise
+    except ConnectionResetError as ex:
+        _LOGGER.exception( "unable to access -- connection reset: %s %s", url, ex, exc_info=False )
+        raise
 
 
 class BaseWorksheetData( metaclass=abc.ABCMeta ):
