@@ -148,7 +148,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         ## ================== connecting signals ==================
 
-        self.data.favsChanged.connect( self._handleFavsChange )
+        self.data.favsChanged.connect( self.triggerSaveTimer )
+        self.data.markersChanged.connect( self.triggerSaveTimer )
         self.data.stockDataChanged.connect( self._updateStockViews )
         self.data.stockDataChanged.connect( self._updateWalletSummary )
         self.data.walletDataChanged.connect( self._updateWalletSummary )
@@ -157,12 +158,11 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
         self.ui.favsWidget.renameFavGrp.connect( self.data.renameFavGroup )
         self.ui.favsWidget.removeFavGrp.connect( self.data.deleteFavGroup )
-        self.ui.favsWidget.favsChanged.connect( self.triggerSaveTimer )
-
+        
         self.ui.refreshStockPB.clicked.connect( self.refreshStockDataForce )
         self.ui.refreshAllPB.clicked.connect( self.refreshAllDataForce )
 
-        self.ui.notesWidget.dataChanged.connect( self._handleNotesChange )
+        self.ui.notesWidget.dataChanged.connect( self.triggerSaveTimer )
 
         #qApp.saveStateRequest.connect( self.saveSession )
         #qApp.aboutToQuit.connect( self.saveOnQuit )
@@ -307,14 +307,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
         else:
             dateString = timestamp.strftime( "%Y-%m-%d %H:%M:%S" )
             self.ui.refreshTimeLabel.setText( dateString )
-
-    def _handleFavsChange(self):
-        self.triggerSaveTimer()
-
-    ## ====================================================================
-
-    def _handleNotesChange(self):
-        self.triggerSaveTimer()
 
     ## ====================================================================
 

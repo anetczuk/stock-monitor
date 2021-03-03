@@ -158,8 +158,6 @@ class FavsWidget( QtBaseClass ):           # type: ignore
     renameFavGrp = pyqtSignal( str, str )
     removeFavGrp = pyqtSignal( str )
 
-    favsChanged  = pyqtSignal()
-
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.ui = UiTargetClass()
