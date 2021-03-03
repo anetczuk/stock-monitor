@@ -65,7 +65,7 @@ from stockmonitor.gui.wallettypes import broker_commission, TransHistory
 _LOGGER = logging.getLogger(__name__)
 
 
-READONLY_FAV_GROUPS = ["All", "Wallet"]
+READONLY_FAV_GROUPS = ["All", "Wallet", "Markers"]
 
 
 def instance_download_data(obj):
@@ -123,6 +123,8 @@ class DataObject( QObject ):
 
         self.undoStack = QUndoStack(self)
 
+        self.markersChanged.connect( self.updateMarkersFavGroup )
+        
         self.favsGrpChanged.connect( self.updateAllFavsGroup )
         self.favsChanged.connect( self.updateAllFavsGroup )
 
@@ -138,6 +140,7 @@ class DataObject( QObject ):
         self.gpwCurrentSource.stockHeaders = headers
         #self.gpwCurrentHeaders = headers
         self.updateWalletFavGroup()
+        self.updateMarkersFavGroup()
         self.updateAllFavsGroup()
 
     @property
@@ -751,6 +754,20 @@ class DataObject( QObject ):
 
         self.updateWalletFavGroup()
 
+    def updateAllFavsGroup(self):
+        allFavsSet = self.getAllFavs()
+
+        currFavsSet = self.favs.getFavs( "All" )
+        if currFavsSet is None:
+            currFavsSet = set()
+        else:
+            currFavsSet = set( currFavsSet )
+
+        if allFavsSet != currFavsSet:
+            _LOGGER.debug("updating All favs")
+            self.favs.setFavs( "All", allFavsSet )
+            self.favsGrpChanged.emit( "All" )
+
     def updateWalletFavGroup(self):
         wallet: WalletData = self.wallet
         walletSet = set( wallet.getCurrentStock() )
@@ -766,19 +783,20 @@ class DataObject( QObject ):
             self.favs.setFavs( "Wallet", walletSet )
             self.favsGrpChanged.emit( "Wallet" )
 
-    def updateAllFavsGroup(self):
-        allFavsSet = self.getAllFavs()
+    def updateMarkersFavGroup(self):
+        markers: MarkersContainer = self.markers
+        markersSet = markers.getTickers()
 
-        currFavsSet = self.favs.getFavs( "All" )
+        currFavsSet = self.favs.getFavs( "Markers" )
         if currFavsSet is None:
             currFavsSet = set()
         else:
             currFavsSet = set( currFavsSet )
 
-        if allFavsSet != currFavsSet:
-            _LOGGER.debug("updating All favs")
-            self.favs.setFavs( "All", allFavsSet )
-            self.favsGrpChanged.emit( "All" )
+        if markersSet != currFavsSet:
+            _LOGGER.debug("updating Markers favs")
+            self.favs.setFavs( "Markers", markersSet )
+            self.favsGrpChanged.emit( "Markers" )
 
     ## ======================================================================
 

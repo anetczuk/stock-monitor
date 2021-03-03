@@ -278,6 +278,10 @@ class FavsWidget( QtBaseClass ):           # type: ignore
         tabPos    = tabBar.mapFromGlobal( globalPos )
         tabIndex  = tabBar.tabAt( tabPos )
 
+        favGroup = tabBar.tabText( tabIndex )
+        if favGroup in READONLY_FAV_GROUPS:
+            return
+
         contextMenu   = QMenu(self)
         newAction     = contextMenu.addAction("New")
         renameAction  = contextMenu.addAction("Rename")
@@ -328,6 +332,8 @@ class FavsWidget( QtBaseClass ):           # type: ignore
                                             "Fav Group name:",
                                             QLineEdit.Normal,
                                             currName )
+        if newText in READONLY_FAV_GROUPS:
+            return ""
         if ok and newText:
             # not empty
             return newText

@@ -280,6 +280,12 @@ class MarkersContainer( persist.Versionable ):
 
     def get(self, index ):
         return self.markers[ index ]
+    
+    def getTickers(self):
+        ret = set()
+        for item in self.markers:
+            ret.add( item.ticker )
+        return ret
 
     def getBestMatchingColor(self, ticker, stockPrice):
         ## return best color
