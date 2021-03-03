@@ -181,6 +181,9 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
                         self.ui.dataChart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="-" )
 
         self.ui.dataChart.addVolumeLine( timeData, volumeColumn )
+        
+        recentPrice = priceColumn.iloc[-1]
+        self.ui.dataChart.addVolumeSecondaryY( recentPrice )
 
         set_ref_format_coord( self.ui.dataChart.pricePlot, refPrice )
         set_int_format_coord( self.ui.dataChart.volumePlot )
