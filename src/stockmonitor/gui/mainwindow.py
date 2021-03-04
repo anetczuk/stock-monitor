@@ -158,7 +158,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.favsWidget.addFavGrp.connect( self.data.addFavGroup )
         self.ui.favsWidget.renameFavGrp.connect( self.data.renameFavGroup )
         self.ui.favsWidget.removeFavGrp.connect( self.data.deleteFavGroup )
-        
+
         self.ui.refreshStockPB.clicked.connect( self.refreshStockDataForce )
         self.ui.refreshAllPB.clicked.connect( self.refreshAllDataForce )
 

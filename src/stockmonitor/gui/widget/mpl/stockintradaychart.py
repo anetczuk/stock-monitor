@@ -155,13 +155,13 @@ class StockIntradayChart( BaseIntradayChart ):
     def addVolumeSecondaryY(self, recentPrice ):
         def volume_to_value( vol ):
             return vol * recentPrice / 1000.0
- 
+
         def value_to_volume( val ):
             return val / recentPrice * 1000.0
- 
+
         secay = self.volumePlot.secondary_yaxis( 'right', functions=(volume_to_value, value_to_volume) )
         secay.set_ylabel( "Value [k]" )
-        
+
         self.refreshCanvas()
 
     def addVolumeLine(self, xdata: List[datetime.datetime], ydata, color='b', style=None):

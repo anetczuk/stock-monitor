@@ -22,24 +22,21 @@
 #
 
 import logging
-from datetime import time, timedelta, datetime
-
-from pandas.core.frame import DataFrame
+from datetime import timedelta
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QModelIndex
-from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtWidgets import QTableView
 
 from stockmonitor.gui import guistate
 from stockmonitor.gui.dataobject import DataObject
-from stockmonitor.gui.datatypes import MarkersContainer, MarkerEntry
+from stockmonitor.gui.datatypes import MarkerEntry
 from stockmonitor.gui.widget.markerdialog import MarkerDialog
+from stockmonitor.gui.widget.dataframetable import DataFrameTableModel
 
 from .. import uiloader
-from stockmonitor.gui.widget.dataframetable import DataFrameTableModel
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -167,8 +164,8 @@ _LOGGER = logging.getLogger(__name__)
 
 class MarkersTableModel( DataFrameTableModel ):
 
-    def __init__(self, data: DataFrame):
-        super().__init__( data )
+#     def __init__(self, data: DataFrame):
+#         super().__init__( data )
 
     def data(self, index: QModelIndex, role=Qt.DisplayRole):
         if not index.isValid():

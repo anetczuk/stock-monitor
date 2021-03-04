@@ -113,6 +113,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         threads.start()
 
+    # pylint: disable=R0914
     def _updateView(self):
         self.ui.refreshPB.setEnabled( True )
 
@@ -181,7 +182,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
                         self.ui.dataChart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="-" )
 
         self.ui.dataChart.addVolumeLine( timeData, volumeColumn )
-        
+
         recentPrice = priceColumn.iloc[-1]
         self.ui.dataChart.addVolumeSecondaryY( recentPrice )
 
