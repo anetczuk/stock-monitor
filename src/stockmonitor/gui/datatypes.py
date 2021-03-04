@@ -199,7 +199,7 @@ class MarkerEntry( persist.Versionable ):
     def __init__(self):
         self.ticker = None
         self.value = None
-        self.amount = None
+        self.amount = 0
         self.operation = None
         self._color = None
         self.notes: str = None
