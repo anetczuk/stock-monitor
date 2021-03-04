@@ -244,10 +244,13 @@ class DataObject( QObject ):
         return dataFrame
 
     def addMarkersList(self, tickersList, operation):
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         markersList = list()
         for ticker in tickersList:
+            currValue = currentStock.getRecentValue( ticker )
             newMarker = MarkerEntry()
             newMarker.ticker = ticker
+            newMarker.value = currValue
             newMarker.setOperation( operation )
             markersList.append( newMarker )
         self.undoStack.push( AddMarkerCommand( self, markersList ) )
