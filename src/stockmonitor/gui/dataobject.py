@@ -124,7 +124,7 @@ class DataObject( QObject ):
         self.undoStack = QUndoStack(self)
 
         self.markersChanged.connect( self.updateMarkersFavGroup )
-        
+
         self.favsGrpChanged.connect( self.updateAllFavsGroup )
         self.favsChanged.connect( self.updateAllFavsGroup )
 
@@ -217,6 +217,31 @@ class DataObject( QObject ):
         return self.gpwCurrentData.getStockData( stockList )
 
     ## ======================================================================
+
+    def getMarkersData(self):
+        columnsList = [ "Nazwa", "Ticker", "Typ operacji", "Kurs operacji", "Liczba", "Kolor", "Uwagi" ]
+        rowsList = []
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
+        mSize = self.markers.size()
+        for i in range(0, mSize):
+            entry: MarkerEntry = self.markers.get( i )
+            stockName = currentStock.getNameFromTicker( entry.ticker )
+            rowDict = {}
+            rowDict[ columnsList[ 0] ] = stockName
+            rowDict[ columnsList[ 1] ] = entry.ticker
+            rowDict[ columnsList[ 2] ] = entry.operationName()
+            rowDict[ columnsList[ 3] ] = entry.value
+            rowDict[ columnsList[ 4] ] = entry.amount
+            rowDict[ columnsList[ 5] ] = entry.color
+            if entry.notes is not None:
+                rowDict[ columnsList[ 6] ] = entry.notes
+            else:
+                rowDict[ columnsList[ 6] ] = ""
+            rowsList.append( rowDict )
+
+        dataFrame = DataFrame( rowsList )
+        dataFrame = dataFrame.fillna("-")
+        return dataFrame
 
     def addMarkersList(self, tickersList, operation):
         markersList = list()

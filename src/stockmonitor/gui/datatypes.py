@@ -278,9 +278,9 @@ class MarkersContainer( persist.Versionable ):
     def size(self):
         return len( self.markers )
 
-    def get(self, index ):
+    def get(self, index ) -> MarkerEntry:
         return self.markers[ index ]
-    
+
     def getTickers(self):
         ret = set()
         for item in self.markers:

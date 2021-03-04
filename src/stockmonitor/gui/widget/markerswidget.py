@@ -24,6 +24,8 @@
 import logging
 from datetime import time, timedelta, datetime
 
+from pandas.core.frame import DataFrame
+
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
@@ -37,126 +39,153 @@ from stockmonitor.gui.datatypes import MarkersContainer, MarkerEntry
 from stockmonitor.gui.widget.markerdialog import MarkerDialog
 
 from .. import uiloader
+from stockmonitor.gui.widget.dataframetable import DataFrameTableModel
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class MarkersTableModel( QAbstractTableModel ):
+# class MarkersTableModel( QAbstractTableModel ):
+#
+#     def __init__(self, data: DataFrame):
+#         super().__init__()
+#         self._rawData: DataFrame = data
+#
+#     # pylint: disable=R0201
+#     def getItem(self, itemIndex: QModelIndex):
+#         if itemIndex.isValid():
+#             return itemIndex.internalPointer()
+#         return None
+#
+#     def setContent(self, data: DataFrame):
+#         self.beginResetModel()
+#         self._rawData = data
+#         self.endResetModel()
+#
+#     # pylint: disable=W0613
+#     def rowCount(self, parent=None):
+#         if self._rawData is None:
+#             return 0
+#         return self._rawData.size()
+#
+#     # pylint: disable=W0613
+#     def columnCount(self, parnet=None):
+#         if self._rawData is None:
+#             return 0
+#         attrsList = self.attributeLabels()
+#         return len( attrsList )
+#
+#     def headerData(self, section, orientation, role):
+#         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+#             attrsList = self.attributeLabels()
+#             return attrsList[ section ]
+#         return super().headerData( section, orientation, role )
+#
+#     ## for invalid parent return elements form root list
+#     def index(self, row, column, parent: QModelIndex):
+#         if not self.hasIndex(row, column, parent):
+#             return QModelIndex()
+#         entry = self._rawData.get( row )
+#         return self.createIndex(row, column, entry)
+#
+#     def data(self, index: QModelIndex, role=Qt.DisplayRole):
+#         if not index.isValid():
+#             return None
+#
+#         if role == Qt.DisplayRole:
+#             entry = self._rawData.get( index.row() )
+#             rawData = self.attribute( entry, index.column() )
+#             if rawData is None:
+#                 return "-"
+#             if isinstance(rawData, time):
+#                 return rawData.strftime("%H:%M")
+#             if isinstance(rawData, timedelta):
+#                 return print_timedelta( rawData )
+#             if isinstance(rawData, datetime):
+#                 return rawData.strftime("%Y-%m-%d %H:%M")
+#             strData = str(rawData)
+#             return strData
+#
+#         if role == Qt.UserRole:
+#             entry = self._rawData.get( index.row() )
+#             rawData = self.attribute( entry, index.column() )
+#             return rawData
+#
+#         if role == Qt.EditRole:
+#             entry = self._rawData.get( index.row() )
+#             rawData = self.attribute( entry, index.column() )
+#             return rawData
+#
+#         if role == Qt.TextAlignmentRole:
+#             if index.column() == 6:
+#                 return Qt.AlignLeft | Qt.AlignVCenter
+#             return Qt.AlignHCenter | Qt.AlignVCenter
+#
+#         return None
+#
+#     def getIndex(self, item, parentIndex: QModelIndex=None, column: int = 0):
+#         if parentIndex is None:
+#             parentIndex = QModelIndex()
+#         if parentIndex.isValid():
+#             # dataTask = parentIndex.data( Qt.UserRole )
+#             dataTask = parentIndex.internalPointer()
+#             if dataTask == item:
+#                 return parentIndex
+#         elems = self.rowCount( parentIndex )
+#         for i in range(elems):
+#             index = self.index( i, column, parentIndex )
+#             if index.isValid() is False:
+#                 continue
+#             # dataTask = parentIndex.data( Qt.UserRole )
+#             dataTask = index.internalPointer()
+#             if dataTask == item:
+#                 return index
+#         return None
+#
+#     def attribute(self, entry: MarkerEntry, index):
+#         if index == 0:
+#             #TODO: implement
+#             return "aaa"
+#         elif index == 1:
+#             return entry.ticker
+#         elif index == 2:
+#             return entry.operationName()
+#         elif index == 3:
+#             return entry.value
+#         elif index == 4:
+#             return entry.amount
+#         elif index == 5:
+#             return entry.color
+#         elif index == 6:
+#             return entry.notes
+#         return None
+#
+#     @staticmethod
+#     def attributeLabels():
+#         return ( "Nazwa", "Ticker", "Typ operacji", "Kurs operacji", "Liczba", "Kolor", "Uwagi" )
 
-    def __init__(self, data: MarkersContainer):
-        super().__init__()
-        self._rawData: MarkersContainer = data
 
-    # pylint: disable=R0201
-    def getItem(self, itemIndex: QModelIndex):
-        if itemIndex.isValid():
-            return itemIndex.internalPointer()
-        return None
+class MarkersTableModel( DataFrameTableModel ):
 
-    def setContent(self, data: MarkersContainer):
-        self.beginResetModel()
-        self._rawData = data
-        self.endResetModel()
-
-    # pylint: disable=W0613
-    def rowCount(self, parent=None):
-        if self._rawData is None:
-            return 0
-        return self._rawData.size()
-
-    # pylint: disable=W0613
-    def columnCount(self, parnet=None):
-        if self._rawData is None:
-            return 0
-        attrsList = self.attributeLabels()
-        return len( attrsList )
-
-    def headerData(self, section, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            attrsList = self.attributeLabels()
-            return attrsList[ section ]
-        return super().headerData( section, orientation, role )
-
-    ## for invalid parent return elements form root list
-    def index(self, row, column, parent: QModelIndex):
-        if not self.hasIndex(row, column, parent):
-            return QModelIndex()
-        entry = self._rawData.get( row )
-        return self.createIndex(row, column, entry)
+    def __init__(self, data: DataFrame):
+        super().__init__( data )
 
     def data(self, index: QModelIndex, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if role == Qt.DisplayRole:
-            entry = self._rawData.get( index.row() )
-            rawData = self.attribute( entry, index.column() )
-            if rawData is None:
-                return "-"
-            if isinstance(rawData, time):
-                return rawData.strftime("%H:%M")
-            if isinstance(rawData, timedelta):
-                return print_timedelta( rawData )
-            if isinstance(rawData, datetime):
-                return rawData.strftime("%Y-%m-%d %H:%M")
-            strData = str(rawData)
-            return strData
-
-        if role == Qt.UserRole:
-            entry = self._rawData.get( index.row() )
-            rawData = self.attribute( entry, index.column() )
-            return rawData
-
-        if role == Qt.EditRole:
-            entry = self._rawData.get( index.row() )
-            rawData = self.attribute( entry, index.column() )
-            return rawData
+#         if role == Qt.DisplayRole:
+#             retValue = super().data( index, role )
+#             if retValue is None or retValue == "None":
+#                 return "-"
+#             return retValue
 
         if role == Qt.TextAlignmentRole:
-            if index.column() == 5:
+            if index.column() == 6:
                 return Qt.AlignLeft | Qt.AlignVCenter
-            return Qt.AlignHCenter | Qt.AlignVCenter
+#             return Qt.AlignHCenter | Qt.AlignVCenter
 
-        return None
-
-    def getIndex(self, item, parentIndex: QModelIndex=None, column: int = 0):
-        if parentIndex is None:
-            parentIndex = QModelIndex()
-        if parentIndex.isValid():
-            # dataTask = parentIndex.data( Qt.UserRole )
-            dataTask = parentIndex.internalPointer()
-            if dataTask == item:
-                return parentIndex
-        elems = self.rowCount( parentIndex )
-        for i in range(elems):
-            index = self.index( i, column, parentIndex )
-            if index.isValid() is False:
-                continue
-            # dataTask = parentIndex.data( Qt.UserRole )
-            dataTask = index.internalPointer()
-            if dataTask == item:
-                return index
-        return None
-
-    def attribute(self, entry: MarkerEntry, index):
-        if index == 0:
-            return entry.ticker
-        elif index == 1:
-            return entry.operationName()
-        elif index == 2:
-            return entry.value
-        elif index == 3:
-            return entry.amount
-        elif index == 4:
-            return entry.color
-        elif index == 5:
-            return entry.notes
-        return None
-
-    @staticmethod
-    def attributeLabels():
-        return ( "Ticker", "Typ operacji", "Kurs operacji", "Liczba", "Kolor", "Uwagi" )
+        return super().data( index, role )
 
 
 ## ===========================================================
@@ -211,8 +240,8 @@ class MarkersTable( QTableView ):
         self.refreshData()
 
     def refreshData(self):
-        markers: MarkersContainer = self.dataObject.markers
-        self.dataModel.setContent( markers )
+        markersData = self.dataObject.getMarkersData()
+        self.dataModel.setContent( markersData )
         self.clearSelection()
 #         _LOGGER.debug( "entries: %s\n%s", type(history), history.printData() )
 
@@ -226,7 +255,7 @@ class MarkersTable( QTableView ):
             ## unable to refresh entry row -- refresh whole model
             self.refreshData()
             return
-        lastColIndex = taskIndex.sibling( taskIndex.row(), 4 )
+        lastColIndex = taskIndex.sibling( taskIndex.row(), 5 )
         if lastColIndex is None:
             ## unable to refresh entry row -- refresh whole model
             self.refreshData()
@@ -242,7 +271,9 @@ class MarkersTable( QTableView ):
 
     def getItem(self, itemIndex: QModelIndex ) -> MarkerEntry:
         sourceIndex = self.proxyModel.mapToSource( itemIndex )
-        return self.dataModel.getItem( sourceIndex )
+#         return self.dataModel.getItem( sourceIndex )
+        markerIndex = sourceIndex.row()
+        return self.dataObject.markers.get( markerIndex )
 
     def contextMenuEvent( self, event ):
         evPos            = event.pos()
@@ -279,7 +310,7 @@ class MarkersTable( QTableView ):
             self.itemUnselected.emit()
 
     def mouseDoubleClickEvent( self, event ):
-        evPos               = event.pos()
+        evPos              = event.pos()
         entry: MarkerEntry = None
         mIndex = self.indexAt( evPos )
         if mIndex is not None:
