@@ -34,7 +34,9 @@ from stockmonitor.gui import guistate
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.datatypes import MarkerEntry
 from stockmonitor.gui.widget.markerdialog import MarkerDialog
-from stockmonitor.gui.widget.dataframetable import DataFrameTableModel
+from stockmonitor.gui.widget.dataframetable import DataFrameTableModel,\
+    TableRowColorDelegate
+from stockmonitor.gui.widget.stocktable import marker_background_color
 
 from .. import uiloader
 
@@ -188,6 +190,27 @@ class MarkersTableModel( DataFrameTableModel ):
 ## ===========================================================
 
 
+class MarkersColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataObject: DataObject):
+        super().__init__()
+        self.dataObject = dataObject
+
+#     def foreground(self, index: QModelIndex ):
+#         ## reimplement if needed
+#         return None
+
+    def background(self, index: QModelIndex ):
+        sourceParent = index.parent()
+        dataRow = index.row()
+        dataIndex = self.parent.index( dataRow, 1, sourceParent )       ## get ticker
+        ticker = dataIndex.data()
+        return marker_background_color( self.dataObject, ticker )
+
+
+## ===========================================================
+
+
 class MarkersTable( QTableView ):
 
     selectedItem    = pyqtSignal( MarkerEntry )
@@ -233,6 +256,10 @@ class MarkersTable( QTableView ):
 
     def connectData(self, dataObject: DataObject ):
         self.dataObject = dataObject
+
+        colorDecorator = MarkersColorDelegate( self.dataObject )
+        self.dataModel.setColorDelegate( colorDecorator )
+
 #         self.dataObject.feedChanged.connect( self.refreshData )
         self.refreshData()
 
@@ -267,6 +294,8 @@ class MarkersTable( QTableView ):
         return proxyIndex
 
     def getItem(self, itemIndex: QModelIndex ) -> MarkerEntry:
+        if self.dataObject is None:
+            return None
         sourceIndex = self.proxyModel.mapToSource( itemIndex )
 #         return self.dataModel.getItem( sourceIndex )
         markerIndex = sourceIndex.row()
@@ -399,8 +428,8 @@ class MarkersWidget( QtBaseClass ):           # type: ignore
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
-        self.dataObject.markersChanged.connect( self.updateView )
         self.ui.markersTable.connectData( dataObject )
+        self.dataObject.markersChanged.connect( self.updateView )
         self.updateView()
 
     def updateView(self):
