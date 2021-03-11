@@ -500,6 +500,8 @@ def marker_background_color( dataObject, ticker ):
     recentValue = currentStock.getRecentValue( ticker )
     if recentValue is None:
         return None
+    if recentValue == "-":
+        return None
     markerColor = dataObject.markers.getBestMatchingColor( ticker, recentValue )
     if markerColor is not None:
         return QtGui.QColor( markerColor )
