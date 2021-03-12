@@ -183,7 +183,7 @@ class DataContainer():
             except ValueError:
                 dateObject = None
 
-            ticker = self.getTickerFromName( stockName )
+            ticker = self.gpwCurrentData.getTickerFromName( stockName )
             if ticker is None:
                 _LOGGER.warning( "could not find stock ticker for name: >%s<", stockName )
                 continue
@@ -565,7 +565,7 @@ class DataContainer():
         if transactions is None:
             return None
 
-        isin = self.getStockIsinFromTicker( ticker )
+        isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
         intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
         stockData = intraSource.getWorksheet()
 
@@ -602,7 +602,7 @@ class DataContainer():
         if transactions is None:
             return None
 
-        isin = self.getStockIsinFromTicker( ticker )
+        isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
         intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
         stockData = intraSource.getWorksheet()
         if stockData is None:
@@ -768,7 +768,7 @@ class DataContainer():
         return self.gpwCurrentSource.stockData                  # type: ignore
 
     def getStockIntradayDataByTicker(self, ticker):
-        isin = self.getStockIsinFromTicker(ticker)
+        isin = self.gpwCurrentData.getStockIsinFromTicker(ticker)
         return self.gpwStockIntradayData.getData(isin)
 
     def getStockIntradayDataByIsin(self, isin):
@@ -776,18 +776,3 @@ class DataContainer():
 
     def getIndexIntradayDataByIsin(self, isin):
         return self.gpwIndexIntradayData.getData(isin)
-
-    def getTicker(self, rowIndex):
-        return self.gpwCurrentSource.stockData.getTickerField( rowIndex )
-
-    def getTickerFromIsin(self, stockIsin):
-        return self.gpwCurrentData.getTickerFromIsin( stockIsin )
-
-    def getTickerFromName(self, stockName):
-        return self.gpwCurrentData.getTickerFromName( stockName )
-
-    def getStockIsinFromTicker(self, ticker):
-        return self.gpwCurrentData.getStockIsinFromTicker( ticker )
-
-    def getNameFromTicker(self, ticker):
-        return self.gpwCurrentData.getNameFromTicker( ticker )

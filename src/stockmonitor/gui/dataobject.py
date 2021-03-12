@@ -152,6 +152,53 @@ class DataObject( QObject ):
 
     ## ======================================================================
 
+    @property
+    def gpwCurrentHeaders(self) -> Dict[ int, str ]:
+        return self.dataContainer.gpwCurrentSource.stockHeaders
+
+    @gpwCurrentHeaders.setter
+    def gpwCurrentHeaders(self, headersDict):
+        self.dataContainer.gpwCurrentSource.stockHeaders = headersDict
+        self.stockHeadersChanged.emit()
+
+    @property
+    def gpwCurrentSource(self) -> StockData:
+        return self.dataContainer.gpwCurrentSource
+
+    @property
+    def gpwCurrentData(self) -> GpwCurrentStockData:
+        return self.dataContainer.gpwCurrentData
+
+    @property
+    def gpwESPIData(self) -> GpwESPIData:
+        return self.dataContainer.gpwESPIData
+
+    @property
+    def gpwIndexesData(self) -> GpwCurrentIndexesData:
+        return self.dataContainer.gpwIndexesData
+
+    @property
+    def globalIndexesData(self) -> GlobalIndexesData:
+        return self.dataContainer.globalIndexesData
+
+    @property
+    def gpwIndicatorsData(self) -> GpwIndicatorsData:
+        return self.dataContainer.gpwIndicatorsData
+
+    @property
+    def gpwDividendsData(self) -> DividendsCalendarData:
+        return self.dataContainer.gpwDividendsData
+
+    @property
+    def gpwReportsData(self) -> FinRepsCalendarData:
+        return self.dataContainer.gpwReportsData
+
+    @property
+    def gpwPubReportsData(self) -> PublishedFinRepsCalendarData:
+        return self.dataContainer.gpwPubReportsData
+
+    ## ======================================================================
+
     def getAllFavs(self):
         return self.dataContainer.getAllFavs()
 
@@ -335,51 +382,6 @@ class DataObject( QObject ):
     def dataStockProvidersList(self):
         return self.dataContainer.dataStockProvidersList()
 
-    @property
-    def gpwCurrentHeaders(self) -> Dict[ int, str ]:
-        return self.dataContainer.gpwCurrentSource.stockHeaders
-
-    @gpwCurrentHeaders.setter
-    def gpwCurrentHeaders(self, headersDict):
-        self.dataContainer.gpwCurrentSource.stockHeaders = headersDict
-        self.stockHeadersChanged.emit()
-
-    @property
-    def gpwCurrentSource(self) -> StockData:
-        return self.dataContainer.gpwCurrentSource
-
-    @property
-    def gpwCurrentData(self) -> GpwCurrentStockData:
-        return self.dataContainer.gpwCurrentData
-
-    @property
-    def gpwESPIData(self) -> GpwESPIData:
-        return self.dataContainer.gpwESPIData
-
-    @property
-    def gpwIndexesData(self) -> GpwCurrentIndexesData:
-        return self.dataContainer.gpwIndexesData
-
-    @property
-    def globalIndexesData(self) -> GlobalIndexesData:
-        return self.dataContainer.globalIndexesData
-
-    @property
-    def gpwIndicatorsData(self) -> GpwIndicatorsData:
-        return self.dataContainer.gpwIndicatorsData
-
-    @property
-    def gpwDividendsData(self) -> DividendsCalendarData:
-        return self.dataContainer.gpwDividendsData
-
-    @property
-    def gpwReportsData(self) -> FinRepsCalendarData:
-        return self.dataContainer.gpwReportsData
-
-    @property
-    def gpwPubReportsData(self) -> PublishedFinRepsCalendarData:
-        return self.dataContainer.gpwPubReportsData
-
     def getStockIntradayDataByTicker(self, ticker):
         return self.dataContainer.getStockIntradayDataByTicker( ticker )
 
@@ -390,16 +392,16 @@ class DataObject( QObject ):
         return self.dataContainer.getIndexIntradayDataByIsin( isin )
 
     def getTicker(self, rowIndex):
-        return self.dataContainer.getTicker( rowIndex )
+        return self.gpwCurrentData.getTickerField( rowIndex )
 
     def getTickerFromIsin(self, stockIsin):
-        return self.dataContainer.getTickerFromIsin( stockIsin )
+        return self.gpwCurrentData.getTickerFromIsin( stockIsin )
 
     def getTickerFromName(self, stockName):
-        return self.dataContainer.getTickerFromName( stockName )
+        return self.gpwCurrentData.getTickerFromName( stockName )
 
     def getStockIsinFromTicker(self, ticker):
-        return self.dataContainer.getStockIsinFromTicker( ticker )
+        return self.gpwCurrentData.getStockIsinFromTicker( ticker )
 
     def getNameFromTicker(self, ticker):
-        return self.dataContainer.getNameFromTicker( ticker )
+        return self.gpwCurrentData.getNameFromTicker( ticker )
