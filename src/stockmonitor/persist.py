@@ -39,7 +39,7 @@ class RenamingUnpickler(pickle.Unpickler):
     def __init__(self, codeVersion, file):
         super().__init__( file )
         self.codeVersion = codeVersion
-        
+
     def find_class(self, module, name):
         if module == 'stockmonitor.gui.datatypes':
             module = 'stockmonitor.datatypes.datatypes'

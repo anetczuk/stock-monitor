@@ -33,14 +33,11 @@ from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
 from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
-    GpwCurrentIndexesData
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData, GpwCurrentIndexesData
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 
 from stockmonitor.datatypes.datatypes import UserContainer,\
-    FavData, WalletData,\
-    TransactionMatchMode, MarkersContainer,\
-    MarkerEntry
+    FavData, WalletData, MarkersContainer, MarkerEntry
 from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap,\
     GpwIndexIntradayMap
 from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory
@@ -53,7 +50,7 @@ _LOGGER = logging.getLogger(__name__)
 ##
 ##
 class DataContainer():
-    
+
     def __init__(self):
         self.userContainer        = UserContainer()                   ## user data
 
@@ -61,7 +58,7 @@ class DataContainer():
         self.gpwStockIntradayData = GpwStockIntradayMap()
         self.gpwIndexIntradayData = GpwIndexIntradayMap()
 
-        self.gpwESPIData     = GpwESPIData()
+        self.gpwESPIData        = GpwESPIData()
 
         self.gpwIndexesData     = GpwCurrentIndexesData()
         self.globalIndexesData  = GlobalIndexesData()
@@ -101,7 +98,6 @@ class DataContainer():
     @favs.setter
     def favs(self, newData: FavData):
         self.userContainer.favs = newData
-        return self.userContainer.wallet
 
     @property
     def markers(self) -> MarkersContainer:
@@ -710,14 +706,13 @@ class DataContainer():
 
         retData = DataFrame( mergedList, columns=["t", "c"] )
         return retData
-    
+
     ## ======================================================================
 
     def loadDownloadedStocks(self):
         stockList = self.refreshAllList()
         for func, args in stockList:
             func( *args )
-
 
     def refreshStockList(self, forceRefresh=False):
         stockList = self.dataStockProvidersList()
@@ -763,6 +758,10 @@ class DataContainer():
         retList.append( self.gpwESPIData )
         retList.append( self.gpwIndexesData )
         return retList
+
+    @property
+    def gpwCurrentHeaders(self) -> Dict[ int, str ]:
+        return self.gpwCurrentSource.stockHeaders
 
     @property
     def gpwCurrentData(self) -> GpwCurrentStockData:

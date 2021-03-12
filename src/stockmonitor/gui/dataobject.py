@@ -32,10 +32,19 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
 
-from stockmonitor.datatypes.datatypes import TransactionMatchMode, MarkerEntry
+from stockmonitor.datatypes.datatypes import FavData, WalletData,\
+    TransactionMatchMode, MarkersContainer,\
+    MarkerEntry
 from stockmonitor.datatypes.datacontainer import DataContainer
-from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap,\
-    GpwIndexIntradayMap
+from stockmonitor.datatypes.stocktypes import StockData
+
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
+    GpwCurrentIndexesData
+from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
+from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
+from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
+from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
+from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 
 import stockmonitor.gui.threadlist as threadlist
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
@@ -79,7 +88,7 @@ def heavy_comp( limit ):
 ##
 ##
 ##
-class DataObject( QObject, DataContainer ):
+class DataObject( QObject ):
 
     favsGrpChanged      = pyqtSignal( str )        ## emit group
     favsReordered       = pyqtSignal()
@@ -93,17 +102,61 @@ class DataObject( QObject, DataContainer ):
     walletDataChanged   = pyqtSignal()
 
     def __init__(self, parent: QWidget=None):
-        super( QObject, self ).__init__( parent )
+        super().__init__( parent )
         self.parentWidget = parent
 
-#         self.dataContainer = DataContainer()
-        
+        self.dataContainer = DataContainer()
+
         self.undoStack = QUndoStack(self)
 
         self.markersChanged.connect( self.updateMarkersFavGroup )
 
         self.favsGrpChanged.connect( self.updateAllFavsGroup )
         self.favsChanged.connect( self.updateAllFavsGroup )
+
+    def store( self, outputDir ):
+        return self.dataContainer.store( outputDir )
+
+    def load( self, inputDir ):
+        return self.dataContainer.load( inputDir )
+
+    ## ======================================================================
+
+    @property
+    def wallet(self) -> WalletData:
+        return self.dataContainer.wallet
+
+    @property
+    def favs(self) -> FavData:
+        return self.dataContainer.favs
+
+    @favs.setter
+    def favs(self, newData: FavData):
+        self.dataContainer.favs = newData
+
+    @property
+    def markers(self) -> MarkersContainer:
+        return self.dataContainer.markers
+
+    @markers.setter
+    def markers(self, newData: MarkersContainer):
+        self.dataContainer.markers = newData
+
+    @property
+    def notes(self) -> Dict[str, str]:
+        return self.dataContainer.notes
+
+    @notes.setter
+    def notes(self, newData: Dict[str, str]):
+        self.dataContainer.notes = newData
+
+    ## ======================================================================
+
+    def getAllFavs(self):
+        return self.dataContainer.getAllFavs()
+
+    def getFavStock(self, favGroup):
+        return self.dataContainer.getFavStock( favGroup )
 
     def addFavGroup(self, name):
         if self.favs.containsGroup( name ):
@@ -137,6 +190,9 @@ class DataObject( QObject, DataContainer ):
 
     ## ======================================================================
 
+    def getMarkersData(self):
+        return self.dataContainer.getMarkersData()
+
     def addMarkersList(self, tickersList, operation):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         markersList = list()
@@ -162,42 +218,80 @@ class DataObject( QObject, DataContainer ):
 
     ## ======================================================================
 
+    def transactionsMatchMode(self):
+        return self.dataContainer.transactionsMatchMode()
+
     def matchTransactionsOldest(self):
-        self.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
+        self.dataContainer.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
         self.walletDataChanged.emit()
 
     def matchTransactionsBest(self):
-        self.userContainer.transactionsMatchMode = TransactionMatchMode.BEST
+        self.dataContainer.userContainer.transactionsMatchMode = TransactionMatchMode.BEST
         self.walletDataChanged.emit()
 
     def matchTransactionsRecent(self):
-        self.userContainer.transactionsMatchMode = TransactionMatchMode.RECENT_PROFIT
+        self.dataContainer.userContainer.transactionsMatchMode = TransactionMatchMode.RECENT_PROFIT
         self.walletDataChanged.emit()
 
     ## ======================================================================
 
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
-        super().importWalletTransactions( dataFrame, addTransactions )
-        
+        self.dataContainer.importWalletTransactions( dataFrame, addTransactions )
+
         self.updateWalletFavGroup()
         self.walletDataChanged.emit()
 
     def updateAllFavsGroup(self):
-        changed = super().updateAllFavsGroup()
+        changed = self.dataContainer.updateAllFavsGroup()
         if changed:
             self.favsGrpChanged.emit( "All" )
 
     def updateWalletFavGroup(self):
-        changed = super().updateWalletFavGroup()
+        changed = self.dataContainer.updateWalletFavGroup()
         if changed:
             self.favsGrpChanged.emit( "Wallet" )
 
     def updateMarkersFavGroup(self):
-        changed = super().updateMarkersFavGroup()
+        changed = self.dataContainer.updateMarkersFavGroup()
         if changed:
             self.favsGrpChanged.emit( "Markers" )
 
     ## ======================================================================
+
+    def getWalletStock(self):
+        return self.dataContainer.getWalletStock()
+
+    def getWalletState(self, includeCommission=True):
+        return self.dataContainer.getWalletState( includeCommission )
+
+    def getWalletBuyTransactions(self):
+        return self.dataContainer.getWalletBuyTransactions()
+
+    def getWalletSellTransactions(self):
+        return self.dataContainer.getWalletSellTransactions()
+
+    def getAllTransactions(self):
+        return self.dataContainer.getAllTransactions()
+
+    def getWalletStockValueData(self, ticker, rangeCode):
+        return self.dataContainer.getWalletStockValueData( ticker, rangeCode )
+
+    def getWalletStockProfitData(self, ticker, rangeCode):
+        return self.dataContainer.getWalletStockProfitData( ticker, rangeCode )
+
+    def getWalletTotalProfitData(self, rangeCode):
+        return self.dataContainer.getWalletTotalProfitData( rangeCode )
+
+    ## ======================================================================
+
+    def loadDownloadedStocks(self):
+        return self.dataContainer.loadDownloadedStocks()
+
+    def refreshStockList(self, forceRefresh=False):
+        return self.dataContainer.refreshStockList( forceRefresh )
+
+    def refreshAllList(self, forceRefresh=False):
+        return self.dataContainer.refreshAllList( forceRefresh )
 
     def refreshStockData(self, forceRefresh=True):
 #         threads = threadlist.QThreadList( self )
@@ -235,11 +329,77 @@ class DataObject( QObject, DataContainer ):
 
         threads.start()
 
+    def dataAllProvidersList(self):
+        return self.dataContainer.dataAllProvidersList()
+
+    def dataStockProvidersList(self):
+        return self.dataContainer.dataStockProvidersList()
+
     @property
     def gpwCurrentHeaders(self) -> Dict[ int, str ]:
-        return self.gpwCurrentSource.stockHeaders
+        return self.dataContainer.gpwCurrentSource.stockHeaders
 
     @gpwCurrentHeaders.setter
     def gpwCurrentHeaders(self, headersDict):
-        self.gpwCurrentSource.stockHeaders = headersDict
+        self.dataContainer.gpwCurrentSource.stockHeaders = headersDict
         self.stockHeadersChanged.emit()
+
+    @property
+    def gpwCurrentSource(self) -> StockData:
+        return self.dataContainer.gpwCurrentSource
+
+    @property
+    def gpwCurrentData(self) -> GpwCurrentStockData:
+        return self.dataContainer.gpwCurrentData
+
+    @property
+    def gpwESPIData(self) -> GpwESPIData:
+        return self.dataContainer.gpwESPIData
+
+    @property
+    def gpwIndexesData(self) -> GpwCurrentIndexesData:
+        return self.dataContainer.gpwIndexesData
+
+    @property
+    def globalIndexesData(self) -> GlobalIndexesData:
+        return self.dataContainer.globalIndexesData
+
+    @property
+    def gpwIndicatorsData(self) -> GpwIndicatorsData:
+        return self.dataContainer.gpwIndicatorsData
+
+    @property
+    def gpwDividendsData(self) -> DividendsCalendarData:
+        return self.dataContainer.gpwDividendsData
+
+    @property
+    def gpwReportsData(self) -> FinRepsCalendarData:
+        return self.dataContainer.gpwReportsData
+
+    @property
+    def gpwPubReportsData(self) -> PublishedFinRepsCalendarData:
+        return self.dataContainer.gpwPubReportsData
+
+    def getStockIntradayDataByTicker(self, ticker):
+        return self.dataContainer.getStockIntradayDataByTicker( ticker )
+
+    def getStockIntradayDataByIsin(self, isin):
+        return self.dataContainer.getStockIntradayDataByIsin( isin )
+
+    def getIndexIntradayDataByIsin(self, isin):
+        return self.dataContainer.getIndexIntradayDataByIsin( isin )
+
+    def getTicker(self, rowIndex):
+        return self.dataContainer.getTicker( rowIndex )
+
+    def getTickerFromIsin(self, stockIsin):
+        return self.dataContainer.getTickerFromIsin( stockIsin )
+
+    def getTickerFromName(self, stockName):
+        return self.dataContainer.getTickerFromName( stockName )
+
+    def getStockIsinFromTicker(self, ticker):
+        return self.dataContainer.getStockIsinFromTicker( ticker )
+
+    def getNameFromTicker(self, ticker):
+        return self.dataContainer.getNameFromTicker( ticker )
