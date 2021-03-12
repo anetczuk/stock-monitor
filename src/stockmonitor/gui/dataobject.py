@@ -86,23 +86,12 @@ def heavy_comp( limit ):
     return fact
 
 
-class DataObject( QObject ):
-
-    favsGrpChanged      = pyqtSignal( str )        ## emit group
-    favsReordered       = pyqtSignal()
-    favsRenamed         = pyqtSignal( str, str )   ## from, to
-    favsChanged         = pyqtSignal()
-
-    markersChanged      = pyqtSignal()
-
-    stockDataChanged    = pyqtSignal()
-    stockHeadersChanged = pyqtSignal()
-    walletDataChanged   = pyqtSignal()
-
-    def __init__(self, parent: QWidget=None):
-        super().__init__( parent )
-        self.parentWidget = parent
-
+##
+##
+##
+class DataContainer():
+    
+    def __init__(self):
         self.userContainer        = UserContainer()                   ## user data
 
         self.gpwCurrentSource     = StockData( GpwCurrentStockData() )
@@ -121,13 +110,6 @@ class DataObject( QObject ):
 
 #         self.gpwIsinMap         = GpwIsinMapData()
 
-        self.undoStack = QUndoStack(self)
-
-        self.markersChanged.connect( self.updateMarkersFavGroup )
-
-        self.favsGrpChanged.connect( self.updateAllFavsGroup )
-        self.favsChanged.connect( self.updateAllFavsGroup )
-
     def store( self, outputDir ):
         outputFile = outputDir + "/gpwcurrentheaders.obj"
         persist.store_object( self.gpwCurrentHeaders, outputFile )
@@ -142,6 +124,8 @@ class DataObject( QObject ):
         self.updateWalletFavGroup()
         self.updateMarkersFavGroup()
         self.updateAllFavsGroup()
+
+    ## ======================================================================
 
     @property
     def wallet(self) -> WalletData:
@@ -173,36 +157,6 @@ class DataObject( QObject ):
         self.userContainer.notes = newData
 
     ## ======================================================================
-
-    def addFavGroup(self, name):
-        if self.favs.containsGroup( name ):
-            return
-        self.undoStack.push( AddFavGroupCommand( self, name ) )
-
-    def renameFavGroup(self, fromName, toName):
-        self.undoStack.push( RenameFavGroupCommand( self, fromName, toName ) )
-
-    def deleteFavGroup(self, name):
-        self.undoStack.push( DeleteFavGroupCommand( self, name ) )
-
-    def addFav(self, group, favItem):
-        currFavsSet = self.favs.getFavs( group )
-        if currFavsSet is None:
-            currFavsSet = set()
-        currFavsSet = set( currFavsSet )
-        newItemsSet = set( favItem )
-        diffSet = newItemsSet - currFavsSet
-        if len(diffSet) < 1:
-            #_LOGGER.warning( "nothing to add: %s input: %s", diffSet, favItem )
-            return
-        self.undoStack.push( AddFavCommand( self, group, diffSet ) )
-
-    def deleteFav(self, group, favItem):
-        itemsSet = set( favItem )
-        self.undoStack.push( DeleteFavCommand( self, group, itemsSet ) )
-
-    def reorderFavGroups(self, newOrder):
-        self.undoStack.push( ReorderFavGroupsCommand( self, newOrder ) )
 
     def getAllFavs(self):
         allFavsSet = set()
@@ -243,45 +197,98 @@ class DataObject( QObject ):
         dataFrame = dataFrame.fillna("-")
         return dataFrame
 
-    def addMarkersList(self, tickersList, operation):
-        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-        markersList = list()
-        for ticker in tickersList:
-            currValue = currentStock.getRecentValue( ticker )
-            newMarker = MarkerEntry()
-            newMarker.ticker = ticker
-            newMarker.value = currValue
-            newMarker.setOperation( operation )
-            markersList.append( newMarker )
-        self.undoStack.push( AddMarkerCommand( self, markersList ) )
-
-    def addMarkerEntry(self, entry):
-        markersList = list()
-        markersList.append( entry )
-        self.undoStack.push( AddMarkerCommand( self, markersList ) )
-
-    def replaceMarkerEntry(self, oldEntry, newEntry):
-        self.undoStack.push( EditMarketCommand( self, oldEntry, newEntry ) )
-
-    def removeMarkerEntry(self, entry):
-        self.undoStack.push( DeleteMarkerCommand( self, entry ) )
-
     ## ======================================================================
 
     def transactionsMatchMode(self):
         return self.userContainer.transactionsMatchMode
 
-    def matchTransactionsOldest(self):
-        self.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
-        self.walletDataChanged.emit()
+    ## ======================================================================
 
-    def matchTransactionsBest(self):
-        self.userContainer.transactionsMatchMode = TransactionMatchMode.BEST
-        self.walletDataChanged.emit()
+    def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
+#         wallet: WalletData = self.wallet
+        importWallet = WalletData()
 
-    def matchTransactionsRecent(self):
-        self.userContainer.transactionsMatchMode = TransactionMatchMode.RECENT_PROFIT
-        self.walletDataChanged.emit()
+        for _, row in dataFrame.iterrows():
+            transTime  = row['trans_time']
+            stockName  = row['name']
+            oper       = row['k_s']
+            amount     = row['amount']
+            unit_price = row['unit_price']
+
+#             print("raw row:", transTime, stockName, oper, amount, unit_price)
+
+            dateObject = None
+            try:
+                ## 31.03.2020 13:21:44
+                dateObject = datetime.strptime(transTime, '%d.%m.%Y %H:%M:%S')
+            except ValueError:
+                dateObject = None
+
+            ticker = self.getTickerFromName( stockName )
+            if ticker is None:
+                _LOGGER.warning( "could not find stock ticker for name: >%s<", stockName )
+                continue
+
+            if oper == "K":
+                importWallet.add( ticker,  amount, unit_price, dateObject, False )
+            elif oper == "S":
+                importWallet.add( ticker, -amount, unit_price, dateObject, False )
+
+        if addTransactions:
+            ## merge wallets
+            self.wallet.addWallet( importWallet )
+        else:
+            ## replace wallet
+            self.userContainer.wallet = importWallet
+
+        self.updateWalletFavGroup()
+
+    def updateAllFavsGroup(self):
+        allFavsSet = self.getAllFavs()
+
+        currFavsSet = self.favs.getFavs( "All" )
+        if currFavsSet is None:
+            currFavsSet = set()
+        else:
+            currFavsSet = set( currFavsSet )
+
+        if allFavsSet != currFavsSet:
+            _LOGGER.debug("updating All favs")
+            self.favs.setFavs( "All", allFavsSet )
+            return True
+        return False
+
+    def updateWalletFavGroup(self):
+        wallet: WalletData = self.wallet
+        walletSet = set( wallet.getCurrentStock() )
+
+        currFavsSet = self.favs.getFavs( "Wallet" )
+        if currFavsSet is None:
+            currFavsSet = set()
+        else:
+            currFavsSet = set( currFavsSet )
+
+        if walletSet != currFavsSet:
+            _LOGGER.debug("updating Wallet favs")
+            self.favs.setFavs( "Wallet", walletSet )
+            return True
+        return False
+
+    def updateMarkersFavGroup(self):
+        markers: MarkersContainer = self.markers
+        markersSet = markers.getTickers()
+
+        currFavsSet = self.favs.getFavs( "Markers" )
+        if currFavsSet is None:
+            currFavsSet = set()
+        else:
+            currFavsSet = set( currFavsSet )
+
+        if markersSet != currFavsSet:
+            _LOGGER.debug("updating Markers favs")
+            self.favs.setFavs( "Markers", markersSet )
+            return True
+        return False
 
     ## ======================================================================
 
@@ -740,92 +747,7 @@ class DataObject( QObject ):
 
         retData = DataFrame( mergedList, columns=["t", "c"] )
         return retData
-
-    def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
-#         wallet: WalletData = self.wallet
-        importWallet = WalletData()
-
-        for _, row in dataFrame.iterrows():
-            transTime  = row['trans_time']
-            stockName  = row['name']
-            oper       = row['k_s']
-            amount     = row['amount']
-            unit_price = row['unit_price']
-
-#             print("raw row:", transTime, stockName, oper, amount, unit_price)
-
-            dateObject = None
-            try:
-                ## 31.03.2020 13:21:44
-                dateObject = datetime.strptime(transTime, '%d.%m.%Y %H:%M:%S')
-            except ValueError:
-                dateObject = None
-
-            ticker = self.getTickerFromName( stockName )
-            if ticker is None:
-                _LOGGER.warning( "could not find stock ticker for name: >%s<", stockName )
-                continue
-
-            if oper == "K":
-                importWallet.add( ticker,  amount, unit_price, dateObject, False )
-            elif oper == "S":
-                importWallet.add( ticker, -amount, unit_price, dateObject, False )
-
-        if addTransactions:
-            ## merge wallets
-            self.wallet.addWallet( importWallet )
-        else:
-            ## replace wallet
-            self.userContainer.wallet = importWallet
-
-        self.walletDataChanged.emit()
-
-        self.updateWalletFavGroup()
-
-    def updateAllFavsGroup(self):
-        allFavsSet = self.getAllFavs()
-
-        currFavsSet = self.favs.getFavs( "All" )
-        if currFavsSet is None:
-            currFavsSet = set()
-        else:
-            currFavsSet = set( currFavsSet )
-
-        if allFavsSet != currFavsSet:
-            _LOGGER.debug("updating All favs")
-            self.favs.setFavs( "All", allFavsSet )
-            self.favsGrpChanged.emit( "All" )
-
-    def updateWalletFavGroup(self):
-        wallet: WalletData = self.wallet
-        walletSet = set( wallet.getCurrentStock() )
-
-        currFavsSet = self.favs.getFavs( "Wallet" )
-        if currFavsSet is None:
-            currFavsSet = set()
-        else:
-            currFavsSet = set( currFavsSet )
-
-        if walletSet != currFavsSet:
-            _LOGGER.debug("updating Wallet favs")
-            self.favs.setFavs( "Wallet", walletSet )
-            self.favsGrpChanged.emit( "Wallet" )
-
-    def updateMarkersFavGroup(self):
-        markers: MarkersContainer = self.markers
-        markersSet = markers.getTickers()
-
-        currFavsSet = self.favs.getFavs( "Markers" )
-        if currFavsSet is None:
-            currFavsSet = set()
-        else:
-            currFavsSet = set( currFavsSet )
-
-        if markersSet != currFavsSet:
-            _LOGGER.debug("updating Markers favs")
-            self.favs.setFavs( "Markers", markersSet )
-            self.favsGrpChanged.emit( "Markers" )
-
+    
     ## ======================================================================
 
     def loadDownloadedStocks(self):
@@ -833,41 +755,6 @@ class DataObject( QObject ):
         for func, args in stockList:
             func( *args )
 
-    def refreshStockData(self, forceRefresh=True):
-#         threads = threadlist.QThreadList( self )
-#         threads = threadlist.SerialList( self )
-        threads = threadlist.QThreadMeasuredList( self )
-#         threads = threadlist.ProcessList( self )
-
-        threads.finished.connect( threads.deleteLater )
-        threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
-
-#         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
-#         threads.appendFunction( heavy_comp, [300000] )
-
-        stockList = self.refreshStockList( forceRefresh )
-        for func, args in stockList:
-            threads.appendFunction( func, args )
-
-        threads.start()
-
-    def refreshAllData(self, forceRefresh=True):
-#         threads = threadlist.QThreadList( self )
-#         threads = threadlist.SerialList( self )
-        threads = threadlist.QThreadMeasuredList( self )
-#         threads = threadlist.ProcessList( self )
-
-        threads.finished.connect( threads.deleteLater )
-        threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
-
-#         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
-#         threads.appendFunction( heavy_comp, [300000] )
-
-        stockList = self.refreshAllList( forceRefresh )
-        for func, args in stockList:
-            threads.appendFunction( func, args )
-
-        threads.start()
 
     def refreshStockList(self, forceRefresh=False):
         stockList = self.dataStockProvidersList()
@@ -918,15 +805,6 @@ class DataObject( QObject ):
     def gpwCurrentData(self) -> GpwCurrentStockData:
         return self.gpwCurrentSource.stockData                  # type: ignore
 
-    @property
-    def gpwCurrentHeaders(self) -> Dict[ int, str ]:
-        return self.gpwCurrentSource.stockHeaders
-
-    @gpwCurrentHeaders.setter
-    def gpwCurrentHeaders(self, headersDict):
-        self.gpwCurrentSource.stockHeaders = headersDict
-        self.stockHeadersChanged.emit()
-
     def getStockIntradayDataByTicker(self, ticker):
         isin = self.getStockIsinFromTicker(ticker)
         return self.gpwStockIntradayData.getData(isin)
@@ -951,3 +829,175 @@ class DataObject( QObject ):
 
     def getNameFromTicker(self, ticker):
         return self.gpwCurrentData.getNameFromTicker( ticker )
+
+
+## ============================================================================
+
+
+##
+##
+##
+class DataObject( QObject, DataContainer ):
+
+    favsGrpChanged      = pyqtSignal( str )        ## emit group
+    favsReordered       = pyqtSignal()
+    favsRenamed         = pyqtSignal( str, str )   ## from, to
+    favsChanged         = pyqtSignal()
+
+    markersChanged      = pyqtSignal()
+
+    stockDataChanged    = pyqtSignal()
+    stockHeadersChanged = pyqtSignal()
+    walletDataChanged   = pyqtSignal()
+
+    def __init__(self, parent: QWidget=None):
+        super( QObject, self ).__init__( parent )
+        self.parentWidget = parent
+
+#         self.dataContainer = DataContainer()
+        
+        self.undoStack = QUndoStack(self)
+
+        self.markersChanged.connect( self.updateMarkersFavGroup )
+
+        self.favsGrpChanged.connect( self.updateAllFavsGroup )
+        self.favsChanged.connect( self.updateAllFavsGroup )
+
+    def addFavGroup(self, name):
+        if self.favs.containsGroup( name ):
+            return
+        self.undoStack.push( AddFavGroupCommand( self, name ) )
+
+    def renameFavGroup(self, fromName, toName):
+        self.undoStack.push( RenameFavGroupCommand( self, fromName, toName ) )
+
+    def deleteFavGroup(self, name):
+        self.undoStack.push( DeleteFavGroupCommand( self, name ) )
+
+    def addFav(self, group, favItem):
+        currFavsSet = self.favs.getFavs( group )
+        if currFavsSet is None:
+            currFavsSet = set()
+        currFavsSet = set( currFavsSet )
+        newItemsSet = set( favItem )
+        diffSet = newItemsSet - currFavsSet
+        if len(diffSet) < 1:
+            #_LOGGER.warning( "nothing to add: %s input: %s", diffSet, favItem )
+            return
+        self.undoStack.push( AddFavCommand( self, group, diffSet ) )
+
+    def deleteFav(self, group, favItem):
+        itemsSet = set( favItem )
+        self.undoStack.push( DeleteFavCommand( self, group, itemsSet ) )
+
+    def reorderFavGroups(self, newOrder):
+        self.undoStack.push( ReorderFavGroupsCommand( self, newOrder ) )
+
+    ## ======================================================================
+
+    def addMarkersList(self, tickersList, operation):
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
+        markersList = list()
+        for ticker in tickersList:
+            currValue = currentStock.getRecentValue( ticker )
+            newMarker = MarkerEntry()
+            newMarker.ticker = ticker
+            newMarker.value = currValue
+            newMarker.setOperation( operation )
+            markersList.append( newMarker )
+        self.undoStack.push( AddMarkerCommand( self, markersList ) )
+
+    def addMarkerEntry(self, entry):
+        markersList = list()
+        markersList.append( entry )
+        self.undoStack.push( AddMarkerCommand( self, markersList ) )
+
+    def replaceMarkerEntry(self, oldEntry, newEntry):
+        self.undoStack.push( EditMarketCommand( self, oldEntry, newEntry ) )
+
+    def removeMarkerEntry(self, entry):
+        self.undoStack.push( DeleteMarkerCommand( self, entry ) )
+
+    ## ======================================================================
+
+    def matchTransactionsOldest(self):
+        self.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
+        self.walletDataChanged.emit()
+
+    def matchTransactionsBest(self):
+        self.userContainer.transactionsMatchMode = TransactionMatchMode.BEST
+        self.walletDataChanged.emit()
+
+    def matchTransactionsRecent(self):
+        self.userContainer.transactionsMatchMode = TransactionMatchMode.RECENT_PROFIT
+        self.walletDataChanged.emit()
+
+    ## ======================================================================
+
+    def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
+        super().importWalletTransactions( dataFrame, addTransactions )
+        
+        self.updateWalletFavGroup()
+        self.walletDataChanged.emit()
+
+    def updateAllFavsGroup(self):
+        changed = super().updateAllFavsGroup()
+        if changed:
+            self.favsGrpChanged.emit( "All" )
+
+    def updateWalletFavGroup(self):
+        changed = super().updateWalletFavGroup()
+        if changed:
+            self.favsGrpChanged.emit( "Wallet" )
+
+    def updateMarkersFavGroup(self):
+        changed = super().updateMarkersFavGroup()
+        if changed:
+            self.favsGrpChanged.emit( "Markers" )
+
+    ## ======================================================================
+
+    def refreshStockData(self, forceRefresh=True):
+#         threads = threadlist.QThreadList( self )
+#         threads = threadlist.SerialList( self )
+        threads = threadlist.QThreadMeasuredList( self )
+#         threads = threadlist.ProcessList( self )
+
+        threads.finished.connect( threads.deleteLater )
+        threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
+
+#         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
+#         threads.appendFunction( heavy_comp, [300000] )
+
+        stockList = self.refreshStockList( forceRefresh )
+        for func, args in stockList:
+            threads.appendFunction( func, args )
+
+        threads.start()
+
+    def refreshAllData(self, forceRefresh=True):
+#         threads = threadlist.QThreadList( self )
+#         threads = threadlist.SerialList( self )
+        threads = threadlist.QThreadMeasuredList( self )
+#         threads = threadlist.ProcessList( self )
+
+        threads.finished.connect( threads.deleteLater )
+        threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
+
+#         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
+#         threads.appendFunction( heavy_comp, [300000] )
+
+        stockList = self.refreshAllList( forceRefresh )
+        for func, args in stockList:
+            threads.appendFunction( func, args )
+
+        threads.start()
+
+    @property
+    def gpwCurrentHeaders(self) -> Dict[ int, str ]:
+        return self.gpwCurrentSource.stockHeaders
+
+    @gpwCurrentHeaders.setter
+    def gpwCurrentHeaders(self, headersDict):
+        self.gpwCurrentSource.stockHeaders = headersDict
+        self.stockHeadersChanged.emit()
