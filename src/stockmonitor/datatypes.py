@@ -29,7 +29,7 @@ import glob
 from typing import Dict, List
 
 from stockmonitor import persist
-from stockmonitor.gui.wallettypes import WalletData, TransactionMatchMode
+from stockmonitor.wallettypes import WalletData, TransactionMatchMode
 
 
 _LOGGER = logging.getLogger(__name__)

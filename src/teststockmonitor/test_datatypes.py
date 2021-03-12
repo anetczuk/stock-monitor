@@ -26,8 +26,7 @@ import unittest
 import pickle
 
 from stockmonitor.datatypes import \
-    MarkersContainer, MarkerEntry
-from stockmonitor.gui.dataobject import FavData
+    MarkersContainer, MarkerEntry, FavData
 
 
 class FavDataTest(unittest.TestCase):
