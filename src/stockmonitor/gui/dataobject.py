@@ -42,6 +42,11 @@ from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
 
+from stockmonitor.datatypes import UserContainer,\
+    FavData, WalletData,\
+    TransactionMatchMode, MarkersContainer,\
+    MarkerEntry
+
 import stockmonitor.gui.threadlist as threadlist
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
 from stockmonitor.gui.command.deletefavgroupcommand import DeleteFavGroupCommand
@@ -49,10 +54,6 @@ from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
 from stockmonitor.gui.command.addfavcommand import AddFavCommand
 from stockmonitor.gui.command.deletefavcommand import DeleteFavCommand
 from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCommand
-from stockmonitor.gui.datatypes import UserContainer,\
-    FavData, WalletData,\
-    TransactionMatchMode, MarkersContainer,\
-    MarkerEntry
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 from stockmonitor.gui.command.addmarkercommand import AddMarkerCommand
 from stockmonitor.gui.command.editmarketcommand import EditMarketCommand

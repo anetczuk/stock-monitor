@@ -362,7 +362,8 @@ class UserContainer():
     ## 2 - extract History class from WalletData
     ## 3 - transactions match mode
     ## 4 - markers
-    _class_version = 4
+    ## 5 - renamed module 'stockmonitor.gui.datatypes' to 'stockmonitor.datatypes'
+    _class_version = 5
 
     def __init__(self):
         self.favs   = FavData()

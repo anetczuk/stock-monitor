@@ -25,7 +25,7 @@ import logging
 
 from PyQt5.QtWidgets import QUndoCommand
 
-from stockmonitor.gui.datatypes import MarkersContainer
+from stockmonitor.datatypes import MarkersContainer
 
 
 _LOGGER = logging.getLogger(__name__)
