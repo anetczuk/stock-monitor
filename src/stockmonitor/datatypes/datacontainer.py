@@ -37,13 +37,13 @@ from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 
-from stockmonitor.datatypes import UserContainer,\
+from stockmonitor.datatypes.datatypes import UserContainer,\
     FavData, WalletData,\
     TransactionMatchMode, MarkersContainer,\
     MarkerEntry
-from stockmonitor.stocktypes import StockData, GpwStockIntradayMap,\
+from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap,\
     GpwIndexIntradayMap
-from stockmonitor.wallettypes import broker_commission, TransHistory
+from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory
 
 
 _LOGGER = logging.getLogger(__name__)

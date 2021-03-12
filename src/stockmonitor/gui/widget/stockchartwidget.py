@@ -25,7 +25,7 @@ import logging
 
 from PyQt5.QtCore import Qt
 
-from stockmonitor.wallettypes import TransHistory
+from stockmonitor.datatypes.wallettypes import TransHistory
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.utils import set_label_url

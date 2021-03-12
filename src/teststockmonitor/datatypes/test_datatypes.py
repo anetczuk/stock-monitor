@@ -25,7 +25,7 @@ import unittest
 
 import pickle
 
-from stockmonitor.datatypes import \
+from stockmonitor.datatypes.datatypes import \
     MarkersContainer, MarkerEntry, FavData
 
 

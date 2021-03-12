@@ -29,7 +29,7 @@ import glob
 from typing import Dict, List
 
 from stockmonitor import persist
-from stockmonitor.wallettypes import WalletData, TransactionMatchMode
+from stockmonitor.datatypes.wallettypes import WalletData, TransactionMatchMode
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -362,7 +362,7 @@ class UserContainer():
     ## 2 - extract History class from WalletData
     ## 3 - transactions match mode
     ## 4 - markers
-    ## 5 - renamed module 'stockmonitor.gui.datatypes' to 'stockmonitor.datatypes'
+    ## 5 - renamed module 'stockmonitor.gui.datatypes' to 'stockmonitor.data.datatypes'
     _class_version = 5
 
     def __init__(self):

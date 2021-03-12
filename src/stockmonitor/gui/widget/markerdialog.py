@@ -26,7 +26,7 @@ import copy
 
 from PyQt5 import QtWidgets, QtGui
 
-from stockmonitor.datatypes import MarkerEntry
+from stockmonitor.datatypes.datatypes import MarkerEntry
 
 from .. import uiloader
 

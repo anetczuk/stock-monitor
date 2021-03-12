@@ -32,10 +32,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
 
-
-from stockmonitor.datatypes import TransactionMatchMode, MarkerEntry
-from stockmonitor.datacontainer import DataContainer
-from stockmonitor.stocktypes import StockData, GpwStockIntradayMap,\
+from stockmonitor.datatypes.datatypes import TransactionMatchMode, MarkerEntry
+from stockmonitor.datatypes.datacontainer import DataContainer
+from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap,\
     GpwIndexIntradayMap
 
 import stockmonitor.gui.threadlist as threadlist

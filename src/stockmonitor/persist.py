@@ -42,9 +42,9 @@ class RenamingUnpickler(pickle.Unpickler):
         
     def find_class(self, module, name):
         if module == 'stockmonitor.gui.datatypes':
-            module = 'stockmonitor.datatypes'
+            module = 'stockmonitor.datatypes.datatypes'
         if module == 'stockmonitor.gui.wallettypes':
-            module = 'stockmonitor.wallettypes'
+            module = 'stockmonitor.datatypes.wallettypes'
         return super().find_class(module, name)
 
 

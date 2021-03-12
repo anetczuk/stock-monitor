@@ -35,7 +35,7 @@ from PyQt5.QtGui import QDesktopServices
 from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
 
-from stockmonitor.datatypes import MarkerEntry
+from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.gui.widget import stockchartwidget, indexchartwidget
 

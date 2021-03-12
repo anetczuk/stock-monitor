@@ -30,7 +30,7 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QTableView
 
-from stockmonitor.datatypes import MarkerEntry
+from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.gui import guistate
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.markerdialog import MarkerDialog
