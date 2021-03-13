@@ -36,7 +36,7 @@ from stockmonitor.datatypes.datatypes import FavData, WalletData,\
     TransactionMatchMode, MarkersContainer,\
     MarkerEntry
 from stockmonitor.datatypes.datacontainer import DataContainer
-from stockmonitor.datatypes.stocktypes import StockData
+from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap
 
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
@@ -168,6 +168,10 @@ class DataObject( QObject ):
     @property
     def gpwCurrentData(self) -> GpwCurrentStockData:
         return self.dataContainer.gpwCurrentData
+
+    @property
+    def gpwStockIntradayData(self) -> GpwStockIntradayMap:
+        return self.dataContainer.gpwStockIntradayData
 
     @property
     def gpwESPIData(self) -> GpwESPIData:
