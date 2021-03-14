@@ -30,13 +30,13 @@ from stockmonitor.gui.dataobject import READONLY_FAV_GROUPS
 from stockmonitor.gui.widget import stockchartwidget
 from stockmonitor.gui.widget import stocktable
 
-from .. import uiloader
+from ... import uiloader
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-DetailsUiClass, DetailsBaseClass = uiloader.load_ui_from_module_path( "widget/espidetails" )
+DetailsUiClass, DetailsBaseClass = uiloader.load_ui_from_module_path( "widget/info/espidetails" )
 
 
 class ESPIDetails( DetailsBaseClass ):                      # type: ignore

@@ -819,7 +819,7 @@
   <customwidget>
    <class>ESPIListWidget</class>
    <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.espiwidget</header>
+   <header>stockmonitor.gui.widget.info.espiwidget</header>
    <container>1</container>
   </customwidget>
   <customwidget>
