@@ -141,10 +141,13 @@ class WorksheetData( BaseWorksheetData ):
         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
 
         currTimestamp = datetime.datetime.today()
-        download_content( url, filePath )
+        self._downloadContent( url, filePath )
 
         timestampPath = self.getTimestampPath()
         persist.store_object_simple(currTimestamp, timestampPath)
+
+    def _downloadContent( self, url, filePath ):
+        download_content( url, filePath )
 
     def parseDataFromDefaultFile(self):
         dataPath = self.getDataPath()
