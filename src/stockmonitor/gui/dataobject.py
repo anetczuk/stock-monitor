@@ -56,6 +56,8 @@ from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCom
 from stockmonitor.gui.command.addmarkercommand import AddMarkerCommand
 from stockmonitor.gui.command.editmarketcommand import EditMarketCommand
 from stockmonitor.gui.command.deletemarkercommand import DeleteMarkerCommand
+from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
+    HistoryShortSellingsData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -200,6 +202,14 @@ class DataObject( QObject ):
     @property
     def gpwPubReportsData(self) -> PublishedFinRepsCalendarData:
         return self.dataContainer.gpwPubReportsData
+
+    @property
+    def gpwCurrentShortSellingsData(self) -> CurrentShortSellingsData:
+        return self.dataContainer.gpwCurrentShortSellingsData
+
+    @property
+    def gpwHistoryShortSellingsData(self) -> HistoryShortSellingsData:
+        return self.dataContainer.gpwHistoryShortSellingsData
 
     ## ======================================================================
 

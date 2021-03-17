@@ -39,8 +39,8 @@ _LOGGER = logging.getLogger(__name__)
 
 def download_content( url, outputPath ):
     try:
-        dirPath = os.path.dirname( outputPath )
-        os.makedirs( dirPath, exist_ok=True )
+#         dirPath = os.path.dirname( outputPath )
+#         os.makedirs( dirPath, exist_ok=True )
         urllib.request.urlretrieve( url, outputPath )
     except urllib.error.HTTPError:
         _LOGGER.exception( "exception when accessing: %s", url )
@@ -139,6 +139,9 @@ class WorksheetData( BaseWorksheetData ):
     def _downloadDataTo( self, filePath ):
         url = self.getDataUrl()
         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
+
+        dirPath = os.path.dirname( filePath )
+        os.makedirs( dirPath, exist_ok=True )
 
         currTimestamp = datetime.datetime.today()
         self._downloadContent( url, filePath )

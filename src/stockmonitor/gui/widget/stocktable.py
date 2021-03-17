@@ -185,14 +185,13 @@ class StockTable( DataFrameTable ):
         self.dataObject.addMarkersList( tickersList, markerOperation )
 
     def _getGpwInfoLinks(self):
-        tickersList = self._getSelectedTickers()
-        if not tickersList:
-            _LOGGER.warning( "unable to get stock info: empty ticker list" )
+        isinsList = self._getSelectedIsins()
+        if not isinsList:
+            _LOGGER.warning( "unable to get stock info: empty isin list" )
             return []
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
-        for ticker in tickersList:
-            isin = self.dataObject.getStockIsinFromTicker( ticker )
+        for isin in isinsList:
             if isin is None:
                 continue
             infoLink = dataAccess.getGpwLinkFromIsin( isin )
@@ -202,14 +201,13 @@ class StockTable( DataFrameTable ):
         return ret
 
     def _getMoneyInfoLinks(self):
-        favList = self._getSelectedTickers()
-        if not favList:
+        isinsList = self._getSelectedIsins()
+        if not isinsList:
             _LOGGER.warning( "unable to open stock info: empty ticker list" )
             return []
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
-        for ticker in favList:
-            isin = self.dataObject.getStockIsinFromTicker( ticker )
+        for isin in isinsList:
             if isin is None:
                 continue
             infoLink = dataAccess.getMoneyLinkFromIsin( isin )
@@ -219,13 +217,13 @@ class StockTable( DataFrameTable ):
         return ret
 
     def _getGoogleInfoLinks(self):
-        favList = self._getSelectedTickers()
-        if not favList:
+        tickerList = self._getSelectedTickers()
+        if not tickerList:
             _LOGGER.warning( "unable to get stock info: empty ticker list" )
             return []
         dataAccess = self.dataObject.gpwCurrentData
         ret = []
-        for ticker in favList:
+        for ticker in tickerList:
             infoLink = dataAccess.getGoogleLinkFromTicker( ticker )
             if infoLink is not None:
                 ret.append( infoLink )
@@ -237,15 +235,20 @@ class StockTable( DataFrameTable ):
         ## reimplement if needed
         return list()
 
-#     ## returns list of isins
-#     ## reimplement if needed
-#     def _getSelectedIsins(self) -> List[str]:
-#         retList = set()
-#         tickersList = self._getSelectedTickers()
-#         for ticker in tickersList:
-#             isin = self.dataObject.getStockIsinFromTicker(ticker)
-#             retList.add( isin )
-#         return list(retList)
+    ## returns list of isins
+    def _getSelectedIsins(self) -> List[str]:
+        ## reimplement if needed
+        tickerList = self._getSelectedTickers()
+        if not tickerList:
+            _LOGGER.warning( "unable to open stock info: empty ticker list" )
+            return []
+        ret = []
+        for ticker in tickerList:
+            isin = self.dataObject.getStockIsinFromTicker( ticker )
+            if isin is None:
+                continue
+            ret.append( isin )
+        return ret
 
 
 ## ====================================================================

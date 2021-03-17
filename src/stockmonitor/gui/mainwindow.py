@@ -131,6 +131,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.reportswidget.connectData( self.data )
         self.ui.recentrepswidget.connectData( self.data )
         self.ui.dividendswidget.connectData( self.data )
+        self.ui.shortswidget.connectData( self.data )
 
         self.ui.gpwIndexesSourceLabel.setOpenExternalLinks(True)
         indexesDataAccess = self.data.gpwIndexesData
@@ -267,6 +268,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.reportswidget.refreshData()
         self.ui.recentrepswidget.refreshData()
         self.ui.dividendswidget.refreshData()
+        self.ui.shortswidget.refreshData()
 
         self.refreshAction.setEnabled( True )
         self.ui.refreshAllPB.setEnabled( True )

@@ -29,15 +29,15 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable, stock_background_color
-from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.utils import set_label_url
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class IndicatorsTable( StockTable ):
+class ShortSellingsTable( StockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -46,25 +46,25 @@ class IndicatorsTable( StockTable ):
 
     ## override
     def _getSelectedTickers(self) -> List[str]:
-        parent = self.parent()
-        selectedData = self.getSelectedData( 2 )                ## name
-        tickersSet = set()
-        for name in selectedData:
-            ticker = parent.getTickerFromName( name )
-            tickersSet.add( ticker )
-        return list(tickersSet)
+        isinSet = self.getSelectedData( 2 )
+        retList = []
+        for isin in isinSet:
+            ticker = self.dataObject.getTickerFromIsin( isin )
+            retList.append( ticker )
+        return retList
 
     ## override
     def _getSelectedIsins(self) -> List[str]:
-        selectedData = self.getSelectedData( 1 )                ## isin
-        return list( selectedData )
+        isinSet = self.getSelectedData( 2 )
+        return list( isinSet )
 
 
-class IndicatorsColorDelegate( TableRowColorDelegate ):
+class ShortSellingsColorDelegate( TableRowColorDelegate ):
 
-    def __init__(self, widget: 'IndicatorsWidget'):
+    def __init__(self, dataAccess, dataObject: DataObject):
         super().__init__()
-        self.widget = widget
+        self.dataAccess = dataAccess
+        self.dataObject = dataObject
 
 #     def foreground(self, index: QModelIndex ):
 #         ## reimplement if needed
@@ -72,53 +72,72 @@ class IndicatorsColorDelegate( TableRowColorDelegate ):
 
     def background(self, index: QModelIndex ):
         dataRow = index.row()
-        ticker = self.widget.getTicker( dataRow )
-        return stock_background_color( self.widget.dataObject, ticker )
+        isin = self.dataAccess.getISIN( dataRow )
+        ticker = self.dataObject.getTickerFromIsin( isin )
+        return stock_background_color( self.dataObject, ticker )
 
 
-class IndicatorsWidget( QWidget ):
+class ShortSellingsWidget( QWidget ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
 
-        self.dataObject: DataObject = None
-        self.dataAccess = None
+        self.dataObject  = None
+        self.currentData = None
+        self.historyData = None
 
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.setContentsMargins( 0, 0, 0, 0 )
         self.setLayout( vlayout )
-        self.dataTable = IndicatorsTable(self)
-        vlayout.addWidget( self.dataTable )
 
+        ## label row
+        sourceText = QtWidgets.QLabel(self)
+        sourceText.setText("Current short sellings:")
+        vlayout.addWidget( sourceText )
+
+        ## current shorts row
+        self.currentShortsTable = ShortSellingsTable(self)
+        self.currentShortsTable.setObjectName("currentshortstable")
+        vlayout.addWidget( self.currentShortsTable )
+
+        ## label row
+        sourceText = QtWidgets.QLabel(self)
+        sourceText.setText("History of short sellings:")
+        vlayout.addWidget( sourceText )
+
+        ## history shorts row
+        self.historyShortsTable = ShortSellingsTable(self)
+        self.historyShortsTable.setObjectName("historyshortstable")
+        vlayout.addWidget( self.historyShortsTable )
+
+        ## source info row
         hlayout = QtWidgets.QHBoxLayout()
         sourceText = QtWidgets.QLabel(self)
         sourceText.setText("Source:")
         hlayout.addWidget( sourceText )
-
         self.sourceLabel = QtWidgets.QLabel(self)
         self.sourceLabel.setOpenExternalLinks(True)
         hlayout.addWidget( self.sourceLabel, 1 )
-
         vlayout.addLayout( hlayout )
 
     def connectData(self, dataObject: DataObject):
         self.dataObject = dataObject
-        self.dataAccess = self.dataObject.gpwIndicatorsData
+        self.currentData = self.dataObject.gpwCurrentShortSellingsData
+        self.historyData = self.dataObject.gpwHistoryShortSellingsData
 
-        set_label_url( self.sourceLabel, self.dataAccess.sourceLink() )
+        colorDecorator = ShortSellingsColorDelegate( self.currentData, self.dataObject )
+        self.currentShortsTable.setColorDelegate( colorDecorator )
+        self.currentShortsTable.connectData( self.dataObject )
 
-        colorDecorator = IndicatorsColorDelegate( self )
-        self.dataTable.setColorDelegate( colorDecorator )
+        colorDecorator = ShortSellingsColorDelegate( self.historyData, self.dataObject )
+        self.historyShortsTable.setColorDelegate( colorDecorator )
+        self.historyShortsTable.connectData( self.dataObject )
 
-        self.dataTable.connectData( self.dataObject )
+        set_label_url( self.sourceLabel, self.currentData.sourceLink() )
 
     def refreshData(self):
-        dataFrame = self.dataAccess.getWorksheet()
-        self.dataTable.setData( dataFrame )
+        currentFrame = self.currentData.getWorksheet()
+        self.currentShortsTable.setData( currentFrame )
 
-    def getTicker(self, dataRow):
-        stockIsin = self.dataAccess.getStockIsin( dataRow )
-        return self.dataObject.getTickerFromIsin( stockIsin )
-
-    def getTickerFromName(self, stockName):
-        return self.dataObject.getTickerFromName( stockName )
+        historyFrame = self.historyData.getWorksheet()
+        self.historyShortsTable.setData( historyFrame )

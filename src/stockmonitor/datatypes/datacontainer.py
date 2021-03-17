@@ -41,6 +41,7 @@ from stockmonitor.datatypes.datatypes import UserContainer,\
 from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap,\
     GpwIndexIntradayMap
 from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory
+from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,6 +68,9 @@ class DataContainer():
 
         self.gpwReportsData     = FinRepsCalendarData()
         self.gpwPubReportsData  = PublishedFinRepsCalendarData()
+
+        self.gpwCurrentShortSellingsData = CurrentShortSellingsData()
+        self.gpwHistoryShortSellingsData = HistoryShortSellingsData()
 
 #         self.gpwIsinMap         = GpwIsinMapData()
 
@@ -747,6 +751,7 @@ class DataContainer():
         retList.append( self.gpwDividendsData )
         retList.append( self.gpwReportsData )
         retList.append( self.gpwPubReportsData )
+        retList.append( self.gpwCurrentShortSellingsData )
 #         retList.append( self.gpwIsinMap )
         return retList
 

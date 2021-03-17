@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>859</width>
     <height>600</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>6</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="toolsTab">
        <attribute name="title">
@@ -96,7 +96,7 @@
         <item>
          <widget class="QTabWidget" name="infoTabWidget">
           <property name="currentIndex">
-           <number>4</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="indicatorsTab">
            <attribute name="title">
@@ -211,6 +211,28 @@
                </widget>
               </item>
              </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="shortsTab">
+           <attribute name="title">
+            <string>Short Sellings</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_22">
+            <property name="leftMargin">
+             <number>6</number>
+            </property>
+            <property name="topMargin">
+             <number>6</number>
+            </property>
+            <property name="rightMargin">
+             <number>6</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="ShortSellingsWidget" name="shortswidget" native="true"/>
             </item>
            </layout>
           </widget>
@@ -627,7 +649,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>859</width>
      <height>22</height>
     </rect>
    </property>
@@ -832,6 +854,12 @@
    <class>MarkersWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.markerswidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ShortSellingsWidget</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.info.shortsellingswidget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

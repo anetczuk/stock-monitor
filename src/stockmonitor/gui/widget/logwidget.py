@@ -83,16 +83,16 @@ class AutoScrollTextEdit( QtWidgets.QTextEdit ):
 #         verticalBar = self.verticalScrollBar()
 #         print( "_textChanged", "val:", verticalBar.value() )
 
-#     def _scrollRangeChanged(self, minVal, maxVal):
-    def _scrollRangeChanged(self, _, maxVal):
+    def _scrollRangeChanged(self, minVal, maxVal):
+#     def _scrollRangeChanged(self, _, maxVal):
         verticalBar = self.verticalScrollBar()
-#         print( "_scrollRangeChanged", "min:", minVal, "max:", maxVal, "val:", verticalBar.value() )
+        print( "_scrollRangeChanged", "min:", minVal, "max:", maxVal, "val:", verticalBar.value() )
         if self.autoScroll:
             verticalBar.setValue( maxVal )
 
     def _scrollValueChanged(self, value):
         verticalBar = self.verticalScrollBar()
-#         print( "_scrollValueChanged", "val:", value, "max:", verticalBar.maximum() )
+        print( "_scrollValueChanged", "val:", value, "max:", verticalBar.maximum() )
         if self.autoScroll:
             if value != verticalBar.maximum():
                 verticalBar.setValue( verticalBar.maximum() )

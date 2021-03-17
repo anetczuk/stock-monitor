@@ -40,19 +40,21 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
 #     def test__grabContent(self):
 #         url = self.dataAccess.getDataUrl()
 #         content = self.dataAccess._grabContent( url )
-#         print( content )
+#         self.assertTrue( content )
+#         print( "grabbed content:\n", content )
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "shortsellings-current.html" )
         currData = self.dataAccess.parseDataFromFile( filePath )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 6)
+        self.assertEqual(dataLen, 5)
 
 #     def test_getWorksheet(self):
 #         currData = self.dataAccess.getWorksheet( True )
+# #         print( "downloaded dataframe:\n", currData )
 #         self.assertTrue( currData is not None )
 #         dataLen = len( currData )
-#         self.assertEqual(dataLen, 6)
+#         self.assertEqual(dataLen, 4)
 
 
 class HistoryShortSellingsDataTest(unittest.TestCase):
@@ -69,10 +71,11 @@ class HistoryShortSellingsDataTest(unittest.TestCase):
         filePath = get_data_path( "shortsellings-history.html" )
         currData = self.dataAccess.parseDataFromFile( filePath )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 31)
+        self.assertEqual(dataLen, 30)
 
 #     def test_getWorksheet(self):
 #         currData = self.dataAccess.getWorksheet( True )
+#         print( "downloaded dataframe:\n", currData )
 #         self.assertTrue( currData is not None )
 #         dataLen = len( currData )
-#         self.assertEqual(dataLen, 31)
+#         self.assertEqual(dataLen, 30)

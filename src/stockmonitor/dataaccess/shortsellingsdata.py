@@ -41,7 +41,6 @@ def grab_content( url, button ):
         currSession.headers.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"})
         content = currSession.get( url ).content
         soup = BeautifulSoup( content, "html.parser" )
-#             print( "aaaaa\n", soup )
 
         postUrl = "https://rss.knf.gov.pl/RssOuterView/faces/start2OuterView.xhtml"
         postData = {}
@@ -54,9 +53,9 @@ def grab_content( url, button ):
         prepped = req.prepare()
 
         resp = currSession.send( prepped )
-        soup = BeautifulSoup( resp.content, "html.parser" )
-#             print( soup )
-        return soup
+
+        strcontent = resp.content.decode( "utf-8" )
+        return strcontent
 
     ## old version
 #         session = dryscrape.Session()
@@ -69,11 +68,22 @@ def grab_content( url, button ):
 ## https://rss.knf.gov.pl/RssOuterView/
 class CurrentShortSellingsData( WorksheetData ):
 
+    def getISIN(self, rowIndex):
+        dataFrame = self.getWorksheet()
+#         print( "xxx", dataFrame )
+        tickerColumn = dataFrame["ISIN"]
+        return tickerColumn.iloc[ rowIndex ]
+
     ## override
     def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "parsing data file: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
+        dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = dataFrame[3]
+
+#         print( "raw dataframe:\n", dataFrame )
+        dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
+        dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
+
         dataFrame = dataFrame.fillna("-")
         return dataFrame
 
@@ -103,11 +113,21 @@ class CurrentShortSellingsData( WorksheetData ):
 ## https://rss.knf.gov.pl/RssOuterView/
 class HistoryShortSellingsData( WorksheetData ):
 
+    def getISIN(self, rowIndex):
+        dataFrame = self.getWorksheet()
+#         print( "xxx", dataFrame )
+        tickerColumn = dataFrame["ISIN"]
+        return tickerColumn.iloc[ rowIndex ]
+
     ## override
     def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "parsing data file: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
+        dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = dataFrame[3]
+
+        dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
+        dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
+
         dataFrame = dataFrame.fillna("-")
         return dataFrame
 
