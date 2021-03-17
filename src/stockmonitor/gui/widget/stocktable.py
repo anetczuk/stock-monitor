@@ -86,13 +86,14 @@ class StockTable( DataFrameTable ):
         if tickersList:
             self._addFavActions( contextMenu )
 
-        markersSubMenu = contextMenu.addMenu("Add to markers")
-        markersBuyAction = markersSubMenu.addAction( "Buy" )
-        markersBuyAction.setData( MarkerEntry.OperationType.BUY )
-        markersBuyAction.triggered.connect( self._addToMarkersAction )
-        markersBuyAction = markersSubMenu.addAction( "Sell" )
-        markersBuyAction.setData( MarkerEntry.OperationType.SELL )
-        markersBuyAction.triggered.connect( self._addToMarkersAction )
+            markersSubMenu = contextMenu.addMenu("Add to markers")
+            markersBuyAction = markersSubMenu.addAction( "Buy" )
+            markersBuyAction.setData( MarkerEntry.OperationType.BUY )
+            markersBuyAction.triggered.connect( self._addToMarkersAction )
+            markersBuyAction = markersSubMenu.addAction( "Sell" )
+            markersBuyAction.setData( MarkerEntry.OperationType.SELL )
+            markersBuyAction.triggered.connect( self._addToMarkersAction )
+
         contextMenu.addSeparator()
 
         filterDataAction    = contextMenu.addAction("Filter data")
