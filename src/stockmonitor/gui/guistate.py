@@ -116,6 +116,7 @@ def load_state(window: QMainWindow, settings: QSettings):
             if stretchLastValue:
                 colsNum = header.count()
                 w.resizeColumnToContents( colsNum - 1 )
+        settings.endGroup()
 
     widgets = window.findChildren( QtWidgets.QTableWidget )
     widgetsList = sort_widgets( widgets )
@@ -195,8 +196,8 @@ def save_state(window: QMainWindow, settings: QSettings):
     widgets = window.findChildren( QtWidgets.QTableView )
     widgetsList = sort_widgets( widgets )
     for w, wKey in widgetsList:
-        colsNum = w.model().columnCount()
         settings.beginGroup( wKey )
+        colsNum = w.model().columnCount()
         for c in range(0, colsNum):
             settings.setValue( "column" + str(c), w.columnWidth(c) )
         header = w.horizontalHeader()
@@ -206,12 +207,13 @@ def save_state(window: QMainWindow, settings: QSettings):
         settings.setValue( "sortOrder", sortOrder )
         stretchLast = header.stretchLastSection()
         settings.setValue( "stretchLast", stretchLast )
+        settings.endGroup()
 
     widgets = window.findChildren( QtWidgets.QTableWidget )
     widgetsList = sort_widgets( widgets )
     for w, wKey in widgetsList:
-        colsNum = w.columnCount()
         settings.beginGroup( wKey )
+        colsNum = w.columnCount()
         for c in range(0, colsNum):
             settings.setValue( "column" + str(c), w.columnWidth(c) )
         header = w.horizontalHeader()
@@ -224,9 +226,9 @@ def save_state(window: QMainWindow, settings: QSettings):
     widgets = window.findChildren( QtWidgets.QTreeView )
     widgetsList = sort_widgets( widgets )
     for w, wKey in widgetsList:
+        settings.beginGroup( wKey )
         header = w.header()
         colsNum = header.count()
-        settings.beginGroup( wKey )
         for c in range(0, colsNum):
             settings.setValue( "column" + str(c), w.columnWidth(c) )
         sortColumn = header.sortIndicatorSection()
