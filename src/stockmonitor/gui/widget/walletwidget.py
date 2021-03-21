@@ -73,7 +73,8 @@ class WalletColorDelegate( TableRowColorDelegate ):
 
     def foreground(self, index: QModelIndex ):
         dataColumn = index.column()
-        if dataColumn == 4 or dataColumn == 10:
+        ## "Zm.do k.odn.[%]" or "Zysk [%]"
+        if dataColumn == 5 or dataColumn == 9:
             stockChangeString = index.data()
             if stockChangeString != "-":
                 stockChange = float(stockChangeString)

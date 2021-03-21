@@ -257,9 +257,12 @@ class DataContainer():
 
     # pylint: disable=R0914
     def getWalletStock(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs", "Zm.do k.odn.[%]",
-                        "Średni kurs nabycia", "Wartość [PLN]", "Zm.do k.odn.[PLN]", "Udział [%]",
-                        "Zysk [PLN]", "Zysk [%]", "Zysk całkowity [PLN]" ]
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Średni kurs nabycia",
+                        "Kurs",
+                        "Zm.do k.odn.[%]", "Zm.do k.odn.[PLN]",
+                        "Wartość [PLN]", "Udział [%]",
+                        "Zysk [%]", "Zysk [PLN]", "Zysk całkowity [PLN]" ]
+
         # apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
 
         walletState = self.getWalletState()
@@ -279,9 +282,9 @@ class DataContainer():
                 rowDict = {}
                 rowDict[ columnsList[ 0] ] = "-"
                 rowDict[ columnsList[ 1] ] = ticker
-                rowDict[ columnsList[ 2] ] = amount
-                rowDict[ columnsList[ 3] ] = buy_unit_price
-                rowDict[ columnsList[ 4] ] = "-"
+                rowDict[ columnsList[ 2] ] = amount                 ## liczba
+                rowDict[ columnsList[ 3] ] = "-"                    ## sredni kurs nabycia
+                rowDict[ columnsList[ 4] ] = buy_unit_price         ## kurs
                 rowDict[ columnsList[ 5] ] = "-"
                 rowDict[ columnsList[ 6] ] = "-"
                 rowDict[ columnsList[ 7] ] = "-"
@@ -320,16 +323,16 @@ class DataContainer():
             rowDict = {}
             rowDict[ columnsList[ 0] ] = stockName
             rowDict[ columnsList[ 1] ] = ticker
-            rowDict[ columnsList[ 2] ] = amount
-            rowDict[ columnsList[ 3] ] = round( currUnitValue, 2 )
-            rowDict[ columnsList[ 4] ] = round( currChangePnt, 2 )
-            rowDict[ columnsList[ 5] ] = round( buy_unit_price, 4 )
-            rowDict[ columnsList[ 6] ] = round( currValue, 2 )
-            rowDict[ columnsList[ 7] ] = round( valueChange, 2 )
-            rowDict[ columnsList[ 8] ] = round( participation, 2 )
-            rowDict[ columnsList[ 9] ] = round( profit, 2 )
-            rowDict[ columnsList[10] ] = round( profitPnt, 2 )
-            rowDict[ columnsList[11] ] = round( totalProfit, 2 )
+            rowDict[ columnsList[ 2] ] = amount                         ## liczba
+            rowDict[ columnsList[ 3] ] = round( buy_unit_price, 4 )     ## sredni kurs nabycia
+            rowDict[ columnsList[ 4] ] = round( currUnitValue, 2 )      ## kurs
+            rowDict[ columnsList[ 5] ] = round( currChangePnt, 2 )      ## zm. kur. odn %
+            rowDict[ columnsList[ 6] ] = round( valueChange, 2 )        ## zm. kur. odn. PLN
+            rowDict[ columnsList[ 7] ] = round( currValue, 2 )          ## wartosc
+            rowDict[ columnsList[ 8] ] = round( participation, 2 )      ## udzial
+            rowDict[ columnsList[ 9] ] = round( profitPnt, 2 )          ## zysk %
+            rowDict[ columnsList[10] ] = round( profit, 2 )             ## zysk PLN
+            rowDict[ columnsList[11] ] = round( totalProfit, 2 )        ## zysk calk.
             rowsList.append( rowDict )
 
         dataFrame = DataFrame( rowsList )
