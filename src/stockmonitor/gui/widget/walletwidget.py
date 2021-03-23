@@ -154,12 +154,8 @@ class WalletStockTable( StockTable ):
         import_mb_transactions( self.dataObject, dataPath )
 
     def _getSelectedTickers(self):
-        return self.getSelectedData( 1 )                ## ticker
-
-    ## returns list of isins
-    def _getSelectedIsins(self) -> List[str]:
-        selectedData = self.getSelectedData( 12 )                ## isin
-        return list( selectedData )
+        selectedData = self.getSelectedData( 1 )                ## ticker
+        return selectedData
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
