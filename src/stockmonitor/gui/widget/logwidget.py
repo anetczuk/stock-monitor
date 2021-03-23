@@ -75,9 +75,9 @@ class AutoScrollTextEdit( QtWidgets.QTextEdit ):
 
         cursor = self.textCursor()
         pos = cursor.position()
-        
+
         self.setPlainText( content )
-        
+
         cursor = self.textCursor()
         cursor.setPosition( pos )
         self.setTextCursor( cursor )
@@ -96,17 +96,17 @@ class AutoScrollTextEdit( QtWidgets.QTextEdit ):
                 self.switchAutoScroll.emit( False )
             super().keyPressEvent( event )
             return
-        
+
         moved = self._isMoveDown( event )
-        if moved == False:
+        if not moved:
             ## not moved down -- regular behaviour
             super().keyPressEvent( event )
             return
-        
+
         ## moved down
         super().keyPressEvent( event )
         self._handlePositionChange()
-        
+
     def _isMoveUp(self, event):
         if event.key() == QtCore.Qt.Key_Up:
             return True
@@ -134,7 +134,7 @@ class AutoScrollTextEdit( QtWidgets.QTextEdit ):
             super().wheelEvent( event )
             return
 
-        ## scrolling down        
+        ## scrolling down
         super().wheelEvent( event )
         self._handlePositionChange()
 
@@ -145,7 +145,7 @@ class AutoScrollTextEdit( QtWidgets.QTextEdit ):
             ## did reach the bottom
             self.switchAutoScroll.emit( True )
 
-    def _scrollRangeChanged(self, minVal, maxVal):
+    def _scrollRangeChanged(self, _, maxVal):
 #     def _scrollRangeChanged(self, _, maxVal):
         verticalBar = self.verticalScrollBar()
 #         print( "_scrollRangeChanged", "min:", minVal, "max:", maxVal, "val:", verticalBar.value() )
