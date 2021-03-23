@@ -37,7 +37,7 @@ import sys
 import logging
 import argparse
 
-# from PyQt5 import QtCore
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
@@ -78,6 +78,16 @@ app.setQuitOnLastWindowClosed( True )
 setup_interrupt_handling()
 
 window = create_window()
+
+
+def timer_tick():
+    _LOGGER.info( "Timer tick" )
+
+
+tickTimer = QtCore.QTimer( window )
+tickTimer.timeout.connect( timer_tick )
+tickTimer.start( 8000 )                           ## every second
+
 
 # window.setWindowTitleSuffix( "Preview" )
 # window.setWindowTitle( window.windowTitle() )
