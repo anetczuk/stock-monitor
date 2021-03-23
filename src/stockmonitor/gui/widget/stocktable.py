@@ -53,13 +53,16 @@ class StockTable( DataFrameTable ):
     def connectData(self, dataObject):
         self.dataObject = dataObject
 
-    def contextMenuEvent( self, _ ):
-        contextMenu = self.createContextMenu()
+    def contextMenuEvent( self, event ):
+        evPos  = event.pos()
+        mIndex = self.indexAt( evPos )
+        contextMenu = self.createContextMenu( mIndex )
         globalPos = QCursor.pos()
         contextMenu.exec_( globalPos )
 
-    def createContextMenu(self):
-        contextMenu         = QMenu(self)
+    def createContextMenu(self, _):
+#     def createContextMenu(self, itemIndex):
+        contextMenu = QMenu(self)
 
         if self.dataObject is not None:
             self._addOpenChartAction( contextMenu )
@@ -326,8 +329,9 @@ class StockIndexesTable( StockTable ):
 #         colorDecorator = ToolStockColorDelegate( self.dataObject )
 #         self.setColorDelegate( colorDecorator )
 
-    def createContextMenu(self):
-        contextMenu         = QMenu(self)
+    ## override
+    def createContextMenu(self, _):
+        contextMenu = QMenu(self)
 
         if self.dataObject is not None:
             self._addOpenChartAction( contextMenu )
@@ -531,10 +535,17 @@ def stock_background_color( dataObject, ticker ):
 def insert_new_action( menu: QMenu, text: str, index: int ):
     actionsList = menu.actions()
     if index >= len( actionsList ):
-        return menu.addAction( text )
+        if text:
+            return menu.addAction( text )
+        return menu.addSeparator()
     indexAction = actionsList[index]
-    newAction = QAction( text, menu )
-    menu.insertAction( indexAction, newAction )
+    if text:
+        newAction = QAction( text, menu )
+        menu.insertAction( indexAction, newAction )
+    else:
+        newAction = QAction( menu )
+        newAction.setSeparator( True )
+        menu.insertAction( indexAction, newAction )
     return newAction
 
 

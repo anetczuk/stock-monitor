@@ -500,16 +500,21 @@ class DataFrameTable( QTableView ):
 
         self.verticalHeader().hide()
 
-        self.pandaModel = DataFrameTableModel( None )
         proxyModel = DFProxyModel(self)
-        proxyModel.setSourceModel( self.pandaModel )
         self.setModel( proxyModel )
+        pandaModel = DataFrameTableModel( None )
+        self.setSourceModel( pandaModel )
 
         self.setData( DataFrame() )
 
         self.doubleClicked.connect( self.linkClicked )
 
         self.installEventFilter( self )
+
+    def setSourceModel(self, model):
+        self.pandaModel = model
+        proxyModel = self.model()
+        proxyModel.setSourceModel( self.pandaModel )
 
     def addProxyModel(self, nextProxyModel):
         sinkModel   = self.model()

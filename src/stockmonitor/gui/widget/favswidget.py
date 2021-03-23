@@ -96,8 +96,9 @@ class StockFavsTable( StockTable ):
     def updateView(self):
         self.setHeadersText( self.dataObject.gpwCurrentHeaders )
 
-    def createContextMenu(self):
-        contextMenu = super().createContextMenu()
+    ## override
+    def createContextMenu(self, itemIndex):
+        contextMenu = super().createContextMenu( itemIndex )
         if self.favGroup not in READONLY_FAV_GROUPS:
             if self.dataObject is not None:
                 remFavAction = insert_new_action(contextMenu, "Remove fav", 1)

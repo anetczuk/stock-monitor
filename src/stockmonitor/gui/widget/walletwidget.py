@@ -22,7 +22,6 @@
 #
 
 import logging
-from typing import List
 
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QModelIndex
@@ -107,8 +106,9 @@ class WalletStockTable( StockTable ):
         colorDecorator = WalletColorDelegate( dataObject )
         self.setColorDelegate( colorDecorator )
 
-    def createContextMenu(self):
-        contextMenu = super().createContextMenu()
+    ## override
+    def createContextMenu(self, itemIndex):
+        contextMenu = super().createContextMenu( itemIndex )
         if self.dataObject is not None:
             tickersList = self._getSelectedTickers()
             if tickersList:

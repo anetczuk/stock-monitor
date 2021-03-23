@@ -24,144 +24,22 @@
 import logging
 from datetime import timedelta
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QModelIndex
-from PyQt5.QtWidgets import QTableView
 
 from stockmonitor.datatypes.datatypes import MarkerEntry
-from stockmonitor.gui import guistate
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.markerdialog import MarkerDialog
 from stockmonitor.gui.widget.dataframetable import DataFrameTableModel,\
     TableRowColorDelegate
+from stockmonitor.gui.widget.stocktable import StockTable, insert_new_action
 from stockmonitor.gui.widget.stocktable import marker_background_color
 
 from .. import uiloader
 
 
 _LOGGER = logging.getLogger(__name__)
-
-
-# class MarkersTableModel( QAbstractTableModel ):
-#
-#     def __init__(self, data: DataFrame):
-#         super().__init__()
-#         self._rawData: DataFrame = data
-#
-#     # pylint: disable=R0201
-#     def getItem(self, itemIndex: QModelIndex):
-#         if itemIndex.isValid():
-#             return itemIndex.internalPointer()
-#         return None
-#
-#     def setContent(self, data: DataFrame):
-#         self.beginResetModel()
-#         self._rawData = data
-#         self.endResetModel()
-#
-#     # pylint: disable=W0613
-#     def rowCount(self, parent=None):
-#         if self._rawData is None:
-#             return 0
-#         return self._rawData.size()
-#
-#     # pylint: disable=W0613
-#     def columnCount(self, parnet=None):
-#         if self._rawData is None:
-#             return 0
-#         attrsList = self.attributeLabels()
-#         return len( attrsList )
-#
-#     def headerData(self, section, orientation, role):
-#         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-#             attrsList = self.attributeLabels()
-#             return attrsList[ section ]
-#         return super().headerData( section, orientation, role )
-#
-#     ## for invalid parent return elements form root list
-#     def index(self, row, column, parent: QModelIndex):
-#         if not self.hasIndex(row, column, parent):
-#             return QModelIndex()
-#         entry = self._rawData.get( row )
-#         return self.createIndex(row, column, entry)
-#
-#     def data(self, index: QModelIndex, role=Qt.DisplayRole):
-#         if not index.isValid():
-#             return None
-#
-#         if role == Qt.DisplayRole:
-#             entry = self._rawData.get( index.row() )
-#             rawData = self.attribute( entry, index.column() )
-#             if rawData is None:
-#                 return "-"
-#             if isinstance(rawData, time):
-#                 return rawData.strftime("%H:%M")
-#             if isinstance(rawData, timedelta):
-#                 return print_timedelta( rawData )
-#             if isinstance(rawData, datetime):
-#                 return rawData.strftime("%Y-%m-%d %H:%M")
-#             strData = str(rawData)
-#             return strData
-#
-#         if role == Qt.UserRole:
-#             entry = self._rawData.get( index.row() )
-#             rawData = self.attribute( entry, index.column() )
-#             return rawData
-#
-#         if role == Qt.EditRole:
-#             entry = self._rawData.get( index.row() )
-#             rawData = self.attribute( entry, index.column() )
-#             return rawData
-#
-#         if role == Qt.TextAlignmentRole:
-#             if index.column() == 6:
-#                 return Qt.AlignLeft | Qt.AlignVCenter
-#             return Qt.AlignHCenter | Qt.AlignVCenter
-#
-#         return None
-#
-#     def getIndex(self, item, parentIndex: QModelIndex=None, column: int = 0):
-#         if parentIndex is None:
-#             parentIndex = QModelIndex()
-#         if parentIndex.isValid():
-#             # dataTask = parentIndex.data( Qt.UserRole )
-#             dataTask = parentIndex.internalPointer()
-#             if dataTask == item:
-#                 return parentIndex
-#         elems = self.rowCount( parentIndex )
-#         for i in range(elems):
-#             index = self.index( i, column, parentIndex )
-#             if index.isValid() is False:
-#                 continue
-#             # dataTask = parentIndex.data( Qt.UserRole )
-#             dataTask = index.internalPointer()
-#             if dataTask == item:
-#                 return index
-#         return None
-#
-#     def attribute(self, entry: MarkerEntry, index):
-#         if index == 0:
-#             #TODO: implement
-#             return "aaa"
-#         elif index == 1:
-#             return entry.ticker
-#         elif index == 2:
-#             return entry.operationName()
-#         elif index == 3:
-#             return entry.value
-#         elif index == 4:
-#             return entry.amount
-#         elif index == 5:
-#             return entry.color
-#         elif index == 6:
-#             return entry.notes
-#         return None
-#
-#     @staticmethod
-#     def attributeLabels():
-#         return ( "Nazwa", "Ticker", "Typ operacji", "Kurs operacji", "Liczba", "Kolor", "Uwagi" )
 
 
 class MarkersTableModel( DataFrameTableModel ):
@@ -211,129 +89,66 @@ class MarkersColorDelegate( TableRowColorDelegate ):
 ## ===========================================================
 
 
-class MarkersTable( QTableView ):
-
-    selectedItem    = pyqtSignal( MarkerEntry )
-    itemUnselected  = pyqtSignal()
+class MarkersTable( StockTable ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.setObjectName("markerstable")
 
-        self.dataObject = None
+    def connectData(self, dataObject):
+        super().connectData( dataObject )
 
-        self.setSortingEnabled( True )
-        self.setShowGrid( False )
-        self.setAlternatingRowColors( True )
-#         self.setEditTriggers( QAbstractItemView.DoubleClicked )
+        colorDecorator = MarkersColorDelegate( dataObject )
+        self.setColorDelegate( colorDecorator )
 
-        header = self.horizontalHeader()
-        header.setDefaultAlignment( Qt.AlignCenter )
-        header.setHighlightSections( False )
-        header.setStretchLastSection( True )
-
-        self.verticalHeader().hide()
-
-        self.dataModel = MarkersTableModel( None )
-        self.proxyModel = QtCore.QSortFilterProxyModel(self)
-        self.proxyModel.setSourceModel( self.dataModel )
-        self.setModel( self.proxyModel )
-
-    def loadSettings(self, settings):
-        wkey = guistate.get_widget_key(self, "tablesettings")
-        settings.beginGroup( wkey )
-        visDict = settings.value("columnsVisible", None, type=dict)
-        if visDict is None:
-            visDict = dict()
-
-    def saveSettings(self, settings):
-        wkey = guistate.get_widget_key(self, "tablesettings")
-        settings.beginGroup( wkey )
-        settings.setValue("columnsVisible", self.columnsVisible )
-        settings.endGroup()
-
-    ## ===============================================
-
-    def connectData(self, dataObject: DataObject ):
-        self.dataObject = dataObject
-
-        colorDecorator = MarkersColorDelegate( self.dataObject )
-        self.dataModel.setColorDelegate( colorDecorator )
-
-#         self.dataObject.feedChanged.connect( self.refreshData )
         self.refreshData()
 
     def refreshData(self):
         markersData = self.dataObject.getMarkersData()
-        self.dataModel.setContent( markersData )
+        self.pandaModel.setContent( markersData )
         self.clearSelection()
 #         _LOGGER.debug( "entries: %s\n%s", type(history), history.printData() )
-
-    def refreshEntry(self, entry: MarkerEntry=None):
-        if entry is None:
-            ## unable to refresh entry row -- refresh whole model
-            self.refreshData()
-            return
-        taskIndex = self.getIndex( entry )
-        if taskIndex is None:
-            ## unable to refresh entry row -- refresh whole model
-            self.refreshData()
-            return
-        lastColIndex = taskIndex.sibling( taskIndex.row(), 5 )
-        if lastColIndex is None:
-            ## unable to refresh entry row -- refresh whole model
-            self.refreshData()
-            return
-        self.proxyModel.dataChanged.emit( taskIndex, lastColIndex )
-
-    def getIndex(self, entry: MarkerEntry, column: int = 0):
-        modelIndex = self.dataModel.getIndex( entry, column=column )
-        if modelIndex is None:
-            return None
-        proxyIndex = self.proxyModel.mapFromSource( modelIndex )
-        return proxyIndex
 
     def getItem(self, itemIndex: QModelIndex ) -> MarkerEntry:
         if self.dataObject is None:
             return None
-        sourceIndex = self.proxyModel.mapToSource( itemIndex )
+        sourceIndex = self.model().mapToSource( itemIndex )
 #         return self.dataModel.getItem( sourceIndex )
         markerIndex = sourceIndex.row()
+        if markerIndex < 0:
+            return None
         return self.dataObject.markers.get( markerIndex )
 
-    def contextMenuEvent( self, event ):
-        evPos            = event.pos()
-        entry: MarkerEntry = None
-        mIndex = self.indexAt( evPos )
-        if mIndex is not None:
-            entry = self.getItem( mIndex )
+    ## override
+    def createContextMenu(self, itemIndex):
+        contextMenu = super().createContextMenu( itemIndex )
 
-        contextMenu      = QtWidgets.QMenu( self )
-        addAction        = contextMenu.addAction("Add Marker")
-        editAction       = contextMenu.addAction("Edit Marker")
-        removeAction     = contextMenu.addAction("Remove Marker")
+        entry: MarkerEntry = None
+        if itemIndex is not None:
+            entry = self.getItem( itemIndex )
+
+        addAction = insert_new_action( contextMenu, "Add Marker", 0 )
+#         addAction = contextMenu.addAction("Add Marker")
+        addAction.triggered.connect( self._addEntry )
+
+        editAction = insert_new_action( contextMenu, "Edit Marker", 1 )
+#         editAction = contextMenu.addAction("Edit Marker")
+        editAction.setData( entry )
+        editAction.triggered.connect( self._editEntryAction )
+
+        removeAction = insert_new_action( contextMenu, "Remove Marker", 2 )
+#         removeAction = contextMenu.addAction("Remove Marker")
+        removeAction.setData( entry )
+        removeAction.triggered.connect( self._removeEntryAction )
+
+        ## add separator
+        insert_new_action( contextMenu, None, 3 )
 
         if entry is None:
             editAction.setEnabled( False )
             removeAction.setEnabled( False )
 
-        globalPos = QtGui.QCursor.pos()
-        action = contextMenu.exec_( globalPos )
-
-        if action == addAction:
-            self._addEntry()
-        elif action == editAction:
-            self._editEntry( entry )
-        elif action == removeAction:
-            self._removeEntry( entry )
-
-    def currentChanged(self, current, previous):
-        super().currentChanged( current, previous )
-        item = self.getItem( current )
-        if item is not None:
-            self.selectedItem.emit( item )
-        else:
-            self.itemUnselected.emit()
+        return contextMenu
 
     def mouseDoubleClickEvent( self, event ):
         evPos              = event.pos()
@@ -359,6 +174,13 @@ class MarkersTable( QTableView ):
         _LOGGER.debug( "adding entry: %s", entryDialog.entry.printData() )
         self.dataObject.addMarkerEntry( entryDialog.entry )
 
+    def _editEntryAction(self):
+        parentAction = self.sender()
+        entry = parentAction.data()
+        if entry is None:
+            return
+        self._editEntry( entry )
+
     def _editEntry(self, entry):
 #         self.dataObject.editMarkerEntry( entry )
         parentWidget = self.parent()
@@ -370,8 +192,19 @@ class MarkersTable( QTableView ):
         _LOGGER.debug( "replacing entry: %s", entryDialog.entry.printData() )
         self.dataObject.replaceMarkerEntry( entry, entryDialog.entry )
 
+    def _rmoveEntryAction(self):
+        parentAction = self.sender()
+        entry = parentAction.data()
+        if entry is None:
+            return
+        self._removeEntry( entry )
+
     def _removeEntry(self, entry):
         self.dataObject.removeMarkerEntry( entry )
+
+    def _getSelectedTickers(self):
+        selectedData = self.getSelectedData( 1 )                ## ticker
+        return selectedData
 
 
 def print_timedelta( value: timedelta ):
