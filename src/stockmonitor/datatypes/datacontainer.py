@@ -137,6 +137,7 @@ class DataContainer():
 
     def getMarkersData(self):
         columnsList = [ "Nazwa", "Ticker", "Typ operacji", "Liczba", "Kurs operacji",
+                        "Wartość operacji",
                         "Aktualny kurs", "Zm.do k.oper.[%]", "Różn. wartości [PLN]",
                         "Kolor", "Uwagi" ]
         rowsList = []
@@ -146,6 +147,7 @@ class DataContainer():
             entry: MarkerEntry = self.markers.get( i )
 
             stockName    = currentStock.getNameFromTicker( entry.ticker )
+            operationVal = entry.amount * entry.value
             stockValue   = currentStock.getRecentValue( entry.ticker )
             reqChangePnt = entry.requiredChange( stockValue )
             reqChangePnt = round( reqChangePnt, 2 )
@@ -161,11 +163,12 @@ class DataContainer():
             rowDict[ columnsList[ 2] ] = entry.operationName()
             rowDict[ columnsList[ 3] ] = entry.amount
             rowDict[ columnsList[ 4] ] = entry.value
-            rowDict[ columnsList[ 5] ] = stockValue                 ## stock value
-            rowDict[ columnsList[ 6] ] = reqChangePnt               ## wymagana zmiana
-            rowDict[ columnsList[ 7] ] = reqValue                   ## zysk
-            rowDict[ columnsList[ 8] ] = entry.color
-            rowDict[ columnsList[ 9] ] = notes
+            rowDict[ columnsList[ 5] ] = operationVal
+            rowDict[ columnsList[ 6] ] = stockValue                 ## stock value
+            rowDict[ columnsList[ 7] ] = reqChangePnt               ## wymagana zmiana
+            rowDict[ columnsList[ 8] ] = reqValue                   ## zysk
+            rowDict[ columnsList[ 9] ] = entry.color
+            rowDict[ columnsList[10] ] = notes
             rowsList.append( rowDict )
 
         dataFrame = DataFrame( rowsList )

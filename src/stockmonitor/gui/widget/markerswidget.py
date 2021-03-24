@@ -58,7 +58,8 @@ class MarkersTableModel( DataFrameTableModel ):
 #             return retValue
 
         if role == Qt.TextAlignmentRole:
-            if index.column() == 9:
+            if index.column() == 10:
+                ## notes
                 return Qt.AlignLeft | Qt.AlignVCenter
 #             return Qt.AlignHCenter | Qt.AlignVCenter
 
