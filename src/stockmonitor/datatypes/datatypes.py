@@ -200,7 +200,7 @@ class MarkerEntry( persist.Versionable ):
         self.ticker = None
         self.value = None
         self.amount = 0
-        self.operation = None
+        self.operation: MarkerEntry.OperationType = None
         self._color = None
         self.notes: str = None
 
@@ -222,6 +222,18 @@ class MarkerEntry( persist.Versionable ):
         # pylint: disable=W0201
         self.__dict__ = dict_
 
+    def requiredChange(self, currentValue):
+        change = (currentValue - self.value) / self.value * 100
+        if self.operation is self.OperationType.BUY:
+            return -change
+        return change
+
+    def requiredValue(self, currentValue):
+        valueChange = (currentValue - self.value) * self.amount
+        if self.operation is self.OperationType.BUY:
+            return -valueChange
+        return valueChange
+
     @property
     def color(self) -> str:
         if self._color is None:
@@ -241,7 +253,7 @@ class MarkerEntry( persist.Versionable ):
             return None
         return self.operation.name
 
-    def setOperation(self, operation ):
+    def setOperation(self, operation: 'OperationType' ):
         self.operation = operation
         if self.color is not None:
             return

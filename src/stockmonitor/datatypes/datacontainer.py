@@ -136,24 +136,36 @@ class DataContainer():
     ## ======================================================================
 
     def getMarkersData(self):
-        columnsList = [ "Nazwa", "Ticker", "Typ operacji", "Kurs operacji", "Liczba", "Kolor", "Uwagi" ]
+        columnsList = [ "Nazwa", "Ticker", "Typ operacji", "Liczba", "Kurs operacji",
+                        "Aktualny kurs", "Zm.do k.oper.[%]", "Różn. wartości [PLN]",
+                        "Kolor", "Uwagi" ]
         rowsList = []
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         mSize = self.markers.size()
         for i in range(0, mSize):
             entry: MarkerEntry = self.markers.get( i )
-            stockName = currentStock.getNameFromTicker( entry.ticker )
+
+            stockName    = currentStock.getNameFromTicker( entry.ticker )
+            stockValue   = currentStock.getRecentValue( entry.ticker )
+            reqChangePnt = entry.requiredChange( stockValue )
+            reqChangePnt = round( reqChangePnt, 2 )
+            reqValue     = entry.requiredValue( stockValue )
+            reqValue     = round( reqValue, 2 )
+            notes        = entry.notes
+            if notes is None:
+                notes = ""
+
             rowDict = {}
             rowDict[ columnsList[ 0] ] = stockName
             rowDict[ columnsList[ 1] ] = entry.ticker
             rowDict[ columnsList[ 2] ] = entry.operationName()
-            rowDict[ columnsList[ 3] ] = entry.value
-            rowDict[ columnsList[ 4] ] = entry.amount
-            rowDict[ columnsList[ 5] ] = entry.color
-            if entry.notes is not None:
-                rowDict[ columnsList[ 6] ] = entry.notes
-            else:
-                rowDict[ columnsList[ 6] ] = ""
+            rowDict[ columnsList[ 3] ] = entry.amount
+            rowDict[ columnsList[ 4] ] = entry.value
+            rowDict[ columnsList[ 5] ] = stockValue                 ## stock value
+            rowDict[ columnsList[ 6] ] = reqChangePnt               ## wymagana zmiana
+            rowDict[ columnsList[ 7] ] = reqValue                   ## zysk
+            rowDict[ columnsList[ 8] ] = entry.color
+            rowDict[ columnsList[ 9] ] = notes
             rowsList.append( rowDict )
 
         dataFrame = DataFrame( rowsList )

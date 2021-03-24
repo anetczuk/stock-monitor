@@ -58,7 +58,7 @@ class MarkersTableModel( DataFrameTableModel ):
 #             return retValue
 
         if role == Qt.TextAlignmentRole:
-            if index.column() == 6:
+            if index.column() == 9:
                 return Qt.AlignLeft | Qt.AlignVCenter
 #             return Qt.AlignHCenter | Qt.AlignVCenter
 
@@ -95,6 +95,9 @@ class MarkersTable( StockTable ):
         super().__init__(parentWidget)
         self.setObjectName("markerstable")
 
+        markersModel = MarkersTableModel( None )
+        self.setSourceModel( markersModel )
+
     def connectData(self, dataObject):
         super().connectData( dataObject )
 
@@ -105,7 +108,7 @@ class MarkersTable( StockTable ):
 
     def refreshData(self):
         markersData = self.dataObject.getMarkersData()
-        self.pandaModel.setContent( markersData )
+        self.setData( markersData )
         self.clearSelection()
 #         _LOGGER.debug( "entries: %s\n%s", type(history), history.printData() )
 
@@ -192,7 +195,7 @@ class MarkersTable( StockTable ):
         _LOGGER.debug( "replacing entry: %s", entryDialog.entry.printData() )
         self.dataObject.replaceMarkerEntry( entry, entryDialog.entry )
 
-    def _rmoveEntryAction(self):
+    def _removeEntryAction(self):
         parentAction = self.sender()
         entry = parentAction.data()
         if entry is None:
@@ -262,6 +265,7 @@ class MarkersWidget( QtBaseClass ):           # type: ignore
     def connectData(self, dataObject):
         self.dataObject = dataObject
         self.ui.markersTable.connectData( dataObject )
+        self.dataObject.stockDataChanged.connect( self.updateView )
         self.dataObject.markersChanged.connect( self.updateView )
         self.updateView()
 
