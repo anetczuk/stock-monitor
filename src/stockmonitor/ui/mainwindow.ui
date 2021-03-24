@@ -658,6 +658,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionSave_data"/>
+    <addaction name="actionRefresh_All"/>
     <addaction name="actionLogs"/>
     <addaction name="actionExit"/>
    </widget>
@@ -759,6 +760,14 @@
    </property>
    <property name="text">
     <string>Match &amp;recent profit</string>
+   </property>
+  </action>
+  <action name="actionRefresh_All">
+   <property name="text">
+    <string>Refresh All</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
  </widget>

@@ -62,10 +62,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.data = DataObject( self )
         self.appSettings = AppSettings()
 
-        self.refreshAction = QtWidgets.QAction(self)
-        self.refreshAction.setShortcuts( QtGui.QKeySequence.Refresh )
-        self.refreshAction.triggered.connect( self.refreshStockDataForce )
-        self.addAction( self.refreshAction )
+        self.ui.actionRefresh_All.triggered.connect( self.refreshStockDataForce )
 
         self.ui.walletValueLabel.setStyleSheet("font-weight: bold")
         self.ui.walletProfitLabel.setStyleSheet("font-weight: bold")
@@ -242,13 +239,13 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.notesWidget.setNotes( self.data.notes )
 
     def refreshStockDataForce(self):
-        self.refreshAction.setEnabled( False )
+        self.ui.actionRefresh_All.setEnabled( False )
         self.ui.refreshAllPB.setEnabled( False )
         self.ui.refreshStockPB.setEnabled( False )
         self.data.refreshStockData( True )
 
     def refreshAllDataForce(self):
-        self.refreshAction.setEnabled( False )
+        self.ui.actionRefresh_All.setEnabled( False )
         self.ui.refreshAllPB.setEnabled( False )
         self.ui.refreshStockPB.setEnabled( False )
         self.data.refreshAllData( True )
@@ -270,7 +267,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.dividendswidget.refreshData()
         self.ui.shortswidget.refreshData()
 
-        self.refreshAction.setEnabled( True )
+        self.ui.actionRefresh_All.setEnabled( True )
         self.ui.refreshAllPB.setEnabled( True )
         self.ui.refreshStockPB.setEnabled( True )
 
