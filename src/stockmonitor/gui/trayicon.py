@@ -71,8 +71,12 @@ def load_chart_icon( theme: TrayIconTheme ):
 
 
 class TrayIcon(QSystemTrayIcon):
+
     def __init__(self, parent):
         super().__init__(parent)
+        
+        self.rawIcon = None
+        self.textContent = ""
 
         self.activated.connect( self._iconActivated )
 
@@ -89,6 +93,10 @@ class TrayIcon(QSystemTrayIcon):
         tray_menu.addAction( self.toggle_window_action )
         tray_menu.addAction( quit_action )
         self.setContextMenu( tray_menu )
+
+    def setIcon( self, icon ):
+        self.rawIcon = icon
+        super().setIcon( icon )
 
     def displayMessage(self, message):
         timeout = 10000
@@ -119,8 +127,9 @@ class TrayIcon(QSystemTrayIcon):
             fontSize = 192
         self.drawString( content, fontSize, color )
 
-    def drawString( self, content, fontSize=256, color=QColor("red") ):
-        icon = self.icon()
+    def drawString( self, text, fontSize=256, color=QColor("red") ):
+        self.textContent = text
+        icon = self.rawIcon
 
         pixmap = icon.pixmap( 512, 512 )
         pixSize = pixmap.rect()
@@ -132,7 +141,7 @@ class TrayIcon(QSystemTrayIcon):
         painter.setFont(font)
 
         path = QPainterPath()
-        path.addText( 0, 0, font, content )
+        path.addText( 0, 0, font, text )
         pathBBox = path.boundingRect()
 
         xOffset = ( pixSize.width() - pathBBox.width() ) / 2 - pathBBox.left()
@@ -153,7 +162,13 @@ class TrayIcon(QSystemTrayIcon):
 
         painter.end()
 
-        self.setIcon( QIcon( pixmap ) )
+        newIcon = QIcon( pixmap )
+        super().setIcon( newIcon )
+    
+    def clearString(self):
+        if len( self.textContent ) < 1:
+            return
+        self.drawString( "" )
 
     def _iconActivated(self, reason):
 #         print("tray clicked, reason:", reason)

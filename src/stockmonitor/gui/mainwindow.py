@@ -345,13 +345,18 @@ class MainWindow( QtBaseClass ):           # type: ignore
         weekDay = currDateTime.weekday()                               # 0 for Monday
         if weekDay == 5 or weekDay == 6:
             ## regular Saturday or Sunday -- no stock
+            self.trayIcon.clearString()
             return
         currTime = currDateTime.time()
         sessionStart = datetime.time(8, 55, 0)
         sessionEnd   = datetime.time(17, 10, 0)
         if currTime < sessionStart:
+            ## before start of session
+            self.trayIcon.clearString()
             return
         if currTime > sessionEnd:
+            ## after end of session
+            self.trayIcon.clearString()
             return
 
         self.data.gpwIndexesData.refreshData()
