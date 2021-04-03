@@ -28,16 +28,21 @@ from datetime import datetime, date, timedelta
 from typing import Dict, List, Tuple
 
 from stockmonitor import persist
+## from stockmonitor.pprint import pprint
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
 ## amount, unit_price, transaction time
+## amount > 0 -- buy transaction, otherwise sell transaction
 Transaction = Tuple[int, float, datetime]
 
+## list of buy transactions
 BuyTransactionsMatch  = List[ Transaction ]
+## return list of pairs: buy transaction and it's matching sell transaction
 SellTransactionsMatch = List[ Tuple[Transaction, Transaction] ]
+## pair of lists: current (buy) transactions and matched sell transactions
 TransactionsMatch     = Tuple[ BuyTransactionsMatch, SellTransactionsMatch ]
 
 
@@ -241,9 +246,14 @@ class TransHistory():
         for item in reversed( self.transactions ):
             amount = item[0]
             if amount > 0:
+                ## buy transaction
                 currTransactions.appendItem( item )
                 continue
+            ## sell transaction -- match buy transactions
             reducedBuy = currTransactions.reduceTransactions( item, mode )
+#             if len( reducedBuy ) < 1:
+#                 _LOGGER.info( "invalid reduction: %s %s", item, mode )
+#                 pprint( self.transactions )
             for buy in reducedBuy:
                 sell = ( -buy[0], item[1], item[2] )
                 pair = ( buy, sell )
@@ -270,7 +280,8 @@ class TransHistory():
             if bestIndex < 0:
                 ## if this happens then it means there is problem with importing transactions history
                 ## perhaps the importer didn't recognized or badly merged transactions
-                _LOGGER.error( "invalid index %s %s", bestIndex, self.size() )
+                ## or exported history is not completed (e.g. exported only last year)
+                _LOGGER.error( "invalid index %s %s %s", bestIndex, self.size(), len(retList) )
                 return retList
 
             ## reduce amount
