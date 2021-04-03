@@ -94,7 +94,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         for i in range(0, self.ui.rangeCB.count()):
             rangeText = self.ui.rangeCB.itemText( i )
-            intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin, rangeText )
+            indexData = self.dataObject.dataContainer.gpwIndexIntradayData
+            intraSource = indexData.getSource( self.isin, rangeText )
             threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
 
         currentData = self.getCurrentDataSource()
@@ -150,7 +151,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
 
     def getReferenceValue(self):
-        intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin, "14D" )
+        indexData = self.dataObject.dataContainer.gpwIndexIntradayData
+        intraSource = indexData.getSource( self.isin, "14D" )
         dataFrame = intraSource.getWorksheet()
         if dataFrame is None:
             return None
@@ -168,7 +170,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
     def getIntradayDataSource(self):
         rangeText = self.ui.rangeCB.currentText()
-        intraSource = self.dataObject.gpwIndexIntradayData.getSource( self.isin, rangeText )
+        indexData = self.dataObject.dataContainer.gpwIndexIntradayData
+        intraSource = indexData.getSource( self.isin, rangeText )
         return intraSource
 
     def getCurrentDataSource(self):
