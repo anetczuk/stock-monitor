@@ -384,17 +384,64 @@ class StockIndexesTable( StockTable ):
         for isin in isinList:
             indexchartwidget.create_window( self.dataObject, isin, self )
 
-#     def _getSelectedTickers(self):
-#         dataAccess = self.dataObject.gpwIndexesData
-#         selectedData = self.getSelectedData( 12 )                ## isin
-#         tickersList = set()
-#         for stockName in selectedData:
-#             ticker = dataAccess.getTickerFieldByName( stockName )
-#             if ticker is not None:
-#                 tickersList.add( ticker )
-#         return list( tickersList )
+    ## override
+    def _getGpwInfoLinks(self):
+        isinsList = self._getSelectedIsins()
+        if not isinsList:
+            _LOGGER.warning( "unable to get stock info: empty isin list" )
+            return []
+        dataAccess = self.dataObject.gpwIndexesData
+        ret = []
+        for isin in isinsList:
+            if isin is None:
+                continue
+            infoLink = dataAccess.getGpwLinkFromIsin( isin )
+            if infoLink is not None:
+                ret.append( infoLink )
+        _LOGGER.debug( "returning links list: %s", ret )
+        return ret
+
+    ## override
+    def _getMoneyInfoLinks(self):
+        selectedList = self._getSelectedNames()
+        if not selectedList:
+            _LOGGER.warning( "unable to open stock info: empty ticker list" )
+            return []
+        dataAccess = self.dataObject.gpwIndexesData
+        ret = []
+        for item in selectedList:
+            if item is None:
+                continue
+            infoLink = dataAccess.getMoneyLinkFromName( item )
+            if infoLink is not None:
+                ret.append( infoLink )
+        _LOGGER.debug( "returning links list: %s", ret )
+        return ret
+
+    ## override
+    def _getGoogleInfoLinks(self):
+        selectedList = self._getSelectedNames()
+        if not selectedList:
+            _LOGGER.warning( "unable to get stock info: empty ticker list" )
+            return []
+        dataAccess = self.dataObject.gpwIndexesData
+        ret = []
+        for item in selectedList:
+            infoLink = dataAccess.getGoogleLinkFromName( item )
+            if infoLink is not None:
+                ret.append( infoLink )
+        _LOGGER.debug( "returning links list: %s", ret )
+        return ret
+
+    def _getSelectedNames(self):
+        selectedData = self.getSelectedData( 1 )                ## skrot
+        retList = set()
+        for stockName in selectedData:
+            retList.add( stockName )
+        return list( retList )
 
     ## returns list of isins
+    ## override
     def _getSelectedIsins(self) -> List[str]:
         selectedData = self.getSelectedData( 12 )                ## isin
         return list( selectedData )

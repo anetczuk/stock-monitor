@@ -118,6 +118,15 @@ class GpwCurrentStockData( WorksheetData ):
         tickerColumn = dataFrame["Nazwa"]
         return tickerColumn.iloc[ rowIndex ]
 
+    def getNameFromIsin(self, stockIsin):
+        dataFrame = self.getWorksheet()
+        rowIndexes = dataFrame[ dataFrame["isin"] == stockIsin ].index.values
+        if rowIndexes is None or len(rowIndexes) < 1:
+            return None
+        rowIndex = rowIndexes[0]
+        tickerColumn = dataFrame["Nazwa"]
+        return tickerColumn.iloc[ rowIndex ]
+
     def getTickerFieldByName(self, stockName):
         dataFrame = self.getWorksheet()
         if dataFrame is None:
@@ -311,6 +320,22 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
     def downloadData(self):
         for dataAccess in self.dataList:
             dataAccess.downloadData()
+
+    ## ======================================================================
+
+    def getGpwLinkFromIsin(self, isin):
+        return "https://gpwbenchmark.pl/karta-indeksu?isin=%s" % isin
+        #return "https://www.gpw.pl/spolka?isin=%s" % isin
+
+    def getGoogleLinkFromName(self, name):
+        infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % name
+        return infoLink
+
+    def getMoneyLinkFromName(self, name):
+        value = name.replace('-', '_')
+        return "https://www.money.pl/gielda/indeksy_gpw/%s/" % value
+
+    ## ======================================================================
 
     def sourceLink(self):
         return "https://gpwbenchmark.pl/notowania"
