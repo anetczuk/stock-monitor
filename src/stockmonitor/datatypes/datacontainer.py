@@ -146,16 +146,33 @@ class DataContainer():
         for i in range(0, mSize):
             entry: MarkerEntry = self.markers.get( i )
 
-            stockName    = currentStock.getNameFromTicker( entry.ticker )
             operationVal = entry.amount * entry.value
+            notes        = entry.notes
+            if notes is None:
+                notes = ""
+
+            stockName    = currentStock.getNameFromTicker( entry.ticker )
+            if stockName is None:
+                rowDict = {}
+                rowDict[ columnsList[ 0] ] = stockName
+                rowDict[ columnsList[ 1] ] = entry.ticker
+                rowDict[ columnsList[ 2] ] = entry.operationName()
+                rowDict[ columnsList[ 3] ] = entry.amount
+                rowDict[ columnsList[ 4] ] = entry.value
+                rowDict[ columnsList[ 5] ] = operationVal
+                rowDict[ columnsList[ 6] ] = "-"                        ## stock value
+                rowDict[ columnsList[ 7] ] = "-"                        ## wymagana zmiana
+                rowDict[ columnsList[ 8] ] = "-"                        ## zysk
+                rowDict[ columnsList[ 9] ] = entry.color
+                rowDict[ columnsList[10] ] = notes
+                rowsList.append( rowDict )
+                continue
+
             stockValue   = currentStock.getRecentValue( entry.ticker )
             reqChangePnt = entry.requiredChange( stockValue )
             reqChangePnt = round( reqChangePnt, 2 )
             reqValue     = entry.requiredValue( stockValue )
             reqValue     = round( reqValue, 2 )
-            notes        = entry.notes
-            if notes is None:
-                notes = ""
 
             rowDict = {}
             rowDict[ columnsList[ 0] ] = stockName
