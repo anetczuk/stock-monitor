@@ -440,8 +440,11 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         self.setFilterRegExp( state[2] )
 
     def filterAcceptsRow( self, sourceRow, sourceParent ):
-        filterColumn = self.filterKeyColumn()
         filterValue = self.filterRegExp().pattern()
+        if not filterValue:
+            ## empty filter -- accept all
+            return True
+        filterColumn = self.filterKeyColumn()
         valueIndex = self.sourceModel().index( sourceRow, filterColumn, sourceParent )
         rawValue = self.sourceModel().data( valueIndex, QtCore.Qt.UserRole )
         value = str(rawValue)
