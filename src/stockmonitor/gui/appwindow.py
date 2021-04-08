@@ -27,7 +27,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QVBoxLayout
 
 from stockmonitor.gui import trayicon
-from stockmonitor.gui.trayicon import load_chart_icon
+from stockmonitor.gui.trayicon import load_main_icon, load_chart_icon
 from stockmonitor.gui.utils import get_parent
 
 
@@ -45,14 +45,14 @@ class AppWindow( QWidget ):
 #         vlayout.setContentsMargins( 0, 0, 0, 0 )
         self.setLayout( self.vlayout )
 
+        ## initialize window icon
         widget = get_parent( self )
         while widget is not None:
             if hasattr(widget, 'getIconTheme') is False:
                 widget = get_parent( widget )
                 continue
             iconTheme: trayicon.TrayIconTheme = widget.getIconTheme()
-            chartIcon = load_chart_icon( iconTheme )
-            self.setWindowIcon( chartIcon )
+            self.setWindowIconTheme(iconTheme)
             break
 
         self.refreshAction = QtWidgets.QAction(self)
@@ -76,5 +76,16 @@ class AppWindow( QWidget ):
             newTitle = AppWindow.appTitle
         super().setWindowTitle( newTitle )
 
+    def setWindowIconTheme(self, iconTheme: trayicon.TrayIconTheme ):
+        appIcon = load_main_icon( iconTheme )
+        self.setWindowIcon( appIcon )
+
     def addWidget(self, widget):
         self.vlayout.addWidget( widget )
+
+
+class ChartAppWindow(AppWindow):
+
+    def setWindowIconTheme(self, iconTheme: trayicon.TrayIconTheme ):
+        appIcon = load_chart_icon( iconTheme )
+        self.setWindowIcon( appIcon )

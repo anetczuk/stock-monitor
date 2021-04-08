@@ -27,7 +27,7 @@ from PyQt5.QtCore import Qt
 
 from stockmonitor.datatypes.wallettypes import TransHistory
 from stockmonitor.gui import threadlist
-from stockmonitor.gui.appwindow import AppWindow
+from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord,\
     set_int_format_coord
@@ -207,7 +207,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
 
 def create_window( dataObject, ticker, parent=None ):
-    chartWindow = AppWindow( parent )
+    chartWindow = ChartAppWindow( parent )
     chart = StockChartWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )

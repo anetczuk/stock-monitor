@@ -26,7 +26,7 @@ import abc
 
 from PyQt5.QtCore import Qt
 
-from stockmonitor.gui.appwindow import AppWindow
+from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord
@@ -229,7 +229,7 @@ class StockWalletChartWidget( ValueChartBasicWidget ):
 
 
 def create_window( dataObject, ticker, chartWidgetClass, parent=None ):
-    chartWindow = AppWindow( parent )
+    chartWindow = ChartAppWindow( parent )
     chart = chartWidgetClass( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
@@ -256,7 +256,7 @@ def create_stockprofit_window( dataObject, ticker, parent=None ):
 
 
 def create_walletprofit_window( dataObject, parent=None ):
-    chartWindow = AppWindow( parent )
+    chartWindow = ChartAppWindow( parent )
     chart = StockWalletChartWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )

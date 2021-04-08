@@ -31,7 +31,7 @@ from PyQt5.QtWidgets import qApp
 from stockmonitor.gui.appwindow import AppWindow
 from stockmonitor.gui.widget import logwidget
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
-from stockmonitor.gui.trayicon import load_main_icon, load_chart_icon
+from stockmonitor.gui.trayicon import load_main_icon
 from stockmonitor.gui.utils import set_label_url
 
 from . import uiloader
@@ -335,10 +335,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.trayIcon.setIcon( appIcon )
 
         ## update charts icon
-        chartIcon = load_chart_icon( theme )
         widgets = self.findChildren( AppWindow )
         for w in widgets:
-            w.setWindowIcon( chartIcon )
+            w.setWindowIconTheme( theme )
 
     def updateTrayIndicator(self):
         currDateTime = datetime.datetime.now()
