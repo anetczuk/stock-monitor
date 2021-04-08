@@ -23,12 +23,48 @@
 
 import logging
 
+from PyQt5 import QtGui
+from PyQt5.QtCore import QModelIndex
+
+from stockmonitor.gui.dataobject import DataObject
+
 from .. import uiloader
 
-from .stocktable import StockTable
+from .stocktable import StockTable, TableRowColorDelegate
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class TransactionsColorDelegate( TableRowColorDelegate ):
+
+    def __init__(self, dataObject: DataObject):
+        super().__init__()
+        self.dataObject = dataObject
+
+    ## override
+    def foreground(self, index: QModelIndex ):
+        dataColumn = index.column()
+        ## "Zysk %"
+        if dataColumn == 6:
+            stockChangeString = index.data()
+            if stockChangeString != "-":
+                stockChange = float(stockChangeString)
+                if stockChange > 0.0:
+                    return QtGui.QColor( "green" )
+    #             return QtGui.QColor( "red" )
+        return None
+
+#     ## override
+#     def background(self, index: QModelIndex ):
+#         sourceParent = index.parent()
+#         dataRow = index.row()
+#         dataIndex = self.parent.index( dataRow, 3, sourceParent )       ## get ticker
+#         ticker = dataIndex.data()
+#         markerColor = marker_background_color( self.dataObject, ticker )
+#         if markerColor is not None:
+#             return markerColor
+#         return wallet_background_color( self.dataObject, ticker )
 
 
 class TransactionsTable( StockTable ):
@@ -36,6 +72,11 @@ class TransactionsTable( StockTable ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.setObjectName("transactionstable")
+
+    def connectData(self, dataObject):
+        super().connectData( dataObject )
+        colorDecorator = TransactionsColorDelegate( self.dataObject )
+        self.setColorDelegate( colorDecorator )
 
     def _getSelectedTickers(self):
         return self.getSelectedData( 1 )                ## ticker

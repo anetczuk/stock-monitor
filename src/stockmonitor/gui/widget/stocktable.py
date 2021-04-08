@@ -264,9 +264,18 @@ class StockFullColorDelegate( TableRowColorDelegate ):
         super().__init__()
         self.dataObject = dataObject
 
-#     def foreground(self, index: QModelIndex ):
-#         ## reimplement if needed
-#         return None
+    ## override
+    def foreground(self, index: QModelIndex ):
+        dataColumn = index.column()
+        ## "Zm.do k.odn.[%]"
+        if dataColumn == 12:
+            stockChangeString = index.data()
+            if stockChangeString != "-":
+                stockChange = float(stockChangeString)
+                if stockChange > 0.0:
+                    return QtGui.QColor( "green" )
+    #             return QtGui.QColor( "red" )
+        return None
 
     def background(self, index: QModelIndex ):
         dataRow = index.row()
