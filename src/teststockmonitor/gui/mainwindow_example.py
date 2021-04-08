@@ -109,7 +109,7 @@ else:
     window.data.markers.add( "AAA2",  5, 100, MarkerEntry.OperationType.BUY )
     window.data.markers.add( "AAA3", 20, 100, MarkerEntry.OperationType.SELL, "red" )
     window.data.markers.add( "AAA4",  5, 100, MarkerEntry.OperationType.SELL, "yellow" )
-    
+
     window.data.notes["notes"] = "example note"
     window.data.notes["aaa note"] = "notes example"
 

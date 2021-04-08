@@ -74,7 +74,7 @@ class TrayIcon(QSystemTrayIcon):
 
     def __init__(self, parent):
         super().__init__(parent)
-        
+
         self.rawIcon = None
         self.textContent = ""
 
@@ -164,7 +164,7 @@ class TrayIcon(QSystemTrayIcon):
 
         newIcon = QIcon( pixmap )
         super().setIcon( newIcon )
-    
+
     def clearString(self):
         if len( self.textContent ) < 1:
             return
