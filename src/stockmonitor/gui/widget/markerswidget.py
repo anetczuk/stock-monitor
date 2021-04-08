@@ -109,6 +109,7 @@ class MarkersTable( StockTable ):
 
     def refreshData(self):
         markersData = self.dataObject.getMarkersData()
+        _LOGGER.info( "updating view: %s", markersData.shape[0] )
         self.setData( markersData )
         self.clearSelection()
 #         _LOGGER.debug( "entries: %s\n%s", type(history), history.printData() )
