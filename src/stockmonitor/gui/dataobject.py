@@ -340,8 +340,11 @@ class DataObject( QObject ):
     def getWalletStockProfitData(self, ticker, rangeCode):
         return self.dataContainer.getWalletStockProfitData( ticker, rangeCode )
 
-    def getWalletTotalProfitData(self, rangeCode):
-        return self.dataContainer.getWalletTotalProfitData( rangeCode )
+    def getWalletOverallProfitData(self, rangeCode):
+        return self.dataContainer.getWalletOverallProfitData( rangeCode )
+
+    def getWalletGainData(self, rangeCode):
+        return self.dataContainer.getWalletGainData( rangeCode )
 
     ## ======================================================================
 
@@ -419,3 +422,6 @@ class DataObject( QObject ):
 
     def getNameFromTicker(self, ticker):
         return self.gpwCurrentData.getNameFromTicker( ticker )
+
+    def getNameFromIsin(self, isin):
+        return self.gpwCurrentData.getNameFromIsin( isin )

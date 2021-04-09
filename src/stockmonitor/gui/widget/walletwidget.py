@@ -32,7 +32,7 @@ from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import marker_background_color
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
-from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window, create_walletprofit_window
+from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window, create_walletprofit_window, create_walletgain_window
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 
 from .. import uiloader
@@ -112,7 +112,7 @@ class WalletStockTable( StockTable ):
         if self.dataObject is not None:
             tickersList = self._getSelectedTickers()
             if tickersList:
-                profitChartAction = insert_new_action(contextMenu, "Open total profit chart", 1)
+                profitChartAction = insert_new_action(contextMenu, "Open overall profit chart", 1)
                 profitChartAction.setData( tickersList )
                 profitChartAction.triggered.connect( self.openStockProfitChart )
 
@@ -201,6 +201,11 @@ class WalletWidget( QtBaseClass ):           # type: ignore
         if self.dataObject is None:
             return
         create_walletprofit_window( self.dataObject, self )
+
+    def openWalletGainChart(self):
+        if self.dataObject is None:
+            return
+        create_walletgain_window( self.dataObject, self )
 
     def _handleSoldOut(self):
         incluideSoldOut = self.ui.soldOutCB.isChecked()

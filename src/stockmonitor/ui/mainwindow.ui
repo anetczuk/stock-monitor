@@ -684,7 +684,8 @@
      <addaction name="actionMatch_recent"/>
     </widget>
     <addaction name="menuMatch_transactions"/>
-    <addaction name="actionTotal_profit_chart"/>
+    <addaction name="actionOverall_profit_chart"/>
+    <addaction name="actionGain_chart"/>
     <addaction name="actionImport_mb_transactions"/>
    </widget>
    <addaction name="menuFile"/>
@@ -730,9 +731,9 @@
     <string>&amp;Import mb transactions</string>
    </property>
   </action>
-  <action name="actionTotal_profit_chart">
+  <action name="actionOverall_profit_chart">
    <property name="text">
-    <string>&amp;Total profit chart</string>
+    <string>&amp;Overall profit chart</string>
    </property>
   </action>
   <action name="actionMatch_oldest">
@@ -764,10 +765,15 @@
   </action>
   <action name="actionRefresh_All">
    <property name="text">
-    <string>Refresh All</string>
+    <string>&amp;Refresh All</string>
    </property>
    <property name="shortcut">
     <string>F5</string>
+   </property>
+  </action>
+  <action name="actionGain_chart">
+   <property name="text">
+    <string>Gain chart</string>
    </property>
   </action>
  </widget>

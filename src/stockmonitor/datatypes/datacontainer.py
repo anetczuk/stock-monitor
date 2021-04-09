@@ -24,7 +24,7 @@
 import logging
 from typing import Dict
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pandas.core.frame import DataFrame
 
@@ -370,7 +370,7 @@ class DataContainer():
         dataFrame = DataFrame( rowsList )
         return dataFrame
 
-    ## wallet summary: wallet value, wallet profit, gain, overall profit
+    ## wallet summary: wallet value, wallet profit, ref change, gain, overall profit
     def getWalletState(self, includeCommission=True):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
 
@@ -636,7 +636,7 @@ class DataContainer():
 
         return dataFrame
 
-    def getWalletStockProfitData(self, ticker, rangeCode):
+    def getWalletStockProfitData(self, ticker, rangeCode) -> DataFrame:
         transactions: TransHistory = self.wallet.transactions( ticker )
         if transactions is None:
             return None
@@ -687,61 +687,45 @@ class DataContainer():
 
         return dataFrame
 
-    def getWalletTotalProfitData(self, rangeCode):
+    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
+    def getWalletOverallProfitData(self, rangeCode):
         mergedList = None
         for ticker in self.wallet.tickers():
             stockData = self.getWalletStockProfitData( ticker, rangeCode )
             if stockData is None:
                 continue
-            if mergedList is None:
-                mergedList = stockData.values.tolist()
-                continue
+            mergedList = join_list_dataframe( mergedList, stockData )
 
-            retSize = len( mergedList )
-            if retSize < 1:
-                mergedList = stockData.values.tolist()
-                continue
+        retData = DataFrame( mergedList, columns=["t", "c"] )
+        return retData
 
-            stockSize = stockData.shape[0]
-            if stockSize < 1:
-                continue
+    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
+    def getWalletGainData(self, rangeCode):
+        startDateTime = datetime.now()
+        if rangeCode == "1D":
+            startDateTime -= timedelta( days=1 )
+        elif rangeCode == "14D":
+            startDateTime -= timedelta( days=14 )
+        elif rangeCode == "1M":
+            startDateTime -= timedelta( days=31 )
+        elif rangeCode == "3M":
+            startDateTime -= timedelta( weeks=13 )
+        elif rangeCode == "6M":
+            startDateTime -= timedelta( weeks=26 )
+        elif rangeCode == "1R":
+            startDateTime -= timedelta( weeks=52 )
+        elif rangeCode == "MAX":
+            startDateTime = None
+        else:
+            _LOGGER.warning( "unknown range code: %s", rangeCode )
+            startDateTime = None
 
-            ## merge data frames
-            newList = []
-
-            i = 0
-            j = 0
-            while i < retSize and j < stockSize:
-                currTime  = mergedList[ i ][ 0 ]
-                stockTime = stockData.at[ j, "t" ]
-                if stockTime < currTime:
-                    prevIndex = max( i - 1, 0 )
-                    newValue = mergedList[ prevIndex ][ 1 ] + stockData.at[ j, "c" ]
-                    rowList = [ stockTime, newValue ]
-                    newList.append( rowList )
-                    j += 1
-                elif stockTime == currTime:
-                    newValue = mergedList[ i ][ 1 ] + stockData.at[ j, "c" ]
-                    rowList = [ stockTime, newValue ]
-                    newList.append( rowList )
-                    i += 1
-                    j += 1
-                else:
-                    prevIndex = max( j - 1, 0 )
-                    newValue = mergedList[ i ][ 1 ] + stockData.at[ prevIndex, "c" ]
-                    rowList = [ currTime, newValue ]
-                    newList.append( rowList )
-                    i += 1
-
-            lastStockValue = stockData.at[ stockSize - 1, "c" ]
-            while i < retSize:
-                currTime  = mergedList[ i ][ 0 ]
-                newValue = mergedList[ i ][ 1 ] + lastStockValue
-                rowList = [ currTime, newValue ]
-                newList.append( rowList )
-                i += 1
-
-            mergedList = newList
+        transMode = self.userContainer.transactionsMatchMode
+        mergedList = None
+        for _, transactions in self.wallet.stockList.items():
+            gainList = transactions.transactionsGainHistory( transMode, True, startDateTime )
+            stockData = DataFrame( gainList, columns=["t", "c"] )
+            mergedList = join_list_dataframe( mergedList, stockData )
 
         retData = DataFrame( mergedList, columns=["t", "c"] )
         return retData
@@ -816,3 +800,77 @@ class DataContainer():
 
     def getIndexIntradayDataByIsin(self, isin):
         return self.gpwIndexIntradayData.getData(isin)
+
+
+## stockData contains two columns: 't' and 'c'
+def join_list_dataframe( mergedList, stockData: DataFrame ):
+    if mergedList is None:
+        return stockData.values.tolist()
+
+    mSize = len( mergedList )
+    if mSize < 1:
+        return stockData.values.tolist()
+
+    stockSize = stockData.shape[0]
+    if stockSize < 1:
+        return mergedList
+
+    ## merge data frames
+    newList = []
+
+    m = 0
+    s = 0
+    while m < mSize and s < stockSize:
+        currTime  = mergedList[ m ][ 0 ]
+        stockTime = stockData.at[ s, "t" ]
+        if stockTime < currTime:
+            if m > 0:
+                prevIndex = max( m - 1, 0 )
+                newValue = mergedList[ prevIndex ][ 1 ] + stockData.at[ s, "c" ]
+                rowList = [ stockTime, newValue ]
+                newList.append( rowList )
+                s += 1
+            else:
+                newValue = stockData.at[ s, "c" ]
+                rowList = [ stockTime, newValue ]
+                newList.append( rowList )
+                s += 1            
+        elif stockTime == currTime:
+            newValue = mergedList[ m ][ 1 ] + stockData.at[ s, "c" ]
+            rowList = [ stockTime, newValue ]
+            newList.append( rowList )
+            m += 1
+            s += 1
+        else:
+            ## stockTime > currTime
+            if s > 0:
+                prevIndex = max( s - 1, 0 )
+                newValue = mergedList[ m ][ 1 ] + stockData.at[ prevIndex, "c" ]
+                rowList = [ currTime, newValue ]
+                newList.append( rowList )
+                m += 1
+            else:
+                newValue = mergedList[ m ][ 1 ]
+                rowList = [ currTime, newValue ]
+                newList.append( rowList )
+                m += 1            
+
+    ## join rest of stockData
+    lastValue = mergedList[ mSize - 1][1]
+    while s < stockSize:
+        stockTime = stockData.at[ s, "t" ]
+        newValue = stockData.at[ s, "c" ] + lastValue
+        rowList = [ stockTime, newValue ]
+        newList.append( rowList )
+        s += 1
+
+    ## join rest of mergedList
+    lastValue = stockData.at[ stockSize - 1, "c" ]
+    while m < mSize:
+        currTime  = mergedList[ m ][ 0 ]
+        newValue = mergedList[ m ][ 1 ] + lastValue
+        rowList = [ currTime, newValue ]
+        newList.append( rowList )
+        m += 1
+
+    return newList

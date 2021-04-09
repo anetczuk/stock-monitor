@@ -222,6 +222,14 @@ class TransHistory():
         return retPair[1]
 
     def transactionsGain(self, mode: TransactionMatchMode, considerCommission=True):
+        totalGain = self.transactionsGainHistory( mode, considerCommission )
+        if not totalGain:
+            return 0.0
+        lastItem = totalGain[-1]
+        return lastItem[1]
+
+    def transactionsGainHistory(self, mode: TransactionMatchMode, considerCommission=True, startDate=None ):
+        ret = []
         totalGain = 0.0
         sellTransactions: SellTransactionsMatch = self.sellTransactions( mode )
         for buyTrans, sellTrans in sellTransactions:
@@ -236,7 +244,21 @@ class TransHistory():
                 sellCommission = broker_commission( sellProfit, sellDate )
                 profitValue -= sellCommission
             totalGain += profitValue
-        return totalGain
+            
+            entryDate = sellDate
+            if startDate is not None and entryDate < startDate:
+                entryDate = startDate
+
+            if not ret:
+                ret.append( [ entryDate, totalGain ] )
+                continue
+            recentDate = ret[-1][0]
+            if entryDate != recentDate:
+                ret.append( [ entryDate, totalGain ] )
+            else:
+                ret[-1][1] = totalGain
+
+        return ret
 
     def matchTransactions( self, mode: TransactionMatchMode ) -> TransactionsMatch:
         ## Buy value raises then current unit price rises

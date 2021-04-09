@@ -88,7 +88,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
         self.ui.menuEdit.removeAction( self.ui.actionRedo )
 
-        self.ui.actionTotal_profit_chart.triggered.connect( self.ui.walletwidget.openWalletProfitChart )
+        self.ui.actionOverall_profit_chart.triggered.connect( self.ui.walletwidget.openWalletProfitChart )
+        self.ui.actionGain_chart.triggered.connect( self.ui.walletwidget.openWalletGainChart )
         self.ui.actionImport_mb_transactions.triggered.connect( self.ui.walletwidget.importMBTransactions )
 
         self.ui.actionMatch_oldest.triggered.connect( self.data.matchTransactionsOldest )

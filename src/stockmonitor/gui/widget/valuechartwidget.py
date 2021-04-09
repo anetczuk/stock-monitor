@@ -80,11 +80,15 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
     def updateData(self, forceRefresh=False):
         self.ui.refreshPB.setEnabled( False )
 
+        intraSources = self.getDataSources()
+        if not intraSources:
+            self._updateView()
+            return
+        
         threads = threadlist.QThreadMeasuredList( self )
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
-        intraSources = self.getDataSources()
         for source in intraSources:
             threads.appendFunction( source.getWorksheet, [forceRefresh] )
 
@@ -184,7 +188,7 @@ class StockProfitChartWidget( ValueChartWidget ):
         return dataFrame
 
 
-class StockWalletChartWidget( ValueChartBasicWidget ):
+class WalletProfitChartWidget( ValueChartBasicWidget ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -221,7 +225,57 @@ class StockWalletChartWidget( ValueChartBasicWidget ):
 
     def _getDataFrame(self):
         rangeText = self.ui.rangeCB.currentText()
-        dataFrame = self.dataObject.getWalletTotalProfitData( rangeText )
+        dataFrame = self.dataObject.getWalletOverallProfitData( rangeText )
+        return dataFrame
+
+
+class WalletGainChartWidget( ValueChartBasicWidget ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+
+        self.dataObject = None
+        
+        cSize = self.ui.rangeCB.count()
+        if cSize > 0:
+            self.ui.rangeCB.setCurrentIndex( cSize - 1 )
+
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+        self.dataObject.walletDataChanged.connect( self.updateData )
+        self.updateData( True )
+
+    def getDataSources(self):
+        ## nothing to update -- gain is not affected by current values of stock
+        return []
+    
+#         retList = []
+#         rangeText = self.ui.rangeCB.currentText()
+#         walletTickers = self.dataObject.wallet.tickers()
+#         for ticker in walletTickers:
+#             isin = self.dataObject.getStockIsinFromTicker( ticker )
+#             intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+#             retList.append( intraSource )
+#         return retList
+
+#         retList = []
+#         walletTickers = self.dataObject.wallet.tickers()
+#         for ticker in walletTickers:
+#             isin = self.dataObject.getStockIsinFromTicker( ticker )
+#             for i in range(0, self.ui.rangeCB.count()):
+#                 rangeText = self.ui.rangeCB.itemText( i )
+#                 intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+#                 retList.append( intraSource )
+#         return retList
+
+    def getDataSourceLink(self):
+        return None
+
+    def _getDataFrame(self):
+        if self.dataObject is None:
+            return None
+        rangeText = self.ui.rangeCB.currentText()
+        dataFrame = self.dataObject.getWalletGainData( rangeText )
         return dataFrame
 
 
@@ -257,7 +311,24 @@ def create_stockprofit_window( dataObject, ticker, parent=None ):
 
 def create_walletprofit_window( dataObject, parent=None ):
     chartWindow = ChartAppWindow( parent )
-    chart = StockWalletChartWidget( chartWindow )
+    chart = WalletProfitChartWidget( chartWindow )
+    chartWindow.addWidget( chart )
+    chartWindow.refreshAction.triggered.connect( chart.refreshData )
+
+    chart.connectData(dataObject)
+
+    title = "Wallet"
+    chartWindow.setWindowTitleSuffix( "- " + title )
+    chart.ui.stockLabel.setText( title )
+
+    chartWindow.show()
+
+    return chartWindow
+
+
+def create_walletgain_window( dataObject, parent=None ):
+    chartWindow = ChartAppWindow( parent )
+    chart = WalletGainChartWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
 
