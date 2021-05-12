@@ -112,9 +112,9 @@ class StockFavsTable( StockTable ):
         contextMenu = super().createContextMenu( itemIndex )
         if self.favGroup not in READONLY_FAV_GROUPS:
             if self.dataObject is not None:
-                remFavAction = insert_new_action(contextMenu, "Remove fav", 0)
+                remFavAction = insert_new_action(contextMenu, "Remove fav", 3)
                 remFavAction.triggered.connect( self._removeFav )
-                insert_new_action(contextMenu, "", 1)
+#                 insert_new_action(contextMenu, "", 1)
         return contextMenu
 
     def _removeFav(self):
