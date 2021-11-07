@@ -57,7 +57,11 @@ VENV_DIR="$VENV_ROOT_DIR"
 
 START_COMMAND=
 if [ "$#" -ge 1 ]; then
-    START_COMMAND="$1"
+    START_COMMAND=$(cat << EOL
+## executing command
+echo "executing: $@"
+eval "$@"
+EOL)
 fi
 
 
@@ -72,13 +76,7 @@ if [ \$? -ne 0 ]; then
     exit 1
 fi
 
-
-COMMAND="$START_COMMAND"
-if [ ! -z "\$COMMAND" ]; then
-    ## execute command
-    echo "executing: \$COMMAND"
-    eval \$COMMAND
-fi
+$START_COMMAND
 
 exec </dev/tty 
 EOL
