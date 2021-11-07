@@ -42,7 +42,7 @@ python3 -m venv $VENV_DIR
 
 ### creating start script
 
-START_SCRIPT_PATH="$VENV_DIR/start.sh"
+START_SCRIPT_PATH="$VENV_DIR/startvenv.sh"
 
 START_SCRIPT_CONTENT='#!/bin/bash
 
