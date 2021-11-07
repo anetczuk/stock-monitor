@@ -4,3 +4,7 @@ lxml>=4.5
 bs4>=0.0.1
 matplotlib>=3.3.2
 tendo
+PyQt5
+watchdog>=0.9.0
+requests>=2.25.1
+html5lib>=1.1
