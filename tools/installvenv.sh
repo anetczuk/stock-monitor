@@ -5,6 +5,8 @@ set -eu
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
+SRC_DIR=$(realpath "$SCRIPT_DIR/../src")
+
 
 VENV_SUBDIR=""
 if [ "$#" -ge 1 ]; then
@@ -57,11 +59,12 @@ VENV_DIR="$VENV_ROOT_DIR"
 
 START_COMMAND=
 if [ "$#" -ge 1 ]; then
-    START_COMMAND=$(cat << EOL
+    START_COMMAND=$(cat <<EOL
 ## executing command
 echo "executing: $@"
 eval "$@"
-EOL)
+EOL
+)
 fi
 
 
@@ -97,24 +100,38 @@ echo "$SCRIPT_CONTENT" > "$SCRIPT_PATH"
 chmod +x "$SCRIPT_PATH"
 
 
-### creating project start script
-
-SCRIPT_CONTENT='#!/bin/bash
+## create shortcut script inside venv directory
+## 1 -- command
+## 2 -- output scritpt
+create_venv_shortcut() {
+    local COMMAND="$1"
+    local SCRIPT_PATH="$2"
+    
+    local SCRIPT_CONTENT='#!/bin/bash
 ##
 ## File was generated automatically. Any change will be lost. 
 ##
 
 set -eu
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-
-
-$SCRIPT_DIR/startvenv.sh "$SCRIPT_DIR/../../src/startmonitor; exit"
 '
 
-SCRIPT_PATH="$VENV_DIR/startmonitor.sh"
-echo "$SCRIPT_CONTENT" > "$SCRIPT_PATH"
-chmod +x "$SCRIPT_PATH"
+    ## concatenate command
+    local SCRIPT_CONTENT="${SCRIPT_CONTENT}${COMMAND}"
+    
+    echo "$SCRIPT_CONTENT" > "$SCRIPT_PATH"
+    chmod +x "$SCRIPT_PATH"
+}
+
+
+### creating project start script
+create_venv_shortcut "$VENV_DIR/startvenv.sh \"$SRC_DIR/startmonitor; exit\"" "$VENV_DIR/startmonitor"
+
+### creating menu configuration script
+create_venv_shortcut "$SRC_DIR/configure_menu.sh $VENV_DIR/startvenv.sh" "$VENV_DIR/configure_menu.sh"
+
+### creating autostart configuration script
+create_venv_shortcut "$SRC_DIR/configure_autostart.sh $VENV_DIR/startvenv.sh" "$VENV_DIR/configure_autostart.sh"
 
 
 ### install required packages
