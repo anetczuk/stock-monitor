@@ -6,10 +6,10 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 
 ## add udev rule
-AUTOSTART_FILE=~/.local/share/applications/menulibre-stockmonitor.desktop
+CONFIG_FILE=~/.local/share/applications/menulibre-stockmonitor.desktop
 
 
-cat > $AUTOSTART_FILE << EOL
+cat > $CONFIG_FILE << EOL
 [Desktop Entry]
 Name=Stock Monitor
 GenericName=Stock Monitor
@@ -27,4 +27,4 @@ Terminal=false
 EOL
 
 
-echo "File created in: $AUTOSTART_FILE"
+echo "File created in: $CONFIG_FILE"

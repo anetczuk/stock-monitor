@@ -6,10 +6,10 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 
 ## add udev rule
-AUTOSTART_FILE=~/.config/autostart/stockmonitor.desktop
+CONFIG_FILE=~/.config/autostart/stockmonitor.desktop
 
 
-cat > $AUTOSTART_FILE << EOL
+cat > $CONFIG_FILE << EOL
 [Desktop Entry]
 Name=Stock Monitor
 GenericName=Stock Monitor
@@ -24,4 +24,4 @@ X-GNOME-Autostart-enabled=true
 EOL
 
 
-echo "File created in: $AUTOSTART_FILE"
+echo "File created in: $CONFIG_FILE"
