@@ -40,11 +40,9 @@ python3 -m venv $VENV_DIR
 # python2 -m virtualenv $VENV_DIR
 
 
-### creating start script
+### creating venv start script
 
-START_SCRIPT_PATH="$VENV_DIR/startvenv.sh"
-
-START_SCRIPT_CONTENT='#!/bin/bash
+SCRIPT_CONTENT='#!/bin/bash
 
 ##
 ## File was generated automatically. Any change will be lost. 
@@ -78,7 +76,8 @@ fi
 COMMAND="$START_COMMAND"
 if [ ! -z "\$COMMAND" ]; then
     ## execute command
-    \$COMMAND
+    echo "executing: \$COMMAND"
+    eval \$COMMAND
 fi
 
 exec </dev/tty 
@@ -93,15 +92,33 @@ bash -i <<< "source $tmpfile"
 rm $tmpfile
 '
 
+SCRIPT_CONTENT="${SCRIPT_CONTENT//'$VENV_ROOT_DIR'/$VENV_DIR}"
+SCRIPT_PATH="$VENV_DIR/startvenv.sh"
+START_VENV_SCRIPT_PATH="$SCRIPT_PATH"
+echo "$SCRIPT_CONTENT" > "$SCRIPT_PATH"
+chmod +x "$SCRIPT_PATH"
 
-START_SCRIPT_CONTENT="${START_SCRIPT_CONTENT//'$VENV_ROOT_DIR'/$VENV_DIR}"
 
-echo "$START_SCRIPT_CONTENT" > "$START_SCRIPT_PATH"
+### creating project start script
 
-chmod +x "$START_SCRIPT_PATH"
+SCRIPT_CONTENT='#!/bin/bash
+##
+## File was generated automatically. Any change will be lost. 
+##
+
+set -eu
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+
+$SCRIPT_DIR/startvenv.sh "$SCRIPT_DIR/../../src/startmonitor; exit"
+'
+
+SCRIPT_PATH="$VENV_DIR/startmonitor.sh"
+echo "$SCRIPT_CONTENT" > "$SCRIPT_PATH"
+chmod +x "$SCRIPT_PATH"
 
 
 ### install required packages
 echo "Installing dependencies"
-
-$START_SCRIPT_PATH "$SCRIPT_DIR/../src/install-deps.sh"
+$START_VENV_SCRIPT_PATH "$SCRIPT_DIR/../src/install-deps.sh"
