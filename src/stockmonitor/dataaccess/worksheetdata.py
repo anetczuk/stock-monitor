@@ -27,6 +27,7 @@ import logging
 import datetime
 import abc
 import urllib
+import ssl
 
 from pandas.core.frame import DataFrame
 
@@ -37,11 +38,25 @@ from stockmonitor.synchronized import synchronized
 _LOGGER = logging.getLogger(__name__)
 
 
-def download_content( url, outputPath ):
+def download_html_content( url, outputPath ):
     try:
-#         dirPath = os.path.dirname( outputPath )
-#         os.makedirs( dirPath, exist_ok=True )
-        urllib.request.urlretrieve( url, outputPath )
+        ##
+        ## Under Ubuntu 20 SSL configuration has changed causing problems with SSL keys.
+        ## For more details see: https://forums.raspberrypi.com/viewtopic.php?t=255167
+        ##
+        ctx_no_secure = ssl.create_default_context()
+        ctx_no_secure.set_ciphers('HIGH:!DH:!aNULL')
+        ctx_no_secure.check_hostname = False
+        ctx_no_secure.verify_mode = ssl.CERT_NONE
+    
+        result = urllib.request.urlopen( url, context=ctx_no_secure )
+        content_data = result.read()
+        content_text = content_data.decode("utf-8") 
+        
+        with open(outputPath, 'wt') as of:
+            of.write( content_text )
+        
+#         urllib.request.urlretrieve( url, outputPath, context=ctx_no_secure )
     except urllib.error.HTTPError:
         _LOGGER.exception( "exception when accessing: %s", url )
         raise
@@ -104,6 +119,7 @@ class WorksheetData( BaseWorksheetData ):
         except BaseException:
             _LOGGER.exception( "unable to load object data" )
             return
+        
         if self.worksheet is None:
             self.grabTimestamp = None
             return
@@ -124,9 +140,13 @@ class WorksheetData( BaseWorksheetData ):
                 if self.worksheet is not None:
                     return
             except ModuleNotFoundError:
-                ## ths might happen when object files are shared between
+                ## this might happen when object files are shared between
                 ## different operating systems (different versions of libraries)
-                _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath )
+                _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
+            except AttributeError:
+                ## this might happen when module updated between save and load
+                ## e.g.: AttributeError: Can't get attribute 'new_block' on <module 'pandas.core.internals.blocks' from 'site-packages/pandas/core/internals/blocks.py'>
+                _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
 
         self.parseDataFromDefaultFile()
         if self.worksheet is not None:
@@ -150,7 +170,7 @@ class WorksheetData( BaseWorksheetData ):
         persist.store_object_simple(currTimestamp, timestampPath)
 
     def _downloadContent( self, url, filePath ):
-        download_content( url, filePath )
+        download_html_content( url, filePath )
 
     def parseDataFromDefaultFile(self):
         dataPath = self.getDataPath()
