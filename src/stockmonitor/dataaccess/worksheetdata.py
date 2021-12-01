@@ -27,12 +27,12 @@ import logging
 import datetime
 import abc
 import urllib
-import ssl
 
 from pandas.core.frame import DataFrame
 
 from stockmonitor import persist
 from stockmonitor.synchronized import synchronized
+from stockmonitor.dataaccess import urlretrieve
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,23 +40,8 @@ _LOGGER = logging.getLogger(__name__)
 
 def download_html_content( url, outputPath ):
     try:
-        ##
-        ## Under Ubuntu 20 SSL configuration has changed causing problems with SSL keys.
-        ## For more details see: https://forums.raspberrypi.com/viewtopic.php?t=255167
-        ##
-        ctx_no_secure = ssl.create_default_context()
-        ctx_no_secure.set_ciphers('HIGH:!DH:!aNULL')
-        ctx_no_secure.check_hostname = False
-        ctx_no_secure.verify_mode = ssl.CERT_NONE
-    
-        result = urllib.request.urlopen( url, context=ctx_no_secure )
-        content_data = result.read()
-        content_text = content_data.decode("utf-8") 
-        
-        with open(outputPath, 'wt') as of:
-            of.write( content_text )
-        
-#         urllib.request.urlretrieve( url, outputPath, context=ctx_no_secure )
+        urlretrieve( url, outputPath )
+
     except urllib.error.HTTPError:
         _LOGGER.exception( "exception when accessing: %s", url )
         raise

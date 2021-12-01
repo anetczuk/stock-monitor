@@ -26,10 +26,10 @@ import logging
 # import urllib.request
 import datetime
 
-import urllib.request
+import urllib.error
 import xlrd
 
-from stockmonitor.dataaccess import tmp_dir
+from stockmonitor.dataaccess import tmp_dir, urlretrieve
 from stockmonitor.dataaccess.datatype import ArchiveDataType
 
 
@@ -140,8 +140,14 @@ class GpwArchiveData:
 
         dirPath = os.path.dirname( filePath )
         os.makedirs( dirPath, exist_ok=True )
-        urllib.request.urlretrieve( url, filePath )
-        return filePath
+        
+        try:
+            urlretrieve( url, filePath )
+            
+            return filePath
+        except urllib.error.URLError as ex:
+            _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
+            raise
 
     def isFileWithNoData(self, filePath):
         with open( filePath ) as f:
