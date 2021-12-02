@@ -152,7 +152,9 @@ class DataContainer():
                 notes = ""
 
             stockName    = currentStock.getNameFromTicker( entry.ticker )
-            if stockName is None:
+            stockValue   = currentStock.getRecentValue( entry.ticker )
+            
+            if stockName is None or stockValue == '-':
                 rowDict = {}
                 rowDict[ columnsList[ 0] ] = stockName
                 rowDict[ columnsList[ 1] ] = entry.ticker
@@ -167,8 +169,7 @@ class DataContainer():
                 rowDict[ columnsList[10] ] = notes
                 rowsList.append( rowDict )
                 continue
-
-            stockValue   = currentStock.getRecentValue( entry.ticker )
+            
             reqChangePnt = entry.requiredChange( stockValue )
             reqChangePnt = round( reqChangePnt, 2 )
             reqValue     = entry.requiredValue( stockValue )
@@ -714,6 +715,10 @@ class DataContainer():
             startDateTime -= timedelta( weeks=26 )
         elif rangeCode == "1R":
             startDateTime -= timedelta( weeks=52 )
+        elif rangeCode == "2R":
+            startDateTime -= timedelta( weeks=104 )
+        elif rangeCode == "3R":
+            startDateTime -= timedelta( weeks=156 )
         elif rangeCode == "MAX":
             startDateTime = None
         else:

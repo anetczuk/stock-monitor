@@ -141,6 +141,16 @@
        </item>
        <item>
         <property name="text">
+         <string>2R</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3R</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>MAX</string>
         </property>
        </item>
