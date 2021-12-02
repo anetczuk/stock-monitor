@@ -29,6 +29,7 @@ import multiprocessing.dummy
 
 import csv
 import pandas
+import numpy
 
 from stockmonitor import persist
 from stockmonitor.analysis.stockanalysisdata import VarCalc, SourceDataLoader, StatsDict
@@ -197,10 +198,16 @@ class ActivityAnalysis:
             if refVal is not None:
                 dataSubdict["ref price"] = refVal
                 currVal = refVal
-            if currVal == 0:
+            if currVal == 0 or currVal == '-':
                 continue
 
-            raiseVal  = maxVal - currVal
+            raiseVal  = 0
+            try:
+                raiseVal  = maxVal - currVal
+            except numpy.core._exceptions.UFuncTypeError:
+                _LOGGER.warning( "invalid data '%s' and '%s'", maxVal, currVal )
+                raise
+
             potVal    = raiseVal / maxVal
             stockDiff = maxVal - minVal
             relVal = 0.0

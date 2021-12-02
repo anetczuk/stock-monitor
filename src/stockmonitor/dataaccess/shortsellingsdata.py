@@ -78,6 +78,10 @@ class CurrentShortSellingsData( WorksheetData ):
     def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "parsing data file: %s", dataFile )
         dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+        #_LOGGER.debug( "dataFrame: %s", dataFrame )
+        if len(dataFrame) < 3:
+            _LOGGER.warning( "unable to parse data file: %s", dataFile )
+            return None
         dataFrame = dataFrame[3]
 
 #         print( "raw dataframe:\n", dataFrame )

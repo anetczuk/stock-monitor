@@ -102,6 +102,9 @@ def load_object_simple( inputFile, defaultValue=None ):
         _LOGGER.info( "loading data from: %s", inputFile )
         with open( inputFile, 'rb') as fp:
             return pickle.load(fp)
+    except AttributeError:
+        _LOGGER.exception( "failed to load: %s", inputFile )
+        return defaultValue
     except FileNotFoundError:
         _LOGGER.exception( "failed to load: %s", inputFile )
         return defaultValue

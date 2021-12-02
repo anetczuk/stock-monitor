@@ -223,10 +223,14 @@ class MarkerEntry( persist.Versionable ):
         self.__dict__ = dict_
 
     def requiredChange(self, currentValue):
-        change = (currentValue - self.value) / self.value * 100
-        if self.operation is self.OperationType.BUY:
-            return -change
-        return change
+        try:
+            change = (currentValue - self.value) / self.value * 100
+            if self.operation is self.OperationType.BUY:
+                return -change
+            return change
+        except TypeError:
+            _LOGGER.warning( "invalid data '%s' and '%s'", currentValue, self.value )
+            raise
 
     def requiredValue(self, currentValue):
         valueChange = (currentValue - self.value) * self.amount
