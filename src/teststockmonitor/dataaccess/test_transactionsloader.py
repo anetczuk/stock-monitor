@@ -58,3 +58,11 @@ class TransactionsLoaderTest(unittest.TestCase):
 
         self.assertEqual( dataFrame["currency"][0], "PLN" )
         self.assertEqual( dataFrame["unit_price"][1], 18.95 )
+
+    def test_parse_mb_transactions_data_badseparator_02(self):
+        transactionsPath = get_data_path( "transactions_bad_separator2.csv" )
+        with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
+            dataFrame = parse_mb_transactions_data( srcFile )
+
+        self.assertEqual( dataFrame["currency"][0], "PLN" )
+        self.assertEqual( dataFrame["unit_price"][1], 4.42 )

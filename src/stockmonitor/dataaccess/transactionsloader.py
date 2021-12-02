@@ -80,12 +80,28 @@ def load_mb_transactions( filePath ):
 
 
 def parse_mb_transactions_data( sourceFile ):
+    dataFrame = None
     with fix_separator( sourceFile ) as tmpfile:
-        dataFrame = pandas.read_csv( tmpfile, names=[ "trans_time", "name", "stock_id", "k_s", "amount",
-                                                      "unit_price", "unit_currency", "price", "currency" ],
+#         print( "file:\n" + tmpfile.read() )
+#         tmpfile.seek(0)
+        
+        columns = count_separator( tmpfile, ";" )
+        tmpfile.seek(0)
+        
+        header = []
+        if columns == 8:
+            header = [ "trans_time", "name", "stock_id", "k_s", "amount",
+                      "unit_price", "unit_currency", "price", "currency" ]
+        elif columns == 10: 
+            header = [ "trans_time", "name", "stock_id", "k_s", "amount",
+                       "unit_price", "unit_currency", "commision_value", "commision_currency", "price", "currency" ]
+        
+#         print( "header:", header, columns )
+        
+        dataFrame = pandas.read_csv( tmpfile, names=header,
                                      sep=r'[;\t]', decimal='.', thousands=' ', engine='python', encoding='utf_8' )
 
-#     print( "raw data:\n", dataFrame )
+#     print( "raw data:\n" + str( dataFrame ) )
 
     apply_on_column( dataFrame, 'name', str )
 
@@ -113,12 +129,25 @@ def fix_separator( sourceFile ):
             line = replace_nth( line, ",", ".", 9 )
             line = replace_nth( line, ",", ".", 6 )
             line = line.replace( ",", ";" )
+        elif colonsNum == 13:
+            ## example: 18.10.2021 10:54:59,ENTER,WWA-GPW,K,120,12,30,PLN,5,76,PLN,1 476,0,PLN
+            line = replace_nth( line, ",", ".", 12 )
+            line = replace_nth( line, ",", ".", 9 )
+            line = replace_nth( line, ",", ".", 6 )
+            line = line.replace( ",", ";" )
         tmpfile.write(line)
 
     tmpfile.seek(0)
     return tmpfile
 
 
+def count_separator( sourceFile, separator ):
+    for line in sourceFile:
+        return line.count( separator )
+    return 0
+
+
+## 'occurence' starts from 1
 def replace_nth(stringData, sub, repl, occurence):
     find = stringData.find(sub)
     # If find is not -1 we have found at least one match for the substring
