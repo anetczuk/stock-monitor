@@ -94,7 +94,7 @@ rm $tmpfile
 '
 
 SCRIPT_CONTENT="${SCRIPT_CONTENT//'$VENV_ROOT_DIR'/$VENV_DIR}"
-SCRIPT_PATH="$VENV_DIR/startvenv.sh"
+SCRIPT_PATH="$VENV_DIR/activatevenv.sh"
 START_VENV_SCRIPT_PATH="$SCRIPT_PATH"
 echo "$SCRIPT_CONTENT" > "$SCRIPT_PATH"
 chmod +x "$SCRIPT_PATH"
@@ -125,13 +125,13 @@ set -eu
 
 
 ### creating project start script
-create_venv_shortcut "$VENV_DIR/startvenv.sh \"$SRC_DIR/startmonitor; exit\"" "$VENV_DIR/startmonitor"
+create_venv_shortcut "$VENV_DIR/activatevenv.sh \"$SRC_DIR/startmonitor; exit\"" "$VENV_DIR/startmonitor"
 
 ### creating menu configuration script
-create_venv_shortcut "$SRC_DIR/configure_menu.sh $VENV_DIR/startvenv.sh" "$VENV_DIR/configure_menu.sh"
+create_venv_shortcut "$SRC_DIR/configure_menu.sh $VENV_DIR/activatevenv.sh" "$VENV_DIR/configure_menu.sh"
 
 ### creating autostart configuration script
-create_venv_shortcut "$SRC_DIR/configure_autostart.sh $VENV_DIR/startvenv.sh" "$VENV_DIR/configure_autostart.sh"
+create_venv_shortcut "$SRC_DIR/configure_autostart.sh $VENV_DIR/activatevenv.sh" "$VENV_DIR/configure_autostart.sh"
 
 
 ### install required packages
