@@ -152,11 +152,13 @@ class GpwCurrentStockData( WorksheetData ):
 
     def getRecentChange(self, ticker):
         row = self.getRowByTicker( ticker )
-        return row.iloc[12]
+        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        return row.iloc[ dataIndex ]
 
     def getReferenceValue(self, ticker):
         row = self.getRowByTicker( ticker )
-        return row.iloc[6]
+        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.REFERENCE )
+        return row.iloc[ dataIndex ]
 
     # ==========================================================================
 
@@ -238,15 +240,17 @@ class GpwCurrentStockData( WorksheetData ):
     def getColumnIndex(dataType: CurrentDataType):
         switcher = {
             CurrentDataType.NAME:               2,
-            CurrentDataType.TICKER:             3,
-            CurrentDataType.CURRENCY:           4,
-            CurrentDataType.RECENT_TRANS_TIME:  5,
-            CurrentDataType.REFERENCE:          6,
-            CurrentDataType.TKO:                7,
-            CurrentDataType.OPENING:            8,
-            CurrentDataType.MIN:                9,
-            CurrentDataType.MAX:               10,
-            CurrentDataType.RECENT_TRANS:      11
+            CurrentDataType.ISIN:               3,
+            CurrentDataType.TICKER:             4,
+            CurrentDataType.CURRENCY:           5,
+            CurrentDataType.RECENT_TRANS_TIME:  6,
+            CurrentDataType.REFERENCE:          7,
+            CurrentDataType.TKO:                8,
+            CurrentDataType.OPENING:            9,
+            CurrentDataType.MIN:               10,
+            CurrentDataType.MAX:               11,
+            CurrentDataType.RECENT_TRANS:      12,
+            CurrentDataType.CHANGE_TO_REF:     14
         }
         return switcher.get(dataType, None)
 
@@ -306,7 +310,8 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
         if dataFrame is None:
             _LOGGER.warning("no worksheet found")
             return None
-        isinColumn = dataFrame.iloc[:, 12]
+        isinIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.ISIN )
+        isinColumn = dataFrame.iloc[ :, isinIndex ]
         retRows = dataFrame.loc[ isinColumn == isin ]
         return retRows.squeeze()            ## convert 1 row dataframe to series
 

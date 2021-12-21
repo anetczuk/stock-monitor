@@ -42,6 +42,7 @@ from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap,\
     GpwIndexIntradayMap
 from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory
 from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
+from stockmonitor.dataaccess.datatype import CurrentDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -154,7 +155,10 @@ class DataContainer():
             stockName    = currentStock.getNameFromTicker( entry.ticker )
             stockValue   = currentStock.getRecentValue( entry.ticker )
             
-            if stockName is None or stockValue == '-':
+#             if stockValue is None:
+#                 _LOGGER.info( "None type:", entry.ticker, stockName )
+                
+            if stockName is None or stockValue is None or stockValue == '-':
                 rowDict = {}
                 rowDict[ columnsList[ 0] ] = stockName
                 rowDict[ columnsList[ 1] ] = entry.ticker
@@ -296,6 +300,8 @@ class DataContainer():
                         "Wartość [PLN]", "Udział [%]",
                         "Zysk [%]", "Zysk [PLN]", "Zysk całkowity [PLN]" ]
 
+        dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+
         # apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
 
         walletState = self.getWalletState()
@@ -332,7 +338,7 @@ class DataContainer():
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
-            currChangeRaw = currentStockRow.iloc[ 12 ]
+            currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
             currChangePnt = 0
             if currChangeRaw != "-":
                 currChangePnt = float( currChangeRaw )
@@ -428,6 +434,8 @@ class DataContainer():
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
+        
+        dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
@@ -452,7 +460,7 @@ class DataContainer():
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
-            currChangeRaw = currentStockRow.iloc[ 12 ]
+            currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
             currChange    = 0
             if currChangeRaw != "-":
                 currChange = float( currChangeRaw )
@@ -487,7 +495,7 @@ class DataContainer():
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna",
                         "Kurs sprzedaży", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
-
+        
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
 
@@ -543,6 +551,8 @@ class DataContainer():
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
+        
+        dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
@@ -563,7 +573,7 @@ class DataContainer():
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
-            currChangeRaw = currentStockRow.iloc[ 12 ]
+            currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
             currChange    = 0
             if currChangeRaw != "-":
                 currChange = float( currChangeRaw )

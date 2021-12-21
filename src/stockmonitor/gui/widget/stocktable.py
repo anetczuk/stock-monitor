@@ -35,9 +35,13 @@ from PyQt5.QtGui import QDesktopServices
 from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
 
+from stockmonitor.dataaccess.datatype import CurrentDataType
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
-from stockmonitor.gui.widget import stockchartwidget, indexchartwidget
+
+import stockmonitor.gui.widget.stockchartwidget as stockchartwidget
+import stockmonitor.gui.widget.indexchartwidget as indexchartwidget
+# import stockmonitor.gui.widget.stocksummarywidget as stocksummarywidget
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -66,6 +70,11 @@ class StockTable( DataFrameTable ):
 
         if self.dataObject is not None:
             self._addOpenChartAction( contextMenu )
+
+#            stockSummaryAction = contextMenu.addAction("Stock summary")
+#            isinsList = self._getSelectedIsins()
+#            stockSummaryAction.setData( isinsList )
+#            stockSummaryAction.triggered.connect( self._stockSummaryAction )
 
             gpwLinks = self._getGpwInfoLinks()
             moneyLinks = self._getMoneyInfoLinks()
@@ -109,6 +118,16 @@ class StockTable( DataFrameTable ):
             configColumnsAction.setEnabled( False )
 
         return contextMenu
+
+#     def _stockSummaryAction(self):
+#         if self.dataObject is None:
+#             return
+#         parentAction = self.sender()
+#         isinList = parentAction.data()
+#         if is_iterable( isinList ) is False:
+#             isinList = list( isinList )
+#         for isin in isinList:
+#             stocksummarywidget.create_window( self.dataObject, isin, self )
 
     def _createActionOpenUrl(self, text, link ):
         action = QAction( text )
@@ -268,7 +287,8 @@ class StockFullColorDelegate( TableRowColorDelegate ):
     def foreground(self, index: QModelIndex ):
         dataColumn = index.column()
         ## "Zm.do k.odn.[%]"
-        if dataColumn == 12:
+        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        if dataColumn == dataIndex:
             stockChangeString = index.data()
             if stockChangeString != "-":
                 stockChange = float(stockChangeString)
@@ -310,7 +330,8 @@ class StockFullTable( StockTable ):
         self.setHeadersText( self.dataObject.gpwCurrentHeaders )
 
     def _getSelectedTickers(self):
-        return self.getSelectedData( 3 )                ## ticker
+        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.TICKER )
+        return self.getSelectedData( dataIndex )                ## ticker
 
     def settingsAccepted(self):
         if self.dataObject is not None:

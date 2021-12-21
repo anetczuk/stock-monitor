@@ -127,6 +127,9 @@ class HistoryShortSellingsData( WorksheetData ):
     def parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "parsing data file: %s", dataFile )
         dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+        if len( dataFrame ) < 3:
+            _LOGGER.warning( "received unexpected data while parsing: %s", dataFile )
+            return None
         dataFrame = dataFrame[3]
 
         dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column

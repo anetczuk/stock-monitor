@@ -65,6 +65,7 @@ class ArchiveDataType(Enum):
 @unique
 class CurrentDataType(Enum):
     NAME = ()               ## nazwa
+    ISIN = ()               ## numer ISIN
     TICKER = ()             ## skrot
     CURRENCY = ()           ## waluta
     RECENT_TRANS_TIME = ()  ## czas ostatniej transakcji
@@ -74,8 +75,8 @@ class CurrentDataType(Enum):
     MIN = ()                ## kurs minimalny
     MAX = ()                ## kurs maksymalny
     RECENT_TRANS = ()       ## kurs ostatniej transakcji
+    CHANGE_TO_REF = ()      ## zmiana do kursu odniesienia
 
-#     ISIN = ()               ## numer ISIN
 #     CLOSING = ()            ## kurs zamkniecia
 #     CHANGE = ()             ## zmiana kursu
 #     VOLUME = ()             ## wolumen
