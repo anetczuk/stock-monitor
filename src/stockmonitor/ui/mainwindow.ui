@@ -96,7 +96,7 @@
         <item>
          <widget class="QTabWidget" name="infoTabWidget">
           <property name="currentIndex">
-           <number>5</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="indicatorsTab">
            <attribute name="title">
@@ -192,7 +192,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,0">
             <item>
-             <widget class="ESPIListWidget" name="espiList" native="true"/>
+             <widget class="ESPIWidget" name="espiList" native="true"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1">
@@ -854,7 +854,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ESPIListWidget</class>
+   <class>ESPIWidget</class>
    <extends>QWidget</extends>
    <header>stockmonitor.gui.widget.info.espiwidget</header>
    <container>1</container>

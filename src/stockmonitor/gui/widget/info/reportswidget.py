@@ -30,6 +30,7 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable, stock_background_color
+# import stockmonitor.gui.widget.stocktable as stocktable
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.utils import set_label_url
@@ -64,6 +65,49 @@ class ReportsColorDelegate( TableRowColorDelegate ):
         dataRow = index.row()
         ticker = self.dataAccess.getTicker( dataRow )
         return stock_background_color( self.dataObject, ticker )
+
+
+class ReportsBaseWidget( QWidget ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+
+        self.dataObject = None
+        self.dataAccess = None
+
+        vlayout = QtWidgets.QVBoxLayout()
+        vlayout.setContentsMargins( 0, 0, 0, 0 )
+        self.setLayout( vlayout )
+        self.dataTable = ReportsTable(self)
+        vlayout.addWidget( self.dataTable )
+
+        hlayout = QtWidgets.QHBoxLayout()
+        sourceText = QtWidgets.QLabel(self)
+        sourceText.setText("Source:")
+        hlayout.addWidget( sourceText )
+
+        self.sourceLabel = QtWidgets.QLabel(self)
+        self.sourceLabel.setOpenExternalLinks(True)
+        hlayout.addWidget( self.sourceLabel, 1 )
+
+        vlayout.addLayout( hlayout )
+
+    def connectData(self, dataObject: DataObject):
+        self.dataObject = dataObject
+        self.dataAccess = self.dataObject.gpwReportsData
+
+        set_label_url( self.sourceLabel, self.dataAccess.sourceLink() )
+
+        colorDecorator = ReportsColorDelegate( self.dataAccess, self.dataObject )
+        self.dataTable.setColorDelegate( colorDecorator )
+
+        self.dataTable.connectData( self.dataObject )
+
+    def setData(self, dataFrame):
+        self.dataTable.setData( dataFrame )
+
+
+## ============================================================
 
 
 class ReportsWidget( QWidget ):

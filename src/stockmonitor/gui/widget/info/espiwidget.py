@@ -67,45 +67,26 @@ class ESPIDetails( DetailsBaseClass ):                      # type: ignore
         QtCore.QTimer.singleShot( 50, self.adjustHeight )
 
 
-UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
-
-
-class ESPIListWidget( QtBaseClass ):                        # type: ignore
+class ESPIListWidget( QtWidgets.QListWidget ):                        # type: ignore
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
-        self.ui = UiTargetClass()
-        self.ui.setupUi(self)
-
         self.dataObject = None
-
-        self.ui.messagesNumSB.valueChanged.connect( self._setMessagesLimit )
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
-        self.dataObject.stockDataChanged.connect( self.updateView )
-        self.dataObject.favsChanged.connect( self.updateView )
-        self.dataObject.walletDataChanged.connect( self.updateView )
 
-    def updateView(self):
-        self.ui.espiList.clear()
-        if self.dataObject is None:
-            _LOGGER.warning("unable to update view")
-            return
-        espiData = self.dataObject.gpwESPIData
-        if espiData is None:
-            _LOGGER.info("no data to view")
-            return
-        dataFrame = espiData.getWorksheet()
+    def setData(self, dataFrame):
+        self.clear()
         if dataFrame is None:
             _LOGGER.info("no data to view")
             return
 
         _LOGGER.info("updating view")
         for _, row in dataFrame.iterrows():
-            self.addItem( row )
+            self.addRow( row )
 
-    def addItem(self, row):
+    def addRow(self, row):
         item = QtWidgets.QListWidgetItem()
         details = ESPIDetails( row, self )
         details.resized.connect( lambda: item.setSizeHint( details.sizeHint() ) )
@@ -115,8 +96,8 @@ class ESPIListWidget( QtBaseClass ):                        # type: ignore
         if bgColor is not None:
             item.setBackground( bgColor )
 
-        self.ui.espiList.addItem( item )
-        self.ui.espiList.setItemWidget( item, details )
+        self.addItem( item )
+        self.setItemWidget( item, details )
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Enter or event.key() == QtCore.Qt.Key_Return:
@@ -228,10 +209,47 @@ class ESPIListWidget( QtBaseClass ):                        # type: ignore
         return isin
 
     def _currentRow(self):
-        currentRow = self.ui.espiList.currentRow()
+        currentRow = self.currentRow()
         espiData = self.dataObject.gpwESPIData
         dataFrame = espiData.getWorksheet()
         return dataFrame.iloc[ currentRow ]
+
+
+## =======================================================================
+
+
+UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
+
+
+class ESPIWidget( QtBaseClass ):                        # type: ignore
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+        self.ui = UiTargetClass()
+        self.ui.setupUi(self)
+
+        self.dataObject = None
+
+        self.ui.messagesNumSB.valueChanged.connect( self._setMessagesLimit )
+
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+        self.ui.espiList.connectData( dataObject )
+        self.dataObject.stockDataChanged.connect( self.updateView )
+        self.dataObject.favsChanged.connect( self.updateView )
+        self.dataObject.walletDataChanged.connect( self.updateView )
+
+    def updateView(self):
+        self.ui.espiList.clear()
+        if self.dataObject is None:
+            _LOGGER.warning("unable to update view")
+            return
+        espiData = self.dataObject.gpwESPIData
+        if espiData is None:
+            _LOGGER.info("no data to view")
+            return
+        dataFrame = espiData.getWorksheet()
+        self.ui.espiList.setData( dataFrame )
 
     def _setMessagesLimit(self, limit):
         if self.dataObject is None:
