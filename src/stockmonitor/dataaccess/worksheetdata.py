@@ -77,7 +77,7 @@ class BaseWorksheetData( metaclass=abc.ABCMeta ):
     @abc.abstractmethod
     def loadWorksheet(self):
         raise NotImplementedError('You need to define this method in derived class!')
-    
+
     ## get current data (without additional actions)
     @abc.abstractmethod
     def getDataFrame(self) -> DataFrame:
@@ -129,7 +129,7 @@ class WorksheetData( BaseWorksheetData ):
 
     ## ====================================================
 
-    ## override    
+    ## override
     def getDataFrame(self) -> DataFrame:
         if self.storage.worksheet is None:
             dataPath = self.getDataPath()
@@ -155,15 +155,15 @@ class WorksheetData( BaseWorksheetData ):
 ##
 class WorksheetStorage():
     """Store and load data."""
-    
+
     def __init__(self):
         self.worksheet: DataFrame = None
         self.grabTimestamp: datetime.datetime = None
-    
+
     def clear(self):
         self.worksheet = None
         self.grabTimestamp = None
-    
+
     def loadObject(self, dataPath, forceRefresh=False):
         if forceRefresh is False and self.worksheet is not None:
             return self.worksheet
@@ -174,7 +174,7 @@ class WorksheetStorage():
             if self.worksheet is None:
                 self.clear()
                 return self.worksheet
-            
+
             timestampPath = dataPath + ".timestamp"
             self.grabTimestamp = persist.load_object_simple( timestampPath, None )
             if self.grabTimestamp is None:
@@ -188,7 +188,7 @@ class WorksheetStorage():
             ## this might happen when module updated between save and load
             ## e.g.: AttributeError: Can't get attribute 'new_block' on <module 'pandas.core.internals.blocks' from 'site-packages/pandas/core/internals/blocks.py'>
             _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
-            
+
         self.clear()
         return None
 
@@ -199,7 +199,7 @@ class WorksheetStorage():
             return
         picklePath = dataPath + ".pickle"
         persist.store_object_simple( objectToStore, picklePath )
-        
+
         self.grabTimestamp = datetime.datetime.today()
         timestampPath = dataPath + ".timestamp"
         persist.store_object_simple( self.grabTimestamp, timestampPath )
@@ -209,7 +209,7 @@ class WorksheetStorage():
 ##
 class WorksheetStorageMock():
     """Store and load data."""
-    
+
     def __init__(self):
         self.worksheet: DataFrame = None
         self.grabTimestamp: datetime.datetime = None
@@ -239,7 +239,7 @@ class WorksheetDataMock( BaseWorksheetData ):
     def loadWorksheet(self):
         pass
 
-    ## override    
+    ## override
     def getDataFrame(self) -> DataFrame:
         return self.worksheet
 

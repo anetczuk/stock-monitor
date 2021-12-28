@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class GlobalIndexesData( WorksheetData ):
-    
+
     @synchronized
     def _parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )

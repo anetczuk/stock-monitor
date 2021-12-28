@@ -84,7 +84,7 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         if not intraSources:
             self._updateView()
             return
-        
+
         threads = threadlist.QThreadMeasuredList( self )
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
@@ -235,7 +235,7 @@ class WalletGainChartWidget( ValueChartBasicWidget ):
         super().__init__(parentWidget)
 
         self.dataObject = None
-        
+
         cSize = self.ui.rangeCB.count()
         if cSize > 0:
             self.ui.rangeCB.setCurrentIndex( cSize - 1 )
@@ -248,7 +248,7 @@ class WalletGainChartWidget( ValueChartBasicWidget ):
     def getDataSources(self):
         ## nothing to update -- gain is not affected by current values of stock
         return []
-    
+
 #         retList = []
 #         rangeText = self.ui.rangeCB.currentText()
 #         walletTickers = self.dataObject.wallet.tickers()

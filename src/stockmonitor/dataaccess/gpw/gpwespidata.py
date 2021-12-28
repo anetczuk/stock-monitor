@@ -49,7 +49,7 @@ class GpwESPIData( WorksheetData ):
 
     def setLimit(self, number):
         self.messagesLimit = number
-        
+
     ## ================================================================
 
     @synchronized

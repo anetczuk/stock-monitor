@@ -140,10 +140,10 @@ class GpwArchiveData:
 
         dirPath = os.path.dirname( filePath )
         os.makedirs( dirPath, exist_ok=True )
-        
+
         try:
             urlretrieve( url, filePath )
-            
+
             return filePath
         except urllib.error.URLError as ex:
             _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )

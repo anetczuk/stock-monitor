@@ -57,7 +57,7 @@ class MetaStockIntradayData( WorksheetData ):
     def getWorksheetForDate( self, dataDate: datetime.date ):
         self.dataDate = dataDate
         return self.getWorksheetData( False )
-    
+
     ## ================================================================
 
     ## override

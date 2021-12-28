@@ -154,10 +154,10 @@ class DataContainer():
 
             stockName    = currentStock.getNameFromTicker( entry.ticker )
             stockValue   = currentStock.getRecentValue( entry.ticker )
-            
+
 #             if stockValue is None:
 #                 _LOGGER.info( "None type:", entry.ticker, stockName )
-                
+
             if stockName is None or stockValue is None or stockValue == '-':
                 rowDict = {}
                 rowDict[ columnsList[ 0] ] = stockName
@@ -173,7 +173,7 @@ class DataContainer():
                 rowDict[ columnsList[10] ] = notes
                 rowsList.append( rowDict )
                 continue
-            
+
             reqChangePnt = entry.requiredChange( stockValue )
             reqChangePnt = round( reqChangePnt, 2 )
             reqValue     = entry.requiredValue( stockValue )
@@ -434,7 +434,7 @@ class DataContainer():
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
-        
+
         dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
@@ -495,7 +495,7 @@ class DataContainer():
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna",
                         "Kurs sprzedaży", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
-        
+
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
 
@@ -551,7 +551,7 @@ class DataContainer():
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
-        
+
         dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
@@ -849,7 +849,7 @@ def join_list_dataframe( mergedList, stockData: DataFrame ):
                 newValue = stockData.at[ s, "c" ]
                 rowList = [ stockTime, newValue ]
                 newList.append( rowList )
-                s += 1            
+                s += 1
         elif stockTime == currTime:
             newValue = mergedList[ m ][ 1 ] + stockData.at[ s, "c" ]
             rowList = [ stockTime, newValue ]
@@ -868,7 +868,7 @@ def join_list_dataframe( mergedList, stockData: DataFrame ):
                 newValue = mergedList[ m ][ 1 ]
                 rowList = [ currTime, newValue ]
                 newList.append( rowList )
-                m += 1            
+                m += 1
 
     ## join rest of stockData
     lastValue = mergedList[ mSize - 1][1]

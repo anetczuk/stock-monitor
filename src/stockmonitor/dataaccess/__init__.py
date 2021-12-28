@@ -29,19 +29,19 @@ def urlretrieve( url, outputPath ):
 
 #     result = request.urlopen( url, context=ctx_no_secure )
     content_data = result.read()
-    
+
     try:
         with open(outputPath, 'wb') as of:
             of.write( content_data )
-            
-#         content_text = content_data.decode("utf-8") 
+
+#         content_text = content_data.decode("utf-8")
 #         with open(outputPath, 'wt') as of:
-#             of.write( content_text )        
-    
+#             of.write( content_text )
+
     except UnicodeDecodeError as ex:
         _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
         raise
-        
+
 #     urllib.request.urlretrieve( url, outputPath, context=ctx_no_secure )
 #     urllib.request.urlretrieve( url, outputPath )
 

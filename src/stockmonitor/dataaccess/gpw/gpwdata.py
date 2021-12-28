@@ -45,7 +45,7 @@ class GpwIndicatorsData( WorksheetData ):
         dataFrame = self.getWorksheetData()
         tickerColumn = dataFrame["Kod"]
         return tickerColumn.iloc[ rowIndex ]
-    
+
     ## ================================================================
 
     @synchronized
@@ -117,7 +117,7 @@ class GpwIsinMapData( WorksheetData ):
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["Emitent"]
         return tickerColumn.iloc[ rowIndex ]
-    
+
     ## ================================================================
 
     @synchronized

@@ -362,7 +362,7 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
             dataFrame = dataAccess.getDataFrame()
             self.worksheet = self.worksheet.append( dataFrame )
 
-    ## override    
+    ## override
     def getDataFrame(self) -> DataFrame:
         return self.worksheet
 

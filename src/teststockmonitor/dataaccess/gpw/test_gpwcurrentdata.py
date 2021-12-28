@@ -87,19 +87,19 @@ class GpwCurrentStockDataTest(unittest.TestCase):
 
 
 # class GpwCurrentIndexesDataTest(unittest.TestCase):
-# 
+#
 #     def setUp(self):
 #         ## Called before testfunction is executed
 #         self.dataAccess = GpwCurrentIndexesData()
-# 
+#
 #     def tearDown(self):
 #         ## Called after testfunction was executed
 #         pass
-# 
+#
 #     def test_getWorksheetData_False(self):
 #         currData = self.dataAccess.getWorksheetData()
 #         self.assertIsNone( currData )
-# 
+#
 #     def test_getWorksheetData_True(self):
 #         currData = self.dataAccess.getWorksheetData( True )
 #         dataLen = len( currData )

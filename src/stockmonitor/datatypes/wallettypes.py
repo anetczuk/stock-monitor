@@ -244,7 +244,7 @@ class TransHistory():
                 sellCommission = broker_commission( sellProfit, sellDate )
                 profitValue -= sellCommission
             totalGain += profitValue
-            
+
             entryDate = sellDate
             if startDate is not None and entryDate < startDate:
                 entryDate = startDate

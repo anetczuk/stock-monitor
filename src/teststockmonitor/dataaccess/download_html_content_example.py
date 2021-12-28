@@ -46,7 +46,7 @@ import stockmonitor.dataaccess.worksheetdata as worksheetdata
 
 if __name__ != '__main__':
     sys.exit(0)
-    
+
 
 logFile = logger.get_logging_output_file()
 logger.configure( logFile )

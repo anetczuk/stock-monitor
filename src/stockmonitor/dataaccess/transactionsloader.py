@@ -84,20 +84,20 @@ def parse_mb_transactions_data( sourceFile ):
     with fix_separator( sourceFile ) as tmpfile:
 #         print( "file:\n" + tmpfile.read() )
 #         tmpfile.seek(0)
-        
+
         columns = count_separator( tmpfile, ";" )
         tmpfile.seek(0)
-        
+
         header = []
         if columns == 8:
             header = [ "trans_time", "name", "stock_id", "k_s", "amount",
                       "unit_price", "unit_currency", "price", "currency" ]
-        elif columns == 10: 
+        elif columns == 10:
             header = [ "trans_time", "name", "stock_id", "k_s", "amount",
                        "unit_price", "unit_currency", "commision_value", "commision_currency", "price", "currency" ]
-        
+
 #         print( "header:", header, columns )
-        
+
         dataFrame = pandas.read_csv( tmpfile, names=header,
                                      sep=r'[;\t]', decimal='.', thousands=' ', engine='python', encoding='utf_8' )
 

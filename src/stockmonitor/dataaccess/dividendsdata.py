@@ -54,7 +54,7 @@ class DividendsCalendarData( WorksheetData ):
             return dateObject
         except ValueError:
             return datetime.date( 1, 1, 1 )
-        
+
     ## ================================================================
 
     @synchronized

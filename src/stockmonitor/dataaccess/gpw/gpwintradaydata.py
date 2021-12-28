@@ -54,7 +54,7 @@ class GpwCurrentStockIntradayData( WorksheetData ):
     def getWorksheetForDate(self, dataDate):
         self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
         return self.getWorksheetData( False )
-        
+
     ## ================================================================
 
     def loadWorksheet(self):
@@ -181,13 +181,13 @@ def generate_chart_data_mode_url(isin, modeCode):
 ## fields 'from' and 'to' are useful in 'RANGE' mode (returned data is in day resolution)
 def generate_chart_data_range_url( isin, timeRange: datetime.timedelta ):
     modeCode = "RANGE"
-    
+
     todayDateTime = datetime.datetime.now()
     todayString = todayDateTime.strftime("%Y-%m-%d")
-    
+
     startDateTime = todayDateTime - timeRange
     startString   = startDateTime.strftime("%Y-%m-%d")
-    
+
     ## https://www.gpw.pl/chart-json.php?req=[{"isin":"LU2237380790","mode":"RANGE","from":"2019-08-06","to":"2021-12-02"}]
     return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
            ",%22mode%22:%22" + modeCode + "%22,%22from%22:%22" + startString + "%22,%22to%22:%22" + todayString + "%22}]"
@@ -209,7 +209,7 @@ def generate_chart_data_url(isin, modeCode):
         return generate_chart_data_mode_url( isin, modeCode )
     elif modeCode == "ARCH":
         return generate_chart_data_mode_url( isin, modeCode )
-    
+
     elif modeCode == "2R":
         timeRange = datetime.timedelta( weeks=104 )
         return generate_chart_data_range_url( isin, timeRange )

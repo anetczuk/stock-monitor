@@ -54,7 +54,7 @@ class MetaStockIntradayDataTest(unittest.TestCase):
 
         dataAccess.getDataPath = data_path           # type: ignore
         dataAccess.storage = WorksheetStorageMock()
-        
+
         currData = dataAccess.getWorksheetData( False )
         self.assertIsNone( currData )
 

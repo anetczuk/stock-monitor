@@ -43,7 +43,7 @@ class FinRepsCalendarData( WorksheetData ):
         dataFrame = self.getWorksheetData()
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
-    
+
     ## ================================================================
 
     @synchronized
