@@ -103,7 +103,7 @@ class DataObject( QObject ):
     stockHeadersChanged = pyqtSignal()
     walletDataChanged   = pyqtSignal()
 
-    def __init__(self, parent: QWidget=None):
+    def __init__(self, parent: QWidget = None):
         super().__init__( parent )
         self.parentWidget = parent
 

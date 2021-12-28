@@ -56,7 +56,7 @@ def run_app( args ):
     ## check is one instance is already running
     try:
         singleton.SingleInstance()
-    except BaseException as e:
+    except BaseException:
         _LOGGER.info( "Already running, exiting." )
         QMessageBox.critical( None, AppWindow.appTitle, "One instance of application is already running, exiting." )
         return 3

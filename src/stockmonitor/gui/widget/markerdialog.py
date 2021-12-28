@@ -50,7 +50,7 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
             self.ui.operationCB.addItem( operation.name, operation )
 
         self.colorDialog = QtWidgets.QColorDialog( self )
-        self.colorDialog.colorSelected.connect( self._pickerColorChanged )
+        self.colorDialog.colorSelected.connect( self._pickerColorChanged )      #type: ignore
 
         self.ui.pickColorPB.clicked.connect( self._pickColor )
 

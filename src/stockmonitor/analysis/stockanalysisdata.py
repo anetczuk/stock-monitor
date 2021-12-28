@@ -209,6 +209,7 @@ class StockDictList():
 class StatsDict():
 
     class SubDict():
+        """Sub dictionary."""
 
         def __init__(self):
             self.valueDict = dict()

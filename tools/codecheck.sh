@@ -17,6 +17,7 @@ src_dir=$SCRIPT_DIR/../src
 ## E202 whitespace before ')'
 ## E221 multiple spaces before equal operator
 ## E241 multiple spaces after ':'
+## E252 missing whitespace around parameter equals
 ## E262 inline comment should start with '# '
 ## E265 block comment should start with '# '
 ## E266 too many leading '#' for block comment
@@ -24,9 +25,10 @@ src_dir=$SCRIPT_DIR/../src
 ## E501 line too long (80 > 79 characters)
 ## W391 blank line at end of file
 ## D    all docstyle checks
-ignore_errors=E115,E126,E201,E202,E221,E241,E262,E265,E266,E402,E501,W391,D
+ignore_errors=E115,E126,E201,E202,E221,E241,E252,E262,E265,E266,E402,E501,W391,D
 
 
+echo "running pycodestyle"
 pycodestyle --show-source --statistics --count --ignore=$ignore_errors $src_dir
 exit_code=$?
 
@@ -41,6 +43,7 @@ echo "pycodestyle -- no warnings found"
 ignore_errors=$ignore_errors,F401
 
 
+echo "running flake8"
 flake8 --show-source --statistics --count --ignore=$ignore_errors $src_dir
 exit_code=$?
 
@@ -52,6 +55,7 @@ fi
 echo "flake8 -- no warnings found"
 
 
+echo "running pylint3"
 pylint3 --rcfile=$SCRIPT_DIR/pylint3.config $src_dir/stockmonitor $src_dir/teststockmonitor $src_dir/*.py
 exit_code=$?
 if [ $exit_code -ne 0 ]; then

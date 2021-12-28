@@ -178,6 +178,7 @@ def generate_chart_data_mode_url(isin, modeCode):
     return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
            ",%22mode%22:%22" + modeCode + "%22}]"
 
+
 ## fields 'from' and 'to' are useful in 'RANGE' mode (returned data is in day resolution)
 def generate_chart_data_range_url( isin, timeRange: datetime.timedelta ):
     modeCode = "RANGE"

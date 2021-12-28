@@ -13,6 +13,7 @@ CACHE_DIR=$SCRIPT_DIR/../tmp/.mypy_cache
 cd $SCRIPT_DIR/../src
 
 
+echo "running mypy"
 mypy --cache-dir $CACHE_DIR --no-strict-optional --ignore-missing-imports -p stockmonitor -p teststockmonitor
 
 echo "mypy finished"

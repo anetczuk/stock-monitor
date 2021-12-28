@@ -229,8 +229,8 @@ class TransHistory():
         return lastItem[1]
 
     def transactionsGainHistory(self, mode: TransactionMatchMode, considerCommission=True, startDate=None ):
-        ret = []
-        totalGain = 0.0
+        ret: List[ List[object] ] = []
+        totalGain: float = 0.0
         sellTransactions: SellTransactionsMatch = self.sellTransactions( mode )
         for buyTrans, sellTrans in sellTransactions:
             buyAmount, buyPrice, buyDate = buyTrans
@@ -245,7 +245,7 @@ class TransHistory():
                 profitValue -= sellCommission
             totalGain += profitValue
 
-            entryDate = sellDate
+            entryDate: datetime = sellDate
             if startDate is not None and entryDate < startDate:
                 entryDate = startDate
 

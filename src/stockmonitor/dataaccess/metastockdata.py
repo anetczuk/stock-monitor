@@ -75,7 +75,6 @@ class MetaStockIntradayData( WorksheetData ):
                 _LOGGER.debug( "moving extracted file[%s] to [%s]", tmpFile, filePath )
                 shutil.move( tmpFile, filePath )
 
-
     @synchronized
     def _parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )

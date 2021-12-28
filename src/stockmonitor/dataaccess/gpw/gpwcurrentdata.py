@@ -444,7 +444,7 @@ def append_stock_isin( dataFrame, dataFile ):
 
     for name in dataFrame["Nazwa"]:
         # pylint: disable=W1401
-        pattern = '<a\s*href="spolka\?isin=(\S*?)">' + name + '.*?</a>'
+        pattern = r'<a\s*href="spolka\?isin=(\S*?)">' + name + r'.*?</a>'
         matchObj = re.search( pattern, fileContent )
         if matchObj is None:
             isinList.append( None )
@@ -467,7 +467,7 @@ def append_indexes_isin( dataFrame, dataFile ):
 
     for short in dataFrame["Skrót"]:
         # pylint: disable=W1401
-        pattern = '<a href="/karta-indeksu\?isin=(\S*?)">' + short + '</a>'
+        pattern = r'<a href="/karta-indeksu\?isin=(\S*?)">' + short + r'</a>'
         matchObj = re.search( pattern, fileContent )
         if matchObj is None:
             isinList.append( None )
