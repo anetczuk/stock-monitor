@@ -200,9 +200,9 @@ class WorksheetStorage():
         picklePath = dataPath + ".pickle"
         persist.store_object_simple( objectToStore, picklePath )
         
-        currTimestamp = datetime.datetime.today()
+        self.grabTimestamp = datetime.datetime.today()
         timestampPath = dataPath + ".timestamp"
-        persist.store_object_simple( currTimestamp, timestampPath )
+        persist.store_object_simple( self.grabTimestamp, timestampPath )
 
 
 ##
