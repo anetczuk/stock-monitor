@@ -359,8 +359,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
             self.trayIcon.clearString()
             return
 
-        self.data.gpwIndexesData.loadWorksheet()
-        isin = "PL9999999987"                                               ## wig20
+        self.data.gpwIndexesData.loadWorksheet()                        ## force data refresh
+        isin = "PL9999999987"                                           ## wig20
         recentChange = self.data.gpwIndexesData.getRecentChange( isin )
         indicateColor = None
         value = ""

@@ -26,6 +26,7 @@ import datetime
 
 from PyQt5.QtCore import Qt
 
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist
@@ -116,8 +117,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         if dataFrame is None:
             return
 
-        currentSource = self.getCurrentDataSource()
-        currentSource.loadWorksheet()
+        currentSource: GpwCurrentIndexesData = self.getCurrentDataSource()
+        currentSource.getWorksheetData()
 
 #         print( "got intraday data:", dataFrame )
         timeColumn   = dataFrame["t"]
@@ -174,7 +175,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         intraSource = indexData.getSource( self.isin, rangeText )
         return intraSource
 
-    def getCurrentDataSource(self):
+    def getCurrentDataSource(self) -> GpwCurrentIndexesData:
         return self.dataObject.gpwIndexesData
 
 

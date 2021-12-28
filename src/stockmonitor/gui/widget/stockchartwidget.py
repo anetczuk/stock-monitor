@@ -26,6 +26,7 @@ import logging
 from PyQt5.QtCore import Qt
 
 from stockmonitor.datatypes.wallettypes import TransHistory
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
@@ -81,7 +82,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.dataObject = dataObject
         self.ticker     = ticker
         self.dataObject.stockDataChanged.connect( self.updateData )
-        self.updateData( True )
+        self.updateData( False )
 
     def clearData(self):
         self.ui.dataChart.clearPlot()
@@ -128,8 +129,8 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         if dataFrame is None:
             return
 
-        currentSource = self.getCurrentDataSource()
-        currentSource.loadWorksheet()
+        currentSource: GpwCurrentStockData = self.getCurrentDataSource()
+        currentSource.getWorksheetData()
 
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
@@ -202,7 +203,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
         return intraSource
 
-    def getCurrentDataSource(self):
+    def getCurrentDataSource(self) -> GpwCurrentStockData:
         return self.dataObject.gpwCurrentData
 
 
