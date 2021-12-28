@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 try:
     ## following import success only when file is directly executed from command line
@@ -44,6 +43,7 @@ import stockmonitor.logger as logger
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.mainwindow import MainWindow
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 from teststockmonitor.data import get_data_path
 

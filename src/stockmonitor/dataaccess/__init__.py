@@ -1,7 +1,7 @@
 import os
 import logging
 
-import urllib.request
+import urllib.request as request
 import ssl
 
 
@@ -23,7 +23,11 @@ def urlretrieve( url, outputPath ):
     ctx_no_secure.check_hostname = False
     ctx_no_secure.verify_mode = ssl.CERT_NONE
 
-    result = urllib.request.urlopen( url, context=ctx_no_secure )
+    ## changed "user-agent" fixes blocking by server
+    req = request.Request( url, headers={'User-Agent': 'Mozilla/5.0'} )
+    result = request.urlopen( req, context=ctx_no_secure )
+
+#     result = request.urlopen( url, context=ctx_no_secure )
     content_data = result.read()
     
     try:
@@ -40,3 +44,5 @@ def urlretrieve( url, outputPath ):
         
 #     urllib.request.urlretrieve( url, outputPath, context=ctx_no_secure )
 #     urllib.request.urlretrieve( url, outputPath )
+
+    return content_data

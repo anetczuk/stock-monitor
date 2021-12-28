@@ -40,7 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def download_html_content( url, outputPath ):
     try:
-        urlretrieve( url, outputPath )
+        return urlretrieve( url, outputPath )
 
     except urllib.error.HTTPError:
         _LOGGER.exception( "exception when accessing: %s", url )

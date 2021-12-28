@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#
 # MIT License
 #
 # Copyright (c) 2020 Arkadiusz Netczuk <dev.arnet@gmail.com>
@@ -21,8 +23,45 @@
 # SOFTWARE.
 #
 
-import sys
-import os
+try:
+    ## following import success only when file is directly executed from command line
+    ## otherwise will throw exception when executing as parameter for "python -m"
+    # pylint: disable=W0611
+    import __init__
+except ImportError as error:
+    ## when import fails then it means that the script was executed indirectly
+    ## in this case __init__ is already loaded
+    pass
 
-#### append source root
-sys.path.append(os.path.abspath( os.path.join(os.path.dirname(__file__), "..", "..") ))
+import sys
+import logging
+
+import stockmonitor.logger as logger
+
+import stockmonitor.dataaccess.worksheetdata as worksheetdata
+
+
+## ============================= main section ===================================
+
+
+if __name__ != '__main__':
+    sys.exit(0)
+    
+
+logFile = logger.get_logging_output_file()
+logger.configure( logFile )
+
+_LOGGER = logging.getLogger(__name__)
+
+
+_LOGGER.debug( "Starting the application" )
+
+
+url = "https://www.stockwatch.pl/dywidendy/"
+output = "/dev/null"
+
+content = worksheetdata.download_html_content( url, output )
+
+print( "content:" )
+print( content )
+
