@@ -302,7 +302,7 @@ class ActivityAnalysis:
             dataSubdict.add( "price change deviation", calcRet )                      ## price change deviation
 
     def getPrecalcData(self, currDate):
-        _LOGGER.debug( "loading data for: %s", currDate )
+#         _LOGGER.debug( "loading data for: %s", currDate )
 
         if self.forceRecalc is False:
             dateString = currDate.isoformat()

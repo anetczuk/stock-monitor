@@ -211,7 +211,7 @@ class ESPIListWidget( QtWidgets.QListWidget ):                        # type: ig
     def _currentRow(self):
         currentRow = self.currentRow()
         espiData = self.dataObject.gpwESPIData
-        dataFrame = espiData.getWorksheet()
+        dataFrame = espiData.getWorksheetData()
         return dataFrame.iloc[ currentRow ]
 
 
@@ -248,7 +248,7 @@ class ESPIWidget( QtBaseClass ):                        # type: ignore
         if espiData is None:
             _LOGGER.info("no data to view")
             return
-        dataFrame = espiData.getWorksheet()
+        dataFrame = espiData.getWorksheetData()
         self.ui.espiList.setData( dataFrame )
 
     def _setMessagesLimit(self, limit):

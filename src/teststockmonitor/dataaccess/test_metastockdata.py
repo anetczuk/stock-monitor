@@ -26,6 +26,7 @@ import datetime
 from teststockmonitor.data import get_data_path
 
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class MetaStockIntradayDataTest(unittest.TestCase):
@@ -40,13 +41,26 @@ class MetaStockIntradayDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "a_cgl_intraday_2020-08-17.prn" )
-        currData = self.dataAccess.parseDataFromFile( filePath )
+        currData = self.dataAccess._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 77388)
 
-    def test_access(self):
+    def test_getWorksheetData_True(self):
         date_object = datetime.date( year=2020, month=9, day=21 )
         dataAccess = MetaStockIntradayData( date_object )
-        currData = dataAccess.getWorksheet()
-        dataLen = len( currData )
-        self.assertGreater(dataLen, 70000)
+
+        def data_path():
+            return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
+
+        dataAccess.getDataPath = data_path           # type: ignore
+        dataAccess.storage = WorksheetStorageMock()
+        
+        currData = dataAccess.getWorksheetData( False )
+        self.assertIsNone( currData )
+
+#     def test_access(self):
+#         date_object = datetime.date( year=2020, month=9, day=21 )
+#         dataAccess = MetaStockIntradayData( date_object )
+#         currData = dataAccess.getWorksheetData( True )
+#         dataLen = len( currData )
+#         self.assertGreater(dataLen, 70000)

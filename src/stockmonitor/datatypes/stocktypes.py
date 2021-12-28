@@ -34,19 +34,19 @@ _LOGGER = logging.getLogger(__name__)
 
 class StockData():
 
-    def __init__( self, data: object = None ):
-        self.stockData                       = data
-        self.stockHeaders: Dict[ int, str ]  = dict()
+    def __init__( self, data: 'WorksheetData' = None ):
+        self.stockData: 'WorksheetData'       = data
+        self.stockHeaders: Dict[ int, str ]   = dict()
 
     @property
     def headers(self) -> Dict[ int, str ]:
         return self.stockHeaders
 
     def refreshData(self, forceRefresh=True):
-        self.stockData.refreshData( forceRefresh )
+        self.getWorksheetData( forceRefresh )
 
-    def loadWorksheet(self, forceRefresh=False):
-        self.stockData.loadWorksheet( forceRefresh )
+    def getWorksheetData(self, forceRefresh=False):
+        self.stockData.getWorksheetData( forceRefresh )
 
     def downloadData(self):
         self.stockData.downloadData()
@@ -59,7 +59,7 @@ class GpwStockIntradayMap():
 
     def getData(self, isin):
         source = self.getSource(isin)
-        return source.getWorksheet()
+        return source.getWorksheetData()
 
     def getSource(self, isin, rangeCode=None):
         if rangeCode is None:
@@ -75,9 +75,9 @@ class GpwStockIntradayMap():
     def set(self, isin, source):
         self.dataDict[ isin ] = source
 
-    def refreshData(self, forceRefresh=True):
+    def getWorksheetData(self, forceRefresh=True):
         for val in self.dataDict.values():
-            val.refreshData( forceRefresh )
+            val.getWorksheetData( forceRefresh )
 
 
 class GpwIndexIntradayMap():
@@ -87,7 +87,7 @@ class GpwIndexIntradayMap():
 
     def getData(self, isin):
         source = self.getSource(isin)
-        return source.getWorksheet()
+        return source.getWorksheetData()
 
     def getSource(self, isin, rangeCode=None) -> GpwCurrentIndexIntradayData:
         if rangeCode is None:
@@ -103,6 +103,6 @@ class GpwIndexIntradayMap():
     def set(self, isin, source):
         self.dataDict[ isin ] = source
 
-    def refreshData(self, forceRefresh=True):
+    def getWorksheetData(self, forceRefresh=True):
         for val in self.dataDict.values():
-            val.refreshData( forceRefresh )
+            val.getWorksheetData( forceRefresh )

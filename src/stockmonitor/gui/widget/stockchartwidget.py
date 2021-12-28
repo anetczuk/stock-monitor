@@ -100,16 +100,16 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
 #         intraSource = self.getIntradayDataSource()
-#         threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+#         threads.appendFunction( intraSource.getWorksheetData, [forceRefresh] )
 
         for i in range(0, self.ui.rangeCB.count()):
             rangeText = self.ui.rangeCB.itemText( i )
             isin = self.dataObject.getStockIsinFromTicker( self.ticker )
             intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
-            threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+            threads.appendFunction( intraSource.getWorksheetData, [forceRefresh] )
 
         currentData = self.getCurrentDataSource()
-        threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )
+        threads.appendFunction( currentData.getWorksheetData, [forceRefresh] )
 
         threads.start()
 
@@ -122,7 +122,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         _LOGGER.debug( "updating chart data, range[%s] isin[%s]", rangeText, isin )
 
         intraSource = self.getIntradayDataSource()
-        dataFrame = intraSource.getWorksheet()
+        dataFrame = intraSource.getWorksheetData()
 
         self.clearData()
         if dataFrame is None:

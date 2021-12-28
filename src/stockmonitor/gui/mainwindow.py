@@ -259,7 +259,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self._updateGpwIndexes()
 
-        data = self.data.globalIndexesData.getWorksheet()
+        data = self.data.globalIndexesData.getWorksheetData()
         self.ui.globalIndexesTable.setData( data )
 
         self.ui.indicatorswidget.refreshData()
@@ -275,7 +275,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.setStatusMessage( "Stock data refreshed" )
 
     def _updateGpwIndexes(self):
-        data = self.data.gpwIndexesData.getWorksheet()
+        data = self.data.gpwIndexesData.getWorksheetData()
         self.ui.gpwIndexesTable.setData( data )
 
     def _updateWalletSummary(self):
@@ -301,7 +301,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def _updateStockTimestamp(self):
         ## update stock timestamp
-        timestamp = self.data.gpwCurrentData.grabTimestamp
+        timestamp = self.data.gpwCurrentData.getGrabTimestmp()
         if timestamp is None:
             self.ui.refreshTimeLabel.setText("None")
         else:
@@ -359,16 +359,22 @@ class MainWindow( QtBaseClass ):           # type: ignore
             self.trayIcon.clearString()
             return
 
-        self.data.gpwIndexesData.refreshData()
+        self.data.gpwIndexesData.loadWorksheet()
         isin = "PL9999999987"                                               ## wig20
         recentChange = self.data.gpwIndexesData.getRecentChange( isin )
         indicateColor = None
-        if recentChange < 0:
-            indicateColor = QtGui.QColor(255, 96, 32)
+        value = ""
+        if recentChange is None:
+            indicateColor = QtGui.QColor(255, 255, 0)
+            value = "X"
         else:
-            indicateColor = QtGui.QColor("lime")
-        absVal = abs( recentChange )
-        value = str( absVal )
+            if recentChange < 0:
+                ## red
+                indicateColor = QtGui.QColor(255, 96, 32)
+            else:
+                indicateColor = QtGui.QColor("lime")
+            absVal = abs( recentChange )
+            value = str( absVal )
 #         if absVal < 1.0:
 #             value = value[1:]
         self.trayIcon.drawStringAuto( value, indicateColor )

@@ -323,7 +323,7 @@ class StockFullTable( StockTable ):
 
     def updateData(self):
         dataAccess: GpwCurrentStockData = self.dataObject.gpwCurrentData
-        dataframe = dataAccess.getWorksheet( False )
+        dataframe = dataAccess.getWorksheetData( False )
         self.setData( dataframe )
 
     def updateView(self):

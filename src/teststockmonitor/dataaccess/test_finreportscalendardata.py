@@ -39,11 +39,11 @@ class FinRepsCalendarDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "fin_reps_cal_data.html" )
-        currData = self.dataAccess.parseDataFromFile( filePath )
+        currData = self.dataAccess._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 783)
 
-#     def test_getWorksheet(self):
-#         currData = self.dataAccess.getWorksheet()
+#     def test_getWorksheetData(self):
+#         currData = self.dataAccess.getWorksheetData()
 #         dataLen = len( currData )
 #         self.assertEqual(dataLen, 783)

@@ -99,7 +99,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
             threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
 
         currentData = self.getCurrentDataSource()
-        threads.appendFunction( currentData.loadWorksheet, [forceRefresh] )
+        threads.appendFunction( currentData.getWorksheetData, [forceRefresh] )
 
         threads.start()
 
@@ -110,7 +110,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         _LOGGER.debug( "updating chart data, range[%s]", rangeText )
 
         intraSource = self.getIntradayDataSource()
-        dataFrame = intraSource.getWorksheet()
+        dataFrame = intraSource.getWorksheetData()
 
         self.clearData()
         if dataFrame is None:
@@ -153,7 +153,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
     def getReferenceValue(self):
         indexData = self.dataObject.dataContainer.gpwIndexIntradayData
         intraSource = indexData.getSource( self.isin, "14D" )
-        dataFrame = intraSource.getWorksheet()
+        dataFrame = intraSource.getWorksheetData()
         if dataFrame is None:
             return None
         priceColumn = dataFrame["c"]

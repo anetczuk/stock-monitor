@@ -106,7 +106,7 @@ def load_object_simple( inputFile, defaultValue=None ):
         _LOGGER.exception( "failed to load: %s", inputFile )
         return defaultValue
     except FileNotFoundError:
-        _LOGGER.exception( "failed to load: %s", inputFile )
+        _LOGGER.exception( "failed to load: %s", inputFile, exc_info=False )
         return defaultValue
     except ModuleNotFoundError:
         ## class moved to other module

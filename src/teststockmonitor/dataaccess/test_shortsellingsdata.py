@@ -45,12 +45,12 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "shortsellings-current.html" )
-        currData = self.dataAccess.parseDataFromFile( filePath )
+        currData = self.dataAccess._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 5)
 
-#     def test_getWorksheet(self):
-#         currData = self.dataAccess.getWorksheet( True )
+#     def test_getWorksheetData(self):
+#         currData = self.dataAccess.getWorksheetData( True )
 # #         print( "downloaded dataframe:\n", currData )
 #         self.assertTrue( currData is not None )
 #         dataLen = len( currData )
@@ -69,12 +69,12 @@ class HistoryShortSellingsDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "shortsellings-history.html" )
-        currData = self.dataAccess.parseDataFromFile( filePath )
+        currData = self.dataAccess._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 30)
 
-#     def test_getWorksheet(self):
-#         currData = self.dataAccess.getWorksheet( True )
+#     def test_getWorksheetData(self):
+#         currData = self.dataAccess.getWorksheetData( True )
 #         print( "downloaded dataframe:\n", currData )
 #         self.assertTrue( currData is not None )
 #         dataLen = len( currData )

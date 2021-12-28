@@ -28,6 +28,7 @@ from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,13 +37,16 @@ _LOGGER = logging.getLogger(__name__)
 ## https://www.stockwatch.pl/dywidendy/
 class DividendsCalendarData( WorksheetData ):
 
+    def sourceLink(self):
+        return self.getDataUrl()
+
     def getStockName(self, rowIndex):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         tickerColumn = dataFrame["Spółka"]
         return tickerColumn.iloc[ rowIndex ]
 
     def getLawDate(self, rowIndex):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         dateColumn = dataFrame["Notowanie bez dyw."]
         dateString = dateColumn.iloc[ rowIndex ]
         try:
@@ -50,8 +54,11 @@ class DividendsCalendarData( WorksheetData ):
             return dateObject
         except ValueError:
             return datetime.date( 1, 1, 1 )
+        
+    ## ================================================================
 
-    def parseDataFromFile(self, dataFile) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
         dataFrame = dataFrame[2]
@@ -64,6 +71,3 @@ class DividendsCalendarData( WorksheetData ):
     def getDataUrl(self):
         url = "https://www.stockwatch.pl/dywidendy/"
         return url
-
-    def sourceLink(self):
-        return self.getDataUrl()

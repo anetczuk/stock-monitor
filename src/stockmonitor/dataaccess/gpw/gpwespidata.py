@@ -31,6 +31,7 @@ from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,10 +44,16 @@ class GpwESPIData( WorksheetData ):
         super().__init__()
         self.messagesLimit = 30
 
+    def sourceLink(self):
+        return "https://www.gpw.pl/komunikaty"
+
     def setLimit(self, number):
         self.messagesLimit = number
+        
+    ## ================================================================
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
 
         with open( dataFile ) as file:
@@ -99,6 +106,3 @@ class GpwESPIData( WorksheetData ):
               "&search-xs=&searchText=&date="
         return url
 #         return "https://www.gpw.pl/komunikaty"
-
-    def sourceLink(self):
-        return "https://www.gpw.pl/komunikaty"

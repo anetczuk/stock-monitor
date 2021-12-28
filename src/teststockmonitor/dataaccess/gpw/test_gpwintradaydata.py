@@ -27,6 +27,7 @@ import unittest
 from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData,\
     GpwCurrentIndexIntradayData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class GpwCurrentStockIntradayDataTest(unittest.TestCase):
@@ -39,14 +40,15 @@ class GpwCurrentStockIntradayDataTest(unittest.TestCase):
             return get_data_path( "cdr.chart.04-09.txt" )
 
         self.dataAccess.getDataPath = data_path           # type: ignore
-        self.dataAccess.parseDataFromDefaultFile()
+        self.dataAccess.storage = WorksheetStorageMock()
+        self.dataAccess.parseWorksheetFromFile( data_path() )
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
     def test_getData(self):
-        currData = self.dataAccess.getWorksheet()
+        currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
         self.assertEqual(dataLen, 3104)
 
@@ -61,13 +63,14 @@ class GpwCurrentIndexIntradayDataTest(unittest.TestCase):
             return get_data_path( "wig20.chart.07-09.txt" )
 
         self.dataAccess.getDataPath = data_path           # type: ignore
-        self.dataAccess.parseDataFromDefaultFile()
+        self.dataAccess.storage = WorksheetStorageMock()
+        self.dataAccess.parseWorksheetFromFile( data_path() )
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
     def test_getData(self):
-        currData = self.dataAccess.getWorksheet()
+        currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
         self.assertEqual(dataLen, 1962)

@@ -39,12 +39,12 @@ class GlobalIndexesDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "global_indexes_data.html" )
-        currData = self.dataAccess.parseDataFromFile( filePath )
+        currData = self.dataAccess._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 48)
 
-#     def test_getWorksheet(self):
+#     def test_getWorksheetData(self):
 #         self.dataAccess.loadWorksheet( True )
-#         currData = self.dataAccess.getWorksheet()
+#         currData = self.dataAccess.getWorksheetData()
 #         dataLen = len( currData )
 #         self.assertEqual(dataLen, 783)

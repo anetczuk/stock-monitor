@@ -28,6 +28,7 @@ from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,12 +36,18 @@ _LOGGER = logging.getLogger(__name__)
 
 class FinRepsCalendarData( WorksheetData ):
 
+    def sourceLink(self):
+        return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
+
     def getTicker(self, rowIndex):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
+    
+    ## ================================================================
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
         dataFrame = dataFrame[0]
@@ -54,18 +61,21 @@ class FinRepsCalendarData( WorksheetData ):
                "?sort=asc&order=Data%20publikacji" )
         return url
 
-    def sourceLink(self):
-        return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
-
 
 class PublishedFinRepsCalendarData( WorksheetData ):
 
+    def sourceLink(self):
+        return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
+
     def getTicker(self, rowIndex):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    ## ================================================================
+
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrame = pandas.read_html( dataFile )
         dataFrame = dataFrame[0]
@@ -79,6 +89,3 @@ class PublishedFinRepsCalendarData( WorksheetData ):
         url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
                "?sort=desc&order=Data%20publikacji" )
         return url
-
-    def sourceLink(self):
-        return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"

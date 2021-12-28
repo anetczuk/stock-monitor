@@ -28,6 +28,7 @@ from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.datatype import CurrentDataType
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 ## =================================================================
@@ -40,19 +41,26 @@ class GpwCurrentStockDataTest(unittest.TestCase):
         self.dataAccess = GpwCurrentStockData()
 
         def data_path():
-            return get_data_path( "akcje_2020-04-14_15-50.xls" )
+            return get_data_path( "akcje_2021-12-21_20-00.xls" )
 
         self.dataAccess.getDataPath = data_path           # type: ignore
-        self.dataAccess.parseDataFromDefaultFile()
+        self.dataAccess.storage = WorksheetStorageMock()
+        self.dataAccess.parseWorksheetFromFile( data_path() )
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
+    def test_getWorksheetData_False(self):
+        currData = self.dataAccess.getWorksheetData( False )
+        dataLen = len( currData )
+        self.assertGreaterEqual(dataLen, 395)
+        self.assertIsNotNone( currData )
+
     def test_getData(self):
         currData = self.dataAccess.getData( CurrentDataType.TICKER )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 391)      ## one removes, because if summary
+        self.assertEqual(dataLen, 395)      ## one removes, because if summary
 
     def test_getStockData_None(self):
         currData = self.dataAccess.getStockData()
@@ -66,7 +74,7 @@ class GpwCurrentStockDataTest(unittest.TestCase):
 
 #     def test_getWorksheet_micro(self):
 #         startTime = datetime.datetime.now()
-#         self.dataAccess.getWorksheet( True )
+#         self.dataAccess.getWorksheetData( True )
 #         end1Time = datetime.datetime.now()
 #         self.dataAccess.loadWorksheet( False )
 #         end2Time = datetime.datetime.now()
@@ -78,17 +86,21 @@ class GpwCurrentStockDataTest(unittest.TestCase):
 # =================================================================
 
 
-class GpwCurrentIndexesDataTest(unittest.TestCase):
-
-    def setUp(self):
-        ## Called before testfunction is executed
-        self.dataAccess = GpwCurrentIndexesData()
-
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
-
-    def test_getWorksheet(self):
-        currData = self.dataAccess.getWorksheet()
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 27)
+# class GpwCurrentIndexesDataTest(unittest.TestCase):
+# 
+#     def setUp(self):
+#         ## Called before testfunction is executed
+#         self.dataAccess = GpwCurrentIndexesData()
+# 
+#     def tearDown(self):
+#         ## Called after testfunction was executed
+#         pass
+# 
+#     def test_getWorksheetData_False(self):
+#         currData = self.dataAccess.getWorksheetData()
+#         self.assertIsNone( currData )
+# 
+#     def test_getWorksheetData_True(self):
+#         currData = self.dataAccess.getWorksheetData( True )
+#         dataLen = len( currData )
+#         self.assertEqual(dataLen, 27)

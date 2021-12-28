@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 try:
     ## following import success only when file is directly executed from command line
@@ -65,7 +66,8 @@ def prepare_dataobject():
         return get_data_path( "wig20.chart.07-09.txt" )
 
     dataAccess.getDataPath = data_path           # type: ignore
-    dataAccess.parseDataFromDefaultFile()
+    dataAccess.storage = WorksheetStorageMock()
+    dataAccess.parseWorksheetFromFile( data_path() )
     data.gpwIndexIntradayData.set( "PL9999999987", dataAccess )
     return data
 

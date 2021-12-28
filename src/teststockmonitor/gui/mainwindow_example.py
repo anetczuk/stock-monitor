@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 try:
     ## following import success only when file is directly executed from command line
@@ -90,7 +91,8 @@ else:
         return get_data_path( "test_stock_data.html" )
 
     currentStock.getDataPath = data_path           # type: ignore
-    currentStock.parseDataFromDefaultFile()
+    currentStock.storage = WorksheetStorageMock()
+    currentStock.parseWorksheetFromFile( data_path() )
 
     window.data.addFav("abc", ["ALR"])
     window.data.addFav("abc", ["CDR"])

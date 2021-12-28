@@ -37,6 +37,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class GpwCurrentStockIntradayData( WorksheetData ):
+    """Handle GPW 1D data chart."""
 
     def __init__(self, isin, rangeCode=None):
         super().__init__()
@@ -46,26 +47,22 @@ class GpwCurrentStockIntradayData( WorksheetData ):
         self.rangeCode = rangeCode
         self.dataTime  = datetime.datetime.now()
 
-#     def getWorksheet(self, forceRefresh=False) -> DataFrame:
-#         if forceRefresh is True:
-#             return super().getWorksheet( True )
-#         data = super().getWorksheet( forceRefresh )
-#         timeDiff = datetime.datetime.today() - self.grabTimestamp
-#         if timeDiff < datetime.timedelta( minutes=1 ):
-#             return data
-#         return super().getWorksheet( True )
+    def sourceLink(self):
+        return "https://www.gpw.pl/spolka?isin=" + self.isin
 
     @synchronized
     def getWorksheetForDate(self, dataDate):
         self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
-        self.loadWorksheet( False )
-        return self.worksheet
+        return self.getWorksheetData( False )
+        
+    ## ================================================================
 
-    def refreshData(self, forceRefresh=True):
+    def loadWorksheet(self):
         self.dataTime = datetime.datetime.now()
-        super().refreshData( forceRefresh )
+        super().loadWorksheet()
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         with open( dataFile ) as f:
             json_data = json.load(f)
             json_dict = json_data[0]
@@ -90,7 +87,7 @@ class GpwCurrentStockIntradayData( WorksheetData ):
                 ## add recent value to range other than "1D" (current)
                 currData = GpwCurrentStockIntradayData( self.isin )
                 currData.dataTime = self.dataTime
-                currWorksheet = currData.getWorksheet()
+                currWorksheet = currData.getWorksheetData()
                 if currWorksheet is not None:
                     lastRow = currWorksheet.iloc[-1]
                     dataFrame = dataFrame.append( lastRow )
@@ -111,9 +108,6 @@ class GpwCurrentStockIntradayData( WorksheetData ):
 #         currTimestamp = self.dataTime.timestamp()
         return generate_chart_data_url( self.isin, modeCode)
 
-    def sourceLink(self):
-        return "https://www.gpw.pl/spolka?isin=" + self.isin
-
 
 class GpwCurrentIndexIntradayData( WorksheetData ):
 
@@ -125,20 +119,17 @@ class GpwCurrentIndexIntradayData( WorksheetData ):
         self.rangeCode = rangeCode
         self.dataTime  = datetime.datetime.now()
 
-#     def getWorksheet(self, forceRefresh=False) -> DataFrame:
-#         if forceRefresh is True:
-#             return super().getWorksheet( True )
-#         data = super().getWorksheet( forceRefresh )
-#         timeDiff = datetime.datetime.today() - self.grabTimestamp
-#         if timeDiff < datetime.timedelta( minutes=1 ):
-#             return data
-#         return super().getWorksheet( True )
+    def sourceLink(self):
+        return "https://gpwbenchmark.pl/karta-indeksu?isin=" + self.isin
 
-    def refreshData(self, forceRefresh=True):
+    ## ================================================================
+
+    def loadWorksheet(self):
         self.dataTime = datetime.datetime.now()
-        super().refreshData( forceRefresh )
+        super().loadWorksheet()
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         with open( dataFile ) as f:
             json_data = json.load(f)
             json_dict = json_data[0]
@@ -172,9 +163,6 @@ class GpwCurrentIndexIntradayData( WorksheetData ):
         modeCode      = mode_code( self.rangeCode )
 #         currTimestamp = self.dataTime.timestamp()
         return generate_chart_data_url( self.isin, modeCode)
-
-    def sourceLink(self):
-        return "https://gpwbenchmark.pl/karta-indeksu?isin=" + self.isin
 
 
 def mode_code( modeText ):

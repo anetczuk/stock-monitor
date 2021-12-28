@@ -26,6 +26,7 @@ import unittest
 
 from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 ## =================================================================
@@ -41,26 +42,27 @@ class GpwESPIDataTest(unittest.TestCase):
             return get_data_path( "espi_data.html" )
 
         self.dataAccess.getDataPath = data_path           # type: ignore
-        self.dataAccess.parseDataFromDefaultFile()
+        self.dataAccess.storage = WorksheetStorageMock()
+        self.dataAccess.parseWorksheetFromFile( data_path() )
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_getWorksheet(self):
-        currData = self.dataAccess.getWorksheet()
+    def test_getWorksheetData(self):
+        currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
         self.assertEqual(dataLen, 45)
 
 #     def test_getWorksheet_force(self):
 #         self.dataAccess = GpwESPIData()
-#         currData = self.dataAccess.getWorksheet( True )
+#         currData = self.dataAccess.getWorksheetData( True )
 #         dataLen = len( currData )
 #         self.assertEqual(dataLen, 45)
 
 #     def test_getWorksheet_micro(self):
 #         startTime = datetime.datetime.now()
-#         self.dataAccess.getWorksheet( True )
+#         self.dataAccess.getWorksheetData( True )
 #         end1Time = datetime.datetime.now()
 #         self.dataAccess.loadWorksheet( False )
 #         end2Time = datetime.datetime.now()

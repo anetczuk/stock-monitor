@@ -50,23 +50,23 @@ class MetaStockIntradayData( WorksheetData ):
             dataDate = self._currDate()
         self.dataDate: datetime.date = dataDate
 
+    def sourceLink(self):
+        return "https://info.bossa.pl/notowania/pliki/intraday/metastock/"
+
     @synchronized
     def getWorksheetForDate( self, dataDate: datetime.date ):
         self.dataDate = dataDate
-        self.loadWorksheet( False )
-        return self.worksheet
+        return self.getWorksheetData( False )
+    
+    ## ================================================================
 
-    def parseDataFromFile(self, dataFile) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw",
-                                                      "max", "min", "kurs", "obrot", "unknown_2"] )
-        dataFrame.drop( dataFrame.tail(1).index, inplace=True )
-        return dataFrame
-
-    def _downloadDataTo(self, filePath):
+    ## override
+    def _downloadContent( self, url, filePath ):
         zipPath = filePath + ".zip"
-        super()._downloadDataTo( zipPath )
+        super()._downloadContent( url, zipPath )
 
+        ## extract downloaded file
+        _LOGGER.debug( "extracting zip[%s]", zipPath )
         with tempfile.TemporaryDirectory() as tmpdir:
             zipMember = "a_cgl.prn"
             with zipfile.ZipFile( zipPath, 'r' ) as zip_ref:
@@ -74,6 +74,15 @@ class MetaStockIntradayData( WorksheetData ):
                 tmpFile = os.path.join( tmpdir, zipMember )
                 _LOGGER.debug( "moving extracted file[%s] to [%s]", tmpFile, filePath )
                 shutil.move( tmpFile, filePath )
+
+
+    @synchronized
+    def _parseDataFromFile(self, dataFile) -> DataFrame:
+        _LOGGER.debug( "opening workbook: %s", dataFile )
+        dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw",
+                                                      "max", "min", "kurs", "obrot", "unknown_2"] )
+        dataFrame.drop( dataFrame.tail(1).index, inplace=True )
+        return dataFrame
 
     def getDataPath(self):
         dateString = self.dataDate.isoformat()
@@ -93,9 +102,6 @@ class MetaStockIntradayData( WorksheetData ):
 
     def _currDate(self) -> datetime.date:
         return datetime.datetime.now().date()
-
-    def sourceLink(self):
-        return "https://info.bossa.pl/notowania/pliki/intraday/metastock/"
 
 
 ## https://info.bossa.pl/index.jsp?layout=mstock&page=1&news_cat_id=706&dirpath=/ciagle/mstock/sesjacgl

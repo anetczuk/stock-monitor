@@ -55,7 +55,7 @@ def configure( logFile=None, logLevel=None ):
         logLevel = logging.DEBUG
 
     ## rotation of log files, 1048576 equals to 1MB
-    fileHandler    = handlers.RotatingFileHandler( filename=log_file, mode="a+", maxBytes=1048576, backupCount=999 )
+    fileHandler    = handlers.RotatingFileHandler( filename=log_file, mode="a+", maxBytes=1048576, backupCount=100 )
     ## fileHandler    = logging.FileHandler( filename=log_file, mode="a+" )
     consoleHandler = logging.StreamHandler( stream=sys.stdout )
 

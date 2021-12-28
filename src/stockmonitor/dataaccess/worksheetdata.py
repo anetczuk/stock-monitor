@@ -55,136 +55,175 @@ def download_html_content( url, outputPath ):
 
 class BaseWorksheetData( metaclass=abc.ABCMeta ):
 
-    def __init__(self):
-        self.worksheet: DataFrame = None
-
+    ## get data
     @synchronized
-    def getWorksheet(self, forceRefresh=False) -> DataFrame:
-        if self.worksheet is None or forceRefresh is True:
-#             _LOGGER.info("state: %s %s", (self.worksheet is None), (forceRefresh is True) )
-            self.refreshData( forceRefresh )
-        return self.worksheet
+    def getWorksheetData(self, forceRefresh=False) -> DataFrame:
+        if forceRefresh is True:
+            self.loadWorksheet()
+        return self.getDataFrame()
 
-    def refreshData(self, forceRefresh=True):
-        self.loadWorksheet( forceRefresh )
+    ## get data, if data is None then try to load it before returning
+    @synchronized
+    def accessWorksheetData(self, forceRefresh=False) -> DataFrame:
+        if forceRefresh is True:
+            self.loadWorksheet()
+            return self.getDataFrame()
+        dataFrame = self.getDataFrame()
+        if dataFrame is None:
+            self.loadWorksheet()
+        return self.getDataFrame()
 
+    ## load data to internal buffer (include downloading and parsing raw data)
     @abc.abstractmethod
-    def loadWorksheet(self, forceRefresh=False):
+    def loadWorksheet(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+    
+    ## get current data (without additional actions)
+    @abc.abstractmethod
+    def getDataFrame(self) -> DataFrame:
         raise NotImplementedError('You need to define this method in derived class!')
 
 
+##
+##
 class WorksheetData( BaseWorksheetData ):
 
     def __init__(self):
         super().__init__()
-        self.grabTimestamp: datetime.datetime = None
+        self.storage = WorksheetStorage()
 
+    def getGrabTimestmp(self) -> datetime.datetime:
+        return self.storage.grabTimestamp
+
+    ## override
     @synchronized
-    def loadWorksheet(self, forceRefresh=False):
+    def loadWorksheet(self):
         dataPath = self.getDataPath()
-        if forceRefresh is False:
-            forceRefresh = not os.path.exists( dataPath )
-        if forceRefresh:
-            try:
-                self.downloadData()
-            except urllib.error.HTTPError:
-                self.worksheet     = None
-                self.grabTimestamp = None
-            except urllib.error.URLError:
-                self.worksheet     = None
-                self.grabTimestamp = None
-
-        if not os.path.exists( dataPath ):
-            _LOGGER.warning( "could not find required file[%s]", dataPath )
-            return
-
-        _LOGGER.debug( "loading recent data from file[%s], force: %s", dataPath, forceRefresh )
+        _LOGGER.debug( "loading data from file[%s]", dataPath )
         try:
-            self._loadObjectData( forceRefresh )
-        except BaseException:
-            _LOGGER.exception( "unable to load object data" )
-            return
-        
-        if self.worksheet is None:
-            self.grabTimestamp = None
-            return
-
-        timestampPath = self.getTimestampPath()
-        if not os.path.exists( timestampPath ):
-            self.grabTimestamp = None
-            return
-        self.grabTimestamp = persist.load_object_simple( timestampPath, None )
-
-    def _loadObjectData(self, forceRefresh=False):
-        picklePath = self.getPicklePath()
-        if forceRefresh is False:
-            forceRefresh = not os.path.exists( picklePath )
-        if forceRefresh is False:
-            try:
-                self.worksheet = persist.load_object_simple( picklePath, None )
-                if self.worksheet is not None:
-                    return
-            except ModuleNotFoundError:
-                ## this might happen when object files are shared between
-                ## different operating systems (different versions of libraries)
-                _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
-            except AttributeError:
-                ## this might happen when module updated between save and load
-                ## e.g.: AttributeError: Can't get attribute 'new_block' on <module 'pandas.core.internals.blocks' from 'site-packages/pandas/core/internals/blocks.py'>
-                _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
-
-        self.parseDataFromDefaultFile()
-        if self.worksheet is not None:
-            persist.store_object_simple(self.worksheet, picklePath)
+            ## forced refresh or no data -- download new data
+            self.downloadData()
+            self.parseWorksheetFromFile( dataPath )
+        except BaseException as ex:
+            _LOGGER.exception( "unable to load object data: %s", ex, exc_info=False )
+            self.storage.clear()
 
     def downloadData(self):
-        filePath = self.getDataPath()
-        self._downloadDataTo( filePath )
-
-    def _downloadDataTo( self, filePath ):
+        dataPath = self.getDataPath()
         url = self.getDataUrl()
-        _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, filePath )
+        _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, dataPath )
 
-        dirPath = os.path.dirname( filePath )
+        dirPath = os.path.dirname( dataPath )
         os.makedirs( dirPath, exist_ok=True )
 
-        currTimestamp = datetime.datetime.today()
-        self._downloadContent( url, filePath )
+        self._downloadContent( url, dataPath )
 
-        timestampPath = self.getTimestampPath()
-        persist.store_object_simple(currTimestamp, timestampPath)
-
+    ## to be overriden if needed
     def _downloadContent( self, url, filePath ):
         download_html_content( url, filePath )
 
-    def parseDataFromDefaultFile(self):
-        dataPath = self.getDataPath()
-        _LOGGER.info( "parsing raw data: %s", dataPath )
-        self.parseWorksheetFromFile( dataPath )
-
-    @synchronized
     def parseWorksheetFromFile(self, dataPath: str):
-        self.worksheet = self.parseDataFromFile( dataPath )
+        _LOGGER.info( "parsing raw data: %s", dataPath )
+        worksheet = self._parseDataFromFile( dataPath )
+        self.storage.storeObject( dataPath, worksheet )
 
-    def getPicklePath(self):
-        dataPath = self.getDataPath()
-        return dataPath + ".pickle"
+    ## ====================================================
 
-    def getTimestampPath(self):
-        dataPath = self.getDataPath()
-        return dataPath + ".timestamp"
+    ## override    
+    def getDataFrame(self) -> DataFrame:
+        if self.storage.worksheet is None:
+            dataPath = self.getDataPath()
+            self.storage.loadObject( dataPath, False )
+        return self.storage.worksheet
 
     @abc.abstractmethod
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         raise NotImplementedError('You need to define this method in derived class!')
 
+    ## path can be generated dynamically
     @abc.abstractmethod
     def getDataPath(self):
         raise NotImplementedError('You need to define this method in derived class!')
 
+    ## URL can be generated dynamically
     @abc.abstractmethod
     def getDataUrl(self):
         raise NotImplementedError('You need to define this method in derived class!')
+
+
+##
+##
+class WorksheetStorage():
+    """Store and load data."""
+    
+    def __init__(self):
+        self.worksheet: DataFrame = None
+        self.grabTimestamp: datetime.datetime = None
+    
+    def clear(self):
+        self.worksheet = None
+        self.grabTimestamp = None
+    
+    def loadObject(self, dataPath, forceRefresh=False):
+        if forceRefresh is False and self.worksheet is not None:
+            return self.worksheet
+
+        try:
+            picklePath = dataPath + ".pickle"
+            self.worksheet = persist.load_object_simple( picklePath, None )
+            if self.worksheet is None:
+                self.clear()
+                return self.worksheet
+            
+            timestampPath = dataPath + ".timestamp"
+            self.grabTimestamp = persist.load_object_simple( timestampPath, None )
+            if self.grabTimestamp is None:
+                self.grabTimestamp = datetime.datetime.today()
+            return self.worksheet
+        except ModuleNotFoundError:
+            ## this might happen when object files are shared between
+            ## different operating systems (different versions of libraries)
+            _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
+        except AttributeError:
+            ## this might happen when module updated between save and load
+            ## e.g.: AttributeError: Can't get attribute 'new_block' on <module 'pandas.core.internals.blocks' from 'site-packages/pandas/core/internals/blocks.py'>
+            _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
+            
+        self.clear()
+        return None
+
+    def storeObject(self, dataPath, objectToStore):
+        self.worksheet = objectToStore
+        if objectToStore is None:
+            self.grabTimestamp = None
+            return
+        picklePath = dataPath + ".pickle"
+        persist.store_object_simple( objectToStore, picklePath )
+        
+        currTimestamp = datetime.datetime.today()
+        timestampPath = dataPath + ".timestamp"
+        persist.store_object_simple( currTimestamp, timestampPath )
+
+
+##
+##
+class WorksheetStorageMock():
+    """Store and load data."""
+    
+    def __init__(self):
+        self.worksheet: DataFrame = None
+        self.grabTimestamp: datetime.datetime = None
+
+    def clear(self):
+        self.worksheet = None
+        self.grabTimestamp = None
+
+    def loadObject(self, dataPath, forceRefresh=False):
+        return self.worksheet
+
+    def storeObject(self, dataPath, objectToStore):
+        ## do nothing
+        self.worksheet = objectToStore
 
 
 ## ================================================================================
@@ -196,13 +235,18 @@ class WorksheetDataMock( BaseWorksheetData ):
         super().__init__()
         self.worksheet = data
 
-    def loadWorksheet(self, _=False):
+    ## override
+    def loadWorksheet(self):
         pass
+
+    ## override    
+    def getDataFrame(self) -> DataFrame:
+        return self.worksheet
 
 
 # class HtmlWorksheetData( WorksheetData ):
 #
-#     def parseDataFromFile(self, dataFile: str) -> DataFrame:
+#     def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #         _LOGGER.debug( "opening workbook: %s", dataFile )
 #         dataFrame = pandas.read_html( dataFile )
 #         dataFrame = dataFrame[0]

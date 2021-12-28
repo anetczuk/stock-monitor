@@ -66,13 +66,13 @@ _LOGGER = logging.getLogger(__name__)
 READONLY_FAV_GROUPS = ["All", "Wallet", "Markers"]
 
 
-def instance_download_data(obj):
+def instance_download_data( worksheet ):
     """Wrapper/alias for object.
 
     Alias for instance method that allows the method to be called in a
     multiprocessing pool
     """
-    obj.downloadData()
+    worksheet.downloadData()
     return
 
 

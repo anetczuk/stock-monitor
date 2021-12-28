@@ -44,10 +44,13 @@ _LOGGER = logging.getLogger(__name__)
 class GpwCurrentStockData( WorksheetData ):
     """Handle GPW current day data."""
 
+    def sourceLink(self):
+        return "https://www.gpw.pl/akcje"
+
     def getStockData(self, tickerList: List[str] = None) -> DataFrame:
         if tickerList is None:
             return None
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         if dataFrame is None:
             return None
         colIndex = self.getColumnIndex( CurrentDataType.TICKER )
@@ -56,7 +59,7 @@ class GpwCurrentStockData( WorksheetData ):
 
     def getData(self, dataType: CurrentDataType):
 #         _LOGGER.debug( "getting max from date: %s", day )
-        worksheet = self.getWorksheet()
+        worksheet = self.getWorksheetData()
         if worksheet is None:
             return None
         colIndex = self.getColumnIndex( dataType )
@@ -66,7 +69,7 @@ class GpwCurrentStockData( WorksheetData ):
         return self.extractColumn( worksheet, colIndex )
 
     def getRowByTicker(self, ticker):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         if dataFrame is None:
             _LOGGER.warning("no worksheet found")
             return None
@@ -75,13 +78,13 @@ class GpwCurrentStockData( WorksheetData ):
         return retRows.squeeze()            ## convert 1 row dataframe to series
 
     def getTickerField(self, rowIndex: int):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         if dataFrame is None:
             return None
         return self.getTickerFieldFromData( dataFrame, rowIndex )
 
     def getTickerFromIsin(self, stockIsin):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         rowIndexes = dataFrame[ dataFrame["isin"] == stockIsin ].index.values
         if rowIndexes is None or len(rowIndexes) < 1:
             return None
@@ -90,7 +93,9 @@ class GpwCurrentStockData( WorksheetData ):
         return tickerColumn.iloc[ rowIndex ]
 
     def getTickerFromName(self, stockName):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
+        if dataFrame is None:
+            return None
         rowIndexes = dataFrame[ dataFrame["Nazwa"] == stockName ].index.values
         if rowIndexes is None or len(rowIndexes) < 1:
             return None
@@ -99,7 +104,7 @@ class GpwCurrentStockData( WorksheetData ):
         return tickerColumn.iloc[ rowIndex ]
 
     def getStockIsinFromTicker(self, ticker):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         reducedFrame = dataFrame[ dataFrame["Skrót"] == ticker ]
         rowIndexes = reducedFrame.index.values
         if rowIndexes is None or len(rowIndexes) < 1:
@@ -110,7 +115,9 @@ class GpwCurrentStockData( WorksheetData ):
         return tickerColumn.iloc[ rowIndex ]
 
     def getNameFromTicker(self, ticker):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
+        if dataFrame is None:
+            return None
         rowIndexes = dataFrame[ dataFrame["Skrót"] == ticker ].index.values
         if rowIndexes is None or len(rowIndexes) < 1:
             return None
@@ -119,7 +126,7 @@ class GpwCurrentStockData( WorksheetData ):
         return tickerColumn.iloc[ rowIndex ]
 
     def getNameFromIsin(self, stockIsin):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         rowIndexes = dataFrame[ dataFrame["isin"] == stockIsin ].index.values
         if rowIndexes is None or len(rowIndexes) < 1:
             return None
@@ -128,7 +135,7 @@ class GpwCurrentStockData( WorksheetData ):
         return tickerColumn.iloc[ rowIndex ]
 
     def getTickerFieldByName(self, stockName):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         if dataFrame is None:
             return None
         nameIndex = self.getColumnIndex( CurrentDataType.NAME )
@@ -146,7 +153,7 @@ class GpwCurrentStockData( WorksheetData ):
 
     def getRecentValue(self, ticker):
         row = self.getRowByTicker( ticker )
-        if len(row) < 1:
+        if row is None or len(row) < 1:
             return None
         return row.iloc[11]
 
@@ -190,7 +197,8 @@ class GpwCurrentStockData( WorksheetData ):
 
     ## ======================================================================
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
         dataFrame = dataFrameList[0]
@@ -233,8 +241,7 @@ class GpwCurrentStockData( WorksheetData ):
                "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
         return url
 
-    def sourceLink(self):
-        return "https://www.gpw.pl/akcje"
+    ## ======================================================================
 
     @staticmethod
     def getColumnIndex(dataType: CurrentDataType):
@@ -288,6 +295,7 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
 
     def __init__(self):
         super().__init__()
+        self.worksheet: DataFrame = None
         self.dataList = list()
         self.dataList.append( GpwMainIndexesData() )
         self.dataList.append( GpwMacroIndexesData() )
@@ -295,32 +303,30 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
 
     def getNameFromIsin(self, isin):
         row = self.getRowByIsin( isin )
-        return row.iloc[1]
+        colIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.NAME )
+        return row.iloc[ colIndex ]
 
     def getRecentValue(self, isin):
         row = self.getRowByIsin( isin )
-        return row.iloc[8]
+        colIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        return row.iloc[ colIndex ]
 
     def getRecentChange(self, isin):
         row = self.getRowByIsin( isin )
-        return row.iloc[9]
+        if row is None or row.empty:
+            return None
+        colIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        return row.iloc[ colIndex ]
 
     def getRowByIsin(self, isin):
-        dataFrame = self.getWorksheet()
-        if dataFrame is None:
+        dataFrame = self.getWorksheetData()
+        if dataFrame is None or dataFrame.empty:
             _LOGGER.warning("no worksheet found")
             return None
-        isinIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.ISIN )
-        isinColumn = dataFrame.iloc[ :, isinIndex ]
+        colIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.ISIN )
+        isinColumn = dataFrame.iloc[ :, colIndex ]
         retRows = dataFrame.loc[ isinColumn == isin ]
         return retRows.squeeze()            ## convert 1 row dataframe to series
-
-    @synchronized
-    def loadWorksheet(self, forceRefresh=False):
-        self.worksheet = DataFrame()
-        for dataAccess in self.dataList:
-            dataFrame = dataAccess.getWorksheet( forceRefresh )
-            self.worksheet = self.worksheet.append( dataFrame )
 
     def downloadData(self):
         for dataAccess in self.dataList:
@@ -345,10 +351,26 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
     def sourceLink(self):
         return "https://gpwbenchmark.pl/notowania"
 
+    ## ======================================================================
+
+    ## override
+    @synchronized
+    def loadWorksheet(self):
+        self.worksheet = DataFrame()
+        for dataAccess in self.dataList:
+            dataAccess.loadWorksheet()
+            dataFrame = dataAccess.getDataFrame()
+            self.worksheet = self.worksheet.append( dataFrame )
+
+    ## override    
+    def getDataFrame(self) -> DataFrame:
+        return self.worksheet
+
 
 class GpwMainIndexesData( WorksheetData ):
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = DataFrame()
@@ -368,7 +390,8 @@ class GpwMainIndexesData( WorksheetData ):
 
 class GpwMacroIndexesData( WorksheetData ):
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]
@@ -386,7 +409,8 @@ class GpwMacroIndexesData( WorksheetData ):
 
 class GpwSectorsIndexesData( WorksheetData ):
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[0]

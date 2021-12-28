@@ -31,6 +31,7 @@ from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,14 +69,27 @@ def grab_content( url, button ):
 ## https://rss.knf.gov.pl/RssOuterView/
 class CurrentShortSellingsData( WorksheetData ):
 
+    ## override
+    def sourceLink(self):
+        return self.getDataUrl()
+
     def getISIN(self, rowIndex):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
 #         print( "xxx", dataFrame )
         tickerColumn = dataFrame["ISIN"]
         return tickerColumn.iloc[ rowIndex ]
 
+    ## ================================================================
+
     ## override
-    def parseDataFromFile(self, dataFile) -> DataFrame:
+    def _downloadContent( self, url, filePath ):
+        response = grab_content( url, "j_idt8-j_idt14" )
+        with open( filePath, "w" ) as text_file:
+            text_file.write( response )
+
+    ## override
+    @synchronized
+    def _parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "parsing data file: %s", dataFile )
         dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         #_LOGGER.debug( "dataFrame: %s", dataFrame )
@@ -92,15 +106,6 @@ class CurrentShortSellingsData( WorksheetData ):
         return dataFrame
 
     ## override
-    def _downloadContent( self, url, filePath ):
-        response = self._grabContent( url )
-        with open( filePath, "w" ) as text_file:
-            text_file.write( response )
-
-    def _grabContent( self, url ):
-        return grab_content( url, "j_idt8-j_idt14" )
-
-    ## override
     def getDataPath(self):
         return tmp_dir + "data/knf/shortsellings-current.html"
 
@@ -109,22 +114,30 @@ class CurrentShortSellingsData( WorksheetData ):
         url = "https://rss.knf.gov.pl/RssOuterView/"
         return url
 
-    ## override
-    def sourceLink(self):
-        return self.getDataUrl()
-
 
 ## https://rss.knf.gov.pl/RssOuterView/
 class HistoryShortSellingsData( WorksheetData ):
 
+    ## override
+    def sourceLink(self):
+        return self.getDataUrl()
+
     def getISIN(self, rowIndex):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
 #         print( "xxx", dataFrame )
         tickerColumn = dataFrame["ISIN"]
         return tickerColumn.iloc[ rowIndex ]
 
+    ## ================================================================
+
     ## override
-    def parseDataFromFile(self, dataFile) -> DataFrame:
+    def _downloadContent( self, url, filePath ):
+        response = grab_content( url, "j_idt8-j_idt16" )
+        with open( filePath, "w" ) as text_file:
+            text_file.write( response )
+
+    ## override
+    def _parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "parsing data file: %s", dataFile )
         dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         if len( dataFrame ) < 3:
@@ -139,15 +152,6 @@ class HistoryShortSellingsData( WorksheetData ):
         return dataFrame
 
     ## override
-    def _downloadContent( self, url, filePath ):
-        response = self._grabContent( url )
-        with open( filePath, "w" ) as text_file:
-            text_file.write( response )
-
-    def _grabContent( self, url ):
-        return grab_content( url, "j_idt8-j_idt16" )
-
-    ## override
     def getDataPath(self):
         return tmp_dir + "data/knf/shortsellings-history.html"
 
@@ -155,7 +159,3 @@ class HistoryShortSellingsData( WorksheetData ):
     def getDataUrl(self):
         url = "https://rss.knf.gov.pl/RssOuterView/"
         return url
-
-    ## override
-    def sourceLink(self):
-        return self.getDataUrl()

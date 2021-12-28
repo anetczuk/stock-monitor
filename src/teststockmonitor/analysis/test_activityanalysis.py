@@ -30,6 +30,7 @@ from stockmonitor.analysis.activityanalysis import GpwCurrentIntradayProvider,\
     ActivityAnalysis, MetaStockIntradayProvider
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,8 +49,8 @@ class GpwCurrentIntradayProviderMock( GpwCurrentIntradayProvider ):
             return get_data_path( "cdr.chart.04-09.txt" )
 
         intradayData.getDataPath = data_path           # type: ignore
-        intradayData.parseDataFromDefaultFile()
-        return intradayData.getWorksheet()
+        worksheet = intradayData._parseDataFromFile( data_path() )
+        return worksheet
 
 
 class MetaStockIntradayProviderMock( MetaStockIntradayProvider ):
@@ -61,8 +62,9 @@ class MetaStockIntradayProviderMock( MetaStockIntradayProvider ):
             return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
 
         intradayData.getDataPath = data_path           # type: ignore
-        intradayData.parseDataFromDefaultFile()
-        return intradayData.getWorksheet()
+        intradayData.storage = WorksheetStorageMock()
+        intradayData.parseWorksheetFromFile( data_path() )
+        return intradayData.getWorksheetData()
 
 
 class ActivityAnalysisMock( ActivityAnalysis ):

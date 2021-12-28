@@ -32,14 +32,16 @@ from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
 from stockmonitor.dataaccess.convert import convert_float, convert_percentage,\
     apply_on_column
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class GlobalIndexesData( WorksheetData ):
-
-    def parseDataFromFile(self, dataFile) -> DataFrame:
+    
+    @synchronized
+    def _parseDataFromFile(self, dataFile) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
 
         # fix HTML: handle multiple tbody inside single table

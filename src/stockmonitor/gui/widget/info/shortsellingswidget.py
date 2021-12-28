@@ -136,8 +136,8 @@ class ShortSellingsWidget( QWidget ):
         set_label_url( self.sourceLabel, self.currentData.sourceLink() )
 
     def refreshData(self):
-        currentFrame = self.currentData.getWorksheet()
+        currentFrame = self.currentData.getWorksheetData()
         self.currentShortsTable.setData( currentFrame )
 
-        historyFrame = self.historyData.getWorksheet()
+        historyFrame = self.historyData.getWorksheetData()
         self.historyShortsTable.setData( historyFrame )

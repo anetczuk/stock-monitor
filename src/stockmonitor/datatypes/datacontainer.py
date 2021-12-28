@@ -316,7 +316,7 @@ class DataContainer():
             amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
             currentStockRow = currentStock.getRowByTicker( ticker )
 
-            if currentStockRow.empty:
+            if currentStockRow is None or currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 rowDict = {}
                 rowDict[ columnsList[ 0] ] = "-"
@@ -397,7 +397,7 @@ class DataContainer():
                 continue
 
             tickerRow = currentStock.getRowByTicker( ticker )
-            if tickerRow.empty:
+            if tickerRow is None or tickerRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 continue
 
@@ -448,7 +448,7 @@ class DataContainer():
 #             if ticker == "PCX":
 #                 print( "xxxxx:\n", transactions.items() )
             currentStockRow = currentStock.getRowByTicker( ticker )
-            if currentStockRow.empty:
+            if currentStockRow is None or currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 currTransactions = transactions.currentTransactions( transMode )
                 for item in currTransactions:
@@ -617,7 +617,7 @@ class DataContainer():
 
         isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
         intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
-        stockData = intraSource.getWorksheet()
+        stockData = intraSource.getWorksheetData()
 
         startDateTime = stockData.iloc[0, 0]        ## first date
         startDate = startDateTime.date()
@@ -654,7 +654,7 @@ class DataContainer():
 
         isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
         intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
-        stockData = intraSource.getWorksheet()
+        stockData = intraSource.getWorksheetData()
         if stockData is None:
             return None
 
@@ -756,14 +756,14 @@ class DataContainer():
         stockList = self.dataStockProvidersList()
         retList = []
         for stock in stockList:
-            retList.append( (stock.refreshData, [forceRefresh] ) )
+            retList.append( (stock.getWorksheetData, [forceRefresh] ) )
         return retList
 
     def refreshAllList(self, forceRefresh=False):
         stockList = self.dataAllProvidersList()
         retList = []
         for stock in stockList:
-            retList.append( (stock.refreshData, [forceRefresh] ) )
+            retList.append( (stock.getWorksheetData, [forceRefresh] ) )
         return retList
 
 #     def stockDownloadList(self):

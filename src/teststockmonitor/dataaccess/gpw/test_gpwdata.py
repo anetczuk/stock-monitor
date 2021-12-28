@@ -25,22 +25,40 @@ import unittest
 
 from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData, GpwIsinMapData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class GpwIndicatorsDataTest(unittest.TestCase):
+
+#     def setUp(self):
+#         ## Called before testfunction is executed
+#         self.dataAccess = GpwIndicatorsData()
 
     def setUp(self):
         ## Called before testfunction is executed
         self.dataAccess = GpwIndicatorsData()
 
+        def data_path():
+            return get_data_path( "indicators_data.html" )
+
+        self.dataAccess.getDataPath = data_path                 # type: ignore
+        self.dataAccess.storage = WorksheetStorageMock()
+        self.dataAccess.parseWorksheetFromFile( data_path() )       ## load raw data
+
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_getWorksheet(self):
-        currData = self.dataAccess.getWorksheet()
+    def test_getWorksheetData_False(self):
+        currData = self.dataAccess.getWorksheetData( False )
         dataLen = len( currData )
         self.assertGreaterEqual(dataLen, 400)
+        self.assertIsNotNone( currData )
+
+#     def test_getWorksheet_True(self):
+#         currData = self.dataAccess.getWorksheetData( True )
+#         dataLen = len( currData )
+#         self.assertGreaterEqual(dataLen, 400)
 
 
 class GpwIsinMapDataTest(unittest.TestCase):
@@ -53,20 +71,21 @@ class GpwIsinMapDataTest(unittest.TestCase):
             return get_data_path( "isin_map_data.html" )
 
         self.dataAccess.getDataPath = data_path           # type: ignore
-        self.dataAccess.parseDataFromDefaultFile()
+        self.dataAccess.storage = WorksheetStorageMock()
+        self.dataAccess.parseWorksheetFromFile( data_path() )
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_getWorksheet(self):
-        currData = self.dataAccess.getWorksheet()
+    def test_getWorksheetData(self):
+        currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
         self.assertEqual(dataLen, 829)
 
 #     def test_getWorksheet_micro(self):
 #         startTime = datetime.datetime.now()
-#         self.dataAccess.getWorksheet( True )
+#         self.dataAccess.getWorksheetData( True )
 #         endTime = datetime.datetime.now()
 #         diff = endTime - startTime
 #         print( "load time:", diff )

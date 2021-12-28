@@ -113,7 +113,7 @@ class IndicatorsWidget( QWidget ):
         self.dataTable.connectData( self.dataObject )
 
     def refreshData(self):
-        dataFrame = self.dataAccess.getWorksheet()
+        dataFrame = self.dataAccess.getWorksheetData()
         self.dataTable.setData( dataFrame )
 
     def getTicker(self, dataRow):

@@ -147,7 +147,7 @@ class ReportsWidget( QWidget ):
         self.dataTable.connectData( self.dataObject )
 
     def refreshData(self):
-        dataFrame = self.dataAccess.getWorksheet()
+        dataFrame = self.dataAccess.getWorksheetData()
         self.dataTable.setData( dataFrame )
 
 
@@ -189,5 +189,5 @@ class PublishedReportsWidget( QWidget ):
         self.dataTable.connectData( self.dataObject )
 
     def refreshData(self):
-        dataFrame = self.dataAccess.getWorksheet()
+        dataFrame = self.dataAccess.getWorksheetData()
         self.dataTable.setData( dataFrame )

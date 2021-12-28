@@ -29,6 +29,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.convert import convert_float, convert_int, cleanup_column, apply_on_column
 from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,12 +38,18 @@ _LOGGER = logging.getLogger(__name__)
 ## https://www.gpw.pl/wskazniki
 class GpwIndicatorsData( WorksheetData ):
 
+    def sourceLink(self):
+        return self.getDataUrl()
+
     def getStockIsin(self, rowIndex):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         tickerColumn = dataFrame["Kod"]
         return tickerColumn.iloc[ rowIndex ]
+    
+    ## ================================================================
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = DataFrame()
@@ -67,9 +74,6 @@ class GpwIndicatorsData( WorksheetData ):
     def getDataUrl(self):
         return "https://www.gpw.pl/wskazniki"
 
-    def sourceLink(self):
-        return self.getDataUrl()
-
 
 ## ==========================================================================
 
@@ -78,7 +82,7 @@ class GpwIndicatorsData( WorksheetData ):
 class GpwIsinMapData( WorksheetData ):
 
     def getTickerFromIsin(self, stockIsin):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         rowIndexes = dataFrame[ dataFrame["ISIN"] == stockIsin ].index.values
         if not rowIndexes:
             return None
@@ -87,7 +91,7 @@ class GpwIsinMapData( WorksheetData ):
         return tickerColumn.iloc[ rowIndex ]
 
     def getTickerFromName(self, stockName):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         rowIndexes = dataFrame[ dataFrame["Nazwa giełdowa"] == stockName ].index.values
         if not rowIndexes:
             return None
@@ -96,7 +100,7 @@ class GpwIsinMapData( WorksheetData ):
         return tickerColumn.iloc[ rowIndex ]
 
     def getStockIsinFromTicker(self, ticker):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         rowIndexes = dataFrame[ dataFrame["Ticker"] == ticker ].index.values
         if not rowIndexes:
             _LOGGER.warning("no isin found for ticker %s", ticker)
@@ -106,15 +110,18 @@ class GpwIsinMapData( WorksheetData ):
         return tickerColumn.iloc[ rowIndex ]
 
     def getNameFromTicker(self, ticker):
-        dataFrame = self.getWorksheet()
+        dataFrame = self.getWorksheetData()
         rowIndexes = dataFrame[ dataFrame["Ticker"] == ticker ].index.values
         if not rowIndexes:
             return None
         rowIndex = rowIndexes[0]
         tickerColumn = dataFrame["Emitent"]
         return tickerColumn.iloc[ rowIndex ]
+    
+    ## ================================================================
 
-    def parseDataFromFile(self, dataFile: str) -> DataFrame:
+    @synchronized
+    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         _LOGGER.debug( "opening workbook: %s", dataFile )
         allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
         dataFrame = allDataFrames[1]
