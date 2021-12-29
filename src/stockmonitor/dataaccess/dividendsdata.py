@@ -27,7 +27,7 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.synchronized import synchronized
 
 
@@ -35,10 +35,33 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## https://www.stockwatch.pl/dywidendy/
-class DividendsCalendarData( WorksheetData ):
+class DividendsCalendarData( WorksheetDAO ):
+
+    class DAO( WorksheetData ):
+        """Data access object."""
+        
+        def getDataPath(self):
+            return tmp_dir + "data/stockwatch/dividends_cal_data.html"
+    
+        def getDataUrl(self):
+            url = "https://www.stockwatch.pl/dywidendy/"
+            return url
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+            dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
+            dataFrame = dataFrame[2]
+            dataFrame = dataFrame.fillna("-")
+            return dataFrame
+
+
+    def __init__(self):
+        dao = DividendsCalendarData.DAO()
+        super().__init__( dao )
 
     def sourceLink(self):
-        return self.getDataUrl()
+        return self.dao.getDataUrl()
 
     def getStockName(self, rowIndex):
         dataFrame = self.getWorksheetData()
@@ -54,20 +77,3 @@ class DividendsCalendarData( WorksheetData ):
             return dateObject
         except ValueError:
             return datetime.date( 1, 1, 1 )
-
-    ## ================================================================
-
-    @synchronized
-    def _parseDataFromFile(self, dataFile) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
-        dataFrame = dataFrame[2]
-        dataFrame = dataFrame.fillna("-")
-        return dataFrame
-
-    def getDataPath(self):
-        return tmp_dir + "data/stockwatch/dividends_cal_data.html"
-
-    def getDataUrl(self):
-        url = "https://www.stockwatch.pl/dywidendy/"
-        return url

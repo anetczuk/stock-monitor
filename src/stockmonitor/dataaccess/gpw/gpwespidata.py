@@ -30,7 +30,7 @@ from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.synchronized import synchronized
 
 
@@ -38,71 +38,77 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## https://www.gpw.pl/komunikaty
-class GpwESPIData( WorksheetData ):
+class GpwESPIData( WorksheetDAO ):
+
+    class DAO( WorksheetData ):
+        """Data access object."""
+        
+        def __init__(self):
+            super().__init__()
+            self.messagesLimit = 30
+        
+        def getDataPath(self):
+            return tmp_dir + "data/gpw/espi_data.html"
+    
+        def getDataUrl(self):
+            offset = 0
+            url = "https://www.gpw.pl/ajaxindex.php" \
+                  "?action=GPWEspiReportUnion&start=ajaxSearch&page=komunikaty&format=html&lang=PL&letter=" \
+                  "&offset=" + str(offset) + \
+                  "&limit="  + str(self.messagesLimit) + \
+                  "&categoryRaports%5B%5D=EBI&categoryRaports%5B%5D=ESPI" \
+                  "&typeRaports%5B%5D=RB&typeRaports%5B%5D=P&typeRaports%5B%5D=Q&typeRaports%5B%5D=O&typeRaports%5B%5D=R" \
+                  "&search-xs=&searchText=&date="
+            return url
+    #         return "https://www.gpw.pl/komunikaty"
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+    
+            with open( dataFile ) as file:
+                soup = BeautifulSoup(file, "html.parser")
+                data_dicts = []
+                for row in soup.select('li'):
+                    if row is None:
+                        continue
+                    dateRow    = row.select('span.date')
+                    dateRaw    = dateRow[0].string
+                    dateString = dateRaw.split('|')[0].strip()
+                    dateObj    = datetime.datetime.strptime(dateString, '%d-%m-%Y %H:%M:%S')          ## 23-10-2020 23:09:01
+    
+                    nameRow = row.select('strong.name')[0]
+                    name    = nameRow.a.string.strip()
+    
+                    isinRes = re.search( r"\((.+)\)", name )
+                    isin    = None
+                    if isinRes is not None:
+                        isin = isinRes.groups()[0]
+    
+                    title = row.p.string.strip()
+    
+                    url = "https://www.gpw.pl/" + row.a['href']
+    
+                    row_dict = {}
+                    row_dict["name"]  = name
+                    row_dict["isin"]  = isin
+                    row_dict["date"]  = dateObj
+                    row_dict["title"] = title
+                    row_dict["url"]   = url
+    
+                    data_dicts.append(row_dict)
+    
+                dataFrame = pandas.DataFrame(data_dicts)
+    
+                return dataFrame
+
 
     def __init__(self):
-        super().__init__()
-        self.messagesLimit = 30
+        dao = GpwESPIData.DAO()
+        super().__init__( dao )
 
     def sourceLink(self):
         return "https://www.gpw.pl/komunikaty"
 
     def setLimit(self, number):
-        self.messagesLimit = number
-
-    ## ================================================================
-
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-
-        with open( dataFile ) as file:
-            soup = BeautifulSoup(file, "html.parser")
-            data_dicts = []
-            for row in soup.select('li'):
-                if row is None:
-                    continue
-                dateRow    = row.select('span.date')
-                dateRaw    = dateRow[0].string
-                dateString = dateRaw.split('|')[0].strip()
-                dateObj    = datetime.datetime.strptime(dateString, '%d-%m-%Y %H:%M:%S')          ## 23-10-2020 23:09:01
-
-                nameRow = row.select('strong.name')[0]
-                name    = nameRow.a.string.strip()
-
-                isinRes = re.search( r"\((.+)\)", name )
-                isin    = None
-                if isinRes is not None:
-                    isin = isinRes.groups()[0]
-
-                title = row.p.string.strip()
-
-                url = "https://www.gpw.pl/" + row.a['href']
-
-                row_dict = {}
-                row_dict["name"]  = name
-                row_dict["isin"]  = isin
-                row_dict["date"]  = dateObj
-                row_dict["title"] = title
-                row_dict["url"]   = url
-
-                data_dicts.append(row_dict)
-
-            dataFrame = pandas.DataFrame(data_dicts)
-
-            return dataFrame
-
-    def getDataPath(self):
-        return tmp_dir + "data/gpw/espi_data.html"
-
-    def getDataUrl(self):
-        offset = 0
-        url = "https://www.gpw.pl/ajaxindex.php" \
-              "?action=GPWEspiReportUnion&start=ajaxSearch&page=komunikaty&format=html&lang=PL&letter=" \
-              "&offset=" + str(offset) + \
-              "&limit="  + str(self.messagesLimit) + \
-              "&categoryRaports%5B%5D=EBI&categoryRaports%5B%5D=ESPI" \
-              "&typeRaports%5B%5D=RB&typeRaports%5B%5D=P&typeRaports%5B%5D=Q&typeRaports%5B%5D=O&typeRaports%5B%5D=R" \
-              "&search-xs=&searchText=&date="
-        return url
-#         return "https://www.gpw.pl/komunikaty"
+        self.dao.messagesLimit = number

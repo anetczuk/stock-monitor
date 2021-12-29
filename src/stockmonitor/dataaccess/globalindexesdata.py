@@ -29,7 +29,7 @@ from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.dataaccess.convert import convert_float, convert_percentage,\
     apply_on_column
 from stockmonitor.synchronized import synchronized
@@ -38,37 +38,45 @@ from stockmonitor.synchronized import synchronized
 _LOGGER = logging.getLogger(__name__)
 
 
-class GlobalIndexesData( WorksheetData ):
+class GlobalIndexesData( WorksheetDAO ):
 
-    @synchronized
-    def _parseDataFromFile(self, dataFile) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
+    class DAO( WorksheetData ):
+        """Data access object."""
+    
+        def getDataPath(self):
+            return tmp_dir + "data/bankier/global_indexes_data.html"
+    
+        def getDataUrl(self):
+            return "https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy"
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+    
+            # fix HTML: handle multiple tbody inside single table
+            with open( dataFile ) as file:
+                soup = BeautifulSoup(file, "html.parser")
+                for body in soup("tbody"):
+                    body.unwrap()
+    
+                dataFrame = pandas.read_html( str(soup), flavor="bs4" )
+                dataFrame = dataFrame[0]
+    
+                dataFrame.dropna( how='all', inplace=True )
+    
+                apply_on_column( dataFrame, 'Kurs AD', convert_float )
+                apply_on_column( dataFrame, 'Zmiana AD', convert_float )
+                apply_on_column( dataFrame, 'Zmianaprocentowa AD', convert_percentage )
+                apply_on_column( dataFrame, 'Otwarcie AD', convert_float )
+                apply_on_column( dataFrame, 'Max AD', convert_float )
+                apply_on_column( dataFrame, 'Min AD', convert_float )
+    
+                return dataFrame
 
-        # fix HTML: handle multiple tbody inside single table
-        with open( dataFile ) as file:
-            soup = BeautifulSoup(file, "html.parser")
-            for body in soup("tbody"):
-                body.unwrap()
 
-            dataFrame = pandas.read_html( str(soup), flavor="bs4" )
-            dataFrame = dataFrame[0]
-
-            dataFrame.dropna( how='all', inplace=True )
-
-            apply_on_column( dataFrame, 'Kurs AD', convert_float )
-            apply_on_column( dataFrame, 'Zmiana AD', convert_float )
-            apply_on_column( dataFrame, 'Zmianaprocentowa AD', convert_percentage )
-            apply_on_column( dataFrame, 'Otwarcie AD', convert_float )
-            apply_on_column( dataFrame, 'Max AD', convert_float )
-            apply_on_column( dataFrame, 'Min AD', convert_float )
-
-            return dataFrame
-
-    def getDataPath(self):
-        return tmp_dir + "data/bankier/global_indexes_data.html"
-
-    def getDataUrl(self):
-        return "https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy"
+    def __init__(self):
+        dao = GlobalIndexesData.DAO()
+        super().__init__( dao )
 
     def sourceLink(self):
-        return self.getDataUrl()
+        return self.dao.getDataUrl()

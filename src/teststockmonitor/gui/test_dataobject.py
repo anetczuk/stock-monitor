@@ -106,8 +106,8 @@ class DataObjectTest(unittest.TestCase):
     def test_getWalletStock(self):
         dataobject = DataObject()
         dataPath = data.get_data_path( "recent_data_TKO.xls" )
-        dataobject.gpwCurrentSource.stockData.storage = WorksheetStorageMock()
-        dataobject.gpwCurrentSource.stockData.parseWorksheetFromFile( dataPath )
+        dataobject.gpwCurrentSource.stockData.dao.storage = WorksheetStorageMock()
+        dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
         dataobject.wallet.add( "CDR", 1, 300.0 )
         stock = dataobject.getWalletStock()
         self.assertEqual( stock is not None, True )
@@ -117,8 +117,8 @@ class DataObjectTest(unittest.TestCase):
         dataobject.matchTransactionsOldest()
 
         dataPath = data.get_data_path( "akcje_2021-12-21_20-00.xls" )
-        dataobject.gpwCurrentSource.stockData.storage = WorksheetStorageMock()
-        dataobject.gpwCurrentSource.stockData.parseWorksheetFromFile( dataPath )
+        dataobject.gpwCurrentSource.stockData.dao.storage = WorksheetStorageMock()
+        dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
         dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )
@@ -137,8 +137,8 @@ class DataObjectTest(unittest.TestCase):
         dataobject.matchTransactionsBest()
 
         dataPath = data.get_data_path( "akcje_2021-12-21_20-00.xls" )
-        dataobject.gpwCurrentSource.stockData.storage = WorksheetStorageMock()
-        dataobject.gpwCurrentSource.stockData.parseWorksheetFromFile( dataPath )
+        dataobject.gpwCurrentSource.stockData.dao.storage = WorksheetStorageMock()
+        dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
         dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )
@@ -157,8 +157,8 @@ class DataObjectTest(unittest.TestCase):
         dataobject.matchTransactionsRecent()
 
         dataPath = data.get_data_path( "akcje_2021-12-21_20-00.xls" )
-        dataobject.gpwCurrentSource.stockData.storage = WorksheetStorageMock()
-        dataobject.gpwCurrentSource.stockData.parseWorksheetFromFile( dataPath )
+        dataobject.gpwCurrentSource.stockData.dao.storage = WorksheetStorageMock()
+        dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
         dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )

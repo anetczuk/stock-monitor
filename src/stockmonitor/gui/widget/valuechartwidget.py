@@ -90,7 +90,7 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
         for source in intraSources:
-            threads.appendFunction( source.getWorksheet, [forceRefresh] )
+            threads.appendFunction( source.getWorksheetData, [forceRefresh] )
 
         threads.start()
 

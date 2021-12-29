@@ -39,7 +39,7 @@ class GlobalIndexesDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "global_indexes_data.html" )
-        currData = self.dataAccess._parseDataFromFile( filePath )
+        currData = self.dataAccess.dao._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 48)
 

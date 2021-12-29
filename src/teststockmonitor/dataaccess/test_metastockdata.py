@@ -41,7 +41,7 @@ class MetaStockIntradayDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "a_cgl_intraday_2020-08-17.prn" )
-        currData = self.dataAccess._parseDataFromFile( filePath )
+        currData = self.dataAccess.dao._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 77388)
 
@@ -52,8 +52,8 @@ class MetaStockIntradayDataTest(unittest.TestCase):
         def data_path():
             return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
 
-        dataAccess.getDataPath = data_path           # type: ignore
-        dataAccess.storage = WorksheetStorageMock()
+        dataAccess.dao.getDataPath = data_path           # type: ignore
+        dataAccess.dao.storage = WorksheetStorageMock()
 
         currData = dataAccess.getWorksheetData( False )
         self.assertIsNone( currData )

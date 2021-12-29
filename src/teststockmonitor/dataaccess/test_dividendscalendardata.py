@@ -39,7 +39,7 @@ class DividendsCalendarDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "dividends_cal_data.html" )
-        currData = self.dataAccess._parseDataFromFile( filePath )
+        currData = self.dataAccess.dao._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 166)
 

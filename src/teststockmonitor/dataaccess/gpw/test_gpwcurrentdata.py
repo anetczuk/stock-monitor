@@ -43,9 +43,9 @@ class GpwCurrentStockDataTest(unittest.TestCase):
         def data_path():
             return get_data_path( "akcje_2021-12-21_20-00.xls" )
 
-        self.dataAccess.getDataPath = data_path           # type: ignore
-        self.dataAccess.storage = WorksheetStorageMock()
-        self.dataAccess.parseWorksheetFromFile( data_path() )
+        self.dataAccess.dao.getDataPath = data_path           # type: ignore
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
 
     def tearDown(self):
         ## Called after testfunction was executed

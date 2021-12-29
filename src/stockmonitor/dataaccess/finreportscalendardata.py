@@ -27,14 +27,37 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class FinRepsCalendarData( WorksheetData ):
+class FinRepsCalendarData( WorksheetDAO ):
+
+    class DAO( WorksheetData ):
+        """Data access object."""
+        
+        def getDataPath(self):
+            return tmp_dir + "data/strefa/fin_reps_cal_data.html"
+    
+        def getDataUrl(self):
+            url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
+                   "?sort=asc&order=Data%20publikacji" )
+            return url
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+            dataFrame = pandas.read_html( dataFile )
+            dataFrame = dataFrame[0]
+            return dataFrame
+
+
+    def __init__(self):
+        dao = FinRepsCalendarData.DAO()
+        super().__init__( dao )
 
     def sourceLink(self):
         return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
@@ -44,25 +67,32 @@ class FinRepsCalendarData( WorksheetData ):
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
 
-    ## ================================================================
 
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile )
-        dataFrame = dataFrame[0]
-        return dataFrame
+class PublishedFinRepsCalendarData( WorksheetDAO ):
 
-    def getDataPath(self):
-        return tmp_dir + "data/strefa/fin_reps_cal_data.html"
+    class DAO( WorksheetData ):
+        """Data access object."""
 
-    def getDataUrl(self):
-        url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
-               "?sort=asc&order=Data%20publikacji" )
-        return url
+        def getDataPath(self):
+            return tmp_dir + "data/strefa/fin_reps_cal_publ_data.html"
+    
+        def getDataUrl(self):
+            url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
+                   "?sort=desc&order=Data%20publikacji" )
+            return url
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+            dataFrame = pandas.read_html( dataFile )
+            dataFrame = dataFrame[0]
+            dataFrame['Ticker'] = dataFrame['Ticker'].str.replace( '#', '' )
+            return dataFrame
 
 
-class PublishedFinRepsCalendarData( WorksheetData ):
+    def __init__(self):
+        dao = PublishedFinRepsCalendarData.DAO()
+        super().__init__( dao )
 
     def sourceLink(self):
         return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
@@ -72,20 +102,3 @@ class PublishedFinRepsCalendarData( WorksheetData ):
         tickerColumn = dataFrame["Ticker"]
         return tickerColumn.iloc[ rowIndex ]
 
-    ## ================================================================
-
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile )
-        dataFrame = dataFrame[0]
-        dataFrame['Ticker'] = dataFrame['Ticker'].str.replace( '#', '' )
-        return dataFrame
-
-    def getDataPath(self):
-        return tmp_dir + "data/strefa/fin_reps_cal_publ_data.html"
-
-    def getDataUrl(self):
-        url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
-               "?sort=desc&order=Data%20publikacji" )
-        return url

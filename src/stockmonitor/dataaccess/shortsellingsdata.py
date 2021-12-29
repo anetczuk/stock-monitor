@@ -30,7 +30,7 @@ from bs4 import BeautifulSoup
 # import dryscrape
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.synchronized import synchronized
 
 
@@ -67,11 +67,52 @@ def grab_content( url, button ):
 
 
 ## https://rss.knf.gov.pl/RssOuterView/
-class CurrentShortSellingsData( WorksheetData ):
+class CurrentShortSellingsData( WorksheetDAO ):
+
+    class DAO( WorksheetData ):
+        """Data access object."""
+        
+        ## override
+        def getDataPath(self):
+            return tmp_dir + "data/knf/shortsellings-current.html"
+    
+        ## override
+        def getDataUrl(self):
+            url = "https://rss.knf.gov.pl/RssOuterView/"
+            return url
+    
+        ## override
+        def _downloadContent( self, url, filePath ):
+            response = grab_content( url, "j_idt8-j_idt14" )
+            with open( filePath, "w" ) as text_file:
+                text_file.write( response )
+    
+        ## override
+        @synchronized
+        def _parseDataFromFile(self, dataFile) -> DataFrame:
+            _LOGGER.debug( "parsing data file: %s", dataFile )
+            dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+            #_LOGGER.debug( "dataFrame: %s", dataFrame )
+            if len(dataFrame) < 3:
+                _LOGGER.warning( "unable to parse data file: %s", dataFile )
+                return None
+            dataFrame = dataFrame[3]
+    
+    #         print( "raw dataframe:\n", dataFrame )
+            dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
+            dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
+    
+            dataFrame = dataFrame.fillna("-")
+            return dataFrame
+
+
+    def __init__(self):
+        dao = CurrentShortSellingsData.DAO()
+        super().__init__( dao )
 
     ## override
     def sourceLink(self):
-        return self.getDataUrl()
+        return self.dao.getDataUrl()
 
     def getISIN(self, rowIndex):
         dataFrame = self.getWorksheetData()
@@ -79,83 +120,57 @@ class CurrentShortSellingsData( WorksheetData ):
         tickerColumn = dataFrame["ISIN"]
         return tickerColumn.iloc[ rowIndex ]
 
-    ## ================================================================
 
-    ## override
-    def _downloadContent( self, url, filePath ):
-        response = grab_content( url, "j_idt8-j_idt14" )
-        with open( filePath, "w" ) as text_file:
-            text_file.write( response )
-
-    ## override
-    @synchronized
-    def _parseDataFromFile(self, dataFile) -> DataFrame:
-        _LOGGER.debug( "parsing data file: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
-        #_LOGGER.debug( "dataFrame: %s", dataFrame )
-        if len(dataFrame) < 3:
-            _LOGGER.warning( "unable to parse data file: %s", dataFile )
-            return None
-        dataFrame = dataFrame[3]
-
-#         print( "raw dataframe:\n", dataFrame )
-        dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
-        dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
-
-        dataFrame = dataFrame.fillna("-")
-        return dataFrame
-
-    ## override
-    def getDataPath(self):
-        return tmp_dir + "data/knf/shortsellings-current.html"
-
-    ## override
-    def getDataUrl(self):
-        url = "https://rss.knf.gov.pl/RssOuterView/"
-        return url
+## ================================================================
 
 
 ## https://rss.knf.gov.pl/RssOuterView/
-class HistoryShortSellingsData( WorksheetData ):
+class HistoryShortSellingsData( WorksheetDAO ):
+
+    class DAO( WorksheetData ):
+        """Data access object."""
+
+        ## override
+        def getDataPath(self):
+            return tmp_dir + "data/knf/shortsellings-history.html"
+    
+        ## override
+        def getDataUrl(self):
+            url = "https://rss.knf.gov.pl/RssOuterView/"
+            return url
+    
+        ## override
+        def _downloadContent( self, url, filePath ):
+            response = grab_content( url, "j_idt8-j_idt16" )
+            with open( filePath, "w" ) as text_file:
+                text_file.write( response )
+    
+        ## override
+        def _parseDataFromFile(self, dataFile) -> DataFrame:
+            _LOGGER.debug( "parsing data file: %s", dataFile )
+            dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+            if len( dataFrame ) < 3:
+                _LOGGER.warning( "received unexpected data while parsing: %s", dataFile )
+                return None
+            dataFrame = dataFrame[3]
+    
+            dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
+            dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
+    
+            dataFrame = dataFrame.fillna("-")
+            return dataFrame
+
+
+    def __init__(self):
+        dao = HistoryShortSellingsData.DAO()
+        super().__init__( dao )
 
     ## override
     def sourceLink(self):
-        return self.getDataUrl()
+        return self.dao.getDataUrl()
 
     def getISIN(self, rowIndex):
         dataFrame = self.getWorksheetData()
 #         print( "xxx", dataFrame )
         tickerColumn = dataFrame["ISIN"]
         return tickerColumn.iloc[ rowIndex ]
-
-    ## ================================================================
-
-    ## override
-    def _downloadContent( self, url, filePath ):
-        response = grab_content( url, "j_idt8-j_idt16" )
-        with open( filePath, "w" ) as text_file:
-            text_file.write( response )
-
-    ## override
-    def _parseDataFromFile(self, dataFile) -> DataFrame:
-        _LOGGER.debug( "parsing data file: %s", dataFile )
-        dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
-        if len( dataFrame ) < 3:
-            _LOGGER.warning( "received unexpected data while parsing: %s", dataFile )
-            return None
-        dataFrame = dataFrame[3]
-
-        dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
-        dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
-
-        dataFrame = dataFrame.fillna("-")
-        return dataFrame
-
-    ## override
-    def getDataPath(self):
-        return tmp_dir + "data/knf/shortsellings-history.html"
-
-    ## override
-    def getDataUrl(self):
-        url = "https://rss.knf.gov.pl/RssOuterView/"
-        return url

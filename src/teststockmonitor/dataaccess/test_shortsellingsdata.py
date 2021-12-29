@@ -45,7 +45,7 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "shortsellings-current.html" )
-        currData = self.dataAccess._parseDataFromFile( filePath )
+        currData = self.dataAccess.dao._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 5)
 
@@ -69,7 +69,7 @@ class HistoryShortSellingsDataTest(unittest.TestCase):
 
     def test_parseDataFromFile(self):
         filePath = get_data_path( "shortsellings-history.html" )
-        currData = self.dataAccess._parseDataFromFile( filePath )
+        currData = self.dataAccess.dao._parseDataFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 30)
 

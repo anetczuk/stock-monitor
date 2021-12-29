@@ -28,7 +28,7 @@ import json
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.dataaccess.convert import apply_on_column, convert_timestamp_datetime
 from stockmonitor.synchronized import synchronized
 
@@ -36,133 +36,147 @@ from stockmonitor.synchronized import synchronized
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwCurrentStockIntradayData( WorksheetData ):
+class GpwCurrentStockIntradayData( WorksheetDAO ):
     """Handle GPW 1D data chart."""
 
-    def __init__(self, isin, rangeCode=None):
-        super().__init__()
-        if rangeCode is None:
-            rangeCode = "1D"
-        self.isin      = isin
-        self.rangeCode = rangeCode
-        self.dataTime  = datetime.datetime.now()
+    class DAO( WorksheetData ):
+        """Data access object."""
 
-    def sourceLink(self):
-        return "https://www.gpw.pl/spolka?isin=" + self.isin
+        def __init__(self, isin, rangeCode=None):
+            super().__init__()
+            if rangeCode is None:
+                rangeCode = "1D"
+            self.isin      = isin
+            self.rangeCode = rangeCode
+            self.dataTime  = datetime.datetime.now()
 
-    @synchronized
-    def getWorksheetForDate(self, dataDate):
-        self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
-        return self.getWorksheetData( False )
+        def getDataPath(self):
+            modeCode = mode_code( self.rangeCode )
+            currDate = self.dataTime.date()
+            dateStr  = str(currDate)
+            return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
+    
+        def getDataUrl(self):
+            modeCode = mode_code( self.rangeCode )
+    #         currTimestamp = self.dataTime.timestamp()
+            return generate_chart_data_url( self.isin, modeCode)
+    
+        @synchronized
+        def getWorksheetForDate(self, dataDate):
+            self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
+            return self.getWorksheetData( False )
+    
+        def loadWorksheet(self):
+            self.dataTime = datetime.datetime.now()
+            super().loadWorksheet()
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            with open( dataFile ) as f:
+                json_data = json.load(f)
+                json_dict = json_data[0]
+                data_field = json_dict.get("data", None)
+                if data_field is None:
+                    _LOGGER.warning("no 'data' field found")
+                    return None
+    #             print("xxx:", data_field)
+    
+                ## example data
+                #            c      h      l      o      p           t      v
+                # 0     418.4  419.8  418.4  419.8  418.4  1599202800  11141
+                # 1     419.0  419.0  418.1  418.4  419.0  1599202801    334
+                # 2     418.0  419.5  418.0  419.0  418.0  1599202802    130
+    
+                dataFrame = DataFrame( data_field )
+    #             print( "xxx:\n", dataFrame )
+    
+                apply_on_column( dataFrame, 't', convert_timestamp_datetime )
+    
+                if self.rangeCode != "1D":
+                    ## add recent value to range other than "1D" (current)
+                    currData = GpwCurrentStockIntradayData( self.isin )
+                    currData.dataTime = self.dataTime
+                    currWorksheet = currData.getWorksheetData()
+                    if currWorksheet is not None:
+                        lastRow = currWorksheet.iloc[-1]
+                        dataFrame = dataFrame.append( lastRow )
+                        dataFrame.reset_index( drop=True, inplace=True )
+    
+                return dataFrame
+    
+            return None
 
-    ## ================================================================
-
-    def loadWorksheet(self):
-        self.dataTime = datetime.datetime.now()
-        super().loadWorksheet()
-
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        with open( dataFile ) as f:
-            json_data = json.load(f)
-            json_dict = json_data[0]
-            data_field = json_dict.get("data", None)
-            if data_field is None:
-                _LOGGER.warning("no 'data' field found")
-                return None
-#             print("xxx:", data_field)
-
-            ## example data
-            #            c      h      l      o      p           t      v
-            # 0     418.4  419.8  418.4  419.8  418.4  1599202800  11141
-            # 1     419.0  419.0  418.1  418.4  419.0  1599202801    334
-            # 2     418.0  419.5  418.0  419.0  418.0  1599202802    130
-
-            dataFrame = DataFrame( data_field )
-#             print( "xxx:\n", dataFrame )
-
-            apply_on_column( dataFrame, 't', convert_timestamp_datetime )
-
-            if self.rangeCode != "1D":
-                ## add recent value to range other than "1D" (current)
-                currData = GpwCurrentStockIntradayData( self.isin )
-                currData.dataTime = self.dataTime
-                currWorksheet = currData.getWorksheetData()
-                if currWorksheet is not None:
-                    lastRow = currWorksheet.iloc[-1]
-                    dataFrame = dataFrame.append( lastRow )
-                    dataFrame.reset_index( drop=True, inplace=True )
-
-            return dataFrame
-
-        return None
-
-    def getDataPath(self):
-        modeCode = mode_code( self.rangeCode )
-        currDate = self.dataTime.date()
-        dateStr  = str(currDate)
-        return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
-
-    def getDataUrl(self):
-        modeCode = mode_code( self.rangeCode )
-#         currTimestamp = self.dataTime.timestamp()
-        return generate_chart_data_url( self.isin, modeCode)
-
-
-class GpwCurrentIndexIntradayData( WorksheetData ):
 
     def __init__(self, isin, rangeCode=None):
-        super().__init__()
-        if rangeCode is None:
-            rangeCode = "1D"
-        self.isin      = isin
-        self.rangeCode = rangeCode
-        self.dataTime  = datetime.datetime.now()
+        dao = GpwCurrentStockIntradayData.DAO( isin, rangeCode )
+        super().__init__( dao )
 
     def sourceLink(self):
-        return "https://gpwbenchmark.pl/karta-indeksu?isin=" + self.isin
+        return "https://www.gpw.pl/spolka?isin=" + self.dao.isin
 
-    ## ================================================================
 
-    def loadWorksheet(self):
-        self.dataTime = datetime.datetime.now()
-        super().loadWorksheet()
+class GpwCurrentIndexIntradayData( WorksheetDAO ):
 
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        with open( dataFile ) as f:
-            json_data = json.load(f)
-            json_dict = json_data[0]
-            data_field = json_dict.get("data", None)
-            if data_field is None:
-                return None
-#             print("xxx:", data_field)
+    class DAO( WorksheetData ):
+        """Data access object."""
 
-            ## example data
-            #              c        h        l        o        p           t
-            # 0     1765.37  1765.37  1765.37  1765.37  1765.37  1599462009
-            # 1     1768.42  1768.42  1768.42  1768.42  1768.42  1599462015
-            # 2     1768.49  1768.49  1768.49  1768.49  1768.49  1599462030
+        def __init__(self, isin, rangeCode=None):
+            super().__init__()
+            if rangeCode is None:
+                rangeCode = "1D"
+            self.isin      = isin
+            self.rangeCode = rangeCode
+            self.dataTime  = datetime.datetime.now()
+            
+        def getDataPath(self):
+            modeCode = mode_code( self.rangeCode )
+            currDate = self.dataTime.date()
+            dateStr  = str(currDate)
+            return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
+    
+        def getDataUrl(self):
+            modeCode      = mode_code( self.rangeCode )
+    #         currTimestamp = self.dataTime.timestamp()
+            return generate_chart_data_url( self.isin, modeCode)
+    
+        def loadWorksheet(self):
+            self.dataTime = datetime.datetime.now()
+            super().loadWorksheet()
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            with open( dataFile ) as f:
+                json_data = json.load(f)
+                json_dict = json_data[0]
+                data_field = json_dict.get("data", None)
+                if data_field is None:
+                    return None
+    #             print("xxx:", data_field)
+    
+                ## example data
+                #              c        h        l        o        p           t
+                # 0     1765.37  1765.37  1765.37  1765.37  1765.37  1599462009
+                # 1     1768.42  1768.42  1768.42  1768.42  1768.42  1599462015
+                # 2     1768.49  1768.49  1768.49  1768.49  1768.49  1599462030
+    
+                dataFrame = DataFrame( data_field )
+    #             print( "xxx:\n", dataFrame )
+    
+                apply_on_column( dataFrame, 't', convert_timestamp_datetime )
+    
+                return dataFrame
+    
+            return None
 
-            dataFrame = DataFrame( data_field )
-#             print( "xxx:\n", dataFrame )
+    def __init__(self, isin, rangeCode=None):
+        dao = GpwCurrentIndexIntradayData.DAO( isin, rangeCode )
+        super().__init__( dao )
 
-            apply_on_column( dataFrame, 't', convert_timestamp_datetime )
+    def sourceLink(self):
+        return "https://gpwbenchmark.pl/karta-indeksu?isin=" + self.dao.isin
 
-            return dataFrame
 
-        return None
-
-    def getDataPath(self):
-        modeCode = mode_code( self.rangeCode )
-        currDate = self.dataTime.date()
-        dateStr  = str(currDate)
-        return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
-
-    def getDataUrl(self):
-        modeCode      = mode_code( self.rangeCode )
-#         currTimestamp = self.dataTime.timestamp()
-        return generate_chart_data_url( self.isin, modeCode)
+## ================================================================
 
 
 def mode_code( modeText ):

@@ -244,6 +244,30 @@ class WorksheetDataMock( BaseWorksheetData ):
         return self.worksheet
 
 
+## ================================================================================
+
+
+class WorksheetDAO():
+
+    def __init__( self, dao:WorksheetData ):
+        self.dao = dao
+
+    def getDataFrame(self) -> DataFrame:
+        return self.dao.getDataFrame()        
+
+    def getWorksheetData(self, forceRefresh=False) -> DataFrame:
+        return self.dao.getWorksheetData( forceRefresh )
+
+    def loadWorksheet(self):
+        return self.dao.loadWorksheet()
+
+    def downloadData(self):
+        return self.dao.downloadData()        
+
+    def getGrabTimestmp(self) -> datetime.datetime:
+        return self.dao.getGrabTimestmp()
+
+
 # class HtmlWorksheetData( WorksheetData ):
 #
 #     def _parseDataFromFile(self, dataFile: str) -> DataFrame:

@@ -22,6 +22,7 @@
 #
 
 import logging
+import datetime
 
 from typing import List
 
@@ -32,7 +33,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import CurrentDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
-    BaseWorksheetData
+    BaseWorksheetData, WorksheetDAO
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
 from stockmonitor.synchronized import synchronized
@@ -41,8 +42,60 @@ from stockmonitor.synchronized import synchronized
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwCurrentStockData( WorksheetData ):
+class GpwCurrentStockData( WorksheetDAO ):
     """Handle GPW current day data."""
+
+    class DAO( WorksheetData ):
+        """Data access object."""
+    
+        def getDataPath(self):
+            return tmp_dir + "data/gpw/recent_data.xls"
+    
+        def getDataUrl(self):
+            url = ("https://www.gpw.pl/ajaxindex.php"
+                   "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
+            return url
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+            dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
+            dataFrame = dataFrameList[0]
+    
+            ## flatten multi level header (column names)
+            dataFrame.columns = dataFrame.columns.get_level_values(0)
+    
+            ## drop last row containing summary
+            dataFrame.drop( dataFrame.tail(1).index, inplace=True )
+    
+            ## remove trash from column
+            cleanup_column( dataFrame, 'Nazwa' )
+    
+            apply_on_column( dataFrame, 'Kurs odn.', convert_float )
+            apply_on_column( dataFrame, 'Kurs otw.', convert_float )
+            apply_on_column( dataFrame, 'Kurs min.', convert_float )
+            apply_on_column( dataFrame, 'Kurs maks.', convert_float )
+            apply_on_column( dataFrame, 'Kurs ost. trans. / zamk.', convert_float )
+            apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
+    
+            try:
+                apply_on_column( dataFrame, 'Wol. obr. - skumul.', convert_int )
+            except KeyError:
+                _LOGGER.exception( "unable to get values by key" )
+    
+            try:
+                apply_on_column( dataFrame, 'Wart. obr. - skumul.(tys.)', convert_float )
+            except KeyError:
+                _LOGGER.exception( "unable to get values by key" )
+    
+            append_stock_isin( dataFrame, dataFile )
+    
+            return dataFrame
+
+
+    def __init__(self):
+        dao = GpwCurrentStockData.DAO()
+        super().__init__( dao )
 
     def sourceLink(self):
         return "https://www.gpw.pl/akcje"
@@ -197,52 +250,6 @@ class GpwCurrentStockData( WorksheetData ):
 
     ## ======================================================================
 
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
-        dataFrame = dataFrameList[0]
-
-        ## flatten multi level header (column names)
-        dataFrame.columns = dataFrame.columns.get_level_values(0)
-
-        ## drop last row containing summary
-        dataFrame.drop( dataFrame.tail(1).index, inplace=True )
-
-        ## remove trash from column
-        cleanup_column( dataFrame, 'Nazwa' )
-
-        apply_on_column( dataFrame, 'Kurs odn.', convert_float )
-        apply_on_column( dataFrame, 'Kurs otw.', convert_float )
-        apply_on_column( dataFrame, 'Kurs min.', convert_float )
-        apply_on_column( dataFrame, 'Kurs maks.', convert_float )
-        apply_on_column( dataFrame, 'Kurs ost. trans. / zamk.', convert_float )
-        apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
-
-        try:
-            apply_on_column( dataFrame, 'Wol. obr. - skumul.', convert_int )
-        except KeyError:
-            _LOGGER.exception( "unable to get values by key" )
-
-        try:
-            apply_on_column( dataFrame, 'Wart. obr. - skumul.(tys.)', convert_float )
-        except KeyError:
-            _LOGGER.exception( "unable to get values by key" )
-
-        append_stock_isin( dataFrame, dataFile )
-
-        return dataFrame
-
-    def getDataPath(self):
-        return tmp_dir + "data/gpw/recent_data.xls"
-
-    def getDataUrl(self):
-        url = ("https://www.gpw.pl/ajaxindex.php"
-               "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
-        return url
-
-    ## ======================================================================
-
     @staticmethod
     def getColumnIndex(dataType: CurrentDataType):
         switcher = {
@@ -367,62 +374,83 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
         return self.worksheet
 
 
-class GpwMainIndexesData( WorksheetData ):
+class GpwMainIndexesData( WorksheetDAO ):
 
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
-        dataFrame = DataFrame()
-        dataFrame = dataFrame.append( allDataFrames[0] )        ## realtime indexes
-        dataFrame = dataFrame.append( allDataFrames[1] )        ## main indexes
-        convert_indexes_data( dataFrame )
-        append_indexes_isin( dataFrame, dataFile )
-        return dataFrame
+    class DAO( WorksheetData ):
+        """Data access object."""
+    
+        def getDataPath(self):
+            return tmp_dir + "data/gpw/indexes_main_data.html"
+    
+        def getDataUrl(self):
+            url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
+            return url
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+            allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+            dataFrame = DataFrame()
+            dataFrame = dataFrame.append( allDataFrames[0] )        ## realtime indexes
+            dataFrame = dataFrame.append( allDataFrames[1] )        ## main indexes
+            convert_indexes_data( dataFrame )
+            append_indexes_isin( dataFrame, dataFile )
+            return dataFrame
 
-    def getDataPath(self):
-        return tmp_dir + "data/gpw/indexes_main_data.html"
-
-    def getDataUrl(self):
-        url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
-        return url
-
-
-class GpwMacroIndexesData( WorksheetData ):
-
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
-        dataFrame = allDataFrames[0]
-        convert_indexes_data( dataFrame )
-        append_indexes_isin( dataFrame, dataFile )
-        return dataFrame
-
-    def getDataPath(self):
-        return tmp_dir + "data/gpw/indexes_macro_data.html"
-
-    def getDataUrl(self):
-        url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
-        return url
+    def __init__(self):
+        dao = GpwMainIndexesData.DAO()
+        super().__init__( dao )
 
 
-class GpwSectorsIndexesData( WorksheetData ):
+class GpwMacroIndexesData( WorksheetDAO ):
 
-    @synchronized
-    def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-        _LOGGER.debug( "opening workbook: %s", dataFile )
-        allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
-        dataFrame = allDataFrames[0]
-        convert_indexes_data( dataFrame )
-        append_indexes_isin( dataFrame, dataFile )
-        return dataFrame
+    class DAO( WorksheetData ):
+        """Data access object."""
 
-    def getDataPath(self):
-        return tmp_dir + "data/gpw/indexes_sectors_data.html"
+        def getDataPath(self):
+            return tmp_dir + "data/gpw/indexes_macro_data.html"
+    
+        def getDataUrl(self):
+            url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
+            return url
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+            allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+            dataFrame = allDataFrames[0]
+            convert_indexes_data( dataFrame )
+            append_indexes_isin( dataFrame, dataFile )
+            return dataFrame
 
-    def getDataUrl(self):
-        return "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
+    def __init__(self):
+        dao = GpwMacroIndexesData.DAO()
+        super().__init__( dao )
+
+
+class GpwSectorsIndexesData( WorksheetDAO ):
+
+    class DAO( WorksheetData ):
+        """Data access object."""
+    
+        def getDataPath(self):
+            return tmp_dir + "data/gpw/indexes_sectors_data.html"
+    
+        def getDataUrl(self):
+            return "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
+    
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+            _LOGGER.debug( "opening workbook: %s", dataFile )
+            allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
+            dataFrame = allDataFrames[0]
+            convert_indexes_data( dataFrame )
+            append_indexes_isin( dataFrame, dataFile )
+            return dataFrame
+
+    def __init__(self):
+        dao = GpwSectorsIndexesData.DAO()
+        super().__init__( dao )
 
 
 def convert_indexes_data( dataFrame: DataFrame ):

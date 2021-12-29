@@ -48,8 +48,8 @@ class GpwCurrentIntradayProviderMock( GpwCurrentIntradayProvider ):
         def data_path():
             return get_data_path( "cdr.chart.04-09.txt" )
 
-        intradayData.getDataPath = data_path           # type: ignore
-        worksheet = intradayData._parseDataFromFile( data_path() )
+        intradayData.dao.getDataPath = data_path           # type: ignore
+        worksheet = intradayData.dao._parseDataFromFile( data_path() )
         return worksheet
 
 
@@ -61,9 +61,9 @@ class MetaStockIntradayProviderMock( MetaStockIntradayProvider ):
         def data_path():
             return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
 
-        intradayData.getDataPath = data_path           # type: ignore
-        intradayData.storage = WorksheetStorageMock()
-        intradayData.parseWorksheetFromFile( data_path() )
+        intradayData.dao.getDataPath = data_path           # type: ignore
+        intradayData.dao.storage = WorksheetStorageMock()
+        intradayData.dao.parseWorksheetFromFile( data_path() )
         return intradayData.getWorksheetData()
 
 
