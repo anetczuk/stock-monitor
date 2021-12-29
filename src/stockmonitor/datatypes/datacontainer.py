@@ -38,7 +38,7 @@ from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 
 from stockmonitor.datatypes.datatypes import UserContainer,\
     FavData, WalletData, MarkersContainer, MarkerEntry
-from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap,\
+from stockmonitor.datatypes.stocktypes import StockDataWrapper, GpwStockIntradayMap,\
     GpwIndexIntradayMap
 from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory
 from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
@@ -56,7 +56,7 @@ class DataContainer():
     def __init__(self):
         self.userContainer        = UserContainer()                   ## user data
 
-        self.gpwCurrentSource     = StockData( GpwCurrentStockData() )
+        self.gpwCurrentSource     = StockDataWrapper( GpwCurrentStockData() )
         self.gpwStockIntradayData = GpwStockIntradayMap()
         self.gpwIndexIntradayData = GpwIndexIntradayMap()
 

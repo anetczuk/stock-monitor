@@ -248,9 +248,9 @@ class WorksheetDataMock( BaseWorksheetData ):
 ## ================================================================================
 
 
-class WorksheetDAO():
+class BaseWorksheetDAO():
 
-    def __init__( self, dao: WorksheetData ):
+    def __init__( self, dao: BaseWorksheetData ):
         self.dao = dao
 
     def getDataFrame(self) -> DataFrame:
@@ -265,11 +265,8 @@ class WorksheetDAO():
     def loadWorksheet(self):
         return self.dao.loadWorksheet()
 
-    def downloadData(self):
-        return self.dao.downloadData()        
-
-    def getGrabTimestmp(self) -> datetime.datetime:
-        return self.dao.getGrabTimestmp()
+#     def downloadData(self):
+#         return self.dao.downloadData()
 
     def getDataByIndex( self, columnType: StockDataType, rowIndex ):
         colIndex = self.getDataColumnIndex( columnType )

@@ -27,7 +27,7 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
 
@@ -36,7 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## https://www.stockwatch.pl/dywidendy/
-class DividendsCalendarData( WorksheetDAO ):
+class DividendsCalendarData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""

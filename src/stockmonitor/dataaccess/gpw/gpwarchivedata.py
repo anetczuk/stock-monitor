@@ -39,6 +39,9 @@ _LOGGER = logging.getLogger(__name__)
 class GpwArchiveData:
     """Handle GPW archive data."""
 
+    def sourceLink(self):
+        return "https://www.gpw.pl/archiwum-notowan"
+
     def getData(self, dataType: ArchiveDataType, day: datetime.date):
         # _LOGGER.debug( "getting stock data for: %s", day )
         worksheet = self.getWorksheet( day )
@@ -154,6 +157,3 @@ class GpwArchiveData:
             if "Brak danych dla wybranych kryteriów." in f.read():
                 return True
         return False
-
-    def sourceLink(self):
-        return "https://www.gpw.pl/archiwum-notowan"

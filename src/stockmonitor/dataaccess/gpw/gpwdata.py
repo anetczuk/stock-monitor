@@ -29,7 +29,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.convert import convert_float, convert_int, cleanup_column, apply_on_column
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.synchronized import synchronized
 
 
@@ -37,7 +37,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## https://www.gpw.pl/wskazniki
-class GpwIndicatorsData( WorksheetDAO ):
+class GpwIndicatorsData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
@@ -94,7 +94,7 @@ class GpwIndicatorsData( WorksheetDAO ):
 
 
 ## http://infostrefa.com/infostrefa/pl/spolki
-class GpwIsinMapData( WorksheetDAO ):
+class GpwIsinMapData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""

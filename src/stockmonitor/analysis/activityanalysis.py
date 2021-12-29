@@ -33,7 +33,7 @@ import numpy
 
 from stockmonitor import persist
 from stockmonitor.analysis.stockanalysisdata import VarCalc, SourceDataLoader, StatsDict
-from stockmonitor.analysis.stockanalysisdata import StockData
+from stockmonitor.analysis.stockanalysisdata import StockAnalysisData
 from stockmonitor.analysis.stockanalysis import dates_to_string
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
@@ -374,11 +374,11 @@ class ActivityAnalysis:
 
     ## returns Dict[ name, isin ]
     def getISINForDate( self, toDay ):
-        dataProvider = StockData()
+        dataProvider = StockAnalysisData()
         return dataProvider.getISINForDate( toDay )
 
 #     def getCurrent( self ):
-#         dataProvider = StockData()
+#         dataProvider = StockAnalysisData()
 #         return dataProvider.getISINForDate( toDay )
 
 

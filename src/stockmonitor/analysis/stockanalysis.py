@@ -36,7 +36,7 @@ from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import ArchiveDataType
 from stockmonitor.analysis.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader,\
     VarCalc
-from stockmonitor.analysis.stockanalysisdata import StockData
+from stockmonitor.analysis.stockanalysisdata import StockAnalysisData
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ class StockAnalysis(object):
     logger: logging.Logger = None
 
     def __init__(self):
-        self.data = StockData()
+        self.data = StockAnalysisData()
         self.isinDict = None
 
         self.minValue  = None

@@ -30,7 +30,7 @@ from bs4 import BeautifulSoup
 # import dryscrape
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
 
@@ -68,7 +68,7 @@ def grab_content( url, button ):
 
 
 ## https://rss.knf.gov.pl/RssOuterView/
-class CurrentShortSellingsData( WorksheetDAO ):
+class CurrentShortSellingsData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
@@ -134,7 +134,7 @@ class CurrentShortSellingsData( WorksheetDAO ):
 
 
 ## https://rss.knf.gov.pl/RssOuterView/
-class HistoryShortSellingsData( WorksheetDAO ):
+class HistoryShortSellingsData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""

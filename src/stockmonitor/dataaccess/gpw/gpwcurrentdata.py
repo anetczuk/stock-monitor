@@ -33,7 +33,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
-    BaseWorksheetData, WorksheetDAO
+    BaseWorksheetData, BaseWorksheetDAO
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
 from stockmonitor.synchronized import synchronized
@@ -42,7 +42,7 @@ from stockmonitor.synchronized import synchronized
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwCurrentStockData( WorksheetDAO ):
+class GpwCurrentStockData( BaseWorksheetDAO ):
     """Handle GPW current day data."""
 
     class DAO( WorksheetData ):
@@ -99,6 +99,9 @@ class GpwCurrentStockData( WorksheetDAO ):
 
     def sourceLink(self):
         return "https://www.gpw.pl/akcje"
+
+    def getGrabTimestmp(self) -> datetime.datetime:
+        return self.dao.getGrabTimestmp()
 
     def getStockData(self, tickerList: List[str] = None) -> DataFrame:
         if tickerList is None:
@@ -318,7 +321,7 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
         return "https://www.money.pl/gielda/indeksy_gpw/%s/" % value
 
 
-class GpwMainIndexesData( WorksheetDAO ):
+class GpwMainIndexesData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
@@ -346,7 +349,7 @@ class GpwMainIndexesData( WorksheetDAO ):
         super().__init__( dao )
 
 
-class GpwMacroIndexesData( WorksheetDAO ):
+class GpwMacroIndexesData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
@@ -372,7 +375,7 @@ class GpwMacroIndexesData( WorksheetDAO ):
         super().__init__( dao )
 
 
-class GpwSectorsIndexesData( WorksheetDAO ):
+class GpwSectorsIndexesData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""

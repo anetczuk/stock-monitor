@@ -28,7 +28,7 @@ import json
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.dataaccess.convert import apply_on_column, convert_timestamp_datetime
 from stockmonitor.synchronized import synchronized
 
@@ -36,7 +36,7 @@ from stockmonitor.synchronized import synchronized
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwCurrentStockIntradayData( WorksheetDAO ):
+class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
     """Handle GPW 1D data chart."""
 
     class DAO( WorksheetData ):
@@ -115,7 +115,7 @@ class GpwCurrentStockIntradayData( WorksheetDAO ):
         return "https://www.gpw.pl/spolka?isin=" + self.dao.isin
 
 
-class GpwCurrentIndexIntradayData( WorksheetDAO ):
+class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""

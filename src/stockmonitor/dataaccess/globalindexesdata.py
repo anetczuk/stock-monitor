@@ -29,7 +29,7 @@ from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.dataaccess.convert import convert_float, convert_percentage,\
     apply_on_column
 from stockmonitor.synchronized import synchronized
@@ -38,7 +38,7 @@ from stockmonitor.synchronized import synchronized
 _LOGGER = logging.getLogger(__name__)
 
 
-class GlobalIndexesData( WorksheetDAO ):
+class GlobalIndexesData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""

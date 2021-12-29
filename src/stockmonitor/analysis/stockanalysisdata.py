@@ -37,7 +37,7 @@ from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayD
 _LOGGER = logging.getLogger(__name__)
 
 
-class StockData(object):
+class StockAnalysisData(object):
     """Abstraction for stock data."""
 
     logger: logging.Logger = None
@@ -68,7 +68,7 @@ class StockData(object):
         return self.dataProvider.sourceLink()
 
 
-StockData.logger = _LOGGER.getChild(StockData.__name__)
+StockAnalysisData.logger = _LOGGER.getChild(StockAnalysisData.__name__)
 
 
 class CounterDict:

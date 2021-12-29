@@ -33,7 +33,7 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.synchronized import synchronized
 
 
@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## https://info.bossa.pl/index.jsp?layout=intraday&page=1&news_cat_id=875&dirpath=/mstock/daily/
-class MetaStockIntradayData( WorksheetDAO ):
+class MetaStockIntradayData( BaseWorksheetDAO ):
 # class MetaStockIntradayData( BaseWorksheetData ):
 
     class DAO( WorksheetData ):

@@ -36,7 +36,7 @@ from stockmonitor.datatypes.datatypes import FavData, WalletData,\
     TransactionMatchMode, MarkersContainer,\
     MarkerEntry
 from stockmonitor.datatypes.datacontainer import DataContainer
-from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap
+from stockmonitor.datatypes.stocktypes import StockDataWrapper, GpwStockIntradayMap
 
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
@@ -66,14 +66,14 @@ _LOGGER = logging.getLogger(__name__)
 READONLY_FAV_GROUPS = ["All", "Wallet", "Markers"]
 
 
-def instance_download_data( worksheet ):
-    """Wrapper/alias for object.
-
-    Alias for instance method that allows the method to be called in a
-    multiprocessing pool
-    """
-    worksheet.downloadData()
-    return
+# def instance_download_data( worksheet ):
+#     """Wrapper/alias for object.
+# 
+#     Alias for instance method that allows the method to be called in a
+#     multiprocessing pool
+#     """
+#     worksheet.downloadData()
+#     return
 
 
 def heavy_comp( limit ):
@@ -164,7 +164,7 @@ class DataObject( QObject ):
         self.stockHeadersChanged.emit()
 
     @property
-    def gpwCurrentSource(self) -> StockData:
+    def gpwCurrentSource(self) -> StockDataWrapper:
         return self.dataContainer.gpwCurrentSource
 
     @property

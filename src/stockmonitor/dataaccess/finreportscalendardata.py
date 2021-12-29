@@ -27,7 +27,7 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
 
@@ -35,7 +35,7 @@ from stockmonitor.dataaccess.datatype import StockDataType
 _LOGGER = logging.getLogger(__name__)
 
 
-class FinRepsCalendarData( WorksheetDAO ):
+class FinRepsCalendarData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
@@ -78,7 +78,7 @@ class FinRepsCalendarData( WorksheetDAO ):
         return colIndex
 
 
-class PublishedFinRepsCalendarData( WorksheetDAO ):
+class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""

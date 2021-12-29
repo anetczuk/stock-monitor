@@ -32,7 +32,8 @@ from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayD
 _LOGGER = logging.getLogger(__name__)
 
 
-class StockData():
+class StockDataWrapper():
+    """Wrapper containing data custom headers."""
 
     def __init__( self, data: 'WorksheetData' = None ):
         self.stockData: 'WorksheetData'       = data
