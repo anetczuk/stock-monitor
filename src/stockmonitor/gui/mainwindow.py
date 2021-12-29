@@ -341,6 +341,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
             w.setWindowIconTheme( theme )
 
     def updateTrayIndicator(self):
+        _LOGGER.debug("updating tray indicator")
         currDateTime = datetime.datetime.now()
         weekDay = currDateTime.weekday()                               # 0 for Monday
         if weekDay == 5 or weekDay == 6:
