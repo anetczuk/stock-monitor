@@ -362,7 +362,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.data.gpwIndexesData.loadWorksheet()                        ## force data refresh
         isin = "PL9999999987"                                           ## wig20
-        recentChange = self.data.gpwIndexesData.getRecentChange( isin )
+        recentChange = self.data.gpwIndexesData.getRecentChangeByIsin( isin )
         indicateColor = None
         value = ""
         if recentChange is None:

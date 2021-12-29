@@ -25,7 +25,7 @@ import unittest
 # import datetime
 
 from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.datatype import CurrentDataType
+from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
 from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
@@ -57,10 +57,15 @@ class GpwCurrentStockDataTest(unittest.TestCase):
         self.assertGreaterEqual(dataLen, 395)
         self.assertIsNotNone( currData )
 
-    def test_getData(self):
-        currData = self.dataAccess.getData( CurrentDataType.TICKER )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 395)      ## one removes, because if summary
+#     def test_getWorksheet_micro(self):
+#         startTime = datetime.datetime.now()
+#         self.dataAccess.getWorksheetData( True )
+#         end1Time = datetime.datetime.now()
+#         self.dataAccess.loadWorksheet( False )
+#         end2Time = datetime.datetime.now()
+#         diff1 = end1Time - startTime
+#         diff2 = end2Time - end1Time
+#         print( "load time:", diff1, diff2 )
 
     def test_getStockData_None(self):
         currData = self.dataAccess.getStockData()
@@ -72,15 +77,75 @@ class GpwCurrentStockDataTest(unittest.TestCase):
         dataLen = len( currData )
         self.assertEqual(dataLen, 2)
 
-#     def test_getWorksheet_micro(self):
-#         startTime = datetime.datetime.now()
-#         self.dataAccess.getWorksheetData( True )
-#         end1Time = datetime.datetime.now()
-#         self.dataAccess.loadWorksheet( False )
-#         end2Time = datetime.datetime.now()
-#         diff1 = end1Time - startTime
-#         diff2 = end2Time - end1Time
-#         print( "load time:", diff1, diff2 )
+    def test_getData(self):
+        currData = self.dataAccess.getData( StockDataType.TICKER )
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 395)      ## one removed, because of summary
+# 
+    def test_getRowByTicker(self):
+        rowData = self.dataAccess.getRowByTicker( "ZWC" )
+#         print( rowData )
+        nameIndex = self.dataAccess.getDataColumnIndex( StockDataType.STOCK_NAME )
+        tickerIndex = self.dataAccess.getDataColumnIndex( StockDataType.TICKER )
+        isinIndex = self.dataAccess.getDataColumnIndex( StockDataType.ISIN )
+        
+        self.assertEqual( rowData[nameIndex], "ZYWIEC" )
+        self.assertEqual( rowData[tickerIndex], "ZWC" )
+        self.assertEqual( rowData[isinIndex], "PLZYWIC00016" )
+
+    def test_getTickerField(self):
+        rowData = self.dataAccess.getTickerField( 4 )
+        self.assertEqual( rowData, "ABE" )
+
+    def test_getTickerFromIsin(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getTickerFromIsin( "PLZYWIC00016" )
+        self.assertEqual( rowData, "ZWC" )
+
+    def test_getTickerFromIsin_Invalid(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getTickerFromIsin( "XXX" )
+        self.assertEqual( rowData, None )
+
+    def test_getTickerFromName(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getTickerFromName( "ZYWIEC" )
+        self.assertEqual( rowData, "ZWC" )
+
+    def test_getStockIsinFromTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getStockIsinFromTicker( "ZWC" )
+        self.assertEqual( rowData, "PLZYWIC00016" )
+
+    def test_getNameFromTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getNameFromTicker( "ZWC" )
+        self.assertEqual( rowData, "ZYWIEC" )
+
+    def test_getNameFromIsin(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getNameFromIsin( "PLZYWIC00016" )
+        self.assertEqual( rowData, "ZYWIEC" )
+
+    def test_getTickerFieldByName(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getTickerFieldByName( "ZYWIEC" )
+        self.assertEqual( rowData, "ZWC" )
+
+    def test_getRecentValueByTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getRecentValueByTicker( "11B" )
+        self.assertEqual( rowData, 541.0 )
+
+    def test_getRecentChangeByTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getRecentChangeByTicker( "11B" )
+        self.assertEqual( rowData, 0.37 )
+
+    def test_getReferenceValueByTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getReferenceValueByTicker( "11B" )
+        self.assertEqual( rowData, 539.0 )
 
 
 # =================================================================

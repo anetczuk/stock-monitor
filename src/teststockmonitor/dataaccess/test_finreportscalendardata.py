@@ -24,7 +24,9 @@
 import unittest
 from teststockmonitor.data import get_data_path
 
-from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData
+from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData,\
+    PublishedFinRepsCalendarData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class FinRepsCalendarDataTest(unittest.TestCase):
@@ -33,17 +35,51 @@ class FinRepsCalendarDataTest(unittest.TestCase):
         ## Called before testfunction is executed
         self.dataAccess = FinRepsCalendarData()
 
+        def data_path():
+            return get_data_path( "fin_reps_cal_data.html" )
+
+        self.dataAccess.dao.getDataPath = data_path           # type: ignore
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
+
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_parseDataFromFile(self):
-        filePath = get_data_path( "fin_reps_cal_data.html" )
-        currData = self.dataAccess.dao._parseDataFromFile( filePath )
+    def test_getWorksheetData(self):
+        currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
         self.assertEqual(dataLen, 783)
 
-#     def test_getWorksheetData(self):
-#         currData = self.dataAccess.getWorksheetData()
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 783)
+    def test_getTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getTicker( 3 )
+        self.assertEqual( rowData, "GTC" )
+
+
+class PublishedFinRepsCalendarDataTest(unittest.TestCase):
+
+    def setUp(self):
+        ## Called before testfunction is executed
+        self.dataAccess = PublishedFinRepsCalendarData()
+
+        def data_path():
+            return get_data_path( "fin_reps_cal_publ_data.html" )
+
+        self.dataAccess.dao.getDataPath = data_path           # type: ignore
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_getWorksheetData(self):
+        currData = self.dataAccess.getWorksheetData()
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 3)
+
+    def test_getTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getTicker( 0 )
+        self.assertEqual( rowData, "IPO" )

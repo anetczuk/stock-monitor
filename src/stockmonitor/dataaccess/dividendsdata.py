@@ -29,6 +29,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.synchronized import synchronized
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -64,16 +65,24 @@ class DividendsCalendarData( WorksheetDAO ):
         return self.dao.getDataUrl()
 
     def getStockName(self, rowIndex):
-        dataFrame = self.getWorksheetData()
-        tickerColumn = dataFrame["Spółka"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByIndex( StockDataType.STOCK_NAME, rowIndex)
 
     def getLawDate(self, rowIndex):
-        dataFrame = self.getWorksheetData()
-        dateColumn = dataFrame["Notowanie bez dyw."]
-        dateString = dateColumn.iloc[ rowIndex ]
+        dateString = self.getDataByIndex( StockDataType.NO_DIV_DAY, rowIndex)
         try:
             dateObject = datetime.datetime.strptime(dateString, '%Y-%m-%d').date()
             return dateObject
         except ValueError:
             return datetime.date( 1, 1, 1 )
+        
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        switcher = {
+            StockDataType.STOCK_NAME: 0,
+            StockDataType.NO_DIV_DAY: 5
+        }
+        colIndex = switcher.get(columnType, None)
+        if colIndex is None:
+            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+        return colIndex

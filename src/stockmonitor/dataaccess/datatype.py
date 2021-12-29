@@ -63,10 +63,11 @@ class ArchiveDataType(Enum):
 
 
 @unique
-class CurrentDataType(Enum):
-    NAME = ()               ## nazwa
-    ISIN = ()               ## numer ISIN
-    TICKER = ()             ## skrot
+class StockDataType(Enum):
+    FULL_NAME = ()          ## nazwa (e.g. 4Fun Media SA)
+    STOCK_NAME = ()         ## nazwa (e.g. 4FUNMEDIA)
+    ISIN = ()               ## numer ISIN (e.g. PL4FNMD00013)
+    TICKER = ()             ## skrot (always 3 letters, e.g. 11B or ZRE)
     CURRENCY = ()           ## waluta
     RECENT_TRANS_TIME = ()  ## czas ostatniej transakcji
     REFERENCE = ()          ## kurs odniesienia
@@ -75,7 +76,9 @@ class CurrentDataType(Enum):
     MIN = ()                ## kurs minimalny
     MAX = ()                ## kurs maksymalny
     RECENT_TRANS = ()       ## kurs ostatniej transakcji
-    CHANGE_TO_REF = ()      ## zmiana do kursu odniesienia
+    CHANGE_TO_REF = ()      ## zmiana do kursu odniesienia (wyrazona w %)
+    
+    NO_DIV_DAY = ()         ## Notowanie bez dywidendy
 
 #     CLOSING = ()            ## kurs zamkniecia
 #     CHANGE = ()             ## zmiana kursu

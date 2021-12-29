@@ -31,7 +31,7 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.datatype import CurrentDataType
+from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
     BaseWorksheetData, WorksheetDAO
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
@@ -106,11 +106,11 @@ class GpwCurrentStockData( WorksheetDAO ):
         dataFrame = self.getWorksheetData()
         if dataFrame is None:
             return None
-        colIndex = self.getColumnIndex( CurrentDataType.TICKER )
+        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.TICKER )
         retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( tickerList ) ]
         return retRows
 
-    def getData(self, dataType: CurrentDataType):
+    def getData(self, dataType: StockDataType):
 #         _LOGGER.debug( "getting max from date: %s", day )
         worksheet = self.getWorksheetData()
         if worksheet is None:
@@ -122,110 +122,58 @@ class GpwCurrentStockData( WorksheetDAO ):
         return self.extractColumn( worksheet, colIndex )
 
     def getRowByTicker(self, ticker):
-        dataFrame = self.getWorksheetData()
-        if dataFrame is None:
-            _LOGGER.warning("no worksheet found")
-            return None
-        colIndex = self.getColumnIndex( CurrentDataType.TICKER )
-        retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex] == ticker ]
-        return retRows.squeeze()            ## convert 1 row dataframe to series
+        return self.getRowByValue( StockDataType.TICKER, ticker )
 
     def getTickerField(self, rowIndex: int):
-        dataFrame = self.getWorksheetData()
-        if dataFrame is None:
-            return None
-        return self.getTickerFieldFromData( dataFrame, rowIndex )
+        return self.getDataByIndex( StockDataType.TICKER, rowIndex )
 
     def getTickerFromIsin(self, stockIsin):
-        dataFrame = self.getWorksheetData()
-        rowIndexes = dataFrame[ dataFrame["isin"] == stockIsin ].index.values
-        if rowIndexes is None or len(rowIndexes) < 1:
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["Skrót"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.ISIN, stockIsin, StockDataType.TICKER )
 
     def getTickerFromName(self, stockName):
-        dataFrame = self.getWorksheetData()
-        if dataFrame is None:
-            return None
-        rowIndexes = dataFrame[ dataFrame["Nazwa"] == stockName ].index.values
-        if rowIndexes is None or len(rowIndexes) < 1:
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["Skrót"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.STOCK_NAME, stockName, StockDataType.TICKER )
 
     def getStockIsinFromTicker(self, ticker):
-        dataFrame = self.getWorksheetData()
-        reducedFrame = dataFrame[ dataFrame["Skrót"] == ticker ]
-        rowIndexes = reducedFrame.index.values
-        if rowIndexes is None or len(rowIndexes) < 1:
-            _LOGGER.warning("no isin found for ticker %s\n%s", ticker, dataFrame)
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["isin"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.ISIN )
 
     def getNameFromTicker(self, ticker):
-        dataFrame = self.getWorksheetData()
-        if dataFrame is None:
-            return None
-        rowIndexes = dataFrame[ dataFrame["Skrót"] == ticker ].index.values
-        if rowIndexes is None or len(rowIndexes) < 1:
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["Nazwa"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.STOCK_NAME )
 
     def getNameFromIsin(self, stockIsin):
-        dataFrame = self.getWorksheetData()
-        rowIndexes = dataFrame[ dataFrame["isin"] == stockIsin ].index.values
-        if rowIndexes is None or len(rowIndexes) < 1:
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["Nazwa"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.ISIN, stockIsin, StockDataType.STOCK_NAME )
 
     def getTickerFieldByName(self, stockName):
-        dataFrame = self.getWorksheetData()
-        if dataFrame is None:
-            return None
-        nameIndex = self.getColumnIndex( CurrentDataType.NAME )
-        tickerIndex = self.getColumnIndex( CurrentDataType.TICKER )
-        retRows = dataFrame.loc[ dataFrame.iloc[:, nameIndex] == stockName ]
-        if retRows.shape[0] > 0:
-            return retRows.iloc[0, tickerIndex]
-        return None
+        return self.getDataByValue( StockDataType.STOCK_NAME, stockName, StockDataType.TICKER )
 
-    def getTickerFieldFromData(self, dataFrame: DataFrame, rowIndex: int):
-        colIndex = self.getColumnIndex( CurrentDataType.TICKER )
+    def getRecentValueByTicker(self, ticker):
+        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.RECENT_TRANS )
+
+    def getRecentChangeByTicker(self, ticker):
+        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.CHANGE_TO_REF )
+
+    def getReferenceValueByTicker(self, ticker):
+        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.REFERENCE )
+
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+#         switcher = {
+#             StockDataType.STOCK_NAME: 0,
+#             StockDataType.NO_DIV_DAY: 5
+#         }
+#         colIndex = switcher.get(columnType, None)
+
+        colIndex = self.getColumnIndex( columnType )
         if colIndex is None:
-            return None
-        return dataFrame.iloc[rowIndex, colIndex]
-
-    def getRecentValue(self, ticker):
-        row = self.getRowByTicker( ticker )
-        if row is None or len(row) < 1:
-            return None
-        return row.iloc[11]
-
-    def getRecentChange(self, ticker):
-        row = self.getRowByTicker( ticker )
-        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
-        return row.iloc[ dataIndex ]
-
-    def getReferenceValue(self, ticker):
-        row = self.getRowByTicker( ticker )
-        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.REFERENCE )
-        return row.iloc[ dataIndex ]
+            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+        return colIndex
 
     # ==========================================================================
 
     def extractColumn(self, worksheet, colIndex):
         # name col: 1
         # rows are indexed by 0, first row is header
-        nameIndex = self.getColumnIndex( CurrentDataType.NAME )
+        nameIndex = GpwCurrentStockData.getColumnIndex( StockDataType.STOCK_NAME )
 #         ret = dict()
 #         nrows = worksheet.shape[0]
 #         for row in range(1, nrows):
@@ -251,33 +199,34 @@ class GpwCurrentStockData( WorksheetDAO ):
     ## ======================================================================
 
     @staticmethod
-    def getColumnIndex(dataType: CurrentDataType):
+    def getColumnIndex(dataType: StockDataType):
         switcher = {
-            CurrentDataType.NAME:               2,
-            CurrentDataType.ISIN:               3,
-            CurrentDataType.TICKER:             4,
-            CurrentDataType.CURRENCY:           5,
-            CurrentDataType.RECENT_TRANS_TIME:  6,
-            CurrentDataType.REFERENCE:          7,
-            CurrentDataType.TKO:                8,
-            CurrentDataType.OPENING:            9,
-            CurrentDataType.MIN:               10,
-            CurrentDataType.MAX:               11,
-            CurrentDataType.RECENT_TRANS:      12,
-            CurrentDataType.CHANGE_TO_REF:     14
+            StockDataType.STOCK_NAME:         2,
+            StockDataType.ISIN:               3,
+            StockDataType.TICKER:             4,
+            StockDataType.CURRENCY:           5,
+            StockDataType.RECENT_TRANS_TIME:  6,
+            StockDataType.REFERENCE:          7,
+            StockDataType.TKO:                8,
+            StockDataType.OPENING:            9,
+            StockDataType.MIN:               10,
+            StockDataType.MAX:               11,
+            StockDataType.RECENT_TRANS:      12,
+            StockDataType.CHANGE_TO_REF:     14
         }
         return switcher.get(dataType, None)
 
+    ## returns value of recent transaction, if no transaction then returns reference vale
     @staticmethod
     def unitPrice( dataRow ):
         ## current value
-        currUnitValueIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        currUnitValueIndex = GpwCurrentStockData.getColumnIndex( StockDataType.RECENT_TRANS )
         currUnitValueRaw = dataRow.iloc[currUnitValueIndex]
         if currUnitValueRaw != "-":
             return float( currUnitValueRaw )
 
         ## TKO
-#        tkoIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.TKO )
+#        tkoIndex = GpwCurrentStockData.getColumnIndex( StockDataType.TKO )
 #        tkoValueRaw = dataRow.iloc[tkoIndex]
 #        if tkoValueRaw != "-":
 #            return float( tkoValueRaw )
@@ -288,7 +237,7 @@ class GpwCurrentStockData( WorksheetDAO ):
     @staticmethod
     def unitReferencePrice( dataRow ):
         ## reference value
-        refValueIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.REFERENCE )
+        refValueIndex = GpwCurrentStockData.getColumnIndex( StockDataType.REFERENCE )
         refValueRaw = dataRow.iloc[refValueIndex]
         if refValueRaw != "-":
             return float( refValueRaw )
@@ -308,21 +257,28 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
         self.dataList.append( GpwMacroIndexesData() )
         self.dataList.append( GpwSectorsIndexesData() )
 
+    def sourceLink(self):
+        return "https://gpwbenchmark.pl/notowania"
+
+    ## override
+    def getDataFrame(self) -> DataFrame:
+        return self.worksheet
+
     def getNameFromIsin(self, isin):
         row = self.getRowByIsin( isin )
-        colIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.NAME )
+        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.STOCK_NAME )
         return row.iloc[ colIndex ]
 
-    def getRecentValue(self, isin):
+    def getRecentValueByIsin(self, isin):
         row = self.getRowByIsin( isin )
-        colIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.RECENT_TRANS )
         return row.iloc[ colIndex ]
 
-    def getRecentChange(self, isin):
+    def getRecentChangeByIsin(self, isin):
         row = self.getRowByIsin( isin )
         if row is None or row.empty:
             return None
-        colIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
         return row.iloc[ colIndex ]
 
     def getRowByIsin(self, isin):
@@ -330,7 +286,7 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
         if dataFrame is None or dataFrame.empty:
             _LOGGER.warning("no worksheet found")
             return None
-        colIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.ISIN )
+        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.ISIN )
         isinColumn = dataFrame.iloc[ :, colIndex ]
         retRows = dataFrame.loc[ isinColumn == isin ]
         return retRows.squeeze()            ## convert 1 row dataframe to series
@@ -338,6 +294,15 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
     def downloadData(self):
         for dataAccess in self.dataList:
             dataAccess.downloadData()
+
+    ## override
+    @synchronized
+    def loadWorksheet(self):
+        self.worksheet = DataFrame()
+        for dataAccess in self.dataList:
+            dataAccess.loadWorksheet()
+            dataFrame = dataAccess.getDataFrame()
+            self.worksheet = self.worksheet.append( dataFrame )
 
     ## ======================================================================
 
@@ -352,26 +317,6 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
     def getMoneyLinkFromName(self, name):
         value = name.replace('-', '_')
         return "https://www.money.pl/gielda/indeksy_gpw/%s/" % value
-
-    ## ======================================================================
-
-    def sourceLink(self):
-        return "https://gpwbenchmark.pl/notowania"
-
-    ## ======================================================================
-
-    ## override
-    @synchronized
-    def loadWorksheet(self):
-        self.worksheet = DataFrame()
-        for dataAccess in self.dataList:
-            dataAccess.loadWorksheet()
-            dataFrame = dataAccess.getDataFrame()
-            self.worksheet = self.worksheet.append( dataFrame )
-
-    ## override
-    def getDataFrame(self) -> DataFrame:
-        return self.worksheet
 
 
 class GpwMainIndexesData( WorksheetDAO ):

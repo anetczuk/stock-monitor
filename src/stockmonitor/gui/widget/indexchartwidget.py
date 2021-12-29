@@ -124,8 +124,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         timeColumn   = dataFrame["t"]
         priceColumn  = dataFrame["c"]
 
-        value     = currentSource.getRecentValue( self.isin )
-        change    = currentSource.getRecentChange( self.isin )
+        value     = currentSource.getRecentValueByIsin( self.isin )
+        change    = currentSource.getRecentChangeByIsin( self.isin )
         timestamp = timeColumn.iloc[-1]
 
         timeData = list(timeColumn)

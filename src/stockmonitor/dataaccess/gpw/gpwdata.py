@@ -27,6 +27,7 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
+from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.convert import convert_float, convert_int, cleanup_column, apply_on_column
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.synchronized import synchronized
@@ -75,9 +76,18 @@ class GpwIndicatorsData( WorksheetDAO ):
         return self.dao.getDataUrl()
 
     def getStockIsin(self, rowIndex):
-        dataFrame = self.getWorksheetData()
-        tickerColumn = dataFrame["Kod"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByIndex( StockDataType.ISIN, rowIndex)
+
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        switcher = {
+            StockDataType.ISIN: 1
+        }
+        colIndex = switcher.get(columnType, None)
+        if colIndex is None:
+            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+        return colIndex
 
 
 ## ==========================================================================
@@ -110,39 +120,27 @@ class GpwIsinMapData( WorksheetDAO ):
         super().__init__( dao )
 
     def getTickerFromIsin(self, stockIsin):
-        dataFrame = self.getWorksheetData()
-        rowIndexes = dataFrame[ dataFrame["ISIN"] == stockIsin ].index.values
-        if not rowIndexes:
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["Ticker"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.ISIN, stockIsin, StockDataType.TICKER )
 
     def getTickerFromName(self, stockName):
-        dataFrame = self.getWorksheetData()
-        rowIndexes = dataFrame[ dataFrame["Nazwa giełdowa"] == stockName ].index.values
-        if not rowIndexes:
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["Ticker"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.STOCK_NAME, stockName, StockDataType.TICKER )
 
     def getStockIsinFromTicker(self, ticker):
-        dataFrame = self.getWorksheetData()
-        rowIndexes = dataFrame[ dataFrame["Ticker"] == ticker ].index.values
-        if not rowIndexes:
-            _LOGGER.warning("no isin found for ticker %s", ticker)
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["ISIN"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.ISIN )
 
     def getNameFromTicker(self, ticker):
-        dataFrame = self.getWorksheetData()
-        rowIndexes = dataFrame[ dataFrame["Ticker"] == ticker ].index.values
-        if not rowIndexes:
-            return None
-        rowIndex = rowIndexes[0]
-        tickerColumn = dataFrame["Emitent"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.FULL_NAME )
 
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        switcher = {
+            StockDataType.FULL_NAME:  0,
+            StockDataType.STOCK_NAME: 1,
+            StockDataType.TICKER:     2,
+            StockDataType.ISIN:       3
+        }
+        colIndex = switcher.get(columnType, None)
+        if colIndex is None:
+            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+        return colIndex

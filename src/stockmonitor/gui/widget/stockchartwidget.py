@@ -137,10 +137,10 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         volumeColumn = dataFrame["v"]
 #         print( "got intraday data:", priceColumn )
 
-        price     = currentSource.getRecentValue( self.ticker )
-        change    = currentSource.getRecentChange( self.ticker )
+        price     = currentSource.getRecentValueByTicker( self.ticker )
+        change    = currentSource.getRecentChangeByTicker( self.ticker )
         volumen   = volumeColumn.iloc[-1]
-        refPrice  = currentSource.getReferenceValue( self.ticker )
+        refPrice  = currentSource.getReferenceValueByTicker( self.ticker )
         timestamp = timeColumn.iloc[-1]
 
         timeData = list(timeColumn)

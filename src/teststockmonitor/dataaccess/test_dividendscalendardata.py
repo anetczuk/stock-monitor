@@ -24,7 +24,9 @@
 import unittest
 from teststockmonitor.data import get_data_path
 
+import datetime
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class DividendsCalendarDataTest(unittest.TestCase):
@@ -33,17 +35,26 @@ class DividendsCalendarDataTest(unittest.TestCase):
         ## Called before testfunction is executed
         self.dataAccess = DividendsCalendarData()
 
+        def data_path():
+            return get_data_path( "dividends_cal_data.html" )
+
+        self.dataAccess.dao.getDataPath = data_path           # type: ignore
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
+
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_parseDataFromFile(self):
-        filePath = get_data_path( "dividends_cal_data.html" )
-        currData = self.dataAccess.dao._parseDataFromFile( filePath )
+    def test_getWorksheetData(self):
+        currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
         self.assertEqual(dataLen, 166)
 
-#     def test_getWorksheetData(self):
-#         currData = self.dataAccess.getWorksheetData()
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 783)
+    def test_getStockName(self):
+        rowData = self.dataAccess.getStockName( 3 )
+        self.assertEqual( rowData, "VERBICOM" )
+
+    def test_getLawDate(self):
+        rowData = self.dataAccess.getLawDate( 2 )
+        self.assertEqual( rowData, datetime.date(2020, 11, 23) )

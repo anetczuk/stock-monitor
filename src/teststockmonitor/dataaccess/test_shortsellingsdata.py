@@ -25,6 +25,7 @@ import unittest
 from teststockmonitor.data import get_data_path
 
 from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class CurrentShortSellingsDataTest(unittest.TestCase):
@@ -32,6 +33,13 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
     def setUp(self):
         ## Called before testfunction is executed
         self.dataAccess = CurrentShortSellingsData()
+
+        def data_path():
+            return get_data_path( "shortsellings-current.html" )
+  
+        self.dataAccess.dao.getDataPath = data_path           # type: ignore
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
 
     def tearDown(self):
         ## Called after testfunction was executed
@@ -43,39 +51,40 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
 #         self.assertTrue( content )
 #         print( "grabbed content:\n", content )
 
-    def test_parseDataFromFile(self):
-        filePath = get_data_path( "shortsellings-current.html" )
-        currData = self.dataAccess.dao._parseDataFromFile( filePath )
+    def test_getWorksheetData(self):
+        currData = self.dataAccess.getWorksheetData( False )
         dataLen = len( currData )
         self.assertEqual(dataLen, 5)
-
-#     def test_getWorksheetData(self):
-#         currData = self.dataAccess.getWorksheetData( True )
-# #         print( "downloaded dataframe:\n", currData )
-#         self.assertTrue( currData is not None )
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 4)
+ 
+    def test_getISIN(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getISIN( 3 )
+        self.assertEqual( rowData, "PLOPTTC00011" )
 
 
 class HistoryShortSellingsDataTest(unittest.TestCase):
-
+ 
     def setUp(self):
         ## Called before testfunction is executed
         self.dataAccess = HistoryShortSellingsData()
-
+ 
+        def data_path():
+            return get_data_path( "shortsellings-history.html" )
+ 
+        self.dataAccess.dao.getDataPath = data_path           # type: ignore
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
+ 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
-
-    def test_parseDataFromFile(self):
-        filePath = get_data_path( "shortsellings-history.html" )
-        currData = self.dataAccess.dao._parseDataFromFile( filePath )
+ 
+    def test_getWorksheetData(self):
+        currData = self.dataAccess.getWorksheetData( False )
         dataLen = len( currData )
         self.assertEqual(dataLen, 30)
-
-#     def test_getWorksheetData(self):
-#         currData = self.dataAccess.getWorksheetData( True )
-#         print( "downloaded dataframe:\n", currData )
-#         self.assertTrue( currData is not None )
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 30)
+        
+    def test_getISIN(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getISIN( 3 )
+        self.assertEqual( rowData, "PL11BTS00015" )

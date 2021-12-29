@@ -35,7 +35,7 @@ from PyQt5.QtGui import QDesktopServices
 from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
 
-from stockmonitor.dataaccess.datatype import CurrentDataType
+from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 
@@ -287,7 +287,7 @@ class StockFullColorDelegate( TableRowColorDelegate ):
     def foreground(self, index: QModelIndex ):
         dataColumn = index.column()
         ## "Zm.do k.odn.[%]"
-        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        dataIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
         if dataColumn == dataIndex:
             stockChangeString = index.data()
             if stockChangeString != "-":
@@ -330,7 +330,7 @@ class StockFullTable( StockTable ):
         self.setHeadersText( self.dataObject.gpwCurrentHeaders )
 
     def _getSelectedTickers(self):
-        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.TICKER )
+        dataIndex = GpwCurrentStockData.getColumnIndex( StockDataType.TICKER )
         return self.getSelectedData( dataIndex )                ## ticker
 
     def settingsAccepted(self):
@@ -582,7 +582,7 @@ def wallet_background_color( dataObject, ticker ):
 
 def marker_background_color( dataObject, ticker ):
     currentStock = dataObject.gpwCurrentData
-    recentValue = currentStock.getRecentValue( ticker )
+    recentValue = currentStock.getRecentValueByTicker( ticker )
     if recentValue is None:
         return None
     if recentValue == "-":

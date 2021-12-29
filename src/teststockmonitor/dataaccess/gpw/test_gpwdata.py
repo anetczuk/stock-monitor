@@ -30,10 +30,6 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 class GpwIndicatorsDataTest(unittest.TestCase):
 
-#     def setUp(self):
-#         ## Called before testfunction is executed
-#         self.dataAccess = GpwIndicatorsData()
-
     def setUp(self):
         ## Called before testfunction is executed
         self.dataAccess = GpwIndicatorsData()
@@ -55,10 +51,9 @@ class GpwIndicatorsDataTest(unittest.TestCase):
         self.assertGreaterEqual(dataLen, 400)
         self.assertIsNotNone( currData )
 
-#     def test_getWorksheet_True(self):
-#         currData = self.dataAccess.getWorksheetData( True )
-#         dataLen = len( currData )
-#         self.assertGreaterEqual(dataLen, 400)
+    def test_getStockIsin(self):
+        rowData = self.dataAccess.getStockIsin( 3 )
+        self.assertEqual( rowData, "PLGRNKT00019" )
 
 
 class GpwIsinMapDataTest(unittest.TestCase):
@@ -89,3 +84,23 @@ class GpwIsinMapDataTest(unittest.TestCase):
 #         endTime = datetime.datetime.now()
 #         diff = endTime - startTime
 #         print( "load time:", diff )
+
+    def test_getTickerFromIsin(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getTickerFromIsin( "PL4FNMD00013" )
+        self.assertEqual( rowData, "4FM" )
+
+    def test_getTickerFromName(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getTickerFromName( "4FUNMEDIA" )
+        self.assertEqual( rowData, "4FM" )
+
+    def test_getStockIsinFromTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getStockIsinFromTicker( "4FM" )
+        self.assertEqual( rowData, "PL4FNMD00013" )
+
+    def test_getNameFromTicker(self):
+#         print( self.dataAccess.getWorksheetData() )
+        rowData = self.dataAccess.getNameFromTicker( "4FM" )
+        self.assertEqual( rowData, "4Fun Media SA" )

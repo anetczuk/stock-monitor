@@ -37,7 +37,7 @@ from stockmonitor.gui.widget.stocktable import wallet_background_color, insert_n
 from .. import uiloader
 from .stocktable import StockTable, TableRowColorDelegate
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
-from stockmonitor.dataaccess.datatype import CurrentDataType
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
@@ -54,7 +54,7 @@ class StockFavsColorDelegate( TableRowColorDelegate ):
 
     ## override
     def foreground(self, index: QModelIndex ):
-        dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        dataChangeIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
         dataColumn = index.column()
         ## "Zm.do k.odn.[%]"
         if dataColumn == dataChangeIndex:
@@ -125,7 +125,7 @@ class StockFavsTable( StockTable ):
         self.dataObject.deleteFav( self.favGroup, favList )
 
     def _getSelectedTickers(self):
-        dataIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.TICKER )
+        dataIndex = GpwCurrentStockData.getColumnIndex( StockDataType.TICKER )
         return self.getSelectedData( dataIndex )                ## ticker
 
     def settingsAccepted(self):

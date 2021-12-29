@@ -42,7 +42,7 @@ from stockmonitor.datatypes.stocktypes import StockData, GpwStockIntradayMap,\
     GpwIndexIntradayMap
 from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory
 from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
-from stockmonitor.dataaccess.datatype import CurrentDataType
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -153,7 +153,7 @@ class DataContainer():
                 notes = ""
 
             stockName    = currentStock.getNameFromTicker( entry.ticker )
-            stockValue   = currentStock.getRecentValue( entry.ticker )
+            stockValue   = currentStock.getRecentValueByTicker( entry.ticker )
 
 #             if stockValue is None:
 #                 _LOGGER.info( "None type:", entry.ticker, stockName )
@@ -300,7 +300,7 @@ class DataContainer():
                         "Wartość [PLN]", "Udział [%]",
                         "Zysk [%]", "Zysk [PLN]", "Zysk całkowity [PLN]" ]
 
-        dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        dataChangeIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
 
         # apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
 
@@ -435,7 +435,7 @@ class DataContainer():
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
-        dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        dataChangeIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []
@@ -552,7 +552,7 @@ class DataContainer():
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
-        dataChangeIndex = GpwCurrentStockData.getColumnIndex( CurrentDataType.CHANGE_TO_REF )
+        dataChangeIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         rowsList = []

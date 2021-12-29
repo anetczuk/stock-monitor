@@ -38,7 +38,7 @@ from stockmonitor.analysis.stockanalysis import dates_to_string
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
-from stockmonitor.dataaccess.datatype import CurrentDataType
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -101,7 +101,7 @@ class MetaStockIntradayProvider():
         if ticker is None:
             return None
         dataRow    = self.refDataProvider.getRowByTicker( ticker )
-        colIndex   = self.refDataProvider.getColumnIndex( CurrentDataType.RECENT_TRANS )
+        colIndex   = self.refDataProvider.getColumnIndex( StockDataType.RECENT_TRANS )
         stockValue = dataRow.iloc[ colIndex ]
 #         print("wwwwwwwwwwwwww:\n", dataRow)
 #         print("xxxxxxxxxxxxxx:", name, ticker, stockValue)

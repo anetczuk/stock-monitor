@@ -258,7 +258,7 @@ class DataObject( QObject ):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
         markersList = list()
         for ticker in tickersList:
-            currValue = currentStock.getRecentValue( ticker )
+            currValue = currentStock.getRecentValueByTicker( ticker )
             newMarker = MarkerEntry()
             newMarker.ticker = ticker
             newMarker.value = currValue

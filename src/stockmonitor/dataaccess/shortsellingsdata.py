@@ -32,6 +32,7 @@ from bs4 import BeautifulSoup
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, WorksheetDAO
 from stockmonitor.synchronized import synchronized
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -115,10 +116,18 @@ class CurrentShortSellingsData( WorksheetDAO ):
         return self.dao.getDataUrl()
 
     def getISIN(self, rowIndex):
-        dataFrame = self.getWorksheetData()
-#         print( "xxx", dataFrame )
-        tickerColumn = dataFrame["ISIN"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByIndex( StockDataType.ISIN, rowIndex )
+    
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        switcher = {
+            StockDataType.ISIN: 2
+        }
+        colIndex = switcher.get(columnType, None)
+        if colIndex is None:
+            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+        return colIndex
 
 
 ## ================================================================
@@ -170,7 +179,15 @@ class HistoryShortSellingsData( WorksheetDAO ):
         return self.dao.getDataUrl()
 
     def getISIN(self, rowIndex):
-        dataFrame = self.getWorksheetData()
-#         print( "xxx", dataFrame )
-        tickerColumn = dataFrame["ISIN"]
-        return tickerColumn.iloc[ rowIndex ]
+        return self.getDataByIndex( StockDataType.ISIN, rowIndex )
+    
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        switcher = {
+            StockDataType.ISIN: 2
+        }
+        colIndex = switcher.get(columnType, None)
+        if colIndex is None:
+            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+        return colIndex

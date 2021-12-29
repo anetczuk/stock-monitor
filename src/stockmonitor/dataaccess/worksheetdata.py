@@ -33,6 +33,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor import persist
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess import urlretrieve
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -208,7 +209,7 @@ class WorksheetStorage():
 ##
 ##
 class WorksheetStorageMock():
-    """Store and load data."""
+    """Storage mock. Does not persist cached values."""
 
     def __init__(self):
         self.worksheet: DataFrame = None
@@ -249,7 +250,7 @@ class WorksheetDataMock( BaseWorksheetData ):
 
 class WorksheetDAO():
 
-    def __init__( self, dao:WorksheetData ):
+    def __init__( self, dao: WorksheetData ):
         self.dao = dao
 
     def getDataFrame(self) -> DataFrame:
@@ -257,6 +258,9 @@ class WorksheetDAO():
 
     def getWorksheetData(self, forceRefresh=False) -> DataFrame:
         return self.dao.getWorksheetData( forceRefresh )
+
+    def accessWorksheetData(self, forceRefresh=False) -> DataFrame:
+        return self.dao.accessWorksheetData( forceRefresh )
 
     def loadWorksheet(self):
         return self.dao.loadWorksheet()
@@ -266,6 +270,31 @@ class WorksheetDAO():
 
     def getGrabTimestmp(self) -> datetime.datetime:
         return self.dao.getGrabTimestmp()
+
+    def getDataByIndex( self, columnType: StockDataType, rowIndex ):
+        colIndex = self.getDataColumnIndex( columnType )
+        dataFrame: DataFrame = self.getDataFrame()
+        dataColumn = dataFrame.iloc[:, colIndex]
+        return dataColumn.iloc[ rowIndex ]
+
+    def getRowByValue( self, rowColumnType: StockDataType, rowValue ):
+        colIndex = self.getDataColumnIndex( rowColumnType )
+        dataFrame: DataFrame = self.getDataFrame()
+        ## extract column and find row index by comparing with 'value', then return row by the index
+        retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex] == rowValue ]
+        return retRows.squeeze()                                            ## convert 1 row dataframe to series
+
+    def getDataByValue( self, rowColumnType: StockDataType, rowValue, dataType: StockDataType ):
+        dataIndex = self.getDataColumnIndex( dataType )
+        rowData = self.getRowByValue( rowColumnType, rowValue )
+        if rowData is None or len(rowData) < 1:
+            return None
+        return rowData[ dataIndex ]
+
+    ## get column index
+    @abc.abstractmethod
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise NotImplementedError('You need to define this method in derived class!')
 
 
 # class HtmlWorksheetData( WorksheetData ):
