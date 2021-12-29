@@ -106,7 +106,7 @@ class GpwCurrentStockData( WorksheetDAO ):
         dataFrame = self.getWorksheetData()
         if dataFrame is None:
             return None
-        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.TICKER )
+        colIndex = self.getDataColumnIndex( StockDataType.TICKER )
         retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( tickerList ) ]
         return retRows
 
@@ -115,11 +115,11 @@ class GpwCurrentStockData( WorksheetDAO ):
         worksheet = self.getWorksheetData()
         if worksheet is None:
             return None
-        colIndex = self.getColumnIndex( dataType )
+        colIndex = self.getDataColumnIndex( dataType )
         _LOGGER.debug("getting column data: %s %s", dataType, colIndex )
         if colIndex is None:
             return None
-        return self.extractColumn( worksheet, colIndex )
+        return GpwCurrentStockData.extractColumn( worksheet, colIndex )
 
     def getRowByTicker(self, ticker):
         return self.getRowByValue( StockDataType.TICKER, ticker )
@@ -163,26 +163,10 @@ class GpwCurrentStockData( WorksheetDAO ):
 #         }
 #         colIndex = switcher.get(columnType, None)
 
-        colIndex = self.getColumnIndex( columnType )
+        colIndex = GpwCurrentStockData.getColumnIndex( columnType )
         if colIndex is None:
             raise ValueError( 'Invalid value: %s' % ( columnType ) )
         return colIndex
-
-    # ==========================================================================
-
-    def extractColumn(self, worksheet, colIndex):
-        # name col: 1
-        # rows are indexed by 0, first row is header
-        nameIndex = GpwCurrentStockData.getColumnIndex( StockDataType.STOCK_NAME )
-#         ret = dict()
-#         nrows = worksheet.shape[0]
-#         for row in range(1, nrows):
-#             name = worksheet.iat(row, nameIndex).value
-#             value = worksheet.iat(row, colIndex).value
-#             ret[ name ] = value
-        names  = worksheet.iloc[:, nameIndex]
-        values = worksheet.iloc[:, colIndex]
-        return dict( zip(names, values) )
 
     ## ======================================================================
 
@@ -197,6 +181,21 @@ class GpwCurrentStockData( WorksheetDAO ):
         return "https://www.money.pl/gielda/spolki-gpw/%s.html" % isin
 
     ## ======================================================================
+
+    @staticmethod
+    def extractColumn(currentStockWorksheet, colIndex):
+        # name col: 1
+        # rows are indexed by 0, first row is header
+        nameIndex = GpwCurrentStockData.getColumnIndex( StockDataType.STOCK_NAME )
+#         ret = dict()
+#         nrows = worksheet.shape[0]
+#         for row in range(1, nrows):
+#             name = worksheet.iat(row, nameIndex).value
+#             value = worksheet.iat(row, colIndex).value
+#             ret[ name ] = value
+        names  = currentStockWorksheet.iloc[:, nameIndex]
+        values = currentStockWorksheet.iloc[:, colIndex]
+        return dict( zip(names, values) )
 
     @staticmethod
     def getColumnIndex(dataType: StockDataType):
@@ -218,27 +217,27 @@ class GpwCurrentStockData( WorksheetDAO ):
 
     ## returns value of recent transaction, if no transaction then returns reference vale
     @staticmethod
-    def unitPrice( dataRow ):
+    def unitPrice( currentStockDataRow ):
         ## current value
         currUnitValueIndex = GpwCurrentStockData.getColumnIndex( StockDataType.RECENT_TRANS )
-        currUnitValueRaw = dataRow.iloc[currUnitValueIndex]
+        currUnitValueRaw = currentStockDataRow.iloc[currUnitValueIndex]
         if currUnitValueRaw != "-":
             return float( currUnitValueRaw )
 
         ## TKO
 #        tkoIndex = GpwCurrentStockData.getColumnIndex( StockDataType.TKO )
-#        tkoValueRaw = dataRow.iloc[tkoIndex]
+#        tkoValueRaw = currentStockDataRow.iloc[tkoIndex]
 #        if tkoValueRaw != "-":
 #            return float( tkoValueRaw )
 
         ## reference value
-        return GpwCurrentStockData.unitReferencePrice( dataRow )
+        return GpwCurrentStockData.unitReferencePrice( currentStockDataRow )
 
     @staticmethod
-    def unitReferencePrice( dataRow ):
+    def unitReferencePrice( currentStockDataRow ):
         ## reference value
         refValueIndex = GpwCurrentStockData.getColumnIndex( StockDataType.REFERENCE )
-        refValueRaw = dataRow.iloc[refValueIndex]
+        refValueRaw = currentStockDataRow.iloc[refValueIndex]
         if refValueRaw != "-":
             return float( refValueRaw )
         return 0.0

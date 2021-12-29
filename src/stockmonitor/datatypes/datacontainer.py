@@ -300,14 +300,16 @@ class DataContainer():
                         "Wartość [PLN]", "Udział [%]",
                         "Zysk [%]", "Zysk [PLN]", "Zysk całkowity [PLN]" ]
 
-        dataChangeIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
-
         # apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
 
         walletState = self.getWalletState()
         walletValue = walletState[0]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
+
+        stockNameIndex  = currentStock.getDataColumnIndex( StockDataType.STOCK_NAME )
+        dataChangeIndex = currentStock.getDataColumnIndex( StockDataType.CHANGE_TO_REF )
+        
         rowsList = []
 
         transMode = self.userContainer.transactionsMatchMode
@@ -334,7 +336,7 @@ class DataContainer():
                 rowsList.append( rowDict )
                 continue
 
-            stockName = currentStockRow["Nazwa"]
+            stockName = currentStockRow.iloc[ stockNameIndex ]
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
@@ -435,9 +437,11 @@ class DataContainer():
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
-        dataChangeIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
-
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
+        
+        stockNameIndex  = currentStock.getDataColumnIndex( StockDataType.STOCK_NAME )
+        dataChangeIndex = currentStock.getDataColumnIndex( StockDataType.CHANGE_TO_REF )
+        
         rowsList = []
 
         transMode = self.userContainer.transactionsMatchMode
@@ -458,6 +462,8 @@ class DataContainer():
                     rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
                 continue
 
+            stockName = currentStockRow.iloc[ stockNameIndex ]
+
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
             currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
@@ -467,8 +473,6 @@ class DataContainer():
 
             currTransactions = transactions.currentTransactions( transMode )
             for item in currTransactions:
-                stockName = currentStockRow["Nazwa"]
-
                 trans_amount     = item[0]
                 trans_unit_price = item[1]
                 trans_date       = item[2]
@@ -552,9 +556,11 @@ class DataContainer():
                         "Kurs", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
-        dataChangeIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
-
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
+
+        stockNameIndex  = currentStock.getDataColumnIndex( StockDataType.STOCK_NAME )
+        dataChangeIndex = currentStock.getDataColumnIndex( StockDataType.CHANGE_TO_REF )
+
         rowsList = []
 
         for ticker, transactions in self.wallet.stockList.items():
@@ -569,6 +575,7 @@ class DataContainer():
                     rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
                 continue
 
+            stockName  = currentStockRow.iloc[ stockNameIndex ]
             currAmount = transactions.currentAmount()
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
@@ -580,8 +587,6 @@ class DataContainer():
 
             currTransactions = transactions.allTransactions()
             for item in currTransactions:
-                stockName = currentStockRow["Nazwa"]
-
                 trans_amount     = item[0]
                 trans_unit_price = item[1]
                 trans_date       = item[2]
