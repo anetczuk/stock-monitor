@@ -72,7 +72,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.dataObject = dataObject
         self.isin       = isin
         self.dataObject.stockDataChanged.connect( self.updateData )
-        self.updateData( True )
+        self.updateData( False )
 
     def clearData(self):
         self.ui.dataChart.clearPlot()
@@ -95,9 +95,9 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         for i in range(0, self.ui.rangeCB.count()):
             rangeText = self.ui.rangeCB.itemText( i )
-            indexData = self.dataObject.dataContainer.gpwIndexIntradayData
-            intraSource = indexData.getSource( self.isin, rangeText )
-            threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+            indexData: GpwIndexIntradayMap = self.dataObject.dataContainer.gpwIndexIntradayData
+            intraSource: GpwCurrentIndexIntradayData = indexData.getSource( self.isin, rangeText )
+            threads.appendFunction( intraSource.getWorksheetData, [forceRefresh] )
 
         currentData = self.getCurrentDataSource()
         threads.appendFunction( currentData.getWorksheetData, [forceRefresh] )

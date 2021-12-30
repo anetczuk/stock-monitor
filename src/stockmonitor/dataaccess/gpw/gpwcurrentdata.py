@@ -249,62 +249,65 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
 # ============================================================================
 
 
-class GpwCurrentIndexesData( BaseWorksheetData ):
+class GpwCurrentIndexesData( BaseWorksheetDAO ):
+
+    class DAO( BaseWorksheetData ):
+        """Data access object."""
+    
+        def __init__(self):
+            self.worksheet: DataFrame = None
+            self.dataList = list()
+            self.dataList.append( GpwMainIndexesData() )
+            self.dataList.append( GpwMacroIndexesData() )
+            self.dataList.append( GpwSectorsIndexesData() )
+
+        ## override
+        @synchronized
+        def loadWorksheet(self):
+            for dataAccess in self.dataList:
+                dataAccess.loadWorksheet()
+        
+        ## override
+        def getDataFrame(self) -> DataFrame:
+            self.worksheet = DataFrame()
+            for dataAccess in self.dataList:
+                dataFrame = dataAccess.getDataFrame()
+                self.worksheet = self.worksheet.append( dataFrame )
+            return self.worksheet
+
 
     def __init__(self):
-        super().__init__()
-        self.worksheet: DataFrame = None
-        self.dataList = list()
-        self.dataList.append( GpwMainIndexesData() )
-        self.dataList.append( GpwMacroIndexesData() )
-        self.dataList.append( GpwSectorsIndexesData() )
-
+        dao = GpwCurrentIndexesData.DAO()
+        super().__init__( dao )
+        
     def sourceLink(self):
         return "https://gpwbenchmark.pl/notowania"
 
-    ## override
-    def getDataFrame(self) -> DataFrame:
-        return self.worksheet
-
     def getNameFromIsin(self, isin):
-        row = self.getRowByIsin( isin )
-        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.STOCK_NAME )
-        return row.iloc[ colIndex ]
+        return self.getDataByValue( StockDataType.ISIN, isin, StockDataType.STOCK_NAME )
 
     def getRecentValueByIsin(self, isin):
-        row = self.getRowByIsin( isin )
-        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.RECENT_TRANS )
-        return row.iloc[ colIndex ]
+        return self.getDataByValue( StockDataType.ISIN, isin, StockDataType.RECENT_TRANS )
 
     def getRecentChangeByIsin(self, isin):
-        row = self.getRowByIsin( isin )
-        if row is None or row.empty:
-            return None
-        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.CHANGE_TO_REF )
-        return row.iloc[ colIndex ]
+        return self.getDataByValue( StockDataType.ISIN, isin, StockDataType.CHANGE_TO_REF )
 
     def getRowByIsin(self, isin):
-        dataFrame = self.getWorksheetData()
-        if dataFrame is None or dataFrame.empty:
-            _LOGGER.warning("no worksheet found")
-            return None
-        colIndex = GpwCurrentStockData.getColumnIndex( StockDataType.ISIN )
-        isinColumn = dataFrame.iloc[ :, colIndex ]
-        retRows = dataFrame.loc[ isinColumn == isin ]
-        return retRows.squeeze()            ## convert 1 row dataframe to series
+        return self.getRowByValue( StockDataType.ISIN, isin )
 
-    def downloadData(self):
-        for dataAccess in self.dataList:
-            dataAccess.downloadData()
-
+    ## get column index
     ## override
-    @synchronized
-    def loadWorksheet(self):
-        self.worksheet = DataFrame()
-        for dataAccess in self.dataList:
-            dataAccess.loadWorksheet()
-            dataFrame = dataAccess.getDataFrame()
-            self.worksheet = self.worksheet.append( dataFrame )
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        switcher = {
+            StockDataType.STOCK_NAME:     1,
+            StockDataType.RECENT_TRANS:   8,
+            StockDataType.CHANGE_TO_REF:  9,
+            StockDataType.ISIN:          12
+        }
+        colIndex = switcher.get(columnType, None)
+        if colIndex is None:
+            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+        return colIndex
 
     ## ======================================================================
 

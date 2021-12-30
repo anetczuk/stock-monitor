@@ -79,7 +79,7 @@ class BaseWorksheetData( metaclass=abc.ABCMeta ):
     def loadWorksheet(self):
         raise NotImplementedError('You need to define this method in derived class!')
 
-    ## get current data (without additional actions)
+    ## get current data (without scraping -- loading from local cache allowed)
     @abc.abstractmethod
     def getDataFrame(self) -> DataFrame:
         raise NotImplementedError('You need to define this method in derived class!')
@@ -264,6 +264,8 @@ class BaseWorksheetDAO():
 
     def loadWorksheet(self):
         return self.dao.loadWorksheet()
+    
+    ## ====================================
 
 #     def downloadData(self):
 #         return self.dao.downloadData()
