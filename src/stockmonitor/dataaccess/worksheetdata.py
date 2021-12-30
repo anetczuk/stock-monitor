@@ -23,6 +23,7 @@
 
 import os
 import logging
+from typing import List
 
 import datetime
 import abc
@@ -283,6 +284,16 @@ class BaseWorksheetDAO():
         retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex] == rowValue ]
         return retRows.squeeze()                                            ## convert 1 row dataframe to series
 
+    def getRowsByValueList( self, rowColumnType: StockDataType, rowValues: List[str] ):
+        if rowValues is None:
+            return None
+        dataFrame = self.getWorksheetData()
+        if dataFrame is None:
+            return None
+        colIndex = self.getDataColumnIndex( StockDataType.TICKER )
+        retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( rowValues ) ]
+        return retRows
+        
     def getDataByValue( self, rowColumnType: StockDataType, rowValue, dataType: StockDataType ):
         dataIndex = self.getDataColumnIndex( dataType )
         rowData = self.getRowByValue( rowColumnType, rowValue )

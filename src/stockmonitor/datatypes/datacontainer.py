@@ -398,12 +398,12 @@ class DataContainer():
             if amount == 0:
                 continue
 
-            tickerRow = currentStock.getRowByTicker( ticker )
-            if tickerRow is None or tickerRow.empty:
+            currentStockRow = currentStock.getRowByTicker( ticker )
+            if currentStockRow is None or currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 continue
 
-            currUnitValue = GpwCurrentStockData.unitPrice( tickerRow )
+            currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
             stockValue     = currUnitValue * amount
             stockProfit    = stockValue
@@ -414,7 +414,7 @@ class DataContainer():
             walletValue   += stockValue
             walletProfit  += stockProfit
 
-            refUnitValue  = GpwCurrentStockData.unitReferencePrice( tickerRow )
+            refUnitValue  = GpwCurrentStockData.unitReferencePrice( currentStockRow )
             referenceValue = refUnitValue * amount
             refWalletValue += referenceValue
 

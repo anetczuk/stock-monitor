@@ -103,15 +103,8 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
     def getGrabTimestmp(self) -> datetime.datetime:
         return self.dao.getGrabTimestmp()
 
-    def getStockData(self, tickerList: List[str] = None) -> DataFrame:
-        if tickerList is None:
-            return None
-        dataFrame = self.getWorksheetData()
-        if dataFrame is None:
-            return None
-        colIndex = self.getDataColumnIndex( StockDataType.TICKER )
-        retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( tickerList ) ]
-        return retRows
+    def getStockData(self, tickerList: List[str] = None):
+        return self.getRowsByValueList( StockDataType.TICKER, tickerList )
 
     def getData(self, dataType: StockDataType):
 #         _LOGGER.debug( "getting max from date: %s", day )
@@ -119,10 +112,10 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
         if worksheet is None:
             return None
         colIndex = self.getDataColumnIndex( dataType )
-        _LOGGER.debug("getting column data: %s %s", dataType, colIndex )
-        if colIndex is None:
-            return None
-        return GpwCurrentStockData.extractColumn( worksheet, colIndex )
+        nameIndex = self.getDataColumnIndex( StockDataType.STOCK_NAME )
+        names  = worksheet.iloc[:, nameIndex]
+        values = worksheet.iloc[:, colIndex]
+        return dict( zip(names, values) )
 
     def getRowByTicker(self, ticker):
         return self.getRowByValue( StockDataType.TICKER, ticker )
@@ -184,21 +177,6 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
         return "https://www.money.pl/gielda/spolki-gpw/%s.html" % isin
 
     ## ======================================================================
-
-    @staticmethod
-    def extractColumn(currentStockWorksheet, colIndex):
-        # name col: 1
-        # rows are indexed by 0, first row is header
-        nameIndex = GpwCurrentStockData.getColumnIndex( StockDataType.STOCK_NAME )
-#         ret = dict()
-#         nrows = worksheet.shape[0]
-#         for row in range(1, nrows):
-#             name = worksheet.iat(row, nameIndex).value
-#             value = worksheet.iat(row, colIndex).value
-#             ret[ name ] = value
-        names  = currentStockWorksheet.iloc[:, nameIndex]
-        values = currentStockWorksheet.iloc[:, colIndex]
-        return dict( zip(names, values) )
 
     @staticmethod
     def getColumnIndex(dataType: StockDataType):
