@@ -149,7 +149,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
         return self.getDataByValue( StockDataType.STOCK_NAME, stockName, StockDataType.TICKER )
 
     def getRecentValueByTicker(self, ticker):
-        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.RECENT_TRANS )
+        return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.RECENT_VALUE )
 
     def getRecentChangeByTicker(self, ticker):
         return self.getDataByValue( StockDataType.TICKER, ticker, StockDataType.CHANGE_TO_REF )
@@ -213,7 +213,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
             StockDataType.OPENING:            9,
             StockDataType.MIN:               10,
             StockDataType.MAX:               11,
-            StockDataType.RECENT_TRANS:      12,
+            StockDataType.RECENT_VALUE:      12,
             StockDataType.CHANGE_TO_REF:     14
         }
         return switcher.get(dataType, None)
@@ -222,7 +222,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
     @staticmethod
     def unitPrice( currentStockDataRow ):
         ## current value
-        currUnitValueIndex = GpwCurrentStockData.getColumnIndex( StockDataType.RECENT_TRANS )
+        currUnitValueIndex = GpwCurrentStockData.getColumnIndex( StockDataType.RECENT_VALUE )
         currUnitValueRaw = currentStockDataRow.iloc[currUnitValueIndex]
         if currUnitValueRaw != "-":
             return float( currUnitValueRaw )
@@ -287,7 +287,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
         return self.getDataByValue( StockDataType.ISIN, isin, StockDataType.STOCK_NAME )
 
     def getRecentValueByIsin(self, isin):
-        return self.getDataByValue( StockDataType.ISIN, isin, StockDataType.RECENT_TRANS )
+        return self.getDataByValue( StockDataType.ISIN, isin, StockDataType.RECENT_VALUE )
 
     def getRecentChangeByIsin(self, isin):
         return self.getDataByValue( StockDataType.ISIN, isin, StockDataType.CHANGE_TO_REF )
@@ -300,7 +300,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:
         switcher = {
             StockDataType.STOCK_NAME:     1,
-            StockDataType.RECENT_TRANS:   8,
+            StockDataType.RECENT_VALUE:   8,
             StockDataType.CHANGE_TO_REF:  9,
             StockDataType.ISIN:          12
         }

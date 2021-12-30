@@ -101,7 +101,7 @@ class MetaStockIntradayProvider():
         if ticker is None:
             return None
         dataRow    = self.refDataProvider.getRowByTicker( ticker )
-        colIndex   = self.refDataProvider.getColumnIndex( StockDataType.RECENT_TRANS )
+        colIndex   = self.refDataProvider.getColumnIndex( StockDataType.RECENT_VALUE )
         stockValue = dataRow.iloc[ colIndex ]
 #         print("wwwwwwwwwwwwww:\n", dataRow)
 #         print("xxxxxxxxxxxxxx:", name, ticker, stockValue)

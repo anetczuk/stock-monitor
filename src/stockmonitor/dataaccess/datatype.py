@@ -69,13 +69,13 @@ class StockDataType(Enum):
     ISIN = ()               ## numer ISIN (e.g. PL4FNMD00013)
     TICKER = ()             ## skrot (always 3 letters, e.g. 11B or ZRE)
     CURRENCY = ()           ## waluta
-    RECENT_TRANS_TIME = ()  ## czas ostatniej transakcji
-    REFERENCE = ()          ## kurs odniesienia
     TKO = ()                ## TKO
     OPENING = ()            ## kurs otwarcia
     MIN = ()                ## kurs minimalny
     MAX = ()                ## kurs maksymalny
-    RECENT_TRANS = ()       ## kurs ostatniej transakcji
+    RECENT_VALUE = ()       ## kurs ostatniej transakcji / ostatnia wartosc
+    RECENT_TRANS_TIME = ()  ## czas ostatniej transakcji
+    REFERENCE = ()          ## kurs odniesienia
     CHANGE_TO_REF = ()      ## zmiana do kursu odniesienia (wyrazona w %)
     
     NO_DIV_DAY = ()         ## Notowanie bez dywidendy
