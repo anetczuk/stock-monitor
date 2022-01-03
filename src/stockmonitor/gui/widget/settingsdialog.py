@@ -25,6 +25,7 @@ import logging
 import copy
 
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QTime
 
 from .. import uiloader
 from .. import trayicon
@@ -35,6 +36,7 @@ class AppSettings():
     def __init__(self):
         self.trayIcon = trayicon.TrayIconTheme.WHITE
         self.startMinimized = False
+        self.indicatorRefreshTime = ""
 
     def loadSettings(self, settings):
         settings.beginGroup( "app_settings" )
@@ -48,6 +50,8 @@ class AppSettings():
         if self.startMinimized is None:
             self.startMinimized = True
 
+        self.indicatorRefreshTime = settings.value("indicatorRefreshTime", "", type=str)
+
         settings.endGroup()
 
     def saveSettings(self, settings):
@@ -55,6 +59,7 @@ class AppSettings():
 
         settings.setValue( "trayIcon", self.trayIcon.name )
         settings.setValue( "startMinimized", self.startMinimized )
+        settings.setValue( "indicatorRefreshTime", self.indicatorRefreshTime )
 
         settings.endGroup()
 
@@ -68,12 +73,14 @@ _LOGGER = logging.getLogger(__name__)
 class SettingsDialog(QtBaseClass):           # type: ignore
 
     iconThemeChanged         = pyqtSignal( trayicon.TrayIconTheme )
+    indicatorRefreshChanged  = pyqtSignal( str )
 
-    def __init__(self, appSettings, parentWidget=None):
+    def __init__(self, appSettings: AppSettings, parentWidget=None):
         super().__init__(parentWidget)
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
+        self.appSettings: AppSettings = None
         if appSettings is not None:
             self.appSettings = copy.deepcopy( appSettings )
         else:
@@ -91,6 +98,10 @@ class SettingsDialog(QtBaseClass):           # type: ignore
         self.ui.startMinimizedCB.setChecked( self.appSettings.startMinimized )
         self.ui.startMinimizedCB.stateChanged.connect( self._startMinimizedChanged )
 
+        currRefreshTime = QTime.fromString( self.appSettings.indicatorRefreshTime, "HH:mm:ss" )
+        self.ui.stockRefreshIntervalTE.setTime( currRefreshTime )
+        self.ui.stockRefreshIntervalTE.timeChanged.connect( self._indicatorRefreshTimeChanged )
+
     ## =====================================================
 
     def _trayThemeChanged(self):
@@ -101,6 +112,12 @@ class SettingsDialog(QtBaseClass):           # type: ignore
     def _startMinimizedChanged(self):
         value = self.ui.startMinimizedCB.isChecked()
         self.appSettings.startMinimized = value
+
+    def _indicatorRefreshTimeChanged(self):
+        timeValue: QTime = self.ui.stockRefreshIntervalTE.time()
+        timeString = timeValue.toString("HH:mm:ss")
+        self.appSettings.indicatorRefreshTime = timeString
+        self.indicatorRefreshChanged.emit( timeString )
 
     ## =====================================================
 

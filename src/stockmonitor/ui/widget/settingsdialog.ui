@@ -36,7 +36,34 @@
      <item row="1" column="1">
       <widget class="QCheckBox" name="startMinimizedCB">
        <property name="text">
-        <string>                    </string>
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Indicator refresh interval:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QTimeEdit" name="stockRefreshIntervalTE">
+       <property name="toolTip">
+        <string>Set 0 sec to prevent indicator refresh</string>
+       </property>
+       <property name="currentSection">
+        <enum>QDateTimeEdit::SecondSection</enum>
+       </property>
+       <property name="displayFormat">
+        <string>HH:mm:ss</string>
+       </property>
+       <property name="time">
+        <time>
+         <hour>0</hour>
+         <minute>1</minute>
+         <second>0</second>
+        </time>
        </property>
       </widget>
      </item>

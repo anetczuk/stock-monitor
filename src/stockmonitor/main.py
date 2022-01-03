@@ -72,6 +72,8 @@ def run_app( args ):
         else:
             window.show()
 
+        _LOGGER.info( "application initialization done" )
+
         exitCode = app.exec_()
 
         if exitCode == 0:

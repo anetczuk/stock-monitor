@@ -25,6 +25,7 @@ import logging
 import datetime
 
 from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtCore import QTime
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import qApp
 
@@ -341,7 +342,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
             w.setWindowIconTheme( theme )
 
     def updateTrayIndicator(self):
-        _LOGGER.debug("updating tray indicator")
         currDateTime = datetime.datetime.now()
         weekDay = currDateTime.weekday()                               # 0 for Monday
         if weekDay == 5 or weekDay == 6:
@@ -360,6 +360,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
             self.trayIcon.clearString()
             return
 
+        _LOGGER.debug("updating tray indicator")
         self.data.gpwIndexesData.loadWorksheet()                        ## force data refresh
         isin = "PL9999999987"                                           ## wig20
         recentChange = self.data.gpwIndexesData.getRecentChangeByIsin( isin )
@@ -380,9 +381,19 @@ class MainWindow( QtBaseClass ):           # type: ignore
 #             value = value[1:]
         self.trayIcon.drawStringAuto( value, indicateColor )
         self._updateGpwIndexes()
+        _LOGGER.debug("updating tray indicator done")
 
     def getIconTheme(self) -> trayicon.TrayIconTheme:
         return self.appSettings.trayIcon
+
+    def setIndicatorRefreshTime(self, refreshTime: str):
+        _LOGGER.debug("setting indicator refresh time: %s", refreshTime)
+        currRefreshTime = QTime.fromString( refreshTime, "HH:mm:ss" )
+        secondsNumber = QTime(0, 0, 0).secsTo( currRefreshTime );
+
+        self.tickTimer.stop()
+        if secondsNumber > 0:
+            self.tickTimer.start( secondsNumber * 1000 )
 
     # Override closeEvent, to intercept the window closing event
     def closeEvent(self, event):
@@ -439,6 +450,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     def applySettings(self):
         self.setIconTheme( self.appSettings.trayIcon )
+        self.setIndicatorRefreshTime( self.appSettings.indicatorRefreshTime )
 
     def loadSettings(self):
         """Load Qt related settings (e.g. layouts, sizes)."""
