@@ -40,10 +40,8 @@ _LOGGER = logging.getLogger(__name__)
 class StockAnalysisData(object):
     """Abstraction for stock data."""
 
-    logger: logging.Logger = None
-
     def __init__(self):
-        self.dataProvider = GpwArchiveData()
+        self.dataProvider: GpwArchiveData = GpwArchiveData()
 
     def getData(self, dataType: ArchiveDataType, day: date):
         return self.dataProvider.getData( dataType, day )
@@ -66,9 +64,6 @@ class StockAnalysisData(object):
 
     def sourceLink(self):
         return self.dataProvider.sourceLink()
-
-
-StockAnalysisData.logger = _LOGGER.getChild(StockAnalysisData.__name__)
 
 
 class CounterDict:

@@ -51,7 +51,7 @@ class StockAnalysis(object):
     logger: logging.Logger = None
 
     def __init__(self):
-        self.data = StockAnalysisData()
+        self.data: StockAnalysisData = StockAnalysisData()
         self.isinDict = None
 
         self.minValue  = None

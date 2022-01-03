@@ -47,7 +47,12 @@ _LOGGER = logging.getLogger(__name__)
 ## =======================================================================
 
 
-class GpwCurrentIntradayProvider():
+class ActivityIntradayDataProvider():
+    
+    pass
+    
+    
+class GpwCurrentIntradayProvider( ActivityIntradayDataProvider ):
 
     def __init__(self):
         self.accessDate = None
@@ -84,7 +89,7 @@ class GpwCurrentIntradayProvider():
         return dataFrame
 
 
-class MetaStockIntradayProvider():
+class MetaStockIntradayProvider( ActivityIntradayDataProvider ):
 
     def __init__(self):
         self.accessDate      = None
@@ -146,11 +151,12 @@ class MetaStockIntradayProvider():
         frame = { 'name': name, 'price': priceColumn, 'volumen': volumenColumn }
         return pandas.DataFrame( frame )
 
+## =========================================================================
 
 class ActivityAnalysis:
 
-    def __init__(self, dataProvider, pool=None):
-        self.dataProvider = dataProvider
+    def __init__(self, dataProvider: ActivityIntradayDataProvider, pool=None):
+        self.dataProvider: ActivityIntradayDataProvider = dataProvider
 
         self.forceRecalc    = None
         self.isinItems      = None

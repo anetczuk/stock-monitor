@@ -44,7 +44,12 @@ _LOGGER = logging.getLogger(__name__)
 ## =======================================================================
 
 
-class GpwCurrentIntradayProvider():
+class VolumenIntradayDataProvider():
+    
+    pass
+
+
+class GpwCurrentIntradayProvider( VolumenIntradayDataProvider ):
 
     def __init__(self):
         self.accessDate = None
@@ -75,7 +80,7 @@ class GpwCurrentIntradayProvider():
         return dataFrame
 
 
-class MetaStockIntradayProvider():
+class MetaStockIntradayProvider( VolumenIntradayDataProvider ):
 
     def __init__(self):
         self.accessDate = None
@@ -126,8 +131,8 @@ class MetaStockIntradayProvider():
 
 class VolumenAnalysis:
 
-    def __init__(self, dataProvider, pool=None):
-        self.dataProvider = dataProvider
+    def __init__(self, dataProvider: VolumenIntradayDataProvider, pool=None):
+        self.dataProvider: VolumenIntradayDataProvider = dataProvider
 
         self.forceRecalc    = None
         self.isinItems      = None
