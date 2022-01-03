@@ -184,8 +184,8 @@ class ActivityAnalysis:
         currDate -= datetime.timedelta(days=1)
         while currDate < toDay:
             currDate += datetime.timedelta(days=1)
-            dataPair  = self.getPrecalcData( currDate )
-            dataPairList.append( dataPair )
+            dataTuple  = self.getPrecalcData( currDate )
+            dataPairList.append( dataTuple )
 
         # === calculate activity ===
 

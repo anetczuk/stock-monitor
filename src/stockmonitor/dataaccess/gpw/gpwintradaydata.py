@@ -62,9 +62,9 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
             return generate_chart_data_url( self.isin, modeCode)
     
         @synchronized
-        def getWorksheetForDate(self, dataDate):
+        def getWorksheetForDate(self, dataDate, forceRefresh=False):
             self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
-            return self.getWorksheetData( False )
+            return self.getWorksheetData( forceRefresh )
     
         def loadWorksheet(self):
             self.dataTime = datetime.datetime.now()
@@ -113,6 +113,9 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
 
     def sourceLink(self):
         return "https://www.gpw.pl/spolka?isin=" + self.dao.isin
+    
+    def getWorksheetForDate(self, dataDate, forceRefresh=False):
+        return self.dao.getWorksheetForDate( dataDate, forceRefresh )
 
 
 class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):

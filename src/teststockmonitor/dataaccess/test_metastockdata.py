@@ -35,32 +35,28 @@ class MetaStockIntradayDataTest(unittest.TestCase):
         ## Called before testfunction is executed
         self.dataAccess = MetaStockIntradayData()
 
+        def data_path():
+            return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
+
+        self.dataAccess.dao.getDataPath = data_path              # type: ignore
+        self.dataAccess.dao.downloadData =  lambda : None        ## empty lambda function
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_parseDataFromFile(self):
-        filePath = get_data_path( "a_cgl_intraday_2020-08-17.prn" )
-        currData = self.dataAccess.dao._parseDataFromFile( filePath )
+    def test_getWorksheetData_False(self):
+        currData = self.dataAccess.getWorksheetData( False )
+        self.assertIsNone( currData )
+
+    def test_getWorksheetData_True(self):
+        currData = self.dataAccess.getWorksheetData( True )
         dataLen = len( currData )
         self.assertEqual(dataLen, 77388)
 
-    def test_getWorksheetData_True(self):
+    def test_getWorksheetForDate(self):
         date_object = datetime.date( year=2020, month=9, day=21 )
-        dataAccess = MetaStockIntradayData( date_object )
-
-        def data_path():
-            return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
-
-        dataAccess.dao.getDataPath = data_path           # type: ignore
-        dataAccess.dao.storage = WorksheetStorageMock()
-
-        currData = dataAccess.getWorksheetData( False )
-        self.assertIsNone( currData )
-
-#     def test_access(self):
-#         date_object = datetime.date( year=2020, month=9, day=21 )
-#         dataAccess = MetaStockIntradayData( date_object )
-#         currData = dataAccess.getWorksheetData( True )
-#         dataLen = len( currData )
-#         self.assertGreater(dataLen, 70000)
+        currData = self.dataAccess.getWorksheetForDate( date_object, True )
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 77388)

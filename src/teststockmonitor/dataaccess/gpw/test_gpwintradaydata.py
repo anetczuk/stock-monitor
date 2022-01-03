@@ -22,7 +22,7 @@
 #
 
 import unittest
-# import datetime
+import datetime
 
 from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData,\
@@ -39,16 +39,27 @@ class GpwCurrentStockIntradayDataTest(unittest.TestCase):
         def data_path():
             return get_data_path( "cdr.chart.04-09.txt" )
 
-        self.dataAccess.dao.getDataPath = data_path           # type: ignore
+        self.dataAccess.dao.getDataPath = data_path              # type: ignore
+        self.dataAccess.dao.downloadData =  lambda : None        ## empty lambda function
         self.dataAccess.dao.storage = WorksheetStorageMock()
-        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
+#         self.dataAccess.dao.parseWorksheetFromFile( data_path() )
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_getData(self):
-        currData = self.dataAccess.getWorksheetData()
+    def test_getWorksheetData_False(self):
+        currData = self.dataAccess.getWorksheetData( False )
+        self.assertIsNone( currData )
+
+    def test_getWorksheetData_True(self):
+        currData = self.dataAccess.getWorksheetData( True )
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 3104)
+
+    def test_getWorksheetForDate(self):
+        date_object = datetime.date( year=2020, month=9, day=21 )
+        currData = self.dataAccess.getWorksheetForDate( date_object, True )
         dataLen = len( currData )
         self.assertEqual(dataLen, 3104)
 
