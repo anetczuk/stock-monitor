@@ -25,7 +25,7 @@ def urlretrieve( url, outputPath ):
 
     ## changed "user-agent" fixes blocking by server
     req = request.Request( url, headers={'User-Agent': 'Mozilla/5.0'} )
-    result = request.urlopen( req, context=ctx_no_secure )
+    result = request.urlopen( req, timeout=30, context=ctx_no_secure )
 
 #     result = request.urlopen( url, context=ctx_no_secure )
     content_data = result.read()
