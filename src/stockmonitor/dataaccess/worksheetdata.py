@@ -55,6 +55,9 @@ def download_html_content( url, outputPath ):
         raise
 
 
+## ==============================================================================
+
+
 class BaseWorksheetData( metaclass=abc.ABCMeta ):
 
     ## get data
@@ -100,8 +103,10 @@ class WorksheetData( BaseWorksheetData ):
     ## override
     @synchronized
     def loadWorksheet(self):
+        dataUrl  = self.getDataUrl()
         dataPath = self.getDataPath()
-        _LOGGER.debug( "loading data from file[%s]", dataPath )
+        relPath = os.path.relpath( dataPath )
+        _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", dataUrl, relPath )
         try:
             ## forced refresh or no data -- download new data
             self.downloadData()
@@ -113,7 +118,7 @@ class WorksheetData( BaseWorksheetData ):
     def downloadData(self):
         dataPath = self.getDataPath()
         url = self.getDataUrl()
-        _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, dataPath )
+#         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, dataPath )
 
         dirPath = os.path.dirname( dataPath )
         os.makedirs( dirPath, exist_ok=True )
@@ -125,7 +130,7 @@ class WorksheetData( BaseWorksheetData ):
         download_html_content( url, filePath )
 
     def parseWorksheetFromFile(self, dataPath: str):
-        _LOGGER.info( "parsing raw data: %s", dataPath )
+#         _LOGGER.info( "parsing raw data: %s", dataPath )
         worksheet = self._parseDataFromFile( dataPath )
         self.storage.storeObject( dataPath, worksheet )
 

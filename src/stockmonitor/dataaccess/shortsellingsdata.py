@@ -91,7 +91,7 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
         ## override
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
-            _LOGGER.debug( "parsing data file: %s", dataFile )
+#             _LOGGER.debug( "parsing data file: %s", dataFile )
             dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
             #_LOGGER.debug( "dataFrame: %s", dataFrame )
             if len(dataFrame) < 3:
@@ -156,7 +156,7 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
     
         ## override
         def _parseDataFromFile(self, dataFile) -> DataFrame:
-            _LOGGER.debug( "parsing data file: %s", dataFile )
+#             _LOGGER.debug( "parsing data file: %s", dataFile )
             dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
             if len( dataFrame ) < 3:
                 _LOGGER.warning( "received unexpected data while parsing: %s", dataFile )

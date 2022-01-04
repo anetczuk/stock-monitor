@@ -91,7 +91,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw",
                                                           "max", "min", "kurs", "obrot", "unknown_2"] )
             dataFrame.drop( dataFrame.tail(1).index, inplace=True )

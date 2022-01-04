@@ -99,7 +99,7 @@ def store_backup( inputObject, outputFile ):
 
 def load_object_simple( inputFile, defaultValue=None ):
     try:
-        _LOGGER.info( "loading data from: %s", inputFile )
+#         _LOGGER.info( "loading data from: %s", inputFile )
         with open( inputFile, 'rb') as fp:
             return pickle.load(fp)
     except AttributeError:

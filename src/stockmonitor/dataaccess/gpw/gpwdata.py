@@ -50,7 +50,7 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
         
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
             dataFrame = DataFrame()
             dataFrame = dataFrame.append( allDataFrames[1] )            ## country
@@ -109,7 +109,7 @@ class GpwIsinMapData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
             dataFrame = allDataFrames[1]
             return dataFrame

@@ -64,7 +64,7 @@ class GpwESPIData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
     
             with open( dataFile ) as file:
                 soup = BeautifulSoup(file, "html.parser")

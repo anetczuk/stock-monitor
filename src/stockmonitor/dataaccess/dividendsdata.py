@@ -50,7 +50,7 @@ class DividendsCalendarData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
             dataFrame = dataFrame[2]
             dataFrame = dataFrame.fillna("-")

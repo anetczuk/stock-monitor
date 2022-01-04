@@ -58,7 +58,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
             dataFrame = dataFrameList[0]
     
@@ -234,7 +234,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
     
         def __init__(self):
             self.worksheet: DataFrame = None
-            self.dataList = list()
+            self.dataList: List[ BaseWorksheetDAO ] = list()
             self.dataList.append( GpwMainIndexesData() )
             self.dataList.append( GpwMacroIndexesData() )
             self.dataList.append( GpwSectorsIndexesData() )
@@ -316,7 +316,7 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
             dataFrame = DataFrame()
             dataFrame = dataFrame.append( allDataFrames[0] )        ## realtime indexes
@@ -344,7 +344,7 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
             dataFrame = allDataFrames[0]
             convert_indexes_data( dataFrame )
@@ -369,7 +369,7 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             allDataFrames = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
             dataFrame = allDataFrames[0]
             convert_indexes_data( dataFrame )

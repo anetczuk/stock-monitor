@@ -51,7 +51,7 @@ class GlobalIndexesData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
     
             # fix HTML: handle multiple tbody inside single table
             with open( dataFile ) as file:

@@ -50,7 +50,7 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrame = pandas.read_html( dataFile )
             dataFrame = dataFrame[0]
             return dataFrame
@@ -93,7 +93,7 @@ class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrame = pandas.read_html( dataFile )
             dataFrame = dataFrame[0]
             dataFrame['Ticker'] = dataFrame['Ticker'].str.replace( '#', '' )
