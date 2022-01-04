@@ -73,7 +73,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         self.tickTimer = QtCore.QTimer( self )
         self.tickTimer.timeout.connect( self.updateTrayIndicator )
-        self.tickTimer.start( 60 * 1000 )                           ## every minute
+#         self.tickTimer.start( 60 * 1000 )                           ## every minute
 
         ## =============================================================
 
@@ -241,19 +241,23 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.notesWidget.setNotes( self.data.notes )
 
     def refreshStockDataForce(self):
+        _LOGGER.info( "refreshing stock data" )
         self.ui.actionRefresh_All.setEnabled( False )
         self.ui.refreshAllPB.setEnabled( False )
         self.ui.refreshStockPB.setEnabled( False )
         self.data.refreshStockData( True )
+        _LOGGER.info( "refreshing stock data done" )
 
     def refreshAllDataForce(self):
+        _LOGGER.info( "refreshing all data" )
         self.ui.actionRefresh_All.setEnabled( False )
         self.ui.refreshAllPB.setEnabled( False )
         self.ui.refreshStockPB.setEnabled( False )
         self.data.refreshAllData( True )
+        _LOGGER.info( "refreshing all data done" )
 
     def _updateStockViews(self):
-        _LOGGER.info( "handling stock change" )
+        _LOGGER.info( "refreshing stock views" )
         self._updateStockTimestamp()
 
         self.ui.espiList.updateView()
@@ -273,6 +277,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.refreshAllPB.setEnabled( True )
         self.ui.refreshStockPB.setEnabled( True )
 
+        _LOGGER.info( "stock views refreshed" )
         self.setStatusMessage( "Stock data refreshed" )
 
     def _updateGpwIndexes(self):
@@ -329,7 +334,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
     def setIconTheme(self, theme: trayicon.TrayIconTheme):
         _LOGGER.debug("setting tray theme: %r", theme)
         self._setIconTheme( theme )
-        self.updateTrayIndicator()
+        self.updateTrayIndicator( False )
 
     def _setIconTheme(self, theme: trayicon.TrayIconTheme):
         appIcon = load_main_icon( theme )
@@ -341,7 +346,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         for w in widgets:
             w.setWindowIconTheme( theme )
 
-    def updateTrayIndicator(self):
+    def updateTrayIndicator(self, forceRefresh=True ):
         currDateTime = datetime.datetime.now()
         weekDay = currDateTime.weekday()                               # 0 for Monday
         if weekDay == 5 or weekDay == 6:
@@ -361,7 +366,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
             return
 
         _LOGGER.debug("updating tray indicator")
-        self.data.gpwIndexesData.loadWorksheet()                        ## force data refresh
+        self.data.gpwIndexesData.getWorksheetData( forceRefresh )
         isin = "PL9999999987"                                           ## wig20
         recentChange = self.data.gpwIndexesData.getRecentChangeByIsin( isin )
         indicateColor = None

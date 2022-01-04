@@ -235,7 +235,7 @@ class ESPIWidget( QtBaseClass ):                        # type: ignore
     def connectData(self, dataObject):
         self.dataObject = dataObject
         self.ui.espiList.connectData( dataObject )
-        self.dataObject.stockDataChanged.connect( self.updateView )
+        ## self.dataObject.stockDataChanged.connect( self.updateView )        ## called from mainwindow
         self.dataObject.favsChanged.connect( self.updateView )
         self.dataObject.walletDataChanged.connect( self.updateView )
 
