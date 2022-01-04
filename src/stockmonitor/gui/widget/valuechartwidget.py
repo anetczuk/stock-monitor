@@ -78,18 +78,24 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         self.updateData( False )
 
     def updateData(self, forceRefresh=False):
-        self.ui.refreshPB.setEnabled( False )
-
-        intraSources = self.getDataSources()
-        if not intraSources:
+        dataSources = self.getDataSources()
+        if not dataSources:
             self._updateView()
             return
 
+        if forceRefresh is False:
+            for source in dataSources:
+                source.getWorksheetData( forceRefresh )
+            self._updateView()
+            return
+
+        self.ui.refreshPB.setEnabled( False )
+                
         threads = threadlist.QThreadMeasuredList( self )
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
-        for source in intraSources:
+        for source in dataSources:
             threads.appendFunction( source.getWorksheetData, [forceRefresh] )
 
         threads.start()

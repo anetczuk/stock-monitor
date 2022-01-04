@@ -84,25 +84,39 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.updateData( False )
 
     def updateData(self, forceRefresh=False):
+        dataSources = self._dataSourceObjectsList()
+        if not dataSources:
+            self._updateView()
+            return
+        
+        if forceRefresh is False:
+            for source in dataSources:
+                source.getWorksheetData( forceRefresh )
+            self._updateView()
+            return
+        
         self.ui.refreshPB.setEnabled( False )
 
         threads = threadlist.QThreadMeasuredList( self )
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
-#         intraSource = self.getIntradayDataSource()
-#         threads.appendFunction( intraSource.getWorksheet, [forceRefresh] )
+        for source in dataSources:
+            threads.appendFunction( source.getWorksheetData, [forceRefresh] )
 
+        threads.start()
+        
+    def _dataSourceObjectsList(self):
+        retList = []
         for i in range(0, self.ui.rangeCB.count()):
             rangeText = self.ui.rangeCB.itemText( i )
             indexData: GpwIndexIntradayMap = self.dataObject.dataContainer.gpwIndexIntradayData
             intraSource: GpwCurrentIndexIntradayData = indexData.getSource( self.isin, rangeText )
-            threads.appendFunction( intraSource.getWorksheetData, [forceRefresh] )
-
+            retList.append( intraSource )
+            
         currentData = self.getCurrentDataSource()
-        threads.appendFunction( currentData.getWorksheetData, [forceRefresh] )
-
-        threads.start()
+        retList.append( currentData )
+        return retList
 
     def _updateView(self):
         self.ui.refreshPB.setEnabled( True )
