@@ -52,15 +52,22 @@ class BaseWorksheetDAOProvider( StockDataProvider ):
 
     def __init__( self, data: 'BaseWorksheetDAO' = None ):
         self.stockData: 'BaseWorksheetDAO'       = data
+
+    ## override
+    def accessData(self, forceRefresh=True):
+        self.stockData.accessWorksheetData( forceRefresh )
+
+
+class StockDataWrapper( BaseWorksheetDAOProvider ):
+    """Wrapper containing data custom headers."""
+
+    def __init__( self, data: 'BaseWorksheetDAO' = None ):
+        BaseWorksheetDAOProvider.__init__(self, data)
         self.stockHeaders: Dict[ int, str ]      = dict()
 
     @property
     def headers(self) -> Dict[ int, str ]:
         return self.stockHeaders
-
-    ## override
-    def accessData(self, forceRefresh=True):
-        self.stockData.getWorksheetData( forceRefresh )
 
 
 ## ==================================================
@@ -73,8 +80,11 @@ class GpwStockIntradayMap( StockDataProvider ):
 
     ## override
     def accessData(self, forceRefresh=True):
+        if len( self.dataDict ) < 1:
+            _LOGGER.debug( "nothing to access" )
+            return
         for val in self.dataDict.values():
-            val.getWorksheetData( forceRefresh )
+            val.accessWorksheetData( forceRefresh )
 
     def getData(self, isin):
         source = self.getSource(isin)
@@ -106,8 +116,11 @@ class GpwIndexIntradayMap( StockDataProvider ):
 
     ## override
     def accessData(self, forceRefresh=True):
+        if len( self.dataDict ) < 1:
+            _LOGGER.debug( "nothing to access" )
+            return
         for val in self.dataDict.values():
-            val.getWorksheetData( forceRefresh )
+            val.accessWorksheetData( forceRefresh )
 
     def getData(self, isin):
         source = self.getSource(isin)

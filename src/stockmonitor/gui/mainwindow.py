@@ -246,7 +246,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.refreshAllPB.setEnabled( False )
         self.ui.refreshStockPB.setEnabled( False )
         self.data.refreshStockData( True )
-        _LOGGER.info( "refreshing stock data done" )
+#         _LOGGER.info( "refreshing stock data done" )
 
     def refreshAllDataForce(self):
         _LOGGER.info( "refreshing all data" )
@@ -254,7 +254,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.refreshAllPB.setEnabled( False )
         self.ui.refreshStockPB.setEnabled( False )
         self.data.refreshAllData( True )
-        _LOGGER.info( "refreshing all data done" )
+#         _LOGGER.info( "refreshing all data done" )
 
     def _updateStockViews(self):
         _LOGGER.info( "refreshing stock views" )
