@@ -23,6 +23,8 @@
 
 import logging
 import datetime
+import time
+import random
 
 from typing import List
 
@@ -242,8 +244,14 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
         ## override
         @synchronized
         def loadWorksheet(self):
-            for dataAccess in self.dataList:
+            for dataAccess in self.dataList[:-1]:
                 dataAccess.loadWorksheet()
+                ## set random sleep preventing "[Errno 104] Connection reset by peer"
+                ## server seems to reset connection in case of detection of web scrapping
+                randTime = 1.0 + random.random()
+                time.sleep( randTime )
+            ## last element (without sleep)
+            dataAccess.loadWorksheet()
         
         ## override
         def getDataFrame(self) -> DataFrame:
