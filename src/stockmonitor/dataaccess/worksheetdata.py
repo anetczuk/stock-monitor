@@ -273,9 +273,6 @@ class BaseWorksheetDAO():
     
     ## ====================================
 
-#     def downloadData(self):
-#         return self.dao.downloadData()
-
     def getDataByIndex( self, columnType: StockDataType, rowIndex ):
         colIndex = self.getDataColumnIndex( columnType )
         dataFrame: DataFrame = self.getDataFrame()

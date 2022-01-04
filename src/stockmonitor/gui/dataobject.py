@@ -22,7 +22,7 @@
 #
 
 import logging
-from typing import Dict
+from typing import Dict, List
 # from multiprocessing import Process, Queue
 # from multiprocessing import Pool
 
@@ -36,7 +36,8 @@ from stockmonitor.datatypes.datatypes import FavData, WalletData,\
     TransactionMatchMode, MarkersContainer,\
     MarkerEntry
 from stockmonitor.datatypes.datacontainer import DataContainer
-from stockmonitor.datatypes.stocktypes import StockDataWrapper, GpwStockIntradayMap
+from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
+    StockDataProvider
 
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
@@ -64,16 +65,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 READONLY_FAV_GROUPS = ["All", "Wallet", "Markers"]
-
-
-# def instance_download_data( worksheet ):
-#     """Wrapper/alias for object.
-# 
-#     Alias for instance method that allows the method to be called in a
-#     multiprocessing pool
-#     """
-#     worksheet.downloadData()
-#     return
 
 
 def heavy_comp( limit ):
@@ -164,7 +155,7 @@ class DataObject( QObject ):
         self.stockHeadersChanged.emit()
 
     @property
-    def gpwCurrentSource(self) -> StockDataWrapper:
+    def gpwCurrentSource(self) -> BaseWorksheetDAOProvider:
         return self.dataContainer.gpwCurrentSource
 
     @property
@@ -393,11 +384,11 @@ class DataObject( QObject ):
 
         threads.start()
 
-    def dataAllProvidersList(self):
-        return self.dataContainer.dataAllProvidersList()
+#     def dataAllProvidersList(self) -> List[ StockDataProvider ]:
+#         return self.dataContainer.dataAllProvidersList()
 
-    def dataStockProvidersList(self):
-        return self.dataContainer.dataStockProvidersList()
+#     def dataStockProvidersList(self) -> List[ StockDataProvider ]:
+#         return self.dataContainer.dataStockProvidersList()
 
     def getStockIntradayDataByTicker(self, ticker):
         return self.dataContainer.getStockIntradayDataByTicker( ticker )

@@ -22,7 +22,7 @@
 #
 
 import logging
-from typing import Dict
+from typing import Dict, List
 
 from datetime import datetime, timedelta
 
@@ -38,8 +38,8 @@ from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 
 from stockmonitor.datatypes.datatypes import UserContainer,\
     FavData, WalletData, MarkersContainer, MarkerEntry
-from stockmonitor.datatypes.stocktypes import StockDataWrapper, GpwStockIntradayMap,\
-    GpwIndexIntradayMap
+from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
+    GpwIndexIntradayMap, StockDataProvider
 from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory
 from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
 from stockmonitor.dataaccess.datatype import StockDataType
@@ -56,7 +56,7 @@ class DataContainer():
     def __init__(self):
         self.userContainer        = UserContainer()                   ## user data
 
-        self.gpwCurrentSource     = StockDataWrapper( GpwCurrentStockData() )
+        self.gpwCurrentSource     = BaseWorksheetDAOProvider( GpwCurrentStockData() )
         self.gpwStockIntradayData = GpwStockIntradayMap()
         self.gpwIndexIntradayData = GpwIndexIntradayMap()
 
@@ -758,49 +758,45 @@ class DataContainer():
             func( *args )
 
     def refreshStockList(self, forceRefresh=False):
-        stockList = self.dataStockProvidersList()
+        stockList: List[ StockDataProvider ] = self.dataStockProvidersList()
         retList = []
         for stock in stockList:
-            retList.append( (stock.getWorksheetData, [forceRefresh] ) )
+            retList.append( (stock.accessData, [forceRefresh] ) )
         return retList
 
     def refreshAllList(self, forceRefresh=False):
-        stockList = self.dataAllProvidersList()
+        stockList: List[ StockDataProvider ] = self.dataAllProvidersList()
         retList = []
         for stock in stockList:
-            retList.append( (stock.getWorksheetData, [forceRefresh] ) )
+            retList.append( (stock.accessData, [forceRefresh] ) )
         return retList
 
-#     def stockDownloadList(self):
-#         stockList = self.dataAllProvidersList()
+    def dataAllProvidersList(self) -> List[ StockDataProvider ]:
 #         retList = []
-#         for stock in stockList:
-#             retList.append( stock.downloadData )
-#         return retList
+#         retList.append( self.gpwCurrentSource )
+#         retList.append( self.gpwStockIntradayData )
+#         retList.append( self.gpwIndexIntradayData )
+#         retList.append( BaseWorksheetDAOProvider( self.gpwESPIData ) )
+#         retList.append( BaseWorksheetDAOProvider( self.gpwIndexesData ) )
 
-    def dataAllProvidersList(self):
-        retList = []
-        retList.append( self.gpwCurrentSource )
-        retList.append( self.gpwStockIntradayData )
-        retList.append( self.gpwIndexIntradayData )
-        retList.append( self.gpwESPIData )
-        retList.append( self.gpwIndexesData )
-        retList.append( self.globalIndexesData )
-        retList.append( self.gpwIndicatorsData )
-        retList.append( self.gpwDividendsData )
-        retList.append( self.gpwReportsData )
-        retList.append( self.gpwPubReportsData )
-        retList.append( self.gpwCurrentShortSellingsData )
+        retList = self.dataStockProvidersList()
+        
+        retList.append( BaseWorksheetDAOProvider( self.globalIndexesData ) )
+        retList.append( BaseWorksheetDAOProvider( self.gpwIndicatorsData ) )
+        retList.append( BaseWorksheetDAOProvider( self.gpwDividendsData ) )
+        retList.append( BaseWorksheetDAOProvider( self.gpwReportsData ) )
+        retList.append( BaseWorksheetDAOProvider( self.gpwPubReportsData ) )
+        retList.append( BaseWorksheetDAOProvider( self.gpwCurrentShortSellingsData ) )
 #         retList.append( self.gpwIsinMap )
         return retList
 
-    def dataStockProvidersList(self):
+    def dataStockProvidersList(self) -> List[ StockDataProvider ]:
         retList = []
         retList.append( self.gpwCurrentSource )
         retList.append( self.gpwStockIntradayData )
         retList.append( self.gpwIndexIntradayData )
-        retList.append( self.gpwESPIData )
-        retList.append( self.gpwIndexesData )
+        retList.append( BaseWorksheetDAOProvider( self.gpwESPIData ) )
+        retList.append( BaseWorksheetDAOProvider( self.gpwIndexesData ) )
         return retList
 
     @property

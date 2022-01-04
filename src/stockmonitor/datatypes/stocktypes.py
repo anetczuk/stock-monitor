@@ -22,6 +22,7 @@
 #
 
 import logging
+import abc
 
 from typing import Dict
 
@@ -32,31 +33,48 @@ from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayD
 _LOGGER = logging.getLogger(__name__)
 
 
-class StockDataWrapper():
+class StockDataProvider():
+    
+#     @abc.abstractmethod
+#     def refreshData(self, forceRefresh=True):
+#         raise NotImplementedError('You need to define this method in derived class!')
+    
+    @abc.abstractmethod
+    def accessData(self, forceRefresh=True):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+
+## ==============================================================
+
+
+class BaseWorksheetDAOProvider( StockDataProvider ):
     """Wrapper containing data custom headers."""
 
-    def __init__( self, data: 'WorksheetData' = None ):
-        self.stockData: 'WorksheetData'       = data
-        self.stockHeaders: Dict[ int, str ]   = dict()
+    def __init__( self, data: 'BaseWorksheetDAO' = None ):
+        self.stockData: 'BaseWorksheetDAO'       = data
+        self.stockHeaders: Dict[ int, str ]      = dict()
 
     @property
     def headers(self) -> Dict[ int, str ]:
         return self.stockHeaders
 
-    def refreshData(self, forceRefresh=True):
-        self.getWorksheetData( forceRefresh )
-
-    def getWorksheetData(self, forceRefresh=False):
+    ## override
+    def accessData(self, forceRefresh=True):
         self.stockData.getWorksheetData( forceRefresh )
 
-    def downloadData(self):
-        self.stockData.downloadData()
+
+## ==================================================
 
 
-class GpwStockIntradayMap():
+class GpwStockIntradayMap( StockDataProvider ):
 
     def __init__(self):
         self.dataDict = dict()
+
+    ## override
+    def accessData(self, forceRefresh=True):
+        for val in self.dataDict.values():
+            val.getWorksheetData( forceRefresh )
 
     def getData(self, isin):
         source = self.getSource(isin)
@@ -76,15 +94,20 @@ class GpwStockIntradayMap():
     def set(self, isin, source):
         self.dataDict[ isin ] = source
 
-    def getWorksheetData(self, forceRefresh=True):
-        for val in self.dataDict.values():
-            val.getWorksheetData( forceRefresh )
+#     def getWorksheetData(self, forceRefresh=True):
+#         for val in self.dataDict.values():
+#             val.getWorksheetData( forceRefresh )
 
 
-class GpwIndexIntradayMap():
+class GpwIndexIntradayMap( StockDataProvider ):
 
     def __init__(self):
         self.dataDict = dict()
+
+    ## override
+    def accessData(self, forceRefresh=True):
+        for val in self.dataDict.values():
+            val.getWorksheetData( forceRefresh )
 
     def getData(self, isin):
         source = self.getSource(isin)
@@ -104,6 +127,6 @@ class GpwIndexIntradayMap():
     def set(self, isin, source):
         self.dataDict[ isin ] = source
 
-    def getWorksheetData(self, forceRefresh=True):
-        for val in self.dataDict.values():
-            val.getWorksheetData( forceRefresh )
+#     def getWorksheetData(self, forceRefresh=True):
+#         for val in self.dataDict.values():
+#             val.getWorksheetData( forceRefresh )
