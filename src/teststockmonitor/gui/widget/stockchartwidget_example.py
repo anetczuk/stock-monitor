@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 try:
     ## following import success only when file is directly executed from command line
@@ -41,6 +40,7 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
 import stockmonitor.logger as logger
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.sigint import setup_interrupt_handling
@@ -65,13 +65,12 @@ def prepare_dataobject():
     def data_path():
         return get_data_path( "cdr.chart.04-09.txt" )
 
-    dataAccess.getDataPath = data_path                  # type: ignore
-    dataAccess.storage = WorksheetStorageMock()
-    dataAccess.parseWorksheetFromFile( data_path() )
-    data.gpwStockIntradayData.set( "CRD", dataAccess )
+    dataAccess.dao.getDataPath = data_path                  # type: ignore
+    dataAccess.dao.downloadData =  lambda : None        ## empty lambda function
+    dataAccess.dao.storage = WorksheetStorageMock()
 
-#     dataAccess = WorksheetDataMock()
 #     data.gpwStockIntradayData.set( "PLOPTTC00011", dataAccess )
+#     data.gpwStockIntradayData.set( "CRD", dataAccess )
     return data
 
 

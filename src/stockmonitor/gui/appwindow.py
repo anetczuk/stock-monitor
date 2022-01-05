@@ -23,8 +23,11 @@
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QCloseEvent
 
 from stockmonitor.gui import trayicon
 from stockmonitor.gui.trayicon import load_main_icon, load_chart_icon
@@ -32,6 +35,8 @@ from stockmonitor.gui.utils import get_parent
 
 
 class AppWindow( QWidget ):
+
+    windowClosed = pyqtSignal()
 
     appTitle = "Stock Monitor"
 
@@ -82,6 +87,13 @@ class AppWindow( QWidget ):
 
     def addWidget(self, widget):
         self.vlayout.addWidget( widget )
+        
+    ## override
+    def closeEvent(self, event: QCloseEvent):
+        ## there is problem with propagating close event to subwidgets, so
+        ## workaround is to emit custom signal
+        self.windowClosed.emit()
+        event.accept()
 
 
 class ChartAppWindow(AppWindow):

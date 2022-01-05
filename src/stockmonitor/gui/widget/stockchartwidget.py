@@ -24,10 +24,12 @@
 import logging
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QCloseEvent
 
 from stockmonitor.datatypes.wallettypes import TransHistory
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.gui import threadlist
+from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord,\
@@ -54,7 +56,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-        self.dataObject = None
+        self.dataObject: DataObject = None
         self.ticker = None
 
         if parentWidget is not None:
@@ -78,7 +80,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
 
-    def connectData(self, dataObject, ticker):
+    def connectData(self, dataObject: DataObject, ticker):
         self.dataObject = dataObject
         self.ticker     = ticker
         self.dataObject.stockDataChanged.connect( self.updateData )
@@ -118,9 +120,9 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def _dataSourceObjectsList(self):
         retList = []
+        isin = self.dataObject.getStockIsinFromTicker( self.ticker )
         for i in range(0, self.ui.rangeCB.count()):
             rangeText = self.ui.rangeCB.itemText( i )
-            isin = self.dataObject.getStockIsinFromTicker( self.ticker )
             intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
             retList.append( intraSource )
             
@@ -219,6 +221,12 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def getCurrentDataSource(self) -> GpwCurrentStockData:
         return self.dataObject.gpwCurrentData
+    
+    def deleteData(self):
+        if self.dataObject:
+            isin = self.dataObject.getStockIsinFromTicker( self.ticker )
+            dataMap: GpwStockIntradayMap = self.dataObject.gpwStockIntradayData
+            dataMap.deleteData( isin )
 
 
 def create_window( dataObject, ticker, parent=None ):
@@ -226,6 +234,7 @@ def create_window( dataObject, ticker, parent=None ):
     chart = StockChartWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
+    chartWindow.windowClosed.connect( chart.deleteData )
 
     chart.connectData(dataObject, ticker)
 
