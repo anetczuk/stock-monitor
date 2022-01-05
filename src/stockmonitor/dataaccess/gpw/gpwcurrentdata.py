@@ -251,6 +251,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
                 randTime = 1.0 + random.random()
                 time.sleep( randTime )
             ## last element (without sleep)
+            dataAccess = self.dataList[-1]
             dataAccess.loadWorksheet()
         
         ## override
