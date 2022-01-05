@@ -69,7 +69,7 @@ fi
 
 
 ### create temporary file
-tmpfile=$(mktemp venv.activate.XXXXXX.sh --tmpdir)
+tmpfile=$(mktemp venv.run.XXXXXX.sh --tmpdir)
 
 ### write content to temporary
 cat > $tmpfile <<EOL
