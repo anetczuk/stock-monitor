@@ -87,20 +87,22 @@ class BaseWorker( QtCore.QObject ):
 
 class ThreadWorker( BaseWorker ):
 
-    def __init__(self, func, args=None, parent=None):
+    def __init__(self, func, args=None, parent=None, logs=True):
         super().__init__( parent )
         if args is None:
             args = []
         self.func = func
         self.args = args
+        self.logging = logs
 
     def processWorker(self):
 #         _LOGGER.info("executing function: %s %s", self.func, self.args)
         try:
             if self.func is not None:
                 self.func( *self.args )
-    #         _LOGGER.info("executing finished")
-            _LOGGER.info( "work finished" )
+            if self.logging:
+        #         _LOGGER.info("executing finished")
+                _LOGGER.info( "work finished" )
         # pylint: disable=W0703
         except Exception:
             _LOGGER.exception("work terminated" )
@@ -112,13 +114,14 @@ class QThreadList( QtCore.QObject ):
 
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, logs=True):
         super().__init__( parent )
         self.threads = list()
         self.finishCounter = 0
+        self.logging = logs
 
     def appendFunction(self, function, args=None):
-        worker = ThreadWorker( function, args, self )
+        worker = ThreadWorker( function, args, self, self.logging )
         worker.thread.finished.connect( self._threadFinished )
         self.threads.append( worker )
 
@@ -127,7 +130,8 @@ class QThreadList( QtCore.QObject ):
 #             self.appendFunction( func, arg )
 
     def start(self):
-        _LOGGER.info( "starting threads" )
+        if self.logging:
+            _LOGGER.info( "starting threads" )
         for thr in self.threads:
             thr.start()
 
@@ -136,13 +140,13 @@ class QThreadList( QtCore.QObject ):
             thr.wait()
 
     def _threadFinished(self):
-        #_LOGGER.info( "thread finished" )
         self.finishCounter += 1
         if self.finishCounter == len( self.threads ):
             self._computingFinished()
 
     def _computingFinished(self):
-        _LOGGER.info( "all threads finished" )
+        if self.logging:
+            _LOGGER.info( "all threads finished" )
         self.finished.emit()
 
 
@@ -160,10 +164,10 @@ class QThreadMeasuredList( QThreadList ):
         super().start()
 
     def _computingFinished(self):
-        super()._computingFinished()
         endTime = datetime.datetime.now()
         diffTime = endTime - self.startTime
         _LOGGER.info( "computation time: %s", diffTime )
+        super()._computingFinished()
 
     @staticmethod
     def calculate( parent, function, args=None ):

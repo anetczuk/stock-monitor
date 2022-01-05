@@ -22,6 +22,7 @@
 #
 
 import logging
+import time
 import datetime
 
 from PyQt5 import QtCore, QtWidgets, QtGui
@@ -34,6 +35,7 @@ from stockmonitor.gui.widget import logwidget
 from stockmonitor.gui.widget.dataframetable import DataFrameTable
 from stockmonitor.gui.trayicon import load_main_icon
 from stockmonitor.gui.utils import set_label_url
+from stockmonitor.gui import threadlist
 
 from . import uiloader
 from . import trayicon
@@ -72,6 +74,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.overallProfitLabel.setStyleSheet("font-weight: bold")
 
         self.tickTimer = QtCore.QTimer( self )
+        ## if function takes longer than timer timeout, then next timeout is emmited immediately
         self.tickTimer.timeout.connect( self.updateTrayIndicator )
 #         self.tickTimer.start( 60 * 1000 )                           ## every minute
 
@@ -345,7 +348,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         widgets = self.findChildren( AppWindow )
         for w in widgets:
             w.setWindowIconTheme( theme )
-
+        
     def updateTrayIndicator(self, forceRefresh=True ):
         currDateTime = datetime.datetime.now()
         weekDay = currDateTime.weekday()                               # 0 for Monday
@@ -365,6 +368,21 @@ class MainWindow( QtBaseClass ):           # type: ignore
             self.trayIcon.clearString()
             return
 
+        activeTimer = self.tickTimer.isActive()
+        if activeTimer:
+            self.tickTimer.stop()
+
+        threads = threadlist.QThreadList( self, False )
+        threads.finished.connect( threads.deleteLater )
+
+        if activeTimer:
+            threads.finished.connect( self.tickTimer.start, QtCore.Qt.QueuedConnection )
+
+        threads.appendFunction( self._handleTrayIndicatorUpdate, [forceRefresh] )
+
+        threads.start()
+
+    def _handleTrayIndicatorUpdate(self, forceRefresh=True):
         _LOGGER.debug("updating tray indicator")
         self.data.gpwIndexesData.getWorksheetData( forceRefresh )
         isin = "PL9999999987"                                           ## wig20
