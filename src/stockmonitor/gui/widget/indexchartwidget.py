@@ -35,6 +35,7 @@ from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord
 from .. import uiloader
 
 from .mpl.mpltoolbar import NavigationToolbar
+from stockmonitor.gui.dataobject import DataObject
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-        self.dataObject = None
+        self.dataObject: DataObject = None
         self.isin = None
 
         if parentWidget is not None:
@@ -68,8 +69,8 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
 
-    def connectData(self, dataObject, isin):
-        self.dataObject = dataObject
+    def connectData(self, dataObject: DataObject, isin):
+        self.dataObject: DataObject = dataObject
         self.isin       = isin
         self.dataObject.stockDataChanged.connect( self.updateData )
         self.updateData( False )
@@ -110,7 +111,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         retList = []
         for i in range(0, self.ui.rangeCB.count()):
             rangeText = self.ui.rangeCB.itemText( i )
-            indexData: GpwIndexIntradayMap = self.dataObject.dataContainer.gpwIndexIntradayData
+            indexData: GpwIndexIntradayMap = self.dataObject.gpwIndexIntradayData
             intraSource: GpwCurrentIndexIntradayData = indexData.getSource( self.isin, rangeText )
             retList.append( intraSource )
             
@@ -166,7 +167,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
 
     def getReferenceValue(self):
-        indexData = self.dataObject.dataContainer.gpwIndexIntradayData
+        indexData: GpwIndexIntradayMap = self.dataObject.gpwIndexIntradayData
         intraSource = indexData.getSource( self.isin, "14D" )
         dataFrame = intraSource.getWorksheetData()
         if dataFrame is None:
@@ -185,12 +186,17 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
     def getIntradayDataSource(self):
         rangeText = self.ui.rangeCB.currentText()
-        indexData = self.dataObject.dataContainer.gpwIndexIntradayData
+        indexData = self.dataObject.gpwIndexIntradayData
         intraSource = indexData.getSource( self.isin, rangeText )
         return intraSource
 
     def getCurrentDataSource(self) -> GpwCurrentIndexesData:
         return self.dataObject.gpwIndexesData
+    
+    def deleteData(self):
+        if self.dataObject:
+            dataMap: GpwIndexIntradayMap = self.dataObject.gpwIndexIntradayData
+            dataMap.deleteData( self.isin )
 
 
 def create_window( dataObject, isin, parent=None ):
@@ -198,6 +204,7 @@ def create_window( dataObject, isin, parent=None ):
     chart = IndexChartWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
+    chartWindow.windowClosed.connect( chart.deleteData )
 
     chart.connectData(dataObject, isin)
 

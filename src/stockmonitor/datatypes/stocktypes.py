@@ -73,57 +73,54 @@ class StockDataWrapper( BaseWorksheetDAOProvider ):
 ## ==================================================
 
 
-class RangeIntradayDict():
-    
-    def __init__(self):
-        self.dataDict: Dict[ str, GpwCurrentStockIntradayData ] = dict()
+class DoubleDict():
 
-    def getData(self, isin, rangeCode ) -> GpwCurrentStockIntradayData:
-        source = self.dataDict.get( rangeCode, None )
-        if source is not None:
-            return source
-        source = GpwCurrentStockIntradayData( isin, rangeCode )
-        self.dataDict[ rangeCode ] = source
-        return source
-    
-    def values(self):
-        return self.dataDict.values()
+    def __init__( self, factory_function=None ):
+        self.dataDict = dict()
+        self.factory_function = factory_function
 
+    def getData( self, key, subkey ):
+        subDict = self._subdict( key )
+        dictValue = subDict.get( subkey, None )
+        if dictValue is None:
+            dictValue = self._makeValue( key, subkey )
+            subDict[ subkey ] = dictValue
+        return dictValue
 
-class ISINIntradayDict():
-    
-    def __init__(self):
-        self.dataDict: Dict[ str, RangeIntradayDict ] = dict()
-        
-    def getData(self, isin, rangeCode ) -> GpwCurrentStockIntradayData:
-        rangeDict: RangeIntradayDict = self.dataDict.get( isin, None )
-        if rangeDict is None:
-            rangeDict = RangeIntradayDict()
-            self.dataDict[ isin ] = rangeDict
-        return rangeDict.getData( isin, rangeCode )
-    
-    def deleteData(self, isin):
-        self.dataDict.pop( isin, None)
+    def deleteData(self, key):
+        self.dataDict.pop( key, None )
         
     def getValues(self):
         retList = []
-        for rangeDict in self.dataDict.values():
-            data = rangeDict.values()
-            retList.extend( data )
+        for subDict in self.dataDict.values():
+            dictValue = subDict.values()
+            retList.extend( dictValue )
         return retList
     
     def printData(self):
-        for isin in self.dataDict:
-            rangeDict: RangeIntradayDict = self.dataDict[ isin ]
-            for rangeCode in rangeDict.dataDict:
-                print( "key: %s-%s" % ( isin, rangeCode ) )
+        for key in self.dataDict:
+            subDict = self.dataDict[ key ]
+            for subkey in subDict:
+                print( "key: %s-%s" % ( key, subkey ) )
+                
+    def _subdict(self, key):
+        subDict = self.dataDict.get( key, None )
+        if subDict is None:
+            subDict = dict()
+            self.dataDict[ key ] = subDict
+        return subDict
+    
+    def _makeValue(self, key, subkey):
+        if self.factory_function is None:
+            return None
+        return self.factory_function( key, subkey )
 
 
 class GpwStockIntradayMap( StockDataProvider ):
     """Container for stock data for stock charts."""
 
     def __init__(self):
-        self.dataDict: ISINIntradayDict = ISINIntradayDict()
+        self.dataDict = DoubleDict( self._makeValue )
 
     ## override
     def accessData(self, forceRefresh=True):
@@ -134,54 +131,46 @@ class GpwStockIntradayMap( StockDataProvider ):
         for val in values:
             val.accessWorksheetData( forceRefresh )
 
-#     def getData(self, isin) -> GpwCurrentStockIntradayData:
-#         source: GpwCurrentStockIntradayData = self.getSource(isin)
-#         return source.getWorksheetData()
-
-    def deleteData(self, isin):
-        self.dataDict.deleteData(isin)
-
     def getSource(self, isin, rangeCode=None) -> GpwCurrentStockIntradayData:
         if rangeCode is None:
             rangeCode = "1D"
         return self.dataDict.getData( isin, rangeCode )
 
+    def deleteData(self, isin):
+        self.dataDict.deleteData(isin)
+
     def printData(self):
         self.dataDict.printData()
+        
+    def _makeValue(self, isin, rangeCode):
+        return GpwCurrentStockIntradayData( isin, rangeCode )
 
 
 class GpwIndexIntradayMap( StockDataProvider ):
     """Container for index data for index charts."""
 
     def __init__(self):
-        self.dataDict = dict()
+        self.dataDict = DoubleDict( self._makeValue )
 
     ## override
     def accessData(self, forceRefresh=True):
-        if len( self.dataDict ) < 1:
+        values = self.dataDict.getValues()
+        if len( values ) < 1:
             _LOGGER.debug( "nothing to access" )
             return
-        for val in self.dataDict.values():
+        for val in values:
             val.accessWorksheetData( forceRefresh )
-
-    def getData(self, isin):
-        source = self.getSource(isin)
-        return source.getWorksheetData()
 
     def getSource(self, isin, rangeCode=None) -> GpwCurrentIndexIntradayData:
         if rangeCode is None:
             rangeCode = "1D"
-        key = isin + "-" + rangeCode
-        source = self.dataDict.get( key, None )
-        if source is not None:
-            return source
-        source = GpwCurrentIndexIntradayData( isin, rangeCode )
-        self.dataDict[ key ] = source
-        return source
+        return self.dataDict.getData( isin, rangeCode )
 
-    def set(self, isin, source):
-        self.dataDict[ isin ] = source
+    def deleteData(self, isin):
+        self.dataDict.deleteData(isin)
 
-#     def getWorksheetData(self, forceRefresh=True):
-#         for val in self.dataDict.values():
-#             val.getWorksheetData( forceRefresh )
+    def printData(self):
+        self.dataDict.printData()
+
+    def _makeValue(self, isin, rangeCode):
+        return GpwCurrentIndexIntradayData( isin, rangeCode )
