@@ -84,13 +84,13 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
     def repaintData(self):
         self.updateData( False )
 
-    def updateData(self, forceRefresh=False):
+    def updateData(self, forceRefresh=False, access=False):
         dataSources = self._dataSourceObjectsList()
         if not dataSources:
             self._updateView()
             return
         
-        if forceRefresh is False:
+        if forceRefresh is False and access is False:
             for source in dataSources:
                 source.getWorksheetData( forceRefresh )
             self._updateView()
@@ -103,7 +103,10 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
 
         for source in dataSources:
-            threads.appendFunction( source.getWorksheetData, [forceRefresh] )
+            if access is False:
+                threads.appendFunction( source.getWorksheetData, [forceRefresh] )
+            else:
+                threads.appendFunction( source.accessWorksheetData, [forceRefresh] )
 
         threads.start()
         
@@ -215,5 +218,7 @@ def create_window( dataObject, isin, parent=None ):
     chart.ui.nameLabel.setText( name )
 
     chartWindow.show()
+
+    chart.updateData( access=True )
 
     return chartWindow
