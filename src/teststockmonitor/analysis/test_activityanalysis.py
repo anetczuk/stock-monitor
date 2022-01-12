@@ -55,6 +55,7 @@ class GpwCurrentIntradayProviderMock( GpwCurrentIntradayProvider ):
 
 class MetaStockIntradayProviderMock( MetaStockIntradayProvider ):
 
+    ## override
     def _loadData(self):
         dataAccess = MetaStockIntradayData()
 

@@ -137,7 +137,7 @@ class MetaStockIntradayProvider( ActivityIntradayDataProvider ):
         return self._getData( dataFrame, name )
 
     def _loadData(self):
-        return self.intradayData.getWorksheetForDate( self.accessDate )
+        return self.intradayData.accessWorksheetForDate( self.accessDate )
 
     def _getData(self, dataFrame, name ):
         nameData = dataFrame[ dataFrame["name"] == name ]
@@ -313,10 +313,13 @@ class ActivityAnalysis:
         if self.forceRecalc is False:
             dateString = currDate.isoformat()
             picklePath = tmp_dir + "data/activity/%s.pickle" % dateString
-            dataPair = persist.load_object_simple( picklePath, None )
+            dataPair = persist.load_object_simple( picklePath, None, silent=True )
             if dataPair is None:
-                _LOGGER.debug( "no precalculated data found -- precalculating" )
+#                 _LOGGER.debug( "no precalculated data found -- precalculating [%s]", picklePath )
                 dataPair = self.precalculateData( currDate )
+#                 dataframeList = dataPair[0]
+#                 if len( dataframeList ) > 0:
+#                     persist.store_object_simple(dataPair, picklePath)
                 persist.store_object_simple(dataPair, picklePath)
         else:
             dataPair = self.precalculateData( currDate )

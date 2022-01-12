@@ -58,6 +58,11 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
             self.dataDate = dataDate
             return self.getWorksheetData( forceRefresh )
 
+        @synchronized
+        def accessWorksheetForDate( self, dataDate: datetime.date, forceRefresh=False ):
+            self.dataDate = dataDate
+            return self.accessWorksheetData( forceRefresh )
+
         def getDataPath(self):
             dateString = self.dataDate.isoformat()
             return tmp_dir + "data/bossa/intraday/%s.prn" % dateString
@@ -107,6 +112,9 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
     
     def getWorksheetForDate(self, dataDate, forceRefresh=False):
         return self.dao.getWorksheetForDate( dataDate, forceRefresh )
+    
+    def accessWorksheetForDate(self, dataDate, forceRefresh=False):
+        return self.dao.accessWorksheetForDate( dataDate, forceRefresh )
 
 
 # ## https://info.bossa.pl/index.jsp?layout=mstock&page=1&news_cat_id=706&dirpath=/ciagle/mstock/sesjacgl

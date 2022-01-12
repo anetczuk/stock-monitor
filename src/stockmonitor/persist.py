@@ -97,20 +97,23 @@ def store_backup( inputObject, outputFile ):
     return True
 
 
-def load_object_simple( inputFile, defaultValue=None ):
+def load_object_simple( inputFile, defaultValue=None, silent=False ):
     try:
 #         _LOGGER.info( "loading data from: %s", inputFile )
         with open( inputFile, 'rb') as fp:
             return pickle.load(fp)
     except AttributeError:
-        _LOGGER.exception( "failed to load: %s", inputFile )
+        if silent is False:
+            _LOGGER.exception( "failed to load: %s", inputFile )
         return defaultValue
     except FileNotFoundError:
-        _LOGGER.exception( "failed to load: %s", inputFile, exc_info=False )
+        if silent is False:
+            _LOGGER.exception( "failed to load: %s", inputFile, exc_info=False )
         return defaultValue
     except ModuleNotFoundError:
         ## class moved to other module
-        _LOGGER.exception( "failed to load: %s", inputFile )
+        if silent is False:
+            _LOGGER.exception( "failed to load: %s", inputFile )
         return defaultValue
 
 

@@ -87,6 +87,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         elif self.ui.rangeDataRB.isChecked():
             _LOGGER.warning("calculating based on metastock intraday")
             threadlist.QThreadMeasuredList.calculate( self, self._calculatePrev )
+            #self._calculatePrev()
         else:
             _LOGGER.warning("unknown state")
 

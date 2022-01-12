@@ -45,7 +45,7 @@ def download_html_content( url, outputPath ):
         return urlretrieve( url, outputPath )
 
     except urllib.error.HTTPError:
-        _LOGGER.exception( "exception when accessing: %s", url )
+        _LOGGER.exception( "exception when accessing: %s", url, exc_info=False )
         raise
     except urllib.error.URLError as ex:
         _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
