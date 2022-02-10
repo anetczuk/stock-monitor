@@ -55,7 +55,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
     
         def getDataUrl(self):
             url = ("https://www.gpw.pl/ajaxindex.php"
-                   "?action=GPWQuotations&start=showTable&tab=all&lang=PL&full=1&format=html&download_xls=1")
+                   "?action=GPWQuotations&start=showTable&tab=all&lang=PL&type=&full=1&format=html&download_xls=1")
             return url
     
         @synchronized

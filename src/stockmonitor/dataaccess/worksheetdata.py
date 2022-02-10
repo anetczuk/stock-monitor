@@ -112,7 +112,7 @@ class WorksheetData( BaseWorksheetData ):
             self.downloadData()
             self.parseWorksheetFromFile( dataPath )
         except BaseException as ex:
-            _LOGGER.exception( "unable to load object data: %s", ex, exc_info=False )
+            _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
             self.storage.clear()
 
     def downloadData(self):
@@ -282,6 +282,8 @@ class BaseWorksheetDAO():
     def getRowByValue( self, rowColumnType: StockDataType, rowValue ):
         colIndex = self.getDataColumnIndex( rowColumnType )
         dataFrame: DataFrame = self.getDataFrame()
+        if dataFrame is None:
+            return None
         ## extract column and find row index by comparing with 'value', then return row by the index
         retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex] == rowValue ]
         return retRows.squeeze()                                            ## convert 1 row dataframe to series

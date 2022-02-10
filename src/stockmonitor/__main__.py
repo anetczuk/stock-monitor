@@ -3,7 +3,6 @@
 ##
 
 
-if __name__ == '__main__':
-    from .main import main
+from .main import main
 
-    main()
+main()

@@ -51,6 +51,9 @@ def grab_content( url, button ):
         postData["tokenv"]                = soup.find( 'input', {'name': 'tokenv'} ).get('value')
         postData["javax.faces.ViewState"] = soup.find( 'input', {'name': 'javax.faces.ViewState'} ).get('value')
 
+#         _LOGGER.debug( "content:\n%s", soup )
+#         _LOGGER.debug( "POST data: %s\n%s", postUrl, postData )
+
         req = requests.Request('POST', postUrl, data=postData )
         prepped = req.prepare()
 
