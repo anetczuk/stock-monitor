@@ -152,8 +152,8 @@ class QThreadList( QtCore.QObject ):
 
 class QThreadMeasuredList( QThreadList ):
 
-    def __init__(self, parent=None):
-        super().__init__( parent )
+    def __init__(self, parent=None, logs=True):
+        super().__init__( parent, logs )
         self.startTime = None
 
     def deleteOnFinish(self):
@@ -181,12 +181,14 @@ class QThreadMeasuredList( QThreadList ):
 
 
 class SerialList( QtCore.QObject ):
+    """ List without multithreading. """
 
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, logs=True):
         super().__init__( parent )
         self.commandsList = list()
+        self.logging = logs
         self.startTime = None
 
     def appendFunction(self, function, args=None):
@@ -194,14 +196,16 @@ class SerialList( QtCore.QObject ):
 
     def start(self):
         self.startTime = datetime.datetime.now()
-        _LOGGER.info( "starting computation" )
+        if self.logging:
+            _LOGGER.info( "starting computation" )
         for func, args in self.commandsList:
             if func is not None:
                 func( *args )
         self.finished.emit()
         endTime = datetime.datetime.now()
         diffTime = endTime - self.startTime
-        _LOGGER.info( "computation time: %s", diffTime )
+        if self.logging:
+            _LOGGER.info( "computation time: %s", diffTime )
 
     def join(self):
         pass
@@ -271,3 +275,12 @@ class ProcessList( QtCore.QObject ):
         endTime = datetime.datetime.now()
         diffTime = endTime - self.startTime
         _LOGGER.info( "computation time: %s", diffTime )
+
+
+## ========================================================
+
+
+def get_threading_list():
+    """ Factory function. """
+#     return QThreadMeasuredList
+    return SerialList

@@ -355,8 +355,10 @@ class DataObject( QObject ):
     def refreshStockData(self, forceRefresh=True):
 #         threads = threadlist.QThreadList( self )
 #         threads = threadlist.SerialList( self )
-        threads = threadlist.QThreadMeasuredList( self )
+#         threads = threadlist.QThreadMeasuredList( self )
 #         threads = threadlist.ProcessList( self )
+        ThreadingListType = threadlist.get_threading_list()
+        threads = ThreadingListType( self )
 
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
@@ -373,8 +375,10 @@ class DataObject( QObject ):
     def refreshAllData(self, forceRefresh=True):
 #         threads = threadlist.QThreadList( self )
 #         threads = threadlist.SerialList( self )
-        threads = threadlist.QThreadMeasuredList( self )
+#         threads = threadlist.QThreadMeasuredList( self )
 #         threads = threadlist.ProcessList( self )
+        ThreadingListType = threadlist.get_threading_list()
+        threads = ThreadingListType( self )
 
         threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
