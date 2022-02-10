@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 
 import pandas
@@ -29,7 +30,8 @@ from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
+    download_html_content
 from stockmonitor.dataaccess.convert import convert_float, convert_percentage,\
     apply_on_column
 from stockmonitor.synchronized import synchronized
@@ -48,7 +50,16 @@ class GlobalIndexesData( BaseWorksheetDAO ):
     
         def getDataUrl(self):
             return "https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy"
-    
+
+        ## override    
+        def downloadData(self, filePath):
+            url = self.getDataUrl()
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
+
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )

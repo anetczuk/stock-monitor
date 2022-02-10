@@ -21,13 +21,15 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 import datetime
 import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
+    download_html_content
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
 
@@ -47,7 +49,16 @@ class DividendsCalendarData( BaseWorksheetDAO ):
         def getDataUrl(self):
             url = "https://www.stockwatch.pl/dywidendy/"
             return url
-    
+
+        ## override    
+        def downloadData(self, filePath):
+            url = self.getDataUrl()
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
+
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )

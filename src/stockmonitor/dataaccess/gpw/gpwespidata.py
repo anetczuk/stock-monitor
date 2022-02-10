@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 import datetime
 import re
@@ -30,7 +31,8 @@ from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
+    download_html_content
 from stockmonitor.synchronized import synchronized
 
 
@@ -50,7 +52,8 @@ class GpwESPIData( BaseWorksheetDAO ):
         def getDataPath(self):
             return tmp_dir + "data/gpw/espi_data.html"
     
-        def getDataUrl(self):
+        ## override    
+        def downloadData(self, filePath):
             offset = 0
             url = "https://www.gpw.pl/ajaxindex.php" \
                   "?action=GPWEspiReportUnion&start=ajaxSearch&page=komunikaty&format=html&lang=PL&letter=" \
@@ -59,8 +62,11 @@ class GpwESPIData( BaseWorksheetDAO ):
                   "&categoryRaports%5B%5D=EBI&categoryRaports%5B%5D=ESPI" \
                   "&typeRaports%5B%5D=RB&typeRaports%5B%5D=P&typeRaports%5B%5D=Q&typeRaports%5B%5D=O&typeRaports%5B%5D=R" \
                   "&search-xs=&searchText=&date="
-            return url
-    #         return "https://www.gpw.pl/komunikaty"
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:

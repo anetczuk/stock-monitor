@@ -126,7 +126,7 @@ class GpwStockIntradayMap( StockDataProvider ):
     def accessData(self, forceRefresh=True):
         values = self.dataDict.getValues()
         if len( values ) < 1:
-            _LOGGER.debug( "nothing to access" )
+            # _LOGGER.debug( "nothing to access (no open charts)" )
             return
         for val in values:
             val.accessWorksheetData( forceRefresh )
@@ -156,7 +156,7 @@ class GpwIndexIntradayMap( StockDataProvider ):
     def accessData(self, forceRefresh=True):
         values = self.dataDict.getValues()
         if len( values ) < 1:
-            _LOGGER.debug( "nothing to access" )
+            # _LOGGER.debug( "nothing to access (no open charts)" )
             return
         for val in values:
             val.accessWorksheetData( forceRefresh )

@@ -103,31 +103,23 @@ class WorksheetData( BaseWorksheetData ):
     ## override
     @synchronized
     def loadWorksheet(self):
-        dataUrl  = self.getDataUrl()
-        dataPath = self.getDataPath()
-        relPath = os.path.relpath( dataPath )
-        _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", dataUrl, relPath )
         try:
             ## forced refresh or no data -- download new data
-            self.downloadData()
+            dataPath = self.getDataPath()
+
+            ## ensure output directory exists
+            dirPath = os.path.dirname( dataPath )
+            os.makedirs( dirPath, exist_ok=True )
+
+            self.downloadData( dataPath )
             self.parseWorksheetFromFile( dataPath )
         except BaseException as ex:
             _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
             self.storage.clear()
 
-    def downloadData(self):
-        dataPath = self.getDataPath()
-        url = self.getDataUrl()
-#         _LOGGER.debug( "grabbing data from url[%s] to file[%s]", url, dataPath )
-
-        dirPath = os.path.dirname( dataPath )
-        os.makedirs( dirPath, exist_ok=True )
-
-        self._downloadContent( url, dataPath )
-
-    ## to be overriden if needed
-    def _downloadContent( self, url, filePath ):
-        download_html_content( url, filePath )
+    @abc.abstractmethod
+    def downloadData(self, filePath):
+        raise NotImplementedError('You need to define this method in derived class!')
 
     def parseWorksheetFromFile(self, dataPath: str):
 #         _LOGGER.info( "parsing raw data: %s", dataPath )
@@ -150,11 +142,6 @@ class WorksheetData( BaseWorksheetData ):
     ## path can be generated dynamically
     @abc.abstractmethod
     def getDataPath(self):
-        raise NotImplementedError('You need to define this method in derived class!')
-
-    ## URL can be generated dynamically
-    @abc.abstractmethod
-    def getDataUrl(self):
         raise NotImplementedError('You need to define this method in derived class!')
 
 

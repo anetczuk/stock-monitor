@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 import datetime
 
@@ -28,7 +29,8 @@ import json
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
+    download_html_content
 from stockmonitor.dataaccess.convert import apply_on_column, convert_timestamp_datetime
 from stockmonitor.synchronized import synchronized
 
@@ -56,10 +58,16 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
             dateStr  = str(currDate)
             return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
     
-        def getDataUrl(self):
+        ## override    
+        def downloadData(self, filePath):
             modeCode = mode_code( self.rangeCode )
     #         currTimestamp = self.dataTime.timestamp()
-            return generate_chart_data_url( self.isin, modeCode)
+            url = generate_chart_data_url( self.isin, modeCode)
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def getWorksheetForDate(self, dataDate, forceRefresh=False):
@@ -137,11 +145,17 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
             dateStr  = str(currDate)
             return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
     
-        def getDataUrl(self):
+        ## override    
+        def downloadData(self, filePath):
             modeCode      = mode_code( self.rangeCode )
     #         currTimestamp = self.dataTime.timestamp()
-            return generate_chart_data_url( self.isin, modeCode)
-    
+            url = generate_chart_data_url( self.isin, modeCode)
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
+
         def loadWorksheet(self):
             self.dataTime = datetime.datetime.now()
             super().loadWorksheet()

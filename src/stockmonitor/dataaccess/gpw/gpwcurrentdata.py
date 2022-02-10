@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 import datetime
 import time
@@ -35,7 +36,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
-    BaseWorksheetData, BaseWorksheetDAO
+    BaseWorksheetData, BaseWorksheetDAO, download_html_content
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
 from stockmonitor.synchronized import synchronized
@@ -52,11 +53,16 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
     
         def getDataPath(self):
             return tmp_dir + "data/gpw/recent_data.xls"
-    
-        def getDataUrl(self):
+
+        ## override    
+        def downloadData(self, filePath):
             url = ("https://www.gpw.pl/ajaxindex.php"
                    "?action=GPWQuotations&start=showTable&tab=all&lang=PL&type=&full=1&format=html&download_xls=1")
-            return url
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -319,9 +325,14 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
         def getDataPath(self):
             return tmp_dir + "data/gpw/indexes_main_data.html"
     
-        def getDataUrl(self):
+        ## override    
+        def downloadData(self, filePath):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
-            return url
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -347,9 +358,14 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
         def getDataPath(self):
             return tmp_dir + "data/gpw/indexes_macro_data.html"
     
-        def getDataUrl(self):
+        ## override    
+        def downloadData(self, filePath):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
-            return url
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -373,8 +389,14 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
         def getDataPath(self):
             return tmp_dir + "data/gpw/indexes_sectors_data.html"
     
-        def getDataUrl(self):
-            return "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
+        ## override    
+        def downloadData(self, filePath):
+            url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:

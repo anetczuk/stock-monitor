@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 import pandas
 from pandas.core.frame import DataFrame
@@ -84,9 +85,14 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
         def getDataUrl(self):
             url = "https://rss.knf.gov.pl/RssOuterView/"
             return url
-    
-        ## override
-        def _downloadContent( self, url, filePath ):
+
+        ## override    
+        def downloadData(self, filePath):
+            url = self.getDataUrl()
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
             response = grab_content( url, "j_idt8-j_idt14" )
             with open( filePath, "w" ) as text_file:
                 text_file.write( response )
@@ -150,9 +156,14 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
         def getDataUrl(self):
             url = "https://rss.knf.gov.pl/RssOuterView/"
             return url
-    
-        ## override
-        def _downloadContent( self, url, filePath ):
+
+        ## override    
+        def downloadData(self, filePath):
+            url = self.getDataUrl()
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
             response = grab_content( url, "j_idt8-j_idt16" )
             with open( filePath, "w" ) as text_file:
                 text_file.write( response )

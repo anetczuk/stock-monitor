@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 
 import pandas
@@ -29,7 +30,8 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.convert import convert_float, convert_int, cleanup_column, apply_on_column
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
+    download_html_content
 from stockmonitor.synchronized import synchronized
 
 
@@ -47,6 +49,15 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
     
         def getDataUrl(self):
             return "https://www.gpw.pl/wskazniki"
+        
+        ## override    
+        def downloadData(self, filePath):
+            url = self.getDataUrl()
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
         
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -102,10 +113,16 @@ class GpwIsinMapData( BaseWorksheetDAO ):
         def getDataPath(self):
             return tmp_dir + "data/gpw/isin_map_data.html"
     
-        def getDataUrl(self):
+            ## override    
+        def downloadData(self, filePath):
             ## this source does not seem to be viable,
             ## because it lacks a lot of tickers/isin values
-            return "http://infostrefa.com/infostrefa/pl/spolki"
+            url = "http://infostrefa.com/infostrefa/pl/spolki"
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:

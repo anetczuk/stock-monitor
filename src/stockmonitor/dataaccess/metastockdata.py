@@ -33,7 +33,8 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
+    download_html_content
 from stockmonitor.synchronized import synchronized
 
 
@@ -67,9 +68,10 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
             dateString = self.dataDate.isoformat()
             return tmp_dir + "data/bossa/intraday/%s.prn" % dateString
     
-        def getDataUrl(self):
+        ## override    
+        def downloadData(self, filePath):
             dateString = self.dataDate.isoformat()
-            return "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
+            url = "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
     
     #         if self.dataDate == currDate:
     #             ## https://info.bossa.pl/pub/intraday/mstock/daily//tick.zip
@@ -78,11 +80,13 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
     #             ## https://info.bossa.pl/pub/intraday/mstock/daily//2020-09-28-tick.zip
     #             dateString = self.dataDate.isoformat()
     #             return "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
-    
-        ## override
-        def _downloadContent( self, url, filePath ):
+
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
             zipPath = filePath + ".zip"
-            super()._downloadContent( url, zipPath )
+            download_html_content( url, zipPath )
     
             ## extract downloaded file
             _LOGGER.debug( "extracting zip[%s]", zipPath )

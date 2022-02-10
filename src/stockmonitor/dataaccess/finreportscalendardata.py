@@ -21,13 +21,15 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 
 import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
+    download_html_content
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
 
@@ -43,10 +45,15 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
         def getDataPath(self):
             return tmp_dir + "data/strefa/fin_reps_cal_data.html"
     
-        def getDataUrl(self):
+        ## override    
+        def downloadData(self, filePath):
             url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
                    "?sort=asc&order=Data%20publikacji" )
-            return url
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -86,10 +93,15 @@ class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
         def getDataPath(self):
             return tmp_dir + "data/strefa/fin_reps_cal_publ_data.html"
     
-        def getDataUrl(self):
+        ## override    
+        def downloadData(self, filePath):
             url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
                    "?sort=desc&order=Data%20publikacji" )
-            return url
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+
+            download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
