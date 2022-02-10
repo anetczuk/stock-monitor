@@ -42,8 +42,34 @@ _LOGGER = logging.getLogger(__name__)
 
 def grab_content( url, button ):
     with init_session() as currSession:
-        content = currSession.get( url ).content
+        resp = currSession.get( url )
+        resp.raise_for_status()
+        content = resp.content
+        
         soup = BeautifulSoup( content, "html.parser" )
+
+# POST /RssOuterView/faces/start2OuterView.xhtml HTTP/1.1
+# Host: rss.knf.gov.pl
+# User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0
+# Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+# Accept-Language: en-US,en;q=0.5
+# Accept-Encoding: gzip, deflate, br
+# Content-Type: application/x-www-form-urlencoded
+# Content-Length: 174
+# Origin: https://rss.knf.gov.pl
+# Connection: keep-alive
+# Referer: https://rss.knf.gov.pl/RssOuterView/faces/start2OuterView.xhtml
+# Cookie: JSESSIONID=592cd6515489808fc6441df4fcb8; __utmc=209674056; cookiesession1=61A38EB6ATSUTV1491ISM9V9A7H0D358
+# Upgrade-Insecure-Requests: 1
+# Sec-Fetch-Dest: document
+# Sec-Fetch-Mode: navigate
+# Sec-Fetch-Site: same-origin
+# Sec-Fetch-User: ?1
+
+# j_idt8=j_idt8
+# j_idt8-j_idt14=Lista pozycji aktualnych
+# tokenv=N0MMSW708JZG602RFTNFYJF700RU3VS0EGB669MAYB5SNC8V
+# javax.faces.ViewState=9187231122682369284:-2736673537589052604
 
         postUrl = "https://rss.knf.gov.pl/RssOuterView/faces/start2OuterView.xhtml"
         postData = {}
@@ -55,10 +81,11 @@ def grab_content( url, button ):
 #         _LOGGER.debug( "content:\n%s", soup )
 #         _LOGGER.debug( "POST data: %s\n%s", postUrl, postData )
 
-        req = requests.Request('POST', postUrl, data=postData )
-        prepped = req.prepare()
-
-        resp = currSession.send( prepped )
+        resp = currSession.post( postUrl, data=postData )
+#         req = requests.Request('POST', postUrl, data=postData )
+#         prepped = req.prepare()
+# 
+#         resp = currSession.send( prepped )
         resp.raise_for_status()
 
         strcontent = resp.content.decode( "utf-8" )
