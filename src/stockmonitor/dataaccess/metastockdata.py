@@ -36,6 +36,7 @@ from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
     download_html_content
 from stockmonitor.synchronized import synchronized
+from stockmonitor.pprint import fullname
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -83,20 +84,24 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
 
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            zipPath = filePath + ".zip"
-            download_html_content( url, zipPath )
-    
-            ## extract downloaded file
-            _LOGGER.debug( "extracting zip[%s]", zipPath )
-            with tempfile.TemporaryDirectory() as tmpdir:
-                zipMember = "a_cgl.prn"
-                with zipfile.ZipFile( zipPath, 'r' ) as zip_ref:
-                    zip_ref.extract( zipMember, path=tmpdir )
-                    tmpFile = os.path.join( tmpdir, zipMember )
-                    _LOGGER.debug( "moving extracted file[%s] to [%s]", tmpFile, filePath )
-                    shutil.move( tmpFile, filePath )
+            try:
+                zipPath = filePath + ".zip"
+                download_html_content( url, zipPath )
+        
+                ## extract downloaded file
+                _LOGGER.debug( "extracting zip[%s]", zipPath )
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    zipMember = "a_cgl.prn"
+                    with zipfile.ZipFile( zipPath, 'r' ) as zip_ref:
+                        zip_ref.extract( zipMember, path=tmpdir )
+                        tmpFile = os.path.join( tmpdir, zipMember )
+                        _LOGGER.debug( "moving extracted file[%s] to [%s]", tmpFile, filePath )
+                        shutil.move( tmpFile, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
     
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:

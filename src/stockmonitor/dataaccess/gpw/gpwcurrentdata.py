@@ -36,10 +36,12 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
-    BaseWorksheetData, BaseWorksheetDAO, download_html_content
+    BaseWorksheetData, BaseWorksheetDAO, download_html_content,\
+    download_html_content_list
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
 from stockmonitor.synchronized import synchronized
+from stockmonitor.pprint import fullname
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -60,9 +62,16 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
                    "?action=GPWQuotations&start=showTable&tab=all&lang=PL&type=&full=1&format=html&download_xls=1")
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            download_html_content( url, filePath )
+            try:
+                url_list = []
+#                 url_list.append( "https://www.gpw.pl/akcje" )
+                url_list.append( url )
+                download_html_content_list( url_list, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
+                raise
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -330,9 +339,14 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
-
-            download_html_content( url, filePath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
+                raise
+            # download_html_content( url, filePath )
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -363,9 +377,13 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            download_html_content( url, filePath )
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -394,9 +412,13 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            download_html_content( url, filePath )
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:

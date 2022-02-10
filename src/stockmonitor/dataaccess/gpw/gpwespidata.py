@@ -32,8 +32,9 @@ from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
-    download_html_content
+    download_html_content, download_html_content_list
 from stockmonitor.synchronized import synchronized
+from stockmonitor.pprint import fullname
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -64,9 +65,13 @@ class GpwESPIData( BaseWorksheetDAO ):
                   "&search-xs=&searchText=&date="
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            download_html_content( url, filePath )
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:

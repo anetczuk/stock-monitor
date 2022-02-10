@@ -33,6 +33,7 @@ from stockmonitor.dataaccess.convert import convert_float, convert_int, cleanup_
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
     download_html_content
 from stockmonitor.synchronized import synchronized
+from stockmonitor.pprint import fullname
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,9 +56,13 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            download_html_content( url, filePath )
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
         
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -120,9 +125,13 @@ class GpwIsinMapData( BaseWorksheetDAO ):
             url = "http://infostrefa.com/infostrefa/pl/spolki"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            download_html_content( url, filePath )
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
     
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:

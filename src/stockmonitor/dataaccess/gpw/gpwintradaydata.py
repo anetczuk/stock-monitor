@@ -33,6 +33,7 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDA
     download_html_content
 from stockmonitor.dataaccess.convert import apply_on_column, convert_timestamp_datetime
 from stockmonitor.synchronized import synchronized
+from stockmonitor.pprint import fullname
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -65,9 +66,13 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
             url = generate_chart_data_url( self.isin, modeCode)
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            download_html_content( url, filePath )
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
     
         @synchronized
         def getWorksheetForDate(self, dataDate, forceRefresh=False):
@@ -152,9 +157,13 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
             url = generate_chart_data_url( self.isin, modeCode)
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            download_html_content( url, filePath )
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
 
         def loadWorksheet(self):
             self.dataTime = datetime.datetime.now()

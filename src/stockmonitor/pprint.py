@@ -21,6 +21,23 @@
 # SOFTWARE.
 #
 
+import re
+
+
+def fullname( instance ):
+    typename = str( type( instance ) )
+    names = re.findall( '\'([^\']*)\'', typename )
+    if len(names) < 1:
+        return typename
+    return names[0]
+
+    ##return type( instance )
+    
+##    module = instance.__class__.__module__
+##    if module is None or module == str.__class__.__module__:
+##        return instance.__class__.__name__
+##    return module + '.' + instance.__class__.__name__
+
 
 def pprint(variable, indent=0):
     if variable is None:

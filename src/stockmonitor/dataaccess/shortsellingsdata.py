@@ -30,18 +30,18 @@ import requests
 from bs4 import BeautifulSoup
 # import dryscrape
 
-from stockmonitor.dataaccess import tmp_dir
+from stockmonitor.dataaccess import tmp_dir, init_session
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
+from stockmonitor.pprint import fullname
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def grab_content( url, button ):
-    with requests.Session() as currSession:
-        currSession.headers.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"})
+    with init_session() as currSession:
         content = currSession.get( url ).content
         soup = BeautifulSoup( content, "html.parser" )
 
@@ -59,6 +59,7 @@ def grab_content( url, button ):
         prepped = req.prepare()
 
         resp = currSession.send( prepped )
+        resp.raise_for_status()
 
         strcontent = resp.content.decode( "utf-8" )
         return strcontent
@@ -91,12 +92,16 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            response = grab_content( url, "j_idt8-j_idt14" )
-            with open( filePath, "w" ) as text_file:
-                text_file.write( response )
-    
+            try:
+                response = grab_content( url, "j_idt8-j_idt14" )
+                with open( filePath, "w" ) as text_file:
+                    text_file.write( response )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
+
         ## override
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
@@ -162,11 +167,15 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing and parsing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
 
-            response = grab_content( url, "j_idt8-j_idt16" )
-            with open( filePath, "w" ) as text_file:
-                text_file.write( response )
+            try:
+                response = grab_content( url, "j_idt8-j_idt16" )
+                with open( filePath, "w" ) as text_file:
+                    text_file.write( response )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                raise
     
         ## override
         def _parseDataFromFile(self, dataFile) -> DataFrame:

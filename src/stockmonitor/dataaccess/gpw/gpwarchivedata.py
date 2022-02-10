@@ -29,7 +29,7 @@ import datetime
 import urllib.error
 import xlrd
 
-from stockmonitor.dataaccess import tmp_dir, urlretrieve
+from stockmonitor.dataaccess import tmp_dir, retrieve_url
 from stockmonitor.dataaccess.datatype import ArchiveDataType
 
 
@@ -145,7 +145,7 @@ class GpwArchiveData:
         os.makedirs( dirPath, exist_ok=True )
 
         try:
-            urlretrieve( url, filePath )
+            retrieve_url( url, filePath )
 
             return filePath
         except urllib.error.URLError as ex:

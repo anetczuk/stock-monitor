@@ -31,9 +31,10 @@ import urllib
 
 from pandas.core.frame import DataFrame
 
+from stockmonitor.pprint import fullname
 from stockmonitor import persist
 from stockmonitor.synchronized import synchronized
-from stockmonitor.dataaccess import urlretrieve
+from stockmonitor.dataaccess import retrieve_url, retrieve_url_list
 from stockmonitor.dataaccess.datatype import StockDataType
 
 
@@ -42,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def download_html_content( url, outputPath ):
     try:
-        return urlretrieve( url, outputPath )
+        return retrieve_url( url, outputPath )
 
     except urllib.error.HTTPError:
         _LOGGER.exception( "exception when accessing: %s", url, exc_info=False )
@@ -53,6 +54,23 @@ def download_html_content( url, outputPath ):
     except ConnectionResetError as ex:
         _LOGGER.exception( "unable to access -- connection reset: %s %s", url, ex, exc_info=False )
         raise
+
+
+def download_html_content_list( url_list, outputPath ):
+    return retrieve_url_list( url_list, outputPath )
+
+#     try:
+#         return retrieve_url_list( url_list, outputPath )
+# 
+#     except urllib.error.HTTPError:
+#         _LOGGER.exception( "exception when accessing: %s", url_list[-1], exc_info=False )
+#         raise
+#     except urllib.error.URLError as ex:
+#         _LOGGER.exception( "unable to access: %s %s", url_list[-1], ex, exc_info=False )
+#         raise
+#     except ConnectionResetError as ex:
+#         _LOGGER.exception( "unable to access -- connection reset: %s %s", url_list[-1], ex, exc_info=False )
+#         raise
 
 
 ## ==============================================================================
@@ -113,8 +131,9 @@ class WorksheetData( BaseWorksheetData ):
 
             self.downloadData( dataPath )
             self.parseWorksheetFromFile( dataPath )
+
         except BaseException as ex:
-            _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
+            # _LOGGER.exception( "%s: unable to load object data -- %s: %s", fullname(self), type(ex), ex, exc_info=False )
             self.storage.clear()
 
     @abc.abstractmethod
