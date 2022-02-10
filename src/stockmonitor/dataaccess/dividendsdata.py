@@ -43,15 +43,15 @@ class DividendsCalendarData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-        
+
         def getDataPath(self):
             return tmp_dir + "data/stockwatch/dividends_cal_data.html"
-    
+
         def getDataUrl(self):
             url = "https://www.stockwatch.pl/dywidendy/"
             return url
 
-        ## override    
+        ## override
         def downloadData(self, filePath):
             url = self.getDataUrl()
 
@@ -90,7 +90,7 @@ class DividendsCalendarData( BaseWorksheetDAO ):
             return dateObject
         except ValueError:
             return datetime.date( 1, 1, 1 )
-        
+
     ## get column index
     ## override
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:

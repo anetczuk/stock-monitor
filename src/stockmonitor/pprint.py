@@ -32,7 +32,7 @@ def fullname( instance ):
     return names[0]
 
     ##return type( instance )
-    
+
 ##    module = instance.__class__.__module__
 ##    if module is None or module == str.__class__.__module__:
 ##        return instance.__class__.__name__

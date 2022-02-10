@@ -348,7 +348,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         widgets = self.findChildren( AppWindow )
         for w in widgets:
             w.setWindowIconTheme( theme )
-        
+
     def updateTrayIndicator(self, forceRefresh=True ):
         currDateTime = datetime.datetime.now()
         weekDay = currDateTime.weekday()                               # 0 for Monday

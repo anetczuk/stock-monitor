@@ -36,7 +36,7 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
 
         def data_path():
             return get_data_path( "shortsellings-current.html" )
-  
+
         self.dataAccess.dao.getDataPath = data_path           # type: ignore
         self.dataAccess.dao.storage = WorksheetStorageMock()
         self.dataAccess.dao.parseWorksheetFromFile( data_path() )
@@ -55,7 +55,7 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
         currData = self.dataAccess.getWorksheetData( False )
         dataLen = len( currData )
         self.assertEqual(dataLen, 5)
- 
+
     def test_getISIN(self):
 #         print( self.dataAccess.getWorksheetData() )
         rowData = self.dataAccess.getISIN( 3 )
@@ -63,27 +63,27 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
 
 
 class HistoryShortSellingsDataTest(unittest.TestCase):
- 
+
     def setUp(self):
         ## Called before testfunction is executed
         self.dataAccess = HistoryShortSellingsData()
- 
+
         def data_path():
             return get_data_path( "shortsellings-history.html" )
- 
+
         self.dataAccess.dao.getDataPath = data_path           # type: ignore
         self.dataAccess.dao.storage = WorksheetStorageMock()
         self.dataAccess.dao.parseWorksheetFromFile( data_path() )
- 
+
     def tearDown(self):
         ## Called after testfunction was executed
         pass
- 
+
     def test_getWorksheetData(self):
         currData = self.dataAccess.getWorksheetData( False )
         dataLen = len( currData )
         self.assertEqual(dataLen, 30)
-        
+
     def test_getISIN(self):
 #         print( self.dataAccess.getWorksheetData() )
         rowData = self.dataAccess.getISIN( 3 )

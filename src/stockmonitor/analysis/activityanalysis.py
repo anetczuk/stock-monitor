@@ -48,10 +48,10 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ActivityIntradayDataProvider():
-    
+
     pass
-    
-    
+
+
 class GpwCurrentIntradayProvider( ActivityIntradayDataProvider ):
 
     def __init__(self):

@@ -77,7 +77,7 @@ class StockDataType(Enum):
     RECENT_TRANS_TIME = ()  ## czas ostatniej transakcji
     REFERENCE = ()          ## kurs odniesienia
     CHANGE_TO_REF = ()      ## zmiana do kursu odniesienia (wyrazona w %)
-    
+
     NO_DIV_DAY = ()         ## Notowanie bez dywidendy
 
 #     CLOSING = ()            ## kurs zamkniecia

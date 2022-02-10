@@ -52,11 +52,11 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-    
+
         def getDataPath(self):
             return tmp_dir + "data/gpw/recent_data.xls"
 
-        ## override    
+        ## override
         def downloadData(self, filePath):
             url = ("https://www.gpw.pl/ajaxindex.php"
                    "?action=GPWQuotations&start=showTable&tab=all&lang=PL&type=&full=1&format=html&download_xls=1")
@@ -72,41 +72,41 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
                 raise
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrameList = pandas.read_html( dataFile, thousands='', decimal=',' )
             dataFrame = dataFrameList[0]
-    
+
             ## flatten multi level header (column names)
             dataFrame.columns = dataFrame.columns.get_level_values(0)
-    
+
             ## drop last row containing summary
             dataFrame.drop( dataFrame.tail(1).index, inplace=True )
-    
+
             ## remove trash from column
             cleanup_column( dataFrame, 'Nazwa' )
-    
+
             apply_on_column( dataFrame, 'Kurs odn.', convert_float )
             apply_on_column( dataFrame, 'Kurs otw.', convert_float )
             apply_on_column( dataFrame, 'Kurs min.', convert_float )
             apply_on_column( dataFrame, 'Kurs maks.', convert_float )
             apply_on_column( dataFrame, 'Kurs ost. trans. / zamk.', convert_float )
             apply_on_column( dataFrame, 'Zm.do k.odn.(%)', convert_float )
-    
+
             try:
                 apply_on_column( dataFrame, 'Wol. obr. - skumul.', convert_int )
             except KeyError:
                 _LOGGER.exception( "unable to get values by key" )
-    
+
             try:
                 apply_on_column( dataFrame, 'Wart. obr. - skumul.(tys.)', convert_float )
             except KeyError:
                 _LOGGER.exception( "unable to get values by key" )
-    
+
             append_stock_isin( dataFrame, dataFile )
-    
+
             return dataFrame
 
 
@@ -248,7 +248,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
 
     class DAO( BaseWorksheetData ):
         """Data access object."""
-    
+
         def __init__(self):
             self.worksheet: DataFrame = None
             self.dataList: List[ BaseWorksheetDAO ] = list()
@@ -268,7 +268,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
             ## last element (without sleep)
             dataAccess = self.dataList[-1]
             dataAccess.loadWorksheet()
-        
+
         ## override
         def getDataFrame(self) -> DataFrame:
             self.worksheet = DataFrame()
@@ -281,7 +281,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
     def __init__(self):
         dao = GpwCurrentIndexesData.DAO()
         super().__init__( dao )
-        
+
     def sourceLink(self):
         return "https://gpwbenchmark.pl/notowania"
 
@@ -330,24 +330,24 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-    
+
         def getDataPath(self):
             return tmp_dir + "data/gpw/indexes_main_data.html"
-    
-        ## override    
+
+        ## override
         def downloadData(self, filePath):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
 
             relPath = os.path.relpath( filePath )
             _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
-            
+
             try:
                 download_html_content( url, filePath )
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
                 raise
             # download_html_content( url, filePath )
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
@@ -371,8 +371,8 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
 
         def getDataPath(self):
             return tmp_dir + "data/gpw/indexes_macro_data.html"
-    
-        ## override    
+
+        ## override
         def downloadData(self, filePath):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
 
@@ -384,7 +384,7 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
@@ -403,11 +403,11 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-    
+
         def getDataPath(self):
             return tmp_dir + "data/gpw/indexes_sectors_data.html"
-    
-        ## override    
+
+        ## override
         def downloadData(self, filePath):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
 
@@ -419,7 +419,7 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )

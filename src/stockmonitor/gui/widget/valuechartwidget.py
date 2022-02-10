@@ -90,7 +90,7 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
             return
 
         self.ui.refreshPB.setEnabled( False )
-                
+
 #         threads = threadlist.QThreadMeasuredList( self )
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self )
@@ -130,7 +130,7 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         if len(timeData) < 1:
             _LOGGER.warning( "no data received" )
             return
-            
+
         self.ui.dataChart.addPriceLine( timeData, priceColumn )
 
         set_ref_format_coord( self.ui.dataChart.pricePlot )

@@ -34,11 +34,11 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class StockDataProvider():
-    
+
 #     @abc.abstractmethod
 #     def refreshData(self, forceRefresh=True):
 #         raise NotImplementedError('You need to define this method in derived class!')
-    
+
     @abc.abstractmethod
     def accessData(self, forceRefresh=True):
         raise NotImplementedError('You need to define this method in derived class!')
@@ -89,27 +89,27 @@ class DoubleDict():
 
     def deleteData(self, key):
         self.dataDict.pop( key, None )
-        
+
     def getValues(self):
         retList = []
         for subDict in self.dataDict.values():
             dictValue = subDict.values()
             retList.extend( dictValue )
         return retList
-    
+
     def printData(self):
         for key in self.dataDict:
             subDict = self.dataDict[ key ]
             for subkey in subDict:
                 print( "key: %s-%s" % ( key, subkey ) )
-                
+
     def _subdict(self, key):
         subDict = self.dataDict.get( key, None )
         if subDict is None:
             subDict = dict()
             self.dataDict[ key ] = subDict
         return subDict
-    
+
     def _makeValue(self, key, subkey):
         if self.factory_function is None:
             return None
@@ -141,7 +141,7 @@ class GpwStockIntradayMap( StockDataProvider ):
 
     def printData(self):
         self.dataDict.printData()
-        
+
     def _makeValue(self, isin, rangeCode):
         return GpwCurrentStockIntradayData( isin, rangeCode )
 

@@ -69,7 +69,7 @@ def configure( logFile=None, logLevel=None ):
     logging.root.setLevel( logLevel )
 
     logging.getLogger('matplotlib').setLevel( logging.WARNING )
-    
+
     logging.getLogger("urllib3").setLevel( logging.INFO )
 
 ##     loggerFormat   = '%(asctime)s,%(msecs)-3d %(levelname)-8s %(threadName)s [%(filename)s:%(lineno)d] %(message)s'

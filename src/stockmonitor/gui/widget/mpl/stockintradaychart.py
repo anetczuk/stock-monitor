@@ -64,7 +64,7 @@ class PriceIntradayChart( BaseIntradayChart ):
         if len(xdata) < 1:
             _LOGGER.warning( "no data found" )
             return
-            
+
         line = self.pricePlot.plot_date( xdata, ydata, color, linewidth=2, antialiased=True )
         if style is not None:
             line[0].set_linestyle( style )

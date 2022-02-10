@@ -27,33 +27,33 @@ logging.basicConfig( level=logging.DEBUG )
 
 def check_current():
     _LOGGER.info( "loading worksheet" )
-    
+
     dataAccess = CurrentShortSellingsData()
-    
+
     dataAccess.loadWorksheet()
-    
+
     frame = dataAccess.dao.storage.worksheet
     if frame is None:
         _LOGGER.warning( "" )
         _LOGGER.warning( "unable to load data" )
         _LOGGER.warning( "" )
-    else:    
+    else:
         _LOGGER.info( "loaded data:\n%s", frame )
 
 
 def check_history():
     _LOGGER.info( "loading worksheet" )
-    
+
     dataAccess = HistoryShortSellingsData()
-    
+
     dataAccess.loadWorksheet()
-    
+
     frame = dataAccess.dao.storage.worksheet
     if frame is None:
         _LOGGER.warning( "" )
         _LOGGER.warning( "unable to load data" )
         _LOGGER.warning( "" )
-    else:    
+    else:
         _LOGGER.info( "loaded data:\n%s", frame )
 
 

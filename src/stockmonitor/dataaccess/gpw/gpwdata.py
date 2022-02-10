@@ -44,14 +44,14 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-        
+
         def getDataPath(self):
             return tmp_dir + "data/gpw/indicators_data.html"
-    
+
         def getDataUrl(self):
             return "https://www.gpw.pl/wskazniki"
-        
-        ## override    
+
+        ## override
         def downloadData(self, filePath):
             url = self.getDataUrl()
 
@@ -63,7 +63,7 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-        
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
@@ -71,17 +71,17 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
             dataFrame = DataFrame()
             dataFrame = dataFrame.append( allDataFrames[1] )            ## country
             dataFrame = dataFrame.append( allDataFrames[2] )            ## foreign
-    
+
             cleanup_column( dataFrame, 'Sektor' )
-    
+
             apply_on_column( dataFrame, 'Liczba wyemitowanych akcji', convert_int )
             apply_on_column( dataFrame, 'Wartość rynkowa (mln zł)', convert_float )
             apply_on_column( dataFrame, 'Wartość księgowa (mln zł)', convert_float )
-    
+
             apply_on_column( dataFrame, 'C/WK', convert_float )
             apply_on_column( dataFrame, 'C/Z', convert_float )
             apply_on_column( dataFrame, 'Stopa dywidendy (%)', convert_float )
-    
+
             return dataFrame
 
     def __init__(self):
@@ -117,8 +117,8 @@ class GpwIsinMapData( BaseWorksheetDAO ):
 
         def getDataPath(self):
             return tmp_dir + "data/gpw/isin_map_data.html"
-    
-            ## override    
+
+            ## override
         def downloadData(self, filePath):
             ## this source does not seem to be viable,
             ## because it lacks a lot of tickers/isin values
@@ -132,7 +132,7 @@ class GpwIsinMapData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )

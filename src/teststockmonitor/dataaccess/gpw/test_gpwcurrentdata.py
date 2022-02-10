@@ -81,14 +81,14 @@ class GpwCurrentStockDataTest(unittest.TestCase):
         currData = self.dataAccess.getData( StockDataType.TICKER )
         dataLen = len( currData )
         self.assertEqual(dataLen, 395)      ## one removed, because of summary
-# 
+#
     def test_getRowByTicker(self):
         rowData = self.dataAccess.getRowByTicker( "ZWC" )
 #         print( rowData )
         nameIndex = self.dataAccess.getDataColumnIndex( StockDataType.STOCK_NAME )
         tickerIndex = self.dataAccess.getDataColumnIndex( StockDataType.TICKER )
         isinIndex = self.dataAccess.getDataColumnIndex( StockDataType.ISIN )
-        
+
         self.assertEqual( rowData[nameIndex], "ZYWIEC" )
         self.assertEqual( rowData[tickerIndex], "ZWC" )
         self.assertEqual( rowData[isinIndex], "PLZYWIC00016" )

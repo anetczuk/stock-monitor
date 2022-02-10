@@ -45,7 +45,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class VolumenIntradayDataProvider():
-    
+
     pass
 
 

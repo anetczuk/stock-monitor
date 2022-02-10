@@ -87,7 +87,7 @@ class AppWindow( QWidget ):
 
     def addWidget(self, widget):
         self.vlayout.addWidget( widget )
-        
+
     ## override
     def closeEvent(self, event: QCloseEvent):
         ## there is problem with propagating close event to subwidgets, so

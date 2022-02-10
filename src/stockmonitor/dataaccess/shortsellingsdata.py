@@ -45,7 +45,7 @@ def grab_content( url, button ):
         resp = currSession.get( url )
         resp.raise_for_status()
         content = resp.content
-        
+
         soup = BeautifulSoup( content, "html.parser" )
 
 # POST /RssOuterView/faces/start2OuterView.xhtml HTTP/1.1
@@ -84,7 +84,7 @@ def grab_content( url, button ):
         resp = currSession.post( postUrl, data=postData )
 #         req = requests.Request('POST', postUrl, data=postData )
 #         prepped = req.prepare()
-# 
+#
 #         resp = currSession.send( prepped )
         resp.raise_for_status()
 
@@ -104,17 +104,17 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-        
+
         ## override
         def getDataPath(self):
             return tmp_dir + "data/knf/shortsellings-current.html"
-    
+
         ## override
         def getDataUrl(self):
             url = "https://rss.knf.gov.pl/RssOuterView/"
             return url
 
-        ## override    
+        ## override
         def downloadData(self, filePath):
             url = self.getDataUrl()
 
@@ -139,11 +139,11 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
                 _LOGGER.warning( "unable to parse data file: %s", dataFile )
                 return None
             dataFrame = dataFrame[3]
-    
+
     #         print( "raw dataframe:\n", dataFrame )
             dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
             dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
-    
+
             dataFrame = dataFrame.fillna("-")
             return dataFrame
 
@@ -158,7 +158,7 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
 
     def getISIN(self, rowIndex):
         return self.getDataByIndex( StockDataType.ISIN, rowIndex )
-    
+
     ## get column index
     ## override
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:
@@ -183,13 +183,13 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
         ## override
         def getDataPath(self):
             return tmp_dir + "data/knf/shortsellings-history.html"
-    
+
         ## override
         def getDataUrl(self):
             url = "https://rss.knf.gov.pl/RssOuterView/"
             return url
 
-        ## override    
+        ## override
         def downloadData(self, filePath):
             url = self.getDataUrl()
 
@@ -203,7 +203,7 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-    
+
         ## override
         def _parseDataFromFile(self, dataFile) -> DataFrame:
 #             _LOGGER.debug( "parsing data file: %s", dataFile )
@@ -212,10 +212,10 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
                 _LOGGER.warning( "received unexpected data while parsing: %s", dataFile )
                 return None
             dataFrame = dataFrame[3]
-    
+
             dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
             dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
-    
+
             dataFrame = dataFrame.fillna("-")
             return dataFrame
 
@@ -230,7 +230,7 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
 
     def getISIN(self, rowIndex):
         return self.getDataByIndex( StockDataType.ISIN, rowIndex )
-    
+
     ## get column index
     ## override
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:

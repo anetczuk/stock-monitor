@@ -45,15 +45,15 @@ class GpwESPIData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-        
+
         def __init__(self):
             super().__init__()
             self.messagesLimit = 30
-        
+
         def getDataPath(self):
             return tmp_dir + "data/gpw/espi_data.html"
-    
-        ## override    
+
+        ## override
         def downloadData(self, filePath):
             offset = 0
             url = "https://www.gpw.pl/ajaxindex.php" \
@@ -72,11 +72,11 @@ class GpwESPIData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
-    
+
             with open( dataFile ) as file:
                 soup = BeautifulSoup(file, "html.parser")
                 data_dicts = []
@@ -87,30 +87,30 @@ class GpwESPIData( BaseWorksheetDAO ):
                     dateRaw    = dateRow[0].string
                     dateString = dateRaw.split('|')[0].strip()
                     dateObj    = datetime.datetime.strptime(dateString, '%d-%m-%Y %H:%M:%S')          ## 23-10-2020 23:09:01
-    
+
                     nameRow = row.select('strong.name')[0]
                     name    = nameRow.a.string.strip()
-    
+
                     isinRes = re.search( r"\((.+)\)", name )
                     isin    = None
                     if isinRes is not None:
                         isin = isinRes.groups()[0]
-    
+
                     title = row.p.string.strip()
-    
+
                     url = "https://www.gpw.pl/" + row.a['href']
-    
+
                     row_dict = {}
                     row_dict["name"]  = name
                     row_dict["isin"]  = isin
                     row_dict["date"]  = dateObj
                     row_dict["title"] = title
                     row_dict["url"]   = url
-    
+
                     data_dicts.append(row_dict)
-    
+
                 dataFrame = pandas.DataFrame(data_dicts)
-    
+
                 return dataFrame
 
 

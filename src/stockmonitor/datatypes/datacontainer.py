@@ -309,7 +309,7 @@ class DataContainer():
 
         stockNameIndex  = currentStock.getDataColumnIndex( StockDataType.STOCK_NAME )
         dataChangeIndex = currentStock.getDataColumnIndex( StockDataType.CHANGE_TO_REF )
-        
+
         rowsList = []
 
         transMode = self.userContainer.transactionsMatchMode
@@ -438,10 +438,10 @@ class DataContainer():
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-        
+
         stockNameIndex  = currentStock.getDataColumnIndex( StockDataType.STOCK_NAME )
         dataChangeIndex = currentStock.getDataColumnIndex( StockDataType.CHANGE_TO_REF )
-        
+
         rowsList = []
 
         transMode = self.userContainer.transactionsMatchMode
@@ -780,7 +780,7 @@ class DataContainer():
 #         retList.append( BaseWorksheetDAOProvider( self.gpwIndexesData ) )
 
         retList = self.dataStockProvidersList()
-        
+
         retList.append( BaseWorksheetDAOProvider( self.globalIndexesData ) )
         retList.append( BaseWorksheetDAOProvider( self.gpwIndicatorsData ) )
         retList.append( BaseWorksheetDAOProvider( self.gpwDividendsData ) )

@@ -45,14 +45,14 @@ class GlobalIndexesData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-    
+
         def getDataPath(self):
             return tmp_dir + "data/bankier/global_indexes_data.html"
-    
+
         def getDataUrl(self):
             return "https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy"
 
-        ## override    
+        ## override
         def downloadData(self, filePath):
             url = self.getDataUrl()
 
@@ -68,25 +68,25 @@ class GlobalIndexesData( BaseWorksheetDAO ):
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
-    
+
             # fix HTML: handle multiple tbody inside single table
             with open( dataFile ) as file:
                 soup = BeautifulSoup(file, "html.parser")
                 for body in soup("tbody"):
                     body.unwrap()
-    
+
                 dataFrame = pandas.read_html( str(soup), flavor="bs4" )
                 dataFrame = dataFrame[0]
-    
+
                 dataFrame.dropna( how='all', inplace=True )
-    
+
                 apply_on_column( dataFrame, 'Kurs AD', convert_float )
                 apply_on_column( dataFrame, 'Zmiana AD', convert_float )
                 apply_on_column( dataFrame, 'Zmianaprocentowa AD', convert_percentage )
                 apply_on_column( dataFrame, 'Otwarcie AD', convert_float )
                 apply_on_column( dataFrame, 'Max AD', convert_float )
                 apply_on_column( dataFrame, 'Min AD', convert_float )
-    
+
                 return dataFrame
 
 

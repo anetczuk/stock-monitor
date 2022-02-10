@@ -36,5 +36,5 @@ if frame is None:
     _LOGGER.warning( "" )
     _LOGGER.warning( "unable to load data" )
     _LOGGER.warning( "" )
-else:    
+else:
     _LOGGER.info( "loaded data:\n%s", frame )

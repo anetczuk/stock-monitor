@@ -130,7 +130,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
             rangeText = self.ui.rangeCB.itemText( i )
             intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
             retList.append( intraSource )
-            
+
         currentData = self.getCurrentDataSource()
         retList.append( currentData )
         return retList
@@ -226,7 +226,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def getCurrentDataSource(self) -> GpwCurrentStockData:
         return self.dataObject.gpwCurrentData
-    
+
     def deleteData(self):
         if self.dataObject:
             isin = self.dataObject.getStockIsinFromTicker( self.ticker )
@@ -250,7 +250,7 @@ def create_window( dataObject, ticker, parent=None ):
         chart.ui.stockLabel.setText( name )
 
     chartWindow.show()
-    
+
     chart.updateData( access=True )
 
     return chartWindow

@@ -68,12 +68,12 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
         def getDataPath(self):
             dateString = self.dataDate.isoformat()
             return tmp_dir + "data/bossa/intraday/%s.prn" % dateString
-    
-        ## override    
+
+        ## override
         def downloadData(self, filePath):
             dateString = self.dataDate.isoformat()
             url = "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
-    
+
     #         if self.dataDate == currDate:
     #             ## https://info.bossa.pl/pub/intraday/mstock/daily//tick.zip
     #             return "https://info.bossa.pl/pub/intraday/mstock/daily//tick.zip"
@@ -89,7 +89,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
             try:
                 zipPath = filePath + ".zip"
                 download_html_content( url, zipPath )
-        
+
                 ## extract downloaded file
                 _LOGGER.debug( "extracting zip[%s]", zipPath )
                 with tempfile.TemporaryDirectory() as tmpdir:
@@ -102,7 +102,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
@@ -110,7 +110,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
                                                           "max", "min", "kurs", "obrot", "unknown_2"] )
             dataFrame.drop( dataFrame.tail(1).index, inplace=True )
             return dataFrame
-    
+
 
     def __init__(self, dataDate: datetime.date=None):
         dao = MetaStockIntradayData.DAO( dataDate )
@@ -118,19 +118,19 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
 
     def sourceLink(self):
         return "https://info.bossa.pl/notowania/pliki/intraday/metastock/"
-    
+
     def getWorksheetForDate(self, dataDate, forceRefresh=False):
         return self.dao.getWorksheetForDate( dataDate, forceRefresh )
-    
+
     def accessWorksheetForDate(self, dataDate, forceRefresh=False):
         return self.dao.accessWorksheetForDate( dataDate, forceRefresh )
 
 
 # ## https://info.bossa.pl/index.jsp?layout=mstock&page=1&news_cat_id=706&dirpath=/ciagle/mstock/sesjacgl
 # class MetaStockEODData:
-# 
+#
 #     def __init__(self):
 #         pass
-# 
+#
 #     def sourceLink(self):
 #         return "https://info.bossa.pl/notowania/metastock/"

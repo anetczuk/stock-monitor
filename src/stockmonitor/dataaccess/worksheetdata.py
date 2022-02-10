@@ -61,7 +61,7 @@ def download_html_content_list( url_list, outputPath ):
 
 #     try:
 #         return retrieve_url_list( url_list, outputPath )
-# 
+#
 #     except urllib.error.HTTPError:
 #         _LOGGER.exception( "exception when accessing: %s", url_list[-1], exc_info=False )
 #         raise
@@ -266,7 +266,7 @@ class BaseWorksheetDAO():
         self.dao = dao
 
     def getDataFrame(self) -> DataFrame:
-        return self.dao.getDataFrame()        
+        return self.dao.getDataFrame()
 
     def getWorksheetData(self, forceRefresh=False) -> DataFrame:
         return self.dao.getWorksheetData( forceRefresh )
@@ -276,7 +276,7 @@ class BaseWorksheetDAO():
 
     def loadWorksheet(self):
         return self.dao.loadWorksheet()
-    
+
     ## ====================================
 
     def getDataByIndex( self, columnType: StockDataType, rowIndex ):
@@ -303,7 +303,7 @@ class BaseWorksheetDAO():
         colIndex = self.getDataColumnIndex( StockDataType.TICKER )
         retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( rowValues ) ]
         return retRows
-        
+
     def getDataByValue( self, rowColumnType: StockDataType, rowValue, dataType: StockDataType ):
         dataIndex = self.getDataColumnIndex( dataType )
         rowData = self.getRowByValue( rowColumnType, rowValue )

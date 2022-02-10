@@ -42,11 +42,11 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
 
     class DAO( WorksheetData ):
         """Data access object."""
-        
+
         def getDataPath(self):
             return tmp_dir + "data/strefa/fin_reps_cal_data.html"
-    
-        ## override    
+
+        ## override
         def downloadData(self, filePath):
             url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/wszystkie"
                    "?sort=asc&order=Data%20publikacji" )
@@ -59,7 +59,7 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
@@ -97,8 +97,8 @@ class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
 
         def getDataPath(self):
             return tmp_dir + "data/strefa/fin_reps_cal_publ_data.html"
-    
-        ## override    
+
+        ## override
         def downloadData(self, filePath):
             url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
                    "?sort=desc&order=Data%20publikacji" )
@@ -111,7 +111,7 @@ class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
-    
+
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )

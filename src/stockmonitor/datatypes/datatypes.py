@@ -180,7 +180,7 @@ class MarkerEntry( persist.Versionable ):
     @unique
     class OperationType(Enum):
         """Operation type enum."""
-        
+
         BUY  = ()
         SELL = ()
 
