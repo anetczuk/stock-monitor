@@ -38,8 +38,8 @@ class MetaStockIntradayDataTest(unittest.TestCase):
         def data_path():
             return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
 
-        self.dataAccess.dao.getDataPath = data_path              # type: ignore
-        self.dataAccess.dao.downloadData =  lambda : None        ## empty lambda function
+        self.dataAccess.dao.getDataPath = data_path                       # type: ignore
+        self.dataAccess.dao.downloadData =  lambda filePath : None        ## empty lambda function
         self.dataAccess.dao.storage = WorksheetStorageMock()
 
     def tearDown(self):
