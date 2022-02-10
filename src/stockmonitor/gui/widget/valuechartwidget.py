@@ -127,6 +127,10 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
         priceColumn  = dataFrame["c"]
 
         timeData = list(timeColumn)
+        if len(timeData) < 1:
+            _LOGGER.warning( "no data received" )
+            return
+            
         self.ui.dataChart.addPriceLine( timeData, priceColumn )
 
         set_ref_format_coord( self.ui.dataChart.pricePlot )
