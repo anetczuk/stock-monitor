@@ -56,7 +56,7 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -125,7 +125,7 @@ class GpwIsinMapData( BaseWorksheetDAO ):
             url = "http://infostrefa.com/infostrefa/pl/spolki"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 download_html_content( url, filePath )

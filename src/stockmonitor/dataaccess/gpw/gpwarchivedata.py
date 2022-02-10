@@ -139,7 +139,7 @@ class GpwArchiveData:
 
         ## pattern example: https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=15-01-2020
         url = "https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=" + day.strftime("%d-%m-%Y")
-        _LOGGER.debug( "grabbing data from utl: %s", url )
+        _LOGGER.debug( "grabbing data from utl: %s", url.split("?")[0] )
 
         dirPath = os.path.dirname( filePath )
         os.makedirs( dirPath, exist_ok=True )

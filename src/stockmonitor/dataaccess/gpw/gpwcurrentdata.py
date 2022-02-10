@@ -62,7 +62,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
                    "?action=GPWQuotations&start=showTable&tab=all&lang=PL&type=&full=1&format=html&download_xls=1")
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 url_list = []
@@ -339,7 +339,7 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
             
             try:
                 download_html_content( url, filePath )
@@ -377,7 +377,7 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -412,7 +412,7 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 download_html_content( url, filePath )

@@ -84,7 +84,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
 
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 zipPath = filePath + ".zip"

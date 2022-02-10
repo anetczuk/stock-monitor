@@ -66,7 +66,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
             url = generate_chart_data_url( self.isin, modeCode)
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -157,7 +157,7 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
             url = generate_chart_data_url( self.isin, modeCode)
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 download_html_content( url, filePath )

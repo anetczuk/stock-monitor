@@ -52,7 +52,7 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
                    "?sort=asc&order=Data%20publikacji" )
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -104,7 +104,7 @@ class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
                    "?sort=desc&order=Data%20publikacji" )
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 download_html_content( url, filePath )

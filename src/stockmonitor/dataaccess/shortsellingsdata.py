@@ -119,7 +119,7 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 response = grab_content( url, "j_idt8-j_idt14" )
@@ -194,7 +194,7 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
             try:
                 response = grab_content( url, "j_idt8-j_idt16" )
