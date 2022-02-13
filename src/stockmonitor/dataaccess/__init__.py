@@ -62,6 +62,10 @@ _LOGGER = logging.getLogger(__name__)
 ## ====================================================================
 
 
+def set_raise( response, *args, **kwargs ):
+    response.raise_for_status()
+
+
 def init_session():
     currSession = requests.Session()
 
@@ -73,8 +77,7 @@ def init_session():
     currSession.headers.update( headers )
 
     ## raise HTTP status code
-    assert_status_hook = lambda response, *args, **kwargs: response.raise_for_status()
-    currSession.hooks["response"] = [assert_status_hook]
+    currSession.hooks["response"] = [ set_raise ]
 
     return currSession
 

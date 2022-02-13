@@ -155,6 +155,7 @@ class MetaStockIntradayProvider( ActivityIntradayDataProvider ):
 
 ## =========================================================================
 
+
 class ActivityAnalysis:
 
     def __init__(self, dataProvider: ActivityIntradayDataProvider, pool=None):

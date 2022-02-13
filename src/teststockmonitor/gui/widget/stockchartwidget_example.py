@@ -66,7 +66,7 @@ def prepare_dataobject():
         return get_data_path( "cdr.chart.04-09.txt" )
 
     dataAccess.dao.getDataPath = data_path                       # type: ignore
-    dataAccess.dao.downloadData = lambda filePath : None        ## empty lambda function
+    dataAccess.dao.downloadData = lambda filePath: None          ## empty lambda function
     dataAccess.dao.storage = WorksheetStorageMock()
 
 #     data.gpwStockIntradayData.set( "PLOPTTC00011", dataAccess )

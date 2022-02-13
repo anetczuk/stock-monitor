@@ -132,7 +132,7 @@ class WorksheetData( BaseWorksheetData ):
             self.downloadData( dataPath )
             self.parseWorksheetFromFile( dataPath )
 
-        except BaseException: # as ex:
+        except BaseException:
             # _LOGGER.exception( "%s: unable to load object data -- %s: %s", fullname(self), type(ex), ex, exc_info=False )
             self.storage.clear()
 

@@ -413,7 +413,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
     def setIndicatorRefreshTime(self, refreshTime: str):
         _LOGGER.debug("setting indicator refresh time: %s", refreshTime)
         currRefreshTime = QTime.fromString( refreshTime, "HH:mm:ss" )
-        secondsNumber = QTime(0, 0, 0).secsTo( currRefreshTime );
+        secondsNumber = QTime(0, 0, 0).secsTo( currRefreshTime )
 
         self.tickTimer.stop()
         if secondsNumber > 0:

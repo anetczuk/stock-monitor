@@ -63,7 +63,7 @@ class MetaStockIntradayProviderMock( MetaStockIntradayProvider ):
             return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
 
         dataAccess.dao.getDataPath = data_path                      # type: ignore
-        dataAccess.dao.downloadData = lambda filePath : None        ## empty lambda function
+        dataAccess.dao.downloadData = lambda filePath: None         ## empty lambda function
         dataAccess.dao.storage = WorksheetStorageMock()
         return dataAccess.getWorksheetData( True )
 

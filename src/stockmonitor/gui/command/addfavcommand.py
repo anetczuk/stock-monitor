@@ -26,6 +26,8 @@ import logging
 from PyQt5.QtWidgets import QUndoCommand
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
 
+from stockmonitor.datatypes.datatypes import FavData
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ class AddFavCommand( QUndoCommand ):
         super().__init__(parentCommand)
 
         self.dataObject = dataObject
-        self.favsObj: 'FavData' = self.dataObject.favs
+        self.favsObj: FavData = self.dataObject.favs
         self.newName = newName
         self.newItems = newItems
 

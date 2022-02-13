@@ -147,6 +147,7 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
             dataFrame = dataFrame.fillna("-")
             return dataFrame
 
+    ## ==========================================================
 
     def __init__(self):
         dao = CurrentShortSellingsData.DAO()
@@ -219,6 +220,7 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
             dataFrame = dataFrame.fillna("-")
             return dataFrame
 
+    ## ==========================================================
 
     def __init__(self):
         dao = HistoryShortSellingsData.DAO()

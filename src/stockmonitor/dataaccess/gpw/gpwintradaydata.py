@@ -120,6 +120,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
 
             return None
 
+    ## ==========================================================
 
     def __init__(self, isin, rangeCode=None):
         dao = GpwCurrentStockIntradayData.DAO( isin, rangeCode )

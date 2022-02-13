@@ -25,6 +25,8 @@ import logging
 
 from PyQt5.QtWidgets import QUndoCommand
 
+from stockmonitor.datatypes.datatypes import FavData
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ class DeleteFavCommand( QUndoCommand ):
         super().__init__(parentCommand)
 
         self.dataObject = dataObject
-        self.favsObj: 'FavData' = self.dataObject.favs
+        self.favsObj: FavData = self.dataObject.favs
         self.group = group
         self.favItems = favItems
 

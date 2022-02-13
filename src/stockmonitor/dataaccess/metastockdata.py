@@ -82,7 +82,6 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
     #             dateString = self.dataDate.isoformat()
     #             return "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
 
-
             relPath = os.path.relpath( filePath )
             _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
 
@@ -111,6 +110,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
             dataFrame.drop( dataFrame.tail(1).index, inplace=True )
             return dataFrame
 
+    ## ==========================================================
 
     def __init__(self, dataDate: datetime.date=None):
         dao = MetaStockIntradayData.DAO( dataDate )

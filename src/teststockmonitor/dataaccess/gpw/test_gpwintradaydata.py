@@ -40,7 +40,7 @@ class GpwCurrentStockIntradayDataTest(unittest.TestCase):
             return get_data_path( "cdr.chart.04-09.txt" )
 
         self.dataAccess.dao.getDataPath = data_path                       # type: ignore
-        self.dataAccess.dao.downloadData =  lambda filePath : None        ## empty lambda function
+        self.dataAccess.dao.downloadData = lambda filePath: None          ## empty lambda function
         self.dataAccess.dao.storage = WorksheetStorageMock()
 #         self.dataAccess.dao.parseWorksheetFromFile( data_path() )
 

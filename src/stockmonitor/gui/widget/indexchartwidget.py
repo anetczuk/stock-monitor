@@ -26,16 +26,18 @@ import datetime
 
 from PyQt5.QtCore import Qt
 
+from stockmonitor.datatypes.stocktypes import GpwIndexIntradayMap
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData
+from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord
+from stockmonitor.gui.dataobject import DataObject
 
 from .. import uiloader
 
 from .mpl.mpltoolbar import NavigationToolbar
-from stockmonitor.gui.dataobject import DataObject
 
 
 _LOGGER = logging.getLogger(__name__)

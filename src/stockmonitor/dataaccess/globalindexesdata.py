@@ -89,6 +89,7 @@ class GlobalIndexesData( BaseWorksheetDAO ):
 
                 return dataFrame
 
+    ## ==========================================================
 
     def __init__(self):
         dao = GlobalIndexesData.DAO()

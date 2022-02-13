@@ -67,6 +67,7 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
             dataFrame = dataFrame[0]
             return dataFrame
 
+    ## ==========================================================
 
     def __init__(self):
         dao = FinRepsCalendarData.DAO()
@@ -120,6 +121,7 @@ class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
             dataFrame['Ticker'] = dataFrame['Ticker'].str.replace( '#', '' )
             return dataFrame
 
+    ## ==========================================================
 
     def __init__(self):
         dao = PublishedFinRepsCalendarData.DAO()

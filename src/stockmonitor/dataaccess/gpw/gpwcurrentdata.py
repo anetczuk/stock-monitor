@@ -109,6 +109,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
 
             return dataFrame
 
+    ## ==========================================================
 
     def __init__(self):
         dao = GpwCurrentStockData.DAO()
@@ -277,6 +278,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
                 self.worksheet = self.worksheet.append( dataFrame )
             return self.worksheet
 
+    ## ==========================================================
 
     def __init__(self):
         dao = GpwCurrentIndexesData.DAO()
