@@ -282,5 +282,5 @@ class ProcessList( QtCore.QObject ):
 
 def get_threading_list():
     """ Factory function. """
-#     return QThreadMeasuredList
-    return SerialList
+    return QThreadMeasuredList
+#    return SerialList
