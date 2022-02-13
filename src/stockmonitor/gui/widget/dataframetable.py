@@ -34,7 +34,7 @@ from urllib.parse import urlparse
 from pandas import DataFrame
 
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtCore import Qt, QModelIndex, QUrl
+from PyQt5.QtCore import QModelIndex, QUrl
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QAbstractTableModel
 from PyQt5.QtWidgets import QTableView, QTableWidgetItem
@@ -126,27 +126,27 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
 
             ## display header
             dataItem = QTableWidgetItem()
-            checkedState = Qt.Checked
+            checkedState = QtCore.Qt.Checked
             colVisible = self.isColumnVisible( i )
             if colVisible is not None and colVisible is False:
-                checkedState = Qt.Unchecked
+                checkedState = QtCore.Qt.Unchecked
             dataItem.setCheckState( checkedState )
             userText = self.getHeaderText( i )
             if userText is None:
                 userText = headerText
-            dataItem.setData( Qt.DisplayRole, userText )
+            dataItem.setData( QtCore.Qt.DisplayRole, userText )
             table.setItem( i, 0, dataItem )
 
             ## data header
             dataItem = QTableWidgetItem()
-            dataItem.setFlags( dataItem.flags() ^ Qt.ItemIsEditable )
-            dataItem.setData( Qt.DisplayRole, headerText )
+            dataItem.setFlags( dataItem.flags() ^ QtCore.Qt.ItemIsEditable )
+            dataItem.setData( QtCore.Qt.DisplayRole, headerText )
             table.setItem( i, 1, dataItem )
 
             ## data preview
             dataItem = QTableWidgetItem()
-            dataItem.setFlags( dataItem.flags() ^ Qt.ItemIsEditable )
-            dataItem.setData( Qt.DisplayRole, dataExample )
+            dataItem.setFlags( dataItem.flags() ^ QtCore.Qt.ItemIsEditable )
+            dataItem.setData( QtCore.Qt.DisplayRole, dataExample )
             table.setItem( i, 2, dataItem )
 
         table.resizeColumnsToContents()
@@ -161,7 +161,7 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
             return
         headerText = tableItem.text()
         self.setHeader.emit( row, headerText )
-        showValue = tableItem.checkState() != Qt.Unchecked
+        showValue = tableItem.checkState() != QtCore.Qt.Unchecked
         self.showColumn.emit( row, showValue )
 
     def getHeaderText(self, col):
@@ -228,7 +228,7 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
         self.ui.columnCB.addItem( "No filtering", -1 )
         colsNum = tableModel.columnCount()
         for col in range(colsNum):
-            text = tableModel.headerData(col, Qt.Horizontal)
+            text = tableModel.headerData(col, QtCore.Qt.Horizontal)
             if col == keyColumn:
                 newIndex = self.ui.columnCB.count()
             if self.parentTable.isColumnHidden(col) is False:
@@ -313,7 +313,7 @@ class DataFrameTableModel( QAbstractTableModel ):
         self._rawData = data
         self.endResetModel()
 
-    def setHeaders(self, headersDict, orientation=Qt.Horizontal):
+    def setHeaders(self, headersDict, orientation=QtCore.Qt.Horizontal):
         self.customHeader = copy.deepcopy( headersDict )
         colsNum = self.columnCount()
         self.headerDataChanged.emit( orientation, 0, colsNum - 1 )
@@ -331,7 +331,7 @@ class DataFrameTableModel( QAbstractTableModel ):
         return self._rawData.shape[1]
 
     def headerData(self, section, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             headerValue = self.customHeader.get( section, None )
             if headerValue is not None:
                 return headerValue
@@ -341,29 +341,29 @@ class DataFrameTableModel( QAbstractTableModel ):
             return colName
         return super().headerData( section, orientation, role )
 
-    def setHeaderData(self, section, orientation, value, _=Qt.DisplayRole):
+    def setHeaderData(self, section, orientation, value, _=QtCore.Qt.DisplayRole):
         self.customHeader[ section ] = value
         self.headerDataChanged.emit( orientation, section, section )
         return True
 
-    def data(self, index: QModelIndex, role=Qt.DisplayRole):
+    def data(self, index: QModelIndex, role=QtCore.Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if role == Qt.DisplayRole:
+        if role == QtCore.Qt.DisplayRole:
             rawData = self._rawData.iloc[index.row(), index.column()]
             strData = str(rawData)
             return strData
-        if role == Qt.UserRole:
+        if role == QtCore.Qt.UserRole:
             rawData = self._rawData.iloc[index.row(), index.column()]
             return rawData
-        if role == Qt.TextAlignmentRole:
-            return Qt.AlignHCenter | Qt.AlignVCenter
+        if role == QtCore.Qt.TextAlignmentRole:
+            return QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
 
         if self.colorDelegate is not None:
-            if role == Qt.ForegroundRole:
+            if role == QtCore.Qt.ForegroundRole:
                 return self.colorDelegate.foreground( index )
-            if role == Qt.BackgroundRole:
+            if role == QtCore.Qt.BackgroundRole:
                 return self.colorDelegate.background( index )
 
         return None
@@ -412,11 +412,11 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
 
         ## put no-data rows on bottom
         if is_invalid_number( leftData ):
-            if self.sortOrder() == Qt.AscendingOrder:
+            if self.sortOrder() == QtCore.Qt.AscendingOrder:
                 return False
             return True
         if is_invalid_number( rightData ):
-            if self.sortOrder() == Qt.AscendingOrder:
+            if self.sortOrder() == QtCore.Qt.AscendingOrder:
                 return True
             return False
 
@@ -497,7 +497,7 @@ class DataFrameTable( QTableView ):
         self.setAlternatingRowColors( True )
 
         header = self.horizontalHeader()
-        header.setDefaultAlignment( Qt.AlignCenter )
+        header.setDefaultAlignment( QtCore.Qt.AlignCenter )
         header.setHighlightSections( False )
         header.setStretchLastSection( True )
 
@@ -608,7 +608,7 @@ class DataFrameTable( QTableView ):
         self.pandaModel.setContent( rawData )
 
     def setHeaderText(self, col, text):
-        self.pandaModel.setHeaderData( col, Qt.Horizontal, text )
+        self.pandaModel.setHeaderData( col, QtCore.Qt.Horizontal, text )
         self.columnsConfigurationChanged.emit()
 
     def setColumnVisible(self, col, visible):
