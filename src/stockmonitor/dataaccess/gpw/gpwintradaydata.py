@@ -34,6 +34,7 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDA
 from stockmonitor.dataaccess.convert import apply_on_column, convert_timestamp_datetime
 from stockmonitor.synchronized import synchronized
 from stockmonitor.pprint import fullname
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -107,7 +108,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
 
                 if self.rangeCode != "1D":
                     ## add recent value to range other than "1D" (current)
-                    currData = GpwCurrentStockIntradayData( self.isin )
+                    currData = GpwCurrentStockIntradayData.DAO( self.isin )
                     currData.dataTime = self.dataTime
                     currWorksheet = currData.getWorksheetData()
                     if currWorksheet is not None:
@@ -129,6 +130,11 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
 
     def getWorksheetForDate(self, dataDate, forceRefresh=False):
         return self.dao.getWorksheetForDate( dataDate, forceRefresh )
+
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise ValueError( 'Invalid value: %s' % ( columnType ) )
 
 
 class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):

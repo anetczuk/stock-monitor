@@ -50,8 +50,8 @@ class StockDataProvider():
 class BaseWorksheetDAOProvider( StockDataProvider ):
     """Wrapper containing data custom headers."""
 
-    def __init__( self, data: 'BaseWorksheetDAO' = None ):
-        self.stockData: 'BaseWorksheetDAO'       = data
+    def __init__( self, data = None ):
+        self.stockData = data
 
     ## override
     def accessData(self, forceRefresh=True):
@@ -61,7 +61,7 @@ class BaseWorksheetDAOProvider( StockDataProvider ):
 class StockDataWrapper( BaseWorksheetDAOProvider ):
     """Wrapper containing data custom headers."""
 
-    def __init__( self, data: 'BaseWorksheetDAO' = None ):
+    def __init__( self, data = None ):
         BaseWorksheetDAOProvider.__init__(self, data)
         self.stockHeaders: Dict[ int, str ]      = dict()
 

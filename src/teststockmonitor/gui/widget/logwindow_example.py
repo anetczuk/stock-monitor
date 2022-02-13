@@ -85,8 +85,8 @@ def timer_tick():
 
 
 tickTimer = QtCore.QTimer( window )
-tickTimer.timeout.connect( timer_tick )
-tickTimer.start( 8000 )                           ## every second
+tickTimer.timeout.connect( timer_tick )             # type: ignore
+tickTimer.start( 8000 )                             ## every second
 
 
 # window.setWindowTitleSuffix( "Preview" )

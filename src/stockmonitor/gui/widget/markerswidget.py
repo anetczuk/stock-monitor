@@ -28,6 +28,12 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QModelIndex
 
+## workaround for mypy type errors
+from QtCore.Qt import DisplayRole as QtDisplayRole
+from QtCore.Qt import TextAlignmentRole as QtTextAlignmentRole
+from QtCore.Qt import AlignLeft as QtAlignLeft
+from QtCore.Qt import AlignVCenter as QtAlignVCenter
+
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.markerdialog import MarkerDialog
@@ -47,21 +53,21 @@ class MarkersTableModel( DataFrameTableModel ):
 #     def __init__(self, data: DataFrame):
 #         super().__init__( data )
 
-    def data(self, index: QModelIndex, role=Qt.DisplayRole):
+    def data(self, index: QModelIndex, role=QtDisplayRole):
         if not index.isValid():
             return None
 
-#         if role == Qt.DisplayRole:
+#         if role == QtDisplayRole:
 #             retValue = super().data( index, role )
 #             if retValue is None or retValue == "None":
 #                 return "-"
 #             return retValue
 
-        if role == Qt.TextAlignmentRole:
+        if role == QtTextAlignmentRole:
             if index.column() == 10:
                 ## notes
-                return Qt.AlignLeft | Qt.AlignVCenter
-#             return Qt.AlignHCenter | Qt.AlignVCenter
+                return QtAlignLeft | QtAlignVCenter
+#             return Qt.AlignHCenter | QtAlignVCenter
 
         return super().data( index, role )
 
@@ -117,7 +123,7 @@ class MarkersTable( StockTable ):
     def getItem(self, itemIndex: QModelIndex ) -> MarkerEntry:
         if self.dataObject is None:
             return None
-        sourceIndex = self.model().mapToSource( itemIndex )
+        sourceIndex = self.model().mapToSource( itemIndex )         # type: ignore
 #         return self.dataModel.getItem( sourceIndex )
         markerIndex = sourceIndex.row()
         if markerIndex < 0:

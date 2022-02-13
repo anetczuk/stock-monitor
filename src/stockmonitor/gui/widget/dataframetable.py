@@ -43,6 +43,18 @@ from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtGui import QColor
 
+## workaround for mypy type errors
+from QtCore.Qt import Checked as QtChecked
+from QtCore.Qt import Unchecked as QtUnchecked
+from QtCore.Qt import DisplayRole as QtDisplayRole
+from QtCore.Qt import UserRole as QtUserRole
+from QtCore.Qt import TextAlignmentRole as QtTextAlignmentRole
+from QtCore.Qt import ForegroundRole as QtForegroundRole
+from QtCore.Qt import BackgroundRole as QtBackgroundRole
+from QtCore.Qt import AlignHCenter as QtAlignHCenter
+from QtCore.Qt import AlignVCenter as QtAlignVCenter
+from QtCore.Qt import ItemIsEditable as QtItemIsEditable
+
 from .. import uiloader
 from .. import guistate
 
@@ -126,27 +138,27 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
 
             ## display header
             dataItem = QTableWidgetItem()
-            checkedState = QtCore.Qt.Checked
+            checkedState = QtChecked
             colVisible = self.isColumnVisible( i )
             if colVisible is not None and colVisible is False:
-                checkedState = QtCore.Qt.Unchecked
+                checkedState = QtUnchecked
             dataItem.setCheckState( checkedState )
             userText = self.getHeaderText( i )
             if userText is None:
                 userText = headerText
-            dataItem.setData( QtCore.Qt.DisplayRole, userText )
+            dataItem.setData( QtDisplayRole, userText )
             table.setItem( i, 0, dataItem )
 
             ## data header
             dataItem = QTableWidgetItem()
-            dataItem.setFlags( dataItem.flags() ^ QtCore.Qt.ItemIsEditable )
-            dataItem.setData( QtCore.Qt.DisplayRole, headerText )
+            dataItem.setFlags( dataItem.flags() ^ QtItemIsEditable )
+            dataItem.setData( QtDisplayRole, headerText )
             table.setItem( i, 1, dataItem )
 
             ## data preview
             dataItem = QTableWidgetItem()
-            dataItem.setFlags( dataItem.flags() ^ QtCore.Qt.ItemIsEditable )
-            dataItem.setData( QtCore.Qt.DisplayRole, dataExample )
+            dataItem.setFlags( dataItem.flags() ^ QtItemIsEditable )
+            dataItem.setData( QtDisplayRole, dataExample )
             table.setItem( i, 2, dataItem )
 
         table.resizeColumnsToContents()
@@ -161,7 +173,7 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
             return
         headerText = tableItem.text()
         self.setHeader.emit( row, headerText )
-        showValue = tableItem.checkState() != QtCore.Qt.Unchecked
+        showValue = tableItem.checkState() != QtUnchecked
         self.showColumn.emit( row, showValue )
 
     def getHeaderText(self, col):
@@ -203,13 +215,13 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
         self.parentTable = parentTable
 
         model = self.parentTable.model()
-        self.oldState = model.filterState()
+        self.oldState = model.filterState()                                     # type: ignore
 
         self.updateColumnsCombo()
 
-        self.ui.conditionCB.setCurrentIndex( model.condition )
+        self.ui.conditionCB.setCurrentIndex( model.condition )                  # type: ignore
 
-        filterValue = model.filterRegExp().pattern()
+        filterValue = model.filterRegExp().pattern()                            # type: ignore
         self.ui.valueLE.setText( filterValue )
 
         self.ui.columnCB.currentIndexChanged.connect( self.columnChanged )
@@ -331,7 +343,7 @@ class DataFrameTableModel( QAbstractTableModel ):
         return self._rawData.shape[1]
 
     def headerData(self, section, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+        if orientation == QtCore.Qt.Horizontal and role == QtDisplayRole:
             headerValue = self.customHeader.get( section, None )
             if headerValue is not None:
                 return headerValue
@@ -341,29 +353,29 @@ class DataFrameTableModel( QAbstractTableModel ):
             return colName
         return super().headerData( section, orientation, role )
 
-    def setHeaderData(self, section, orientation, value, _=QtCore.Qt.DisplayRole):
+    def setHeaderData(self, section, orientation, value, _=QtDisplayRole):
         self.customHeader[ section ] = value
         self.headerDataChanged.emit( orientation, section, section )
         return True
 
-    def data(self, index: QModelIndex, role=QtCore.Qt.DisplayRole):
+    def data(self, index: QModelIndex, role=QtDisplayRole):
         if not index.isValid():
             return None
 
-        if role == QtCore.Qt.DisplayRole:
+        if role == QtDisplayRole:
             rawData = self._rawData.iloc[index.row(), index.column()]
             strData = str(rawData)
             return strData
-        if role == QtCore.Qt.UserRole:
+        if role == QtUserRole:
             rawData = self._rawData.iloc[index.row(), index.column()]
             return rawData
-        if role == QtCore.Qt.TextAlignmentRole:
-            return QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+        if role == QtTextAlignmentRole:
+            return QtAlignHCenter | QtAlignVCenter
 
         if self.colorDelegate is not None:
-            if role == QtCore.Qt.ForegroundRole:
+            if role == QtForegroundRole:
                 return self.colorDelegate.foreground( index )
-            if role == QtCore.Qt.BackgroundRole:
+            if role == QtBackgroundRole:
                 return self.colorDelegate.background( index )
 
         return None
@@ -402,8 +414,8 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         self.condition = condition
 
     def lessThan(self, left: QModelIndex, right: QModelIndex):
-        leftData  = self.sourceModel().data(left, QtCore.Qt.UserRole)
-        rightData = self.sourceModel().data(right, QtCore.Qt.UserRole)
+        leftData  = self.sourceModel().data(left, QtUserRole)
+        rightData = self.sourceModel().data(right, QtUserRole)
 #         print("xxxxxxxx:", type(leftData), type(rightData) )
         return self.valueLessThan( leftData, rightData )
 
@@ -446,7 +458,7 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
             return True
         filterColumn = self.filterKeyColumn()
         valueIndex = self.sourceModel().index( sourceRow, filterColumn, sourceParent )
-        rawValue = self.sourceModel().data( valueIndex, QtCore.Qt.UserRole )
+        rawValue = self.sourceModel().data( valueIndex, QtUserRole )
         value = str(rawValue)
 
         if self.condition == 0:

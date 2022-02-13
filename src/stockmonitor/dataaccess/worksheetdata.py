@@ -132,7 +132,7 @@ class WorksheetData( BaseWorksheetData ):
             self.downloadData( dataPath )
             self.parseWorksheetFromFile( dataPath )
 
-        except BaseException as ex:
+        except BaseException: # as ex:
             # _LOGGER.exception( "%s: unable to load object data -- %s: %s", fullname(self), type(ex), ex, exc_info=False )
             self.storage.clear()
 
@@ -262,7 +262,7 @@ class WorksheetDataMock( BaseWorksheetData ):
 
 class BaseWorksheetDAO():
 
-    def __init__( self, dao: BaseWorksheetData ):
+    def __init__( self, dao ):
         self.dao = dao
 
     def getDataFrame(self) -> DataFrame:

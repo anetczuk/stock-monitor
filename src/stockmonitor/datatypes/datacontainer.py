@@ -673,7 +673,7 @@ class DataContainer():
         rowsNum   = dataFrame.shape[0]
         rowIndex  = 0
 
-        for item in reversed( pendingTrans ):
+        for item in reversed( pendingTrans ):                           # type: ignore
             transTime = item[2]
             amountBefore = transBefore.currentAmount()
             totalProfit  = transBefore.transactionsProfit()

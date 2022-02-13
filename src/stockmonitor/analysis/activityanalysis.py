@@ -49,14 +49,29 @@ _LOGGER = logging.getLogger(__name__)
 
 class ActivityIntradayDataProvider():
 
-    pass
+    def __init__(self):
+        super().__init__()
+        self.refDataProvider = None
+
+    def getReferenceValue(self, name ):
+        if self.refDataProvider is None:
+            return None
+        ticker    = self.refDataProvider.getTickerFieldByName( name )
+        if ticker is None:
+            return None
+        dataRow    = self.refDataProvider.getRowByTicker( ticker )
+        colIndex   = self.refDataProvider.getColumnIndex( StockDataType.RECENT_VALUE )
+        stockValue = dataRow.iloc[ colIndex ]
+#         print("wwwwwwwwwwwwww:\n", dataRow)
+#         print("xxxxxxxxxxxxxx:", name, ticker, stockValue)
+        return stockValue
 
 
 class GpwCurrentIntradayProvider( ActivityIntradayDataProvider ):
 
     def __init__(self):
+        super().__init__()
         self.accessDate = None
-        self.refDataProvider = None
 
     def setDate(self, date):
         self.accessDate = date
@@ -98,19 +113,6 @@ class MetaStockIntradayProvider( ActivityIntradayDataProvider ):
 
     def setDate(self, date):
         self.accessDate = date
-
-    def getReferenceValue(self, name ):
-        if self.refDataProvider is None:
-            return None
-        ticker    = self.refDataProvider.getTickerFieldByName( name )
-        if ticker is None:
-            return None
-        dataRow    = self.refDataProvider.getRowByTicker( ticker )
-        colIndex   = self.refDataProvider.getColumnIndex( StockDataType.RECENT_VALUE )
-        stockValue = dataRow.iloc[ colIndex ]
-#         print("wwwwwwwwwwwwww:\n", dataRow)
-#         print("xxxxxxxxxxxxxx:", name, ticker, stockValue)
-        return stockValue
 
     ## returns list
     def map(self, isinItems, pool):

@@ -70,7 +70,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
 
     def connectData(self, dataObject: DataObject, isin):
-        self.dataObject: DataObject = dataObject
+        self.dataObject = dataObject
         self.isin       = isin
         self.dataObject.stockDataChanged.connect( self.updateData )
         self.updateData( False )

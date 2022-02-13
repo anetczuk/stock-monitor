@@ -50,7 +50,7 @@ class DividendsTable( StockTable ):
         selectedData = self.getSelectedData( 0 )                ## name
         tickersSet = set()
         for name in selectedData:
-            ticker = parent.getTickerFromName( name )
+            ticker = parent.getTickerFromName( name )           # type: ignore
             tickersSet.add( ticker )
         return list( tickersSet )
 
