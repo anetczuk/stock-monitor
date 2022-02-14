@@ -181,7 +181,7 @@ class QThreadMeasuredList( QThreadList ):
 
 
 class SerialList( QtCore.QObject ):
-    """ List without multithreading. """
+    """List without multithreading."""
 
     finished = QtCore.pyqtSignal()
 
@@ -281,6 +281,6 @@ class ProcessList( QtCore.QObject ):
 
 
 def get_threading_list():
-    """ Factory function. """
+    """Return threading list class (factory function)."""
     return QThreadMeasuredList
 #    return SerialList
