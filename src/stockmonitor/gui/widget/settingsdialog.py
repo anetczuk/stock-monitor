@@ -130,7 +130,7 @@ class SettingsDialog(QtBaseClass):           # type: ignore
 
 
 def load_keys_to_dict(settings):
-    state = dict()
+    state = {}
     for key in settings.childKeys():
         value = settings.value(key, "", type=str)
         if value:

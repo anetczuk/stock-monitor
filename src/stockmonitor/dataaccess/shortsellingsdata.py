@@ -26,9 +26,7 @@ import logging
 import pandas
 from pandas.core.frame import DataFrame
 
-import requests
 from bs4 import BeautifulSoup
-# import dryscrape
 
 from stockmonitor.dataaccess import tmp_dir, init_session
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
@@ -119,11 +117,11 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 response = grab_content( url, "j_idt8-j_idt14" )
-                with open( filePath, "w" ) as text_file:
+                with open( filePath, "w", encoding="utf-8" ) as text_file:
                     text_file.write( response )
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
@@ -168,7 +166,7 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
         }
         colIndex = switcher.get(columnType, None)
         if colIndex is None:
-            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+            raise ValueError( f"Invalid value: {columnType}" )
         return colIndex
 
 
@@ -195,11 +193,11 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 response = grab_content( url, "j_idt8-j_idt16" )
-                with open( filePath, "w" ) as text_file:
+                with open( filePath, "w", encoding="utf-8" ) as text_file:
                     text_file.write( response )
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
@@ -241,5 +239,5 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
         }
         colIndex = switcher.get(columnType, None)
         if colIndex is None:
-            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+            raise ValueError( f"Invalid value: {columnType}" )
         return colIndex

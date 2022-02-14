@@ -30,10 +30,10 @@ from pandas.core.frame import DataFrame
 from stockmonitor.datatypes.wallettypes import WalletData, TransHistory
 from stockmonitor.dataaccess.transactionsloader import parse_mb_transactions_data
 from stockmonitor.gui.dataobject import DataObject
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 from teststockmonitor import data
 from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class DataObjectTest(unittest.TestCase):

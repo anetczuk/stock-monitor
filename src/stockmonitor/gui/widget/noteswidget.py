@@ -59,11 +59,11 @@ class SinglePageWidget( QWidget ):
 
 #         self.textEdit.setStyleSheet( "background-color: #f7ec9d;" )
         self.setStyleSheet(
+            f"""
+            QTextEdit {{
+                background: {NOTES_BG_COLOR};
+            }}
             """
-            QTextEdit {
-                background: %s;
-            }
-            """ % NOTES_BG_COLOR
         )
 
         vlayout.addWidget( self.textEdit )
@@ -104,14 +104,14 @@ class NotesWidget( QtBaseClass ):           # type: ignore
         self.ui.setupUi(self)
 
         self.ui.notes_tabs.setStyleSheet(
+            f"""
+            QTabWidget {{
+                background: {NOTES_BG_COLOR};
+            }}
+            QTabBar {{
+                background: {NOTES_BG_COLOR};
+            }}
             """
-            QTabWidget {
-                background: %s;
-            }
-            QTabBar {
-                background: %s;
-            }
-            """ % (NOTES_BG_COLOR, NOTES_BG_COLOR)
         )
 
         self.ui.notes_tabs.clear()
@@ -123,7 +123,7 @@ class NotesWidget( QtBaseClass ):           # type: ignore
         self.notesChanged.connect( self.dataChanged )
 
     def getNotes(self):
-        notes = dict()
+        notes = {}
         notesSize = self.ui.notes_tabs.count()
         for tabIndex in range(0, notesSize):
             title = self.ui.notes_tabs.tabText( tabIndex )

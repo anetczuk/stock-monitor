@@ -36,6 +36,7 @@ from stockmonitor.dataaccess.convert import convert_float, convert_percentage,\
     apply_on_column
 from stockmonitor.synchronized import synchronized
 from stockmonitor.pprint import fullname
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ class GlobalIndexesData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -70,7 +71,7 @@ class GlobalIndexesData( BaseWorksheetDAO ):
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
 
             # fix HTML: handle multiple tbody inside single table
-            with open( dataFile ) as file:
+            with open( dataFile, encoding="utf-8" ) as file:
                 soup = BeautifulSoup(file, "html.parser")
                 for body in soup("tbody"):
                     body.unwrap()
@@ -97,3 +98,8 @@ class GlobalIndexesData( BaseWorksheetDAO ):
 
     def sourceLink(self):
         return self.dao.getDataUrl()
+
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise ValueError( f"Invalid value: {columnType}" )

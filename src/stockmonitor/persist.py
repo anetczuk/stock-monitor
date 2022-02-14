@@ -129,11 +129,10 @@ def store_object_simple( inputObject, outputFile ):
 def backup_files( inputFiles, outputArchive ):
     ## create zip
     tmpZipFile = outputArchive + "_tmp"
-    zipf = zipfile.ZipFile( tmpZipFile, 'w', zipfile.ZIP_DEFLATED )
-    for file in inputFiles:
-        zipEntry = os.path.basename( file )
-        zipf.write( file, zipEntry )
-    zipf.close()
+    with zipfile.ZipFile( tmpZipFile, 'w', zipfile.ZIP_DEFLATED ) as zipf:
+        for file in inputFiles:
+            zipEntry = os.path.basename( file )
+            zipf.write( file, zipEntry )
 
     ## compare content
     storedZipFile = outputArchive
@@ -151,15 +150,15 @@ def backup_files( inputFiles, outputArchive ):
 
     ## rename files
     counter = 1
-    nextFile = "%s.%s" % (storedZipFile, counter)
+    nextFile = f"{storedZipFile}.{counter}"
     while os.path.isfile( nextFile ):
         counter += 1
-        nextFile = "%s.%s" % (storedZipFile, counter)
+        nextFile = f"{storedZipFile}.{counter}"
     _LOGGER.info( "found backup slot: %s", nextFile )
 
     currFile = storedZipFile
     while counter > 1:
-        currFile = "%s.%s" % (storedZipFile, counter - 1)
+        currFile = f"{storedZipFile}.{counter - 1}"
         os.rename( currFile, nextFile )
         nextFile = currFile
         counter -= 1
@@ -186,7 +185,8 @@ def print_file_content( filePath ):
     #return ''.join('{:02x} '.format(x) for x in byteList)
     bSize = len( byteList )
     for i in range(bSize):
-        print( ''.join( '{:06d}: {:02x}'.format( i, byteList[i] ) ) )
+        print( f"{i:06d}: {byteList[i]:02x}" )
+        # print( ''.join( '{:06d}: {:02x}'.format( i, byteList[i] ) ) )
 
 
 def read_file_bytes( filePath ):

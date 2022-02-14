@@ -37,6 +37,7 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDA
     download_html_content
 from stockmonitor.synchronized import synchronized
 from stockmonitor.pprint import fullname
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,12 +68,12 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
 
         def getDataPath(self):
             dateString = self.dataDate.isoformat()
-            return tmp_dir + "data/bossa/intraday/%s.prn" % dateString
+            return f"{tmp_dir}data/bossa/intraday/{dateString}.prn"
 
         ## override
         def downloadData(self, filePath):
             dateString = self.dataDate.isoformat()
-            url = "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
+            url = f"https://info.bossa.pl/pub/intraday/mstock/daily/{dateString}-tick.zip"
 
     #         if self.dataDate == currDate:
     #             ## https://info.bossa.pl/pub/intraday/mstock/daily//tick.zip
@@ -83,7 +84,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
     #             return "https://info.bossa.pl/pub/intraday/mstock/daily//%s-tick.zip" % dateString
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 zipPath = filePath + ".zip"
@@ -107,6 +108,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw",
                                                           "max", "min", "kurs", "obrot", "unknown_2"] )
+            # pylint: disable=E1101
             dataFrame.drop( dataFrame.tail(1).index, inplace=True )
             return dataFrame
 
@@ -124,6 +126,11 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
 
     def accessWorksheetForDate(self, dataDate, forceRefresh=False):
         return self.dao.accessWorksheetForDate( dataDate, forceRefresh )
+
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise ValueError( f"Invalid value: {columnType}" )
 
 
 # ## https://info.bossa.pl/index.jsp?layout=mstock&page=1&news_cat_id=706&dirpath=/ciagle/mstock/sesjacgl

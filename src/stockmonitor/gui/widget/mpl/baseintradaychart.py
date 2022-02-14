@@ -37,7 +37,7 @@ class BaseIntradayChart( MplCanvas ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget, 10, 10, 80)
 
-        self.mouseIndicators = dict()
+        self.mouseIndicators = {}
         self.figure.canvas.mpl_connect('motion_notify_event', self._onPlotUpdateMouseIndicators )
         self.figure.canvas.mpl_connect('figure_leave_event', self._onPlotHideMouseIndicators )
 
@@ -133,7 +133,7 @@ def _update_plot(xdata, plot ):
 
 def _generate_ticks(xdata, number):
     if number < 1:
-        return list()
+        return []
     start = xdata[0].timestamp()
     tzoffset = start - pandas.Timestamp( start, unit="s" ).timestamp()
     if number < 2:
@@ -143,7 +143,7 @@ def _generate_ticks(xdata, number):
         return ticks
 #         print("data:", self.xdata, type(self.xdata))
     delta = (xdata[-1].timestamp() - start) / (number - 1)
-    ticks = list()
+    ticks = []
     ticks.append( xdata[0] )
     currTs = start + tzoffset
     for _ in range(1, number):
@@ -175,9 +175,11 @@ def set_ref_format_coord( plot, refValue=None ):
         xindex = get_index_float( xdata, x )
         yvalue = ydata[ xindex ]
         if refValue is not None:
+            xvalue = xformatter.format_data(x)
             change = ( yvalue / refValue - 1 ) * 100
-            return 'x=' + xformatter.format_data(x) + ' y=%1.4f ch=%1.2f%%' % ( yvalue, change )
-        return 'x=' + xformatter.format_data(x) + ' y=%1.4f' % ( yvalue )
+            return f"x={xvalue} y={yvalue:.4f} ch={change:.2f}%"
+        xvalue = xformatter.format_data(x)
+        return f"x={xvalue} y={yvalue:.4f}"
 
     plot.format_coord = format_coord
 
@@ -190,8 +192,9 @@ def set_int_format_coord( plot ):
 
     def format_coord(x, _):
 #         def format_coord(x, y):
+        xvalue = xformatter.format_data(x)
         xindex = get_index_float( xdata, x )
         yvalue = ydata[ xindex ]
-        return 'x=' + xformatter.format_data(x) + ' y=%i' % yvalue
+        return f"x={xvalue} y={yvalue}"
 
     plot.format_coord = format_coord

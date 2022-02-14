@@ -107,6 +107,7 @@ class GpwCurrentIntradayProvider( ActivityIntradayDataProvider ):
 class MetaStockIntradayProvider( ActivityIntradayDataProvider ):
 
     def __init__(self):
+        super().__init__()
         self.accessDate      = None
         self.intradayData    = MetaStockIntradayData()
         self.refDataProvider = None
@@ -207,12 +208,13 @@ class ActivityAnalysis:
             if refVal is not None:
                 dataSubdict["ref price"] = refVal
                 currVal = refVal
-            if currVal == 0 or currVal == '-':
+            if currVal in (0, '-'):
                 continue
 
             raiseVal  = 0
             try:
                 raiseVal  = maxVal - currVal
+            # pylint: disable=W0212
             except numpy.core._exceptions.UFuncTypeError:
                 _LOGGER.warning( "invalid data '%s' and '%s'", maxVal, currVal )
                 raise
@@ -250,7 +252,7 @@ class ActivityAnalysis:
         if self.dataProvider.refDataProvider is not None:
             refValueDate = datetime.datetime.today().date()
 
-        headerList = list()
+        headerList = []
         headerList.append( ["analysis period:", dates_to_string( [fromDay, toDay] ) ] )
         headerList.append( ["reference value date:", str( refValueDate ) ] )
         headerList.append( ["potential:", "(max - ref) / max"] )
@@ -315,7 +317,7 @@ class ActivityAnalysis:
 
         if self.forceRecalc is False:
             dateString = currDate.isoformat()
-            picklePath = tmp_dir + "data/activity/%s.pickle" % dateString
+            picklePath = f"{tmp_dir}data/activity/{dateString}.pickle"
             dataPair = persist.load_object_simple( picklePath, None, silent=True )
             if dataPair is None:
 #                 _LOGGER.debug( "no precalculated data found -- precalculating [%s]", picklePath )
@@ -400,7 +402,7 @@ def calculate_change( dataSeries ):
         return pandas.Series()
     if dSize < 2:
         return pandas.Series( [ 0.0 ] )
-    retList = list()
+    retList = []
     for i in range(1, dSize):
         diff = ( dataSeries[i] / dataSeries[i - 1] - 1.0 ) * 100.0
         retList.append( diff )
@@ -411,7 +413,7 @@ def write_to_csv( file, headerList, dataFrame ):
     dirPath = os.path.dirname( file )
     os.makedirs( dirPath, exist_ok=True )
 
-    with open(file, 'w') as f:
+    with open(file, 'w', encoding="utf-8") as f:
         writer = csv.writer( f )
         for row in headerList:
             writer.writerow( row )

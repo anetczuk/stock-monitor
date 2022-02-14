@@ -2,6 +2,7 @@
 #
 #
 
+import sys
 import logging
 
 try:
@@ -15,7 +16,7 @@ try:
 except ImportError:
     ### No module named <name>
     logging.exception("Exception while importing")
-    exit(1)
+    sys.exit(1)
 
 from PyQt5 import QtCore, QtWidgets
 
@@ -56,9 +57,8 @@ class MplCanvas(FigureCanvas):
         self.draw_idle()
 
     ## fix fitting figure to widget
-    # pylint: disable=W0221
-    def resizeEvent(self, param):
-        super().resizeEvent( param )
+    def resizeEvent(self, event):
+        super().resizeEvent( event )
         self.figure.tight_layout()
 
 
@@ -96,8 +96,7 @@ class DynamicMplCanvas( MplCanvas ):
             ## no data - nothing to do
             self.showFigure( False )
             return
-        else:
-            self.showFigure( True )
+        self.showFigure( True )
 
 #         self.figure.canvas.draw()
 #         self.figure.canvas.flush_events()

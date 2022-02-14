@@ -62,7 +62,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
                    "?action=GPWQuotations&start=showTable&tab=all&lang=PL&type=&full=1&format=html&download_xls=1")
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 url_list = []
@@ -179,20 +179,20 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
 
         colIndex = GpwCurrentStockData.getColumnIndex( columnType )
         if colIndex is None:
-            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+            raise ValueError( f"Invalid value: {columnType}" )
         return colIndex
 
     ## ======================================================================
 
     def getGpwLinkFromIsin(self, isin):
-        return "https://www.gpw.pl/spolka?isin=%s" % isin
+        return f"https://www.gpw.pl/spolka?isin={isin}"
 
     def getGoogleLinkFromTicker(self, ticker):
-        infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % ticker
+        infoLink = f"https://www.google.com/search?q=spolka+gpw+{ticker}"
         return infoLink
 
     def getMoneyLinkFromIsin(self, isin):
-        return "https://www.money.pl/gielda/spolki-gpw/%s.html" % isin
+        return f"https://www.money.pl/gielda/spolki-gpw/{isin}.html"
 
     ## ======================================================================
 
@@ -252,7 +252,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
 
         def __init__(self):
             self.worksheet: DataFrame = None
-            self.dataList: List[ BaseWorksheetDAO ] = list()
+            self.dataList: List[ BaseWorksheetDAO ] = []
             self.dataList.append( GpwMainIndexesData() )
             self.dataList.append( GpwMacroIndexesData() )
             self.dataList.append( GpwSectorsIndexesData() )
@@ -310,22 +310,22 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
         }
         colIndex = switcher.get(columnType, None)
         if colIndex is None:
-            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+            raise ValueError( f"Invalid value: {columnType}" )
         return colIndex
 
     ## ======================================================================
 
     def getGpwLinkFromIsin(self, isin):
-        return "https://gpwbenchmark.pl/karta-indeksu?isin=%s" % isin
+        return f"https://gpwbenchmark.pl/karta-indeksu?isin={isin}"
         #return "https://www.gpw.pl/spolka?isin=%s" % isin
 
     def getGoogleLinkFromName(self, name):
-        infoLink = "https://www.google.com/search?q=spolka+gpw+%s" % name
+        infoLink = f"https://www.google.com/search?q=spolka+gpw+{name}"
         return infoLink
 
     def getMoneyLinkFromName(self, name):
         value = name.replace('-', '_')
-        return "https://www.money.pl/gielda/indeksy_gpw/%s/" % value
+        return f"https://www.money.pl/gielda/indeksy_gpw/{value}/"
 
 
 class GpwMainIndexesData( BaseWorksheetDAO ):
@@ -334,14 +334,14 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/gpw/indexes_main_data.html"
+            return f"{tmp_dir}data/gpw/indexes_main_data.html"
 
         ## override
         def downloadData(self, filePath):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=indexes&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -365,6 +365,11 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
         dao = GpwMainIndexesData.DAO()
         super().__init__( dao )
 
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise ValueError( f"Invalid value: {columnType}" )
+
 
 class GpwMacroIndexesData( BaseWorksheetDAO ):
 
@@ -372,14 +377,14 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/gpw/indexes_macro_data.html"
+            return f"{tmp_dir}data/gpw/indexes_macro_data.html"
 
         ## override
         def downloadData(self, filePath):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=macroindices&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -400,6 +405,11 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
         dao = GpwMacroIndexesData.DAO()
         super().__init__( dao )
 
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise ValueError( f"Invalid value: {columnType}" )
+
 
 class GpwSectorsIndexesData( BaseWorksheetDAO ):
 
@@ -407,14 +417,14 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/gpw/indexes_sectors_data.html"
+            return f"{tmp_dir}data/gpw/indexes_sectors_data.html"
 
         ## override
         def downloadData(self, filePath):
             url = "https://gpwbenchmark.pl/ajaxindex.php?action=GPWIndexes&start=showTable&tab=sectorbased&lang=PL"
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -435,6 +445,11 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
         dao = GpwSectorsIndexesData.DAO()
         super().__init__( dao )
 
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise ValueError( f"Invalid value: {columnType}" )
+
 
 def convert_indexes_data( dataFrame: DataFrame ):
     apply_on_column( dataFrame, 'Kurs otw.', convert_float )
@@ -448,7 +463,7 @@ def convert_indexes_data( dataFrame: DataFrame ):
 
 
 def append_stock_isin( dataFrame, dataFile ):
-    with open(dataFile, 'r') as file:
+    with open(dataFile, 'r', encoding="utf-8") as file:
         fileContent = file.read()
 
     isinList = []
@@ -471,7 +486,7 @@ def append_stock_isin( dataFrame, dataFile ):
 
 
 def append_indexes_isin( dataFrame, dataFile ):
-    with open(dataFile, 'r') as file:
+    with open(dataFile, 'r', encoding="utf-8") as file:
         fileContent = file.read()
 
     isinList = []

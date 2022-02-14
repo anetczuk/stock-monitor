@@ -118,7 +118,7 @@ class StockIntradayChart( BaseIntradayChart ):
 #         def format_coord(x, y):
             xindex = get_index_float( xdata, x )
             yvalue = ydata[ xindex ]
-            return 'x=' + xformatter.format_data(x) + ' y=%i' % yvalue
+            return f"x={xformatter.format_data(x)} y={yvalue}"
 
         self.volumePlot.format_coord = format_coord
 

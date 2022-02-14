@@ -32,9 +32,10 @@ from bs4 import BeautifulSoup
 
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
-    download_html_content, download_html_content_list
+    download_html_content
 from stockmonitor.synchronized import synchronized
 from stockmonitor.pprint import fullname
+from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,11 +62,12 @@ class GpwESPIData( BaseWorksheetDAO ):
                   "&offset=" + str(offset) + \
                   "&limit="  + str(self.messagesLimit) + \
                   "&categoryRaports%5B%5D=EBI&categoryRaports%5B%5D=ESPI" \
-                  "&typeRaports%5B%5D=RB&typeRaports%5B%5D=P&typeRaports%5B%5D=Q&typeRaports%5B%5D=O&typeRaports%5B%5D=R" \
+                  "&typeRaports%5B%5D=RB&typeRaports%5B%5D=P&typeRaports%5B%5D=Q" \
+                  "&typeRaports%5B%5D=O&typeRaports%5B%5D=R" \
                   "&search-xs=&searchText=&date="
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -77,7 +79,7 @@ class GpwESPIData( BaseWorksheetDAO ):
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
 
-            with open( dataFile ) as file:
+            with open( dataFile, encoding="utf-8" ) as file:
                 soup = BeautifulSoup(file, "html.parser")
                 data_dicts = []
                 for row in soup.select('li'):
@@ -86,7 +88,8 @@ class GpwESPIData( BaseWorksheetDAO ):
                     dateRow    = row.select('span.date')
                     dateRaw    = dateRow[0].string
                     dateString = dateRaw.split('|')[0].strip()
-                    dateObj    = datetime.datetime.strptime(dateString, '%d-%m-%Y %H:%M:%S')          ## 23-10-2020 23:09:01
+                    ## 23-10-2020 23:09:01
+                    dateObj    = datetime.datetime.strptime( dateString, '%d-%m-%Y %H:%M:%S')
 
                     nameRow = row.select('strong.name')[0]
                     name    = nameRow.a.string.strip()
@@ -124,3 +127,8 @@ class GpwESPIData( BaseWorksheetDAO ):
 
     def setLimit(self, number):
         self.dao.messagesLimit = number
+
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise ValueError( f"Invalid value: {columnType}" )

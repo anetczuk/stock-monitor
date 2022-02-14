@@ -112,7 +112,7 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
         self.colorDialog.setCurrentColor( currColor )
         self.ui.colorLE.setText( value )
         ## update color sample
-        self.ui.colorSample.setStyleSheet( "background-color: %s;" % value )
+        self.ui.colorSample.setStyleSheet( f"background-color: {value};" )
 
     def _done(self, _):
         self.entry.ticker = self.ui.tickerLE.text()

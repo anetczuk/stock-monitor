@@ -40,7 +40,7 @@ import logging
 
 from PyQt5.QtWidgets import QApplication
 
-import stockmonitor.logger as logger
+from stockmonitor import logger
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.widget.mpl.timelinechartwidget import TimelineChartWidget
 

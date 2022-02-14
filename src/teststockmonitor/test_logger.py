@@ -26,7 +26,7 @@ import unittest
 import logging
 import io
 
-import stockmonitor.logger as logger
+from stockmonitor import logger
 
 
 class LoggerTest(unittest.TestCase):

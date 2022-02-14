@@ -44,7 +44,7 @@ ignore_errors=$ignore_errors,F401
 
 
 echo "running flake8"
-flake8 --show-source --statistics --count --ignore=$ignore_errors $src_dir
+python3 -m flake8 --show-source --statistics --count --ignore=$ignore_errors $src_dir
 exit_code=$?
 
 if [ $exit_code -ne 0 ]; then
@@ -56,7 +56,7 @@ echo "flake8 -- no warnings found"
 
 
 echo "running pylint3"
-pylint3 --rcfile=$SCRIPT_DIR/pylint3.config $src_dir/stockmonitor $src_dir/teststockmonitor $src_dir/*.py
+pylint --rcfile=$SCRIPT_DIR/pylint3.config $src_dir/stockmonitor $src_dir/teststockmonitor $src_dir/*.py
 exit_code=$?
 if [ $exit_code -ne 0 ]; then
     exit $exit_code

@@ -57,9 +57,7 @@ class FavData( persist.Versionable ):
         if dictVersion_ is None:
             dictVersion_ = -1
 
-        if dictVersion_ < 0:
-            ## nothing to do
-            dictVersion_ = 0
+        dictVersion_ = max(dictVersion_, 0)
 
         if dictVersion_ == 0:
             ## use ordererd dict
@@ -79,7 +77,7 @@ class FavData( persist.Versionable ):
         if dictVersion_ == 2:
             ## convert ordererd dict to list
             favsDict = dict_["favs"]
-            favsList = list()
+            favsList = []
             for key in favsDict.keys():
                 pair = ( key, favsDict[key] )
                 favsList.append( pair )
@@ -130,7 +128,7 @@ class FavData( persist.Versionable ):
 
     def addFavGroup(self, name):
         if name not in self.favsList:
-            self.favsList[name] = list()
+            self.favsList[name] = []
 
     def renameFavGroup(self, fromName, toName):
 #         self.favsList[toName] = self.favsList.pop(fromName)
@@ -282,7 +280,7 @@ class MarkersContainer( persist.Versionable ):
     _class_version = 0
 
     def __init__(self):
-        self.markers: List[MarkerEntry] = list()
+        self.markers: List[MarkerEntry] = []
 
     def _convertstate_(self, dict_, dictVersion_ ):
         _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )

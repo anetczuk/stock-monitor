@@ -58,7 +58,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
             modeCode = mode_code( self.rangeCode )
             currDate = self.dataTime.date()
             dateStr  = str(currDate)
-            return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
+            return f"{tmp_dir}data/gpw/curr/{dateStr}/isin_{self.isin}_{modeCode}.json"
 
         ## override
         def downloadData(self, filePath):
@@ -67,7 +67,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
             url = generate_chart_data_url( self.isin, modeCode)
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -86,7 +86,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
 
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            with open( dataFile ) as f:
+            with open( dataFile, encoding="utf-8" ) as f:
                 json_data = json.load(f)
                 json_dict = json_data[0]
                 data_field = json_dict.get("data", None)
@@ -135,7 +135,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
     ## get column index
     ## override
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:
-        raise ValueError( 'Invalid value: %s' % ( columnType ) )
+        raise ValueError( f"Invalid value: {columnType}" )
 
 
 class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
@@ -155,7 +155,7 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
             modeCode = mode_code( self.rangeCode )
             currDate = self.dataTime.date()
             dateStr  = str(currDate)
-            return tmp_dir + "data/gpw/curr/%s/isin_%s_%s.json" % ( dateStr, self.isin, modeCode )
+            return f"{tmp_dir}data/gpw/curr/{dateStr}/isin_{self.isin}_{modeCode}.json"
 
         ## override
         def downloadData(self, filePath):
@@ -164,7 +164,7 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
             url = generate_chart_data_url( self.isin, modeCode)
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -178,7 +178,7 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
 
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
-            with open( dataFile ) as f:
+            with open( dataFile, encoding="utf-8" ) as f:
                 json_data = json.load(f)
                 json_dict = json_data[0]
                 data_field = json_dict.get("data", None)
@@ -208,6 +208,11 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
     def sourceLink(self):
         return "https://gpwbenchmark.pl/karta-indeksu?isin=" + self.dao.isin
 
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        raise ValueError( f"Invalid value: {columnType}" )
+
 
 ## ================================================================
 
@@ -226,7 +231,8 @@ def generate_chart_data_mode_url(isin, modeCode):
            ",%22mode%22:%22" + modeCode + "%22}]"
 
 
-## fields 'from' and 'to' are useful in 'RANGE' mode (returned data is in day resolution)
+## fields 'from' and 'to' are useful in 'RANGE' mode (returned data
+## is in day resolution)
 def generate_chart_data_range_url( isin, timeRange: datetime.timedelta ):
     modeCode = "RANGE"
 
@@ -236,32 +242,32 @@ def generate_chart_data_range_url( isin, timeRange: datetime.timedelta ):
     startDateTime = todayDateTime - timeRange
     startString   = startDateTime.strftime("%Y-%m-%d")
 
-    ## https://www.gpw.pl/chart-json.php?req=[{"isin":"LU2237380790","mode":"RANGE","from":"2019-08-06","to":"2021-12-02"}]
     return "https://www.gpw.pl/chart-json.php?req=[{%22isin%22:%22" + isin + "%22" + \
-           ",%22mode%22:%22" + modeCode + "%22,%22from%22:%22" + startString + "%22,%22to%22:%22" + todayString + "%22}]"
+           ",%22mode%22:%22" + modeCode + "%22,%22from%22:%22" + startString + \
+           "%22,%22to%22:%22" + todayString + "%22}]"
 
 
 def generate_chart_data_url(isin, modeCode):
     ## valid modes: CURR, 14D, 1M, 3M, 6M, 1R, ARCH
     if modeCode == "CURR":
         return generate_chart_data_mode_url( isin, modeCode )
-    elif modeCode == "14D":
+    if modeCode == "14D":
         return generate_chart_data_mode_url( isin, modeCode )
-    elif modeCode == "1M":
+    if modeCode == "1M":
         return generate_chart_data_mode_url( isin, modeCode )
-    elif modeCode == "3M":
+    if modeCode == "3M":
         return generate_chart_data_mode_url( isin, modeCode )
-    elif modeCode == "6M":
+    if modeCode == "6M":
         return generate_chart_data_mode_url( isin, modeCode )
-    elif modeCode == "1R":
+    if modeCode == "1R":
         return generate_chart_data_mode_url( isin, modeCode )
-    elif modeCode == "ARCH":
+    if modeCode == "ARCH":
         return generate_chart_data_mode_url( isin, modeCode )
 
-    elif modeCode == "2R":
+    if modeCode == "2R":
         timeRange = datetime.timedelta( weeks=104 )
         return generate_chart_data_range_url( isin, timeRange )
-    elif modeCode == "3R":
+    if modeCode == "3R":
         timeRange = datetime.timedelta( weeks=156 )
         return generate_chart_data_range_url( isin, timeRange )
 

@@ -39,8 +39,8 @@ from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 
-import stockmonitor.gui.widget.stockchartwidget as stockchartwidget
-import stockmonitor.gui.widget.indexchartwidget as indexchartwidget
+from stockmonitor.gui.widget import stockchartwidget
+from stockmonitor.gui.widget import indexchartwidget
 # import stockmonitor.gui.widget.stocksummarywidget as stocksummarywidget
 
 
@@ -254,9 +254,9 @@ class StockTable( DataFrameTable ):
         return ret
 
     ## returns list of tickers
-    def _getSelectedTickers(self) -> List[str]:
+    def _getSelectedTickers(self) -> List[str]:                         # pylint: disable=R0201
         ## reimplement if needed
-        return list()
+        return []
 
     ## returns list of isins
     def _getSelectedIsins(self) -> List[str]:
@@ -559,7 +559,7 @@ class ToolStockTable( StockTable ):
     def _getSelectedTickers(self):
         if self.dataObject is None:
             _LOGGER.warning("no dataobject present (set to None)")
-            return list()
+            return []
         dataAccess = self.dataObject.gpwCurrentSource.stockData
         selectedData = self.getSelectedData( 0 )                ## stock name
         tickersList = set()

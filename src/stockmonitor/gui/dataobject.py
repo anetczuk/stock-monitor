@@ -22,7 +22,7 @@
 #
 
 import logging
-from typing import Dict, List
+from typing import Dict
 # from multiprocessing import Process, Queue
 # from multiprocessing import Pool
 
@@ -37,7 +37,7 @@ from stockmonitor.datatypes.datatypes import FavData, WalletData,\
     MarkerEntry
 from stockmonitor.datatypes.datacontainer import DataContainer
 from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
-    StockDataProvider, GpwIndexIntradayMap
+    GpwIndexIntradayMap
 
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
@@ -47,7 +47,7 @@ from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
 from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
 
-import stockmonitor.gui.threadlist as threadlist
+from stockmonitor.gui import threadlist
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
 from stockmonitor.gui.command.deletefavgroupcommand import DeleteFavGroupCommand
 from stockmonitor.gui.command.renamefavgroupcommand import RenameFavGroupCommand
@@ -251,7 +251,7 @@ class DataObject( QObject ):
 
     def addMarkersList(self, tickersList, operation):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-        markersList = list()
+        markersList = []
         for ticker in tickersList:
             currValue = currentStock.getRecentValueByTicker( ticker )
             newMarker = MarkerEntry()
@@ -262,7 +262,7 @@ class DataObject( QObject ):
         self.undoStack.push( AddMarkerCommand( self, markersList ) )
 
     def addMarkerEntry(self, entry):
-        markersList = list()
+        markersList = []
         markersList.append( entry )
         self.undoStack.push( AddMarkerCommand( self, markersList ) )
 
@@ -398,14 +398,14 @@ class DataObject( QObject ):
 #     def dataStockProvidersList(self) -> List[ StockDataProvider ]:
 #         return self.dataContainer.dataStockProvidersList()
 
-    def getStockIntradayDataByTicker(self, ticker):
-        return self.dataContainer.getStockIntradayDataByTicker( ticker )
+#     def getStockIntradayDataByTicker(self, ticker):
+#         return self.dataContainer.getStockIntradayDataByTicker( ticker )
 
-    def getStockIntradayDataByIsin(self, isin):
-        return self.dataContainer.getStockIntradayDataByIsin( isin )
+#     def getStockIntradayDataByIsin(self, isin):
+#         return self.dataContainer.getStockIntradayDataByIsin( isin )
 
-    def getIndexIntradayDataByIsin(self, isin):
-        return self.dataContainer.getIndexIntradayDataByIsin( isin )
+#     def getIndexIntradayDataByIsin(self, isin):
+#         return self.dataContainer.getIndexIntradayDataByIsin( isin )
 
     def getTicker(self, rowIndex):
         return self.gpwCurrentData.getTickerField( rowIndex )

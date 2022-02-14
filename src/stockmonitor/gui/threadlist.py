@@ -38,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 class ThreadList():
 
     def __init__(self):
-        self.threads = list()
+        self.threads = []
 
     def append(self, thread: threading.Thread, startThread=False):
         if startThread:
@@ -116,7 +116,7 @@ class QThreadList( QtCore.QObject ):
 
     def __init__(self, parent=None, logs=True):
         super().__init__( parent )
-        self.threads = list()
+        self.threads = []
         self.finishCounter = 0
         self.logging = logs
 
@@ -187,7 +187,7 @@ class SerialList( QtCore.QObject ):
 
     def __init__(self, parent=None, logs=True):
         super().__init__( parent )
-        self.commandsList = list()
+        self.commandsList = []
         self.logging = logs
         self.startTime = None
 
@@ -244,7 +244,7 @@ class ProcessList( QtCore.QObject ):
 
     def __init__(self, parent=None):
         super().__init__( parent )
-        self.threads = list()
+        self.threads = []
         self.finishCounter = 0
         self.startTime = None
 

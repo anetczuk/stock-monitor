@@ -31,7 +31,6 @@ import urllib
 
 from pandas.core.frame import DataFrame
 
-from stockmonitor.pprint import fullname
 from stockmonitor import persist
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess import retrieve_url, retrieve_url_list
@@ -133,7 +132,6 @@ class WorksheetData( BaseWorksheetData ):
             self.parseWorksheetFromFile( dataPath )
 
         except BaseException:
-            # _LOGGER.exception( "%s: unable to load object data -- %s: %s", fullname(self), type(ex), ex, exc_info=False )
             self.storage.clear()
 
     @abc.abstractmethod
@@ -144,6 +142,7 @@ class WorksheetData( BaseWorksheetData ):
 #         _LOGGER.info( "parsing raw data: %s", dataPath )
         worksheet = self._parseDataFromFile( dataPath )
         self.storage.storeObject( dataPath, worksheet )
+        return worksheet
 
     ## ====================================================
 
@@ -196,11 +195,14 @@ class WorksheetStorage():
         except ModuleNotFoundError:
             ## this might happen when object files are shared between
             ## different operating systems (different versions of libraries)
-            _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
+            _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file",
+                               picklePath, exc_info=False )
         except AttributeError:
             ## this might happen when module updated between save and load
-            ## e.g.: AttributeError: Can't get attribute 'new_block' on <module 'pandas.core.internals.blocks' from 'site-packages/pandas/core/internals/blocks.py'>
-            _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file", picklePath, exc_info=False )
+            ## e.g.: AttributeError: Can't get attribute 'new_block' on
+            ## <module 'pandas.core.internals.blocks' from 'site-packages/pandas/core/internals/blocks.py'>
+            _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file",
+                               picklePath, exc_info=False )
 
         self.clear()
         return None
@@ -231,10 +233,12 @@ class WorksheetStorageMock():
         self.worksheet = None
         self.grabTimestamp = None
 
-    def loadObject(self, dataPath, forceRefresh=False):
+    # def loadObject(self, dataPath, forceRefresh=False):
+    def loadObject(self, _1, _2=False):
         return self.worksheet
 
-    def storeObject(self, dataPath, objectToStore):
+    # def storeObject(self, dataPath, objectToStore):
+    def storeObject(self, _, objectToStore):
         ## do nothing
         self.worksheet = objectToStore
 
@@ -294,7 +298,8 @@ class BaseWorksheetDAO():
         retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex] == rowValue ]
         return retRows.squeeze()                                            ## convert 1 row dataframe to series
 
-    def getRowsByValueList( self, rowColumnType: StockDataType, rowValues: List[str] ):
+    # def getRowsByValueList( self, rowColumnType: StockDataType, rowValues: List[str] ):
+    def getRowsByValueList( self, _: StockDataType, rowValues: List[str] ):
         if rowValues is None:
             return None
         dataFrame = self.getWorksheetData()

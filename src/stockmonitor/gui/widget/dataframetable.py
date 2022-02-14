@@ -44,19 +44,22 @@ from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtGui import QColor
 
 ## workaround for mypy type errors
-from QtCore.Qt import Checked as QtChecked
-from QtCore.Qt import Unchecked as QtUnchecked
-from QtCore.Qt import DisplayRole as QtDisplayRole
-from QtCore.Qt import UserRole as QtUserRole
-from QtCore.Qt import TextAlignmentRole as QtTextAlignmentRole
-from QtCore.Qt import ForegroundRole as QtForegroundRole
-from QtCore.Qt import BackgroundRole as QtBackgroundRole
-from QtCore.Qt import AlignHCenter as QtAlignHCenter
-from QtCore.Qt import AlignVCenter as QtAlignVCenter
-from QtCore.Qt import ItemIsEditable as QtItemIsEditable
+from PyQt5.QtCore import Qt
 
 from .. import uiloader
 from .. import guistate
+
+
+QtChecked = Qt.Checked                          # type: ignore
+QtUnchecked = Qt.Unchecked                      # type: ignore
+QtDisplayRole = Qt.DisplayRole                  # type: ignore
+QtUserRole = Qt.UserRole                        # type: ignore
+QtTextAlignmentRole = Qt.TextAlignmentRole      # type: ignore
+QtForegroundRole = Qt.ForegroundRole            # type: ignore
+QtBackgroundRole = Qt.BackgroundRole            # type: ignore
+QtAlignHCenter = Qt.AlignHCenter                # type: ignore
+QtAlignVCenter = Qt.AlignVCenter                # type: ignore
+QtItemIsEditable = Qt.ItemIsEditable            # type: ignore
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -311,7 +314,7 @@ class DataFrameTableModel( QAbstractTableModel ):
     def __init__(self, data: DataFrame):
         super().__init__()
         self._rawData: DataFrame                   = data
-        self.customHeader: Dict[ int, str ]        = dict()
+        self.customHeader: Dict[ int, str ]        = {}
         self.colorDelegate: TableRowColorDelegate  = None
 
     def setColorDelegate(self, decorator: TableRowColorDelegate):
@@ -464,17 +467,17 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
         if self.condition == 0:
             ## greater than
             return self.valueLessThan( filterValue, value )
-        elif self.condition == 1:
+        if self.condition == 1:
             ## equal
             if self.valueLessThan( value, filterValue ):
                 return False
             if self.valueLessThan( filterValue, value ):
                 return False
             return True
-        elif self.condition == 2:
+        if self.condition == 2:
             ## less than
             return self.valueLessThan( value, filterValue )
-        elif self.condition == 3:
+        if self.condition == 3:
             ## contains
             strVal = str(value)
             return filterValue in strVal
@@ -502,7 +505,7 @@ class DataFrameTable( QTableView ):
         self.setObjectName("dataframetable")
 
         self._rawData = None
-        self.columnsVisible: Dict[ int, bool ] = dict()
+        self.columnsVisible: Dict[ int, bool ] = {}
 
         self.setSortingEnabled( True )
         self.setShowGrid( False )
@@ -546,7 +549,7 @@ class DataFrameTable( QTableView ):
         settings.beginGroup( wkey )
         visDict = settings.value("columnsVisible", None, type=dict)
         if visDict is None:
-            visDict = dict()
+            visDict = {}
         headersDict = settings.value("customHeaders", None, type=dict)
         settings.endGroup()
         self.setColumnsVisibility( visDict )

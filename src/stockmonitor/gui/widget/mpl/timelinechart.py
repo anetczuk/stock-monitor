@@ -36,8 +36,8 @@ class TimelineChart( MplCanvas ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget, 10, 10, 80)
 
-        self.xdata = list()
-        self.ydata = list()
+        self.xdata = []
+        self.ydata = []
 
         self.plot = self.figure.add_subplot(1, 1, 1)
         linesList = self.plot.plot_date( self.xdata, self.ydata, 'r',
@@ -92,7 +92,7 @@ class TimelineChart( MplCanvas ):
 
     def _generateTicks(self, number):
         if number < 1:
-            return list()
+            return []
         start = self.xdata[0].timestamp()
         tzoffset = start - pandas.Timestamp( start, unit="s" ).timestamp()
         if number < 2:
@@ -101,7 +101,7 @@ class TimelineChart( MplCanvas ):
             ticks = [ts]
             return ticks
         delta = (self.xdata[-1].timestamp() - start) / (number - 1)
-        ticks = list()
+        ticks = []
         ticks.append( self.xdata[0] )
         currTs = start + tzoffset
         for _ in range(1, number):

@@ -32,7 +32,8 @@ from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import marker_background_color
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
-from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window, create_walletprofit_window, create_walletgain_window
+from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window,\
+    create_walletprofit_window, create_walletgain_window
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 
 from .. import uiloader
@@ -73,7 +74,7 @@ class WalletColorDelegate( TableRowColorDelegate ):
     def foreground(self, index: QModelIndex ):
         dataColumn = index.column()
         ## "Zm.do k.odn.[%]" or "Zysk [%]"
-        if dataColumn == 5 or dataColumn == 9:
+        if dataColumn in (5, 9):
             stockChangeString = index.data()
             if stockChangeString != "-":
                 stockChange = float(stockChangeString)

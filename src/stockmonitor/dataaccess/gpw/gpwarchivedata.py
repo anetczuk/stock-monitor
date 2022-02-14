@@ -39,7 +39,8 @@ _LOGGER = logging.getLogger(__name__)
 class GpwArchiveData:
     """Handle GPW archive data."""
 
-    def sourceLink(self):
+    @staticmethod
+    def sourceLink():
         return "https://www.gpw.pl/archiwum-notowan"
 
     def getData(self, dataType: ArchiveDataType, day: datetime.date):
@@ -78,7 +79,8 @@ class GpwArchiveData:
 
     # ==========================================================================
 
-    def getColumnIndex(self, dataType: ArchiveDataType):
+    @staticmethod
+    def getColumnIndex(dataType: ArchiveDataType):
         switcher = {
             ArchiveDataType.DATE:          0,
             ArchiveDataType.NAME:          1,
@@ -98,7 +100,7 @@ class GpwArchiveData:
     def extractColumn(self, worksheet, colIndex):
         # name col: 1
         # rows are indexed by 0, first row is header
-        ret = dict()
+        ret = {}
         nameIndex = self.getColumnIndex( ArchiveDataType.NAME )
         for row in range(1, worksheet.nrows):
             name = worksheet.cell(row, nameIndex).value
@@ -132,14 +134,15 @@ class GpwArchiveData:
             return None
         return None
 
-    def downloadData(self, day):
+    @staticmethod
+    def downloadData(day):
         filePath = tmp_dir + "data/gpw/arch/" + day.strftime("%Y-%m-%d") + ".xls"
         if os.path.exists( filePath ):
             return filePath
 
         ## pattern example: https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=15-01-2020
         url = "https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=" + day.strftime("%d-%m-%Y")
-        _LOGGER.debug( "grabbing data from utl: %s", url.split("?")[0] )
+        _LOGGER.debug( "grabbing data from utl: %s", url.split("?", maxsplit=1)[0] )
 
         dirPath = os.path.dirname( filePath )
         os.makedirs( dirPath, exist_ok=True )
@@ -152,8 +155,9 @@ class GpwArchiveData:
             _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
             raise
 
-    def isFileWithNoData(self, filePath):
-        with open( filePath ) as f:
+    @staticmethod
+    def isFileWithNoData(filePath):
+        with open( filePath, encoding="utf-8" ) as f:
             if "Brak danych dla wybranych kryteriów." in f.read():
                 return True
         return False

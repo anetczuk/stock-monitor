@@ -6,7 +6,7 @@ import os
 import logging
 import pprint
 
-import urllib.request as request
+from urllib import request
 import ssl
 import requests
 
@@ -33,8 +33,6 @@ _LOGGER = logging.getLogger(__name__)
 #     ## changed "user-agent" fixes blocking by server
 #     headers = {}
 #     headers[ "User-Agent" ] = "Mozilla/5.0 (X11; Linux x86_64)"
-# #     headers[ "User-Agent" ] = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
-#     # headers[ "User-Agent" ] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
 #     req = request.Request( url, headers=headers )
 #     result = request.urlopen( req, timeout=30, context=ctx_no_secure )
 #
@@ -62,6 +60,7 @@ _LOGGER = logging.getLogger(__name__)
 ## ====================================================================
 
 
+# pylint: disable=W0613
 def set_raise( response, *args, **kwargs ):
     response.raise_for_status()
 
@@ -72,8 +71,6 @@ def init_session():
     ## changed "user-agent" fixes blocking by server
     headers = {}
     headers[ "User-Agent" ] = "Mozilla/5.0 (X11; Linux x86_64)"
-#             headers[ "User-Agent" ] = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"
-    ## headers[ "User-Agent" ] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
     currSession.headers.update( headers )
 
     ## raise HTTP status code

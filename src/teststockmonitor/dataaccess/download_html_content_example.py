@@ -36,9 +36,9 @@ except ImportError:
 import sys
 import logging
 
-import stockmonitor.logger as logger
+from stockmonitor import logger
 
-import stockmonitor.dataaccess.worksheetdata as worksheetdata
+from stockmonitor.dataaccess import worksheetdata
 
 
 ## ============================= main section ===================================
@@ -64,4 +64,3 @@ content = worksheetdata.download_html_content( url, output )
 
 print( "content:" )
 print( content )
-

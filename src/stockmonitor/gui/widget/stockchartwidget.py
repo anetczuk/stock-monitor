@@ -24,7 +24,7 @@
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QCloseEvent
+# from PyQt5.QtGui import QCloseEvent
 
 from stockmonitor.datatypes.stocktypes import GpwStockIntradayMap
 from stockmonitor.datatypes.wallettypes import TransHistory

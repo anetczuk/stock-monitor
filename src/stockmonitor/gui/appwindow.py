@@ -26,7 +26,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QVBoxLayout
-from PyQt5.QtWidgets import QApplication
+# from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QCloseEvent
 
 from stockmonitor.gui import trayicon

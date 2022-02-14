@@ -64,7 +64,7 @@ class TransHistory():
 
     def __init__(self):
         ## most recent transaction on top (with index 0)
-        self.transactions: List[ Transaction ] = list()
+        self.transactions: List[ Transaction ] = []
 
     def __getitem__(self, index):
         return self.transactions[ index ]
@@ -168,7 +168,7 @@ class TransHistory():
         return profitValue
 
     def transactionsAfter(self, startDate) -> 'TransHistory':
-        transList = list()
+        transList = []
         for item in self.transactions:
             transTime = item[2]
             transDate = transTime.date()
@@ -180,7 +180,7 @@ class TransHistory():
         return retTrans
 
     def transactionsBefore(self, endDate) -> 'TransHistory':
-        transList = list()
+        transList = []
         for item in self.transactions:
             transTime = item[2]
             transDate = transTime.date()
@@ -263,7 +263,7 @@ class TransHistory():
     def matchTransactions( self, mode: TransactionMatchMode ) -> TransactionsMatch:
         ## Buy value raises then current unit price rises
         ## Sell value raises then current unit price decreases
-        sellList = list()
+        sellList = []
         currTransactions = TransHistory()
         for item in reversed( self.transactions ):
             amount = item[0]
@@ -425,9 +425,9 @@ class TransHistory():
     def findMatchingTransaction( self, sellTransaction: Transaction, mode: TransactionMatchMode ):
         if mode is TransactionMatchMode.OLDEST:
             return len( self.transactions ) - 1
-        elif mode is TransactionMatchMode.BEST:
+        if mode is TransactionMatchMode.BEST:
             return self.findCheapest()
-        elif mode is TransactionMatchMode.RECENT_PROFIT:
+        if mode is TransactionMatchMode.RECENT_PROFIT:
             return self.findMatchingRecentProfit( sellTransaction )
 
         _LOGGER.warning("mode not handled: %s, cheapest returned", mode)
@@ -463,8 +463,9 @@ class TransHistory():
         return self.findCheapest()
 
     def _findSame(self, unit_price, trans_date, amount):
-        for i in range( len( self.transactions ) ):
-            itemAmount, itemPrice, itemTime = self.transactions[i]
+#         for i in range( len( self.transactions ) ):
+        for i, item in enumerate( self.transactions ):
+            itemAmount, itemPrice, itemTime = item
             if itemAmount != amount:
                 continue
             if itemPrice != unit_price:
@@ -475,13 +476,14 @@ class TransHistory():
         return -1
 
     def _findSimilar(self, unit_price, trans_date):
-        for i in range( len( self.transactions ) ):
-            item = self.transactions[i]
+#         for i in range( len( self.transactions ) ):
+#             item = self.transactions[i]
+        for i, item in enumerate( self.transactions ):
             if item[1] != unit_price:
                 continue
             diff = item[2] - trans_date
             # print("diff:", item[2], trans_date, diff)
-            if diff < timedelta( minutes=5 ) and diff > -timedelta( minutes=5 ):
+            if -timedelta( minutes=5 ) < diff < timedelta( minutes=5 ):
                 return i
         return -1
 
@@ -518,7 +520,7 @@ class WalletData( persist.Versionable ):
 
     def __init__(self):
         ## ticker, TransHistory
-        self.stockList: Dict[ str, TransHistory ] = dict()
+        self.stockList: Dict[ str, TransHistory ] = {}
 
     def _convertstate_(self, dict_, dictVersion_ ):
         _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
@@ -526,12 +528,10 @@ class WalletData( persist.Versionable ):
         if dictVersion_ is None:
             dictVersion_ = 0
 
-        if dictVersion_ < 0:
-            ## nothing to do
-            dictVersion_ = 0
+        dictVersion_ = max(dictVersion_, 0)
 
         if dictVersion_ == 0:
-            dict_["stockList"] = dict()
+            dict_["stockList"] = {}
             dictVersion_ = 1
 
         if dictVersion_ == 1:
@@ -560,7 +560,7 @@ class WalletData( persist.Versionable ):
 
     ## returns List[ (ticker, curr amount, avg unit price) ]
     def currentItems( self, mode: TransactionMatchMode ) -> List[ Tuple[str, int, float] ]:
-        ret: List[ Tuple[str, int, float] ] = list()
+        ret: List[ Tuple[str, int, float] ] = []
         for key, hist in self.stockList.items():
             if key is None:
                 _LOGGER.warning("found wallet None key")
@@ -587,7 +587,7 @@ class WalletData( persist.Versionable ):
                 self.addTransaction(ticker, trans, joinSimilar)
 
     def getCurrentStock(self) -> List[ str ]:
-        ret = list()
+        ret = []
         for key, hist in self.stockList.items():
             amount = hist.currentAmount()
             if amount > 0:

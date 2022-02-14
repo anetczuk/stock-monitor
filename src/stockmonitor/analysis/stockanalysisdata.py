@@ -37,7 +37,7 @@ from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayD
 _LOGGER = logging.getLogger(__name__)
 
 
-class StockAnalysisData(object):
+class StockAnalysisData():
     """Abstraction for stock data."""
 
     def __init__(self):
@@ -69,7 +69,7 @@ class StockAnalysisData(object):
 class CounterDict:
 
     def __init__(self):
-        self.counter = dict()
+        self.counter = {}
 
     def count(self, key):
         if key not in self.counter:
@@ -81,7 +81,7 @@ class CounterDict:
 class StockDict:
 
     def __init__(self):
-        self.stock = dict()
+        self.stock = {}
 
     def __getitem__(self, key):
         return self.stock[key]
@@ -169,7 +169,7 @@ class StockDict:
 class StockDictList():
 
     def __init__(self):
-        self.dataDict = dict()
+        self.dataDict = {}
 
     def __getitem__(self, key):
         return self.get( key )
@@ -207,7 +207,7 @@ class StatsDict():
         """Sub dictionary."""
 
         def __init__(self):
-            self.valueDict = dict()
+            self.valueDict = {}
 
         def __getitem__(self, key):
             return self.valueDict[ key ]
@@ -275,7 +275,7 @@ class StatsDict():
     ## =====================================================================
 
     def __init__(self):
-        self.dataDict = dict()      ## ticker => fields dict
+        self.dataDict = {}      ## ticker => fields dict
 
     def __getitem__(self, key):
         data = self.dataDict.get( key, None )
@@ -530,7 +530,7 @@ class VarCalc():
         minDiff = minPercent / 100.0
 
         dataSize = len( dataColumn )
-        dataList = list()
+        dataList = []
         dataList.append( dataColumn[0] )
         dataList.append( dataColumn[1] )
         for i in range(2, dataSize):

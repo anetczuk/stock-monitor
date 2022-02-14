@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 try:
     ## following import success only when file is directly executed from command line
@@ -40,7 +39,8 @@ import logging
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
-import stockmonitor.logger as logger
+from stockmonitor import logger
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.dataobject import DataObject
@@ -58,18 +58,16 @@ if __name__ != '__main__':
     sys.exit(0)
 
 
-def prepare_dataobject():
-    data = DataObject()
-    dataAccess = GpwCurrentIndexIntradayData( "PL9999999987" )
+def make_intraday( isin, rangeCode ):
+    dataAccess = GpwCurrentIndexIntradayData( isin, rangeCode )
 
     def data_path():
         return get_data_path( "wig20.chart.07-09.txt" )
 
     dataAccess.getDataPath = data_path           # type: ignore
     dataAccess.storage = WorksheetStorageMock()
-    dataAccess.parseWorksheetFromFile( data_path() )
-    data.gpwIndexIntradayData.set( "PL9999999987", dataAccess )
-    return data
+    dataAccess.dao.parseWorksheetFromFile( data_path() )
+    return dataAccess
 
 
 logFile = logger.get_logging_output_file()
@@ -84,7 +82,8 @@ app.setOrganizationName("arnet")
 
 setup_interrupt_handling()
 
-dataObject = prepare_dataobject()
+dataObject = DataObject()
+dataObject.gpwIndexIntradayData.dataDict.factory_function = make_intraday
 
 widget = create_window( dataObject, "PL9999999987" )        ## wig20
 widget.resize( 1024, 768 )

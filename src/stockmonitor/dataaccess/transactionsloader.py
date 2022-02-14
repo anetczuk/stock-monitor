@@ -43,36 +43,33 @@ def load_mb_transactions( filePath ):
     ##
     ## find line in file and remove header information leaving raw data
     ##
-    tmpfile = tempfile.NamedTemporaryFile( mode='w+t' )
     headerFound  = False
     historyFound = False
     currentFound = False
+    with tempfile.NamedTemporaryFile( mode='w+t' ) as tmpfile:
+        with codecs.open(filePath, 'r', encoding='utf-8', errors='replace') as srcFile:
+            for line in srcFile:
+                if headerFound:
+                    tmpfile.write(line)
+                elif "Czas transakcji" in line:
+                    headerFound = True
+                elif "Historia transakcji" in line:
+                    historyFound = True
+                elif "Transakcje bie" in line:
+                    currentFound = True
+        tmpfile.seek(0)
 
-    with codecs.open(filePath, 'r', encoding='utf-8', errors='replace') as srcFile:
-        for line in srcFile:
-            if headerFound:
-                tmpfile.write(line)
-            elif "Czas transakcji" in line:
-                headerFound = True
-            elif "Historia transakcji" in line:
-                historyFound = True
-            elif "Transakcje bie" in line:
-                currentFound = True
-    tmpfile.seek(0)
+        if headerFound is False:
+            _LOGGER.error("unable to find data header")
+            return ( None, -1 )
 
-    if headerFound is False:
-        _LOGGER.error("unable to find data header")
-        return ( None, -1 )
-
-    importedData = parse_mb_transactions_data( tmpfile )
-    ## print("importing:", importedData)
-
-    tmpfile.close()
+        importedData = parse_mb_transactions_data( tmpfile )
+        ## print("importing:", importedData)
 
     if historyFound:
         ## load history transactions
         return ( importedData, 0 )
-    elif currentFound:
+    if currentFound:
         ## add transactions
         return ( importedData, 1 )
     # else
@@ -80,7 +77,6 @@ def load_mb_transactions( filePath ):
 
 
 def parse_mb_transactions_data( sourceFile ):
-    dataFrame = None
     with fix_separator( sourceFile ) as tmpfile:
 #         print( "file:\n" + tmpfile.read() )
 #         tmpfile.seek(0)
@@ -119,6 +115,7 @@ def parse_mb_transactions_data( sourceFile ):
 
 
 def fix_separator( sourceFile ):
+    # pylint: disable=R1732
     tmpfile = tempfile.NamedTemporaryFile( mode='w+t' )
 
 #     with codecs.open(sourceFilePath, 'r', encoding='utf-8', errors='replace') as srcFile:

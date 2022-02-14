@@ -115,10 +115,11 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         threads.start()
 
     def _dataSourceObjectsList(self):
+        ## iterate through ranges values and collect data sources
         retList = []
+        indexData: GpwIndexIntradayMap = self.dataObject.gpwIndexIntradayData
         for i in range(0, self.ui.rangeCB.count()):
             rangeText = self.ui.rangeCB.itemText( i )
-            indexData: GpwIndexIntradayMap = self.dataObject.gpwIndexIntradayData
             intraSource: GpwCurrentIndexIntradayData = indexData.getSource( self.isin, rangeText )
             retList.append( intraSource )
 
@@ -162,7 +163,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.dataChart.addPriceLine( refX, refY, style="--" )
 
         currTime = datetime.datetime.now() - datetime.timedelta(minutes=15)
-        if currTime < timeData[-1] and currTime > timeData[0]:
+        if timeData[0] < currTime < timeData[-1]:
             self.ui.dataChart.pricePlot.axvline( x=currTime, color="black", linestyle="--" )
 
         set_ref_format_coord( self.ui.dataChart.pricePlot, refPrice )

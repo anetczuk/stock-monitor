@@ -45,7 +45,7 @@ _LOGGER = logging.getLogger(__name__)
 ## =======================================================================
 
 
-class StockAnalysis(object):
+class StockAnalysis():
     """Analysis of stock data."""
 
     logger: logging.Logger = None
@@ -136,29 +136,30 @@ class StockAnalysis(object):
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", dates_to_string(self.sumDate) ] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["reference period:", dates_to_string(self.sumDate) ] )
+            writer.writerow( [] )
 
-        columnsList = ["name", "val sum", "trading[k]", "link"]
+            columnsList = ["name", "val sum", "trading[k]", "link"]
 
-        rowsList = []
+            rowsList = []
 
-        currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+            currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
 
-        for key, val in self.sumValue.items():
-            tradingVal = currTrading[ key ]
-            moneyLink = self.getMoneyPlLink( key )
-            rowsList.append( [key, val, tradingVal, moneyLink] )
+            for key, val in self.sumValue.items():
+                tradingVal = currTrading[ key ]
+                moneyLink = self.getMoneyPlLink( key )
+                rowsList.append( [key, val, tradingVal, moneyLink] )
 
-        ## sort by trading
-        rowsList.sort(key=lambda x: x[1], reverse=True)
+            ## sort by trading
+            rowsList.sort(key=lambda x: x[1], reverse=True)
 
-        writer.writerow( columnsList )
-        for row in rowsList:
-            writer.writerow( row )
+            writer.writerow( columnsList )
+            for row in rowsList:
+                writer.writerow( row )
 
-        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+            retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
 
         self.logger.debug( "Done" )
 
@@ -171,26 +172,27 @@ class StockAnalysis(object):
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
-        writer.writerow( ["reference level:", level ] )
-        writer.writerow( ["formula:", "reference > level"] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
+            writer.writerow( ["reference level:", level ] )
+            writer.writerow( ["formula:", "reference > level"] )
+            writer.writerow( [] )
 
-        writer.writerow( ["name", "curr val", "link"] )
+            writer.writerow( ["name", "curr val", "link"] )
 
-        rowsList = []
+            rowsList = []
 
-        for key, val in self.currValue.items():
-            if val > level:
-                moneyLink = self.getMoneyPlLink( key )
-                rowsList.append( [key, val, moneyLink] )
+            for key, val in self.currValue.items():
+                if val > level:
+                    moneyLink = self.getMoneyPlLink( key )
+                    rowsList.append( [key, val, moneyLink] )
 
-        ## sort by potential
-        rowsList.sort(key=lambda x: x[1], reverse=True)
+            ## sort by potential
+            rowsList.sort(key=lambda x: x[1], reverse=True)
 
-        for row in rowsList:
-            writer.writerow( row )
+            for row in rowsList:
+                writer.writerow( row )
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
@@ -202,46 +204,47 @@ class StockAnalysis(object):
         dirPath = os.path.dirname( outFilePath )
         os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(outFilePath, 'w'))
-        writer.writerow( ["min period:", dates_to_string(self.minDate) ] )
-        writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
-        writer.writerow( ["recent val date:", dates_to_string(self.currDate) ] )
-        writer.writerow( ["potential:", "(max - curr) / max"] )
-        writer.writerow( ["relative:",  "(max - curr) / (max - min)"] )
-        writer.writerow( ["pot raise[%]:",  "(max / curr - 1.0) * 100%"] )
-        writer.writerow( [] )
+        with open(outFilePath, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["min period:", dates_to_string(self.minDate) ] )
+            writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
+            writer.writerow( ["recent val date:", dates_to_string(self.currDate) ] )
+            writer.writerow( ["potential:", "(max - curr) / max"] )
+            writer.writerow( ["relative:",  "(max - curr) / (max - min)"] )
+            writer.writerow( ["pot raise[%]:",  "(max / curr - 1.0) * 100%"] )
+            writer.writerow( [] )
 
-        columnsList = [ "name", "min val", "max val", "curr val", "trading[k]",
-                        "potential", "relative", "pot raise[%]", "link" ]
-        rowsList = []
+            columnsList = [ "name", "min val", "max val", "curr val", "trading[k]",
+                            "potential", "relative", "pot raise[%]", "link" ]
+            rowsList = []
 
-        currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+            currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
 
-        for key, currVal in self.currValue.items():
-            maxVal = self.maxValue.get( key )
-            if maxVal is None or maxVal == 0:
-                ## new stock, ignore
-                continue
-            minVal = self.minValue[ key ]
-            tradingVal = currTrading[ key ]
-            raiseVal = maxVal - currVal
-            potVal = raiseVal / maxVal
-            stockDiff = maxVal - minVal
-            relVal = 0
-            if stockDiff != 0:
-                relVal = raiseVal / stockDiff
-            potRaise = (maxVal / currVal - 1.0) * 100.0
-            moneyLink = self.getMoneyPlLink( key )
-            potVal   = round( potVal, 4 )
-            relVal   = round( relVal, 4 )
-            potRaise = round( potRaise, 2 )
-            rowsList.append( [key, minVal, maxVal, currVal, tradingVal, potVal, relVal, potRaise, moneyLink] )
+            for key, currVal in self.currValue.items():
+                maxVal = self.maxValue.get( key )
+                if maxVal is None or maxVal == 0:
+                    ## new stock, ignore
+                    continue
+                minVal = self.minValue[ key ]
+                tradingVal = currTrading[ key ]
+                raiseVal = maxVal - currVal
+                potVal = raiseVal / maxVal
+                stockDiff = maxVal - minVal
+                relVal = 0
+                if stockDiff != 0:
+                    relVal = raiseVal / stockDiff
+                potRaise = (maxVal / currVal - 1.0) * 100.0
+                moneyLink = self.getMoneyPlLink( key )
+                potVal   = round( potVal, 4 )
+                relVal   = round( relVal, 4 )
+                potRaise = round( potRaise, 2 )
+                rowsList.append( [key, minVal, maxVal, currVal, tradingVal, potVal, relVal, potRaise, moneyLink] )
 
-        writer.writerow( columnsList )
-        for row in rowsList:
-            writer.writerow( row )
+            writer.writerow( columnsList )
+            for row in rowsList:
+                writer.writerow( row )
 
-        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+            retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
 
         self.logger.debug( "Done" )
 
@@ -257,43 +260,44 @@ class StockAnalysis(object):
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
-        writer.writerow( ["min period:", dates_to_string(self.minDate) ] )
-        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
-        writer.writerow( ["reference level:", level ] )
-        writer.writerow( ["formula:", "(reference - min) < (max - min) * level"] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
+            writer.writerow( ["min period:", dates_to_string(self.minDate) ] )
+            writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
+            writer.writerow( ["reference level:", level ] )
+            writer.writerow( ["formula:", "(reference - min) < (max - min) * level"] )
+            writer.writerow( [] )
 
-        writer.writerow( ["name", "max val", "min val", "curr val", "trading[k]", "potential", "link"] )
+            writer.writerow( ["name", "max val", "min val", "curr val", "trading[k]", "potential", "link"] )
 
-        rowsList = []
+            rowsList = []
 
-        currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+            currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
 
-        for key, currVal in self.currValue.items():
-            maxVal = self.maxValue.get( key )
-            if maxVal is None:
-                ## new stock, ignore
-                continue
-            minVal = self.minValue[ key ]
-            stockDiff = maxVal - minVal
-            currDiff = currVal - minVal
-            refDiff = stockDiff * level
-            if currDiff < refDiff:
-                raiseVal = maxVal - currVal
-                pot = 0
-                if currVal != 0:
-                    pot = raiseVal / currVal
-                tradingVal = currTrading[ key ]
-                moneyLink = self.getMoneyPlLink( key )
-                rowsList.append( [key, maxVal, minVal, currVal, tradingVal, pot, moneyLink] )
+            for key, currVal in self.currValue.items():
+                maxVal = self.maxValue.get( key )
+                if maxVal is None:
+                    ## new stock, ignore
+                    continue
+                minVal = self.minValue[ key ]
+                stockDiff = maxVal - minVal
+                currDiff = currVal - minVal
+                refDiff = stockDiff * level
+                if currDiff < refDiff:
+                    raiseVal = maxVal - currVal
+                    pot = 0
+                    if currVal != 0:
+                        pot = raiseVal / currVal
+                    tradingVal = currTrading[ key ]
+                    moneyLink = self.getMoneyPlLink( key )
+                    rowsList.append( [key, maxVal, minVal, currVal, tradingVal, pot, moneyLink] )
 
-        ## sort by potential
-        rowsList.sort(key=lambda x: x[5], reverse=True)
+            ## sort by potential
+            rowsList.sort(key=lambda x: x[5], reverse=True)
 
-        for row in rowsList:
-            writer.writerow( row )
+            for row in rowsList:
+                writer.writerow( row )
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
@@ -306,38 +310,39 @@ class StockAnalysis(object):
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
-        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
-        writer.writerow( ["reference level:", level ] )
-        writer.writerow( ["formula:", "reference < max * level"] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
+            writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
+            writer.writerow( ["reference level:", level ] )
+            writer.writerow( ["formula:", "reference < max * level"] )
+            writer.writerow( [] )
 
-        writer.writerow( ["name", "max val", "curr val", "trading[k]", "potential", "link"] )
+            writer.writerow( ["name", "max val", "curr val", "trading[k]", "potential", "link"] )
 
-        rowsList = []
+            rowsList = []
 
-        currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+            currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
 
-        for key, currVal in self.currValue.items():
-            maxVal = self.maxValue.get( key )
-            if maxVal is None:
-                ## new stock, ignore
-                continue
-            refLevel = maxVal * level
-            if currVal < refLevel:
-                pot = ""
-                if currVal != 0:
-                    pot = maxVal / currVal
-                tradingVal = currTrading[ key ]
-                moneyLink = self.getMoneyPlLink( key )
-                rowsList.append( [key, maxVal, currVal, tradingVal, pot, moneyLink] )
+            for key, currVal in self.currValue.items():
+                maxVal = self.maxValue.get( key )
+                if maxVal is None:
+                    ## new stock, ignore
+                    continue
+                refLevel = maxVal * level
+                if currVal < refLevel:
+                    pot = ""
+                    if currVal != 0:
+                        pot = maxVal / currVal
+                    tradingVal = currTrading[ key ]
+                    moneyLink = self.getMoneyPlLink( key )
+                    rowsList.append( [key, maxVal, currVal, tradingVal, pot, moneyLink] )
 
-        ## sort by potential
-        rowsList.sort(key=lambda x: x[4], reverse=True)
+            ## sort by potential
+            rowsList.sort(key=lambda x: x[4], reverse=True)
 
-        for row in rowsList:
-            writer.writerow( row )
+            for row in rowsList:
+                writer.writerow( row )
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
@@ -348,32 +353,33 @@ class StockAnalysis(object):
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
-        writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
-        writer.writerow( ["reference level:", level ] )
-        writer.writerow( ["formula:", "reference > max * level"] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["max period:", dates_to_string(self.maxDate) ] )
+            writer.writerow( ["reference period:", dates_to_string(self.currDate) ] )
+            writer.writerow( ["reference level:", level ] )
+            writer.writerow( ["formula:", "reference > max * level"] )
+            writer.writerow( [] )
 
-        writer.writerow( ["name", "max val", "curr val", "potential", "link"] )
+            writer.writerow( ["name", "max val", "curr val", "potential", "link"] )
 
-        rowsList = []
+            rowsList = []
 
-        for key, val in self.currValue.items():
-            maxVal = self.maxValue[ key ]
-            refLevel = maxVal * level
-            if val > refLevel:
-                pot = 0
-                if maxVal > 0:
-                    pot = val / maxVal
-                moneyLink = self.getMoneyPlLink( key )
-                rowsList.append( [key, maxVal, val, pot, moneyLink] )
+            for key, val in self.currValue.items():
+                maxVal = self.maxValue[ key ]
+                refLevel = maxVal * level
+                if val > refLevel:
+                    pot = 0
+                    if maxVal > 0:
+                        pot = val / maxVal
+                    moneyLink = self.getMoneyPlLink( key )
+                    rowsList.append( [key, maxVal, val, pot, moneyLink] )
 
-        ## sort by potential
-        rowsList.sort(key=lambda x: x[3], reverse=True)
+            ## sort by potential
+            rowsList.sort(key=lambda x: x[3], reverse=True)
 
-        for row in rowsList:
-            writer.writerow( row )
+            for row in rowsList:
+                writer.writerow( row )
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
@@ -397,58 +403,59 @@ class StockAnalysis(object):
         weekDay = lastValid.weekday()                               # 0 for Monday
         lastMonday = lastValid - datetime.timedelta(days=weekDay)
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["last monday:", str(lastMonday) ] )
-        writer.writerow( ["num of weeks:", numOfWeeks ] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["last monday:", str(lastMonday) ] )
+            writer.writerow( ["num of weeks:", numOfWeeks ] )
+            writer.writerow( [] )
 
-        columnsList = ["name", "friday val", "monday val", "potential", "accuracy", "link"]
+            columnsList = ["name", "friday val", "monday val", "potential", "accuracy", "link"]
 
-        raiseCounter = CounterDict()
-        counterMonday = lastMonday
+            raiseCounter = CounterDict()
+            counterMonday = lastMonday
 
-        for _ in range(0, numOfWeeks):
-            prevDay = self.getRecentValidDay(counterMonday)
-            nextDay = self.getNextValidDay(counterMonday)
+            for _ in range(0, numOfWeeks):
+                prevDay = self.getRecentValidDay(counterMonday)
+                nextDay = self.getNextValidDay(counterMonday)
 
-            ## calc
+                ## calc
+                prevValue = self.data.getData( ArchiveDataType.CLOSING, prevDay )
+                nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
+
+                for key, nextVal in nextValue.items():
+                    prevVal = prevValue[ key ]
+                    diff = nextVal - prevVal
+                    if diff <= 0:
+                        continue
+                    raiseCounter.count( key )
+
+                counterMonday -= datetime.timedelta(days=7)
+
+            rowsList = []
+
+            prevDay = self.getRecentValidDay( lastMonday )
+            nextDay = self.getNextValidDay( lastMonday )
             prevValue = self.data.getData( ArchiveDataType.CLOSING, prevDay )
             nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
 
-            for key, nextVal in nextValue.items():
+            for key, val in raiseCounter.counter.items():
+                currAccuracy = val / numOfWeeks
+
                 prevVal = prevValue[ key ]
+                nextVal = nextValue[ key ]
                 diff = nextVal - prevVal
-                if diff <= 0:
-                    continue
-                raiseCounter.count( key )
+                pot = diff / prevVal
+                moneyLink = self.getMoneyPlLink( key )
+                rowsList.append( [key, prevVal, nextVal, pot, currAccuracy, moneyLink] )
 
-            counterMonday -= datetime.timedelta(days=7)
+            ## sort by accuracy, then by potential
+            rowsList.sort(key=lambda x: (x[4], x[3]), reverse=True)
 
-        rowsList = []
+            writer.writerow( columnsList )
+            for row in rowsList:
+                writer.writerow( row )
 
-        prevDay = self.getRecentValidDay( lastMonday )
-        nextDay = self.getNextValidDay( lastMonday )
-        prevValue = self.data.getData( ArchiveDataType.CLOSING, prevDay )
-        nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
-
-        for key, val in raiseCounter.counter.items():
-            currAccuracy = val / numOfWeeks
-
-            prevVal = prevValue[ key ]
-            nextVal = nextValue[ key ]
-            diff = nextVal - prevVal
-            pot = diff / prevVal
-            moneyLink = self.getMoneyPlLink( key )
-            rowsList.append( [key, prevVal, nextVal, pot, currAccuracy, moneyLink] )
-
-        ## sort by accuracy, then by potential
-        rowsList.sort(key=lambda x: (x[4], x[3]), reverse=True)
-
-        writer.writerow( columnsList )
-        for row in rowsList:
-            writer.writerow( row )
-
-        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+            retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
 
         self.logger.debug( "Done" )
 
@@ -508,30 +515,31 @@ class StockAnalysis(object):
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
-        writer.writerow( ["variance:", ("|maxVal - max(open, close)| / max(open, close) + "
-                                        "|minVal - min(open, close)| / min(open, close)") ] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
+            writer.writerow( ["variance:", ("|maxVal - max(open, close)| / max(open, close) + "
+                                            "|minVal - min(open, close)| / min(open, close)") ] )
+            writer.writerow( [] )
 
-        columnsList = ["name", "variance", "trading [kPLN]", "link"]
+            columnsList = ["name", "variance", "trading [kPLN]", "link"]
 
-        rowsList = []
+            rowsList = []
 
-        for key, val in dataDict.items():
-            moneyLink = self.getMoneyPlLink( key )
-            trading = tradDict[ key ]
-            val = round( val, 4 )
-            rowsList.append( [key, val, trading, moneyLink] )
+            for key, val in dataDict.items():
+                moneyLink = self.getMoneyPlLink( key )
+                trading = tradDict[ key ]
+                val = round( val, 4 )
+                rowsList.append( [key, val, trading, moneyLink] )
 
-        ## sort by variance
-        rowsList.sort(key=lambda x: x[1], reverse=True)
+            ## sort by variance
+            rowsList.sort(key=lambda x: x[1], reverse=True)
 
-        writer.writerow( columnsList )
-        for row in rowsList:
-            writer.writerow( row )
+            writer.writerow( columnsList )
+            for row in rowsList:
+                writer.writerow( row )
 
-        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+            retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
 
         self.logger.debug( "Done" )
 
@@ -544,7 +552,7 @@ class StockAnalysis(object):
 #         isinList = isinDict.values()
         isinItems = isinDict.items()
 
-        dataDicts = list()
+        dataDicts = []
         dataDicts.append( StockDict() )
         dataDicts.append( StockDict() )
         dataDicts.append( StockDict() )
@@ -608,48 +616,49 @@ class StockAnalysis(object):
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
-        writer.writerow( ["volatility:", ("|maxVal - max(open, close)| / max(open, close) + "
-                                          "|minVal - min(open, close)| / min(open, close)") ] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
+            writer.writerow( ["volatility:", ("|maxVal - max(open, close)| / max(open, close) + "
+                                              "|minVal - min(open, close)| / min(open, close)") ] )
+            writer.writerow( [] )
 
-#         columnsList = ["name", "variance"]
-        columnsList = ["name", "price activity", "price variance", "volume variance",
-                       "turnover stddev", "total volume", "trading [kPLN]", "link"]
+    #         columnsList = ["name", "variance"]
+            columnsList = ["name", "price activity", "price variance", "volume variance",
+                           "turnover stddev", "total volume", "trading [kPLN]", "link"]
 
-        rowsList = []
+            rowsList = []
 
-        for key in dataDicts[0].keys():
-            moneyLink = self.getMoneyPlLink( key )
-#             trading = tradDict[ key ]
+            for key in dataDicts[0].keys():
+                moneyLink = self.getMoneyPlLink( key )
+    #             trading = tradDict[ key ]
 
-            priceAct = dataDicts[0][key]
-            priceAct = priceAct[1]
-            #priceAct = round( priceAct, 4 )
+                priceAct = dataDicts[0][key]
+                priceAct = priceAct[1]
+                #priceAct = round( priceAct, 4 )
 
-            priceVar = dataDicts[1][key]
-            priceVar = round( priceVar, 4 )
+                priceVar = dataDicts[1][key]
+                priceVar = round( priceVar, 4 )
 
-            volume = dataDicts[2][key]
-            volume = round( volume, 4 )
+                volume = dataDicts[2][key]
+                volume = round( volume, 4 )
 
-            turnover = dataDicts[3][key]
-            turnover = round( turnover, 4 )
+                turnover = dataDicts[3][key]
+                turnover = round( turnover, 4 )
 
-#             volume2 = dataDicts[1][key]
-#             volume2 = round( volume, 4 )
+    #             volume2 = dataDicts[1][key]
+    #             volume2 = round( volume, 4 )
 
-            rowsList.append( [key, priceAct, priceVar, volume, turnover, 0.0, 0.0, moneyLink] )
+                rowsList.append( [key, priceAct, priceVar, volume, turnover, 0.0, 0.0, moneyLink] )
 
-        ## sort by variance
-        rowsList.sort(key=lambda x: x[1], reverse=True)
+            ## sort by variance
+            rowsList.sort(key=lambda x: x[1], reverse=True)
 
-        writer.writerow( columnsList )
-        for row in rowsList:
-            writer.writerow( row )
+            writer.writerow( columnsList )
+            for row in rowsList:
+                writer.writerow( row )
 
-        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+            retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
 
         self.logger.debug( "Done" )
 
@@ -695,78 +704,79 @@ class StockAnalysis(object):
             lastValid -= datetime.timedelta(days=7)
         lastValid += datetime.timedelta(days=numOfDay)                  ## move to desired day
 
-        writer = csv.writer(open(file, 'w'))
-        writer.writerow( ["last " + dayName + ":", str(lastValid) ] )
-        writer.writerow( ["num of weeks:", numOfWeeks ] )
-        writer.writerow( [] )
+        with open(file, 'w', encoding="utf-8") as csv_file:
+            writer = csv.writer( csv_file )
+            writer.writerow( ["last " + dayName + ":", str(lastValid) ] )
+            writer.writerow( ["num of weeks:", numOfWeeks ] )
+            writer.writerow( [] )
 
-        columnsList = ["name", "opening val", "closing val", "potential", "potential avg", "accuracy", "link"]
+            columnsList = ["name", "opening val", "closing val", "potential", "potential avg", "accuracy", "link"]
 
-        raiseCounter: Dict[ str, int ]    = dict()
-        potAvg: Dict[ str, List[float] ]  = dict()
-        counterMonday = lastValid
+            raiseCounter: Dict[ str, int ]    = {}
+            potAvg: Dict[ str, List[float] ]  = {}
+            counterMonday = lastValid
 
-        for _ in range(0, numOfWeeks):
+            for _ in range(0, numOfWeeks):
+                if validDirection:
+                    nextDay = self.getNextValidDay( counterMonday )
+                else:
+                    nextDay = self.getRecentValidDay( counterMonday, True )
+
+                ## calc
+                prevValue = self.data.getData( ArchiveDataType.OPENING, nextDay )
+                nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
+
+                for key, nextVal in nextValue.items():
+                    prevVal = prevValue[ key ]
+                    if prevVal == 0:
+                        continue
+                    diff = nextVal - prevVal
+                    if diff <= 0:
+                        continue
+                    raiseCounter[key] = raiseCounter.get( key, 0 ) + 1
+                    avgPair: List[ float ] = potAvg.get(key, [0, 0])
+                    avgPair[0] = avgPair[0] + diff / prevVal
+                    avgPair[1] = avgPair[1] + 1
+                    potAvg[ key ] = avgPair
+
+                counterMonday -= datetime.timedelta(days=7)
+
+            rowsList = []
+
             if validDirection:
-                nextDay = self.getNextValidDay( counterMonday )
+                nextDay = self.getNextValidDay( lastValid )
             else:
-                nextDay = self.getRecentValidDay( counterMonday, True )
+                nextDay = self.getRecentValidDay( lastValid, True )
 
-            ## calc
             prevValue = self.data.getData( ArchiveDataType.OPENING, nextDay )
             nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
 
-            for key, nextVal in nextValue.items():
-                prevVal = prevValue[ key ]
-                if prevVal == 0:
-                    continue
+            for key, val in raiseCounter.items():
+                currAccuracy = val / numOfWeeks
+
+                prevVal = prevValue.get( key, 0 )
+                nextVal = nextValue.get( key, 0 )
                 diff = nextVal - prevVal
-                if diff <= 0:
-                    continue
-                raiseCounter[key] = raiseCounter.get( key, 0 ) + 1
-                avgPair: List[ float ] = potAvg.get(key, [0, 0])
-                avgPair[0] = avgPair[0] + diff / prevVal
-                avgPair[1] = avgPair[1] + 1
-                potAvg[ key ] = avgPair
+                pot = 0.0
+                if prevVal != 0:
+                    pot = diff / prevVal
+                avgPair = potAvg.get(key, [0, 0])
+                avgVal = avgPair[0] / avgPair[1]
+                moneyLink = self.getMoneyPlLink( key )
 
-            counterMonday -= datetime.timedelta(days=7)
+                pot    = round( pot, 4 )
+                avgVal = round( avgVal, 4 )
 
-        rowsList = []
+                rowsList.append( [key, prevVal, nextVal, pot, avgVal, currAccuracy, moneyLink] )
 
-        if validDirection:
-            nextDay = self.getNextValidDay( lastValid )
-        else:
-            nextDay = self.getRecentValidDay( lastValid, True )
+            ## sort by accuracy, then by potential
+            rowsList.sort(key=lambda x: (x[5], x[3]), reverse=True)
 
-        prevValue = self.data.getData( ArchiveDataType.OPENING, nextDay )
-        nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
+            writer.writerow( columnsList )
+            for row in rowsList:
+                writer.writerow( row )
 
-        for key, val in raiseCounter.items():
-            currAccuracy = val / numOfWeeks
-
-            prevVal = prevValue.get( key, 0 )
-            nextVal = nextValue.get( key, 0 )
-            diff = nextVal - prevVal
-            pot = 0.0
-            if prevVal != 0:
-                pot = diff / prevVal
-            avgPair = potAvg.get(key, [0, 0])
-            avgVal = avgPair[0] / avgPair[1]
-            moneyLink = self.getMoneyPlLink( key )
-
-            pot    = round( pot, 4 )
-            avgVal = round( avgVal, 4 )
-
-            rowsList.append( [key, prevVal, nextVal, pot, avgVal, currAccuracy, moneyLink] )
-
-        ## sort by accuracy, then by potential
-        rowsList.sort(key=lambda x: (x[5], x[3]), reverse=True)
-
-        writer.writerow( columnsList )
-        for row in rowsList:
-            writer.writerow( row )
-
-        retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
+            retDataFrame = pandas.DataFrame.from_records( rowsList, columns=columnsList )
 
         self.logger.debug( "Done" )
 

@@ -23,7 +23,7 @@
 
 import unittest
 
-import stockmonitor.gui.uiloader as uiloader
+from stockmonitor.gui import uiloader
 
 
 class UiLoaderTest(unittest.TestCase):

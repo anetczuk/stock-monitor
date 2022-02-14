@@ -56,7 +56,7 @@ class DividendsCalendarData( BaseWorksheetDAO ):
             url = self.getDataUrl()
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?")[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
@@ -101,5 +101,5 @@ class DividendsCalendarData( BaseWorksheetDAO ):
         }
         colIndex = switcher.get(columnType, None)
         if colIndex is None:
-            raise ValueError( 'Invalid value: %s' % ( columnType ) )
+            raise ValueError( f"Invalid value: {columnType}" )
         return colIndex

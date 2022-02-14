@@ -25,14 +25,10 @@ import logging
 from datetime import timedelta
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QModelIndex
 
 ## workaround for mypy type errors
-from QtCore.Qt import DisplayRole as QtDisplayRole
-from QtCore.Qt import TextAlignmentRole as QtTextAlignmentRole
-from QtCore.Qt import AlignLeft as QtAlignLeft
-from QtCore.Qt import AlignVCenter as QtAlignVCenter
+from PyQt5.QtCore import Qt
 
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.gui.dataobject import DataObject
@@ -43,6 +39,12 @@ from stockmonitor.gui.widget.stocktable import StockTable, insert_new_action
 from stockmonitor.gui.widget.stocktable import marker_background_color
 
 from .. import uiloader
+
+
+QtDisplayRole = Qt.DisplayRole                  # type: ignore
+QtTextAlignmentRole = Qt.TextAlignmentRole      # type: ignore
+QtAlignLeft = Qt.AlignLeft                      # type: ignore
+QtAlignVCenter = Qt.AlignVCenter                # type: ignore
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -225,15 +227,16 @@ def print_timedelta( value: timedelta ):
     if secs != 0 or days == 0:
         mm, _ = divmod(secs, 60)
         hh, mm = divmod(mm, 60)
-        s = "%d:%02d" % (hh, mm)
+        s = f"{hh}:{mm:02}"
+#         s = "%d:%02d" % (hh, mm)
 #         s = "%d:%02d:%02d" % (hh, mm, ss)
     if days:
         def plural(n):
             return n, abs(n) != 1 and "s" or ""
         if s != "":
-            s = ("%d day%s, " % plural(days)) + s
+            s = ("%d day%s, " % plural(days)) + s               # pylint: disable=C0209
         else:
-            s = ("%d day%s" % plural(days)) + s
+            s = ("%d day%s" % plural(days)) + s                 # pylint: disable=C0209
 #     micros = value.microseconds
 #     if micros:
 #         s = s + ".%06d" % micros

@@ -39,7 +39,7 @@ import logging
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
-import stockmonitor.logger as logger
+from stockmonitor import logger
 from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.gui.dataobject import DataObject

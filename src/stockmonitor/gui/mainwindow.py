@@ -22,7 +22,6 @@
 #
 
 import logging
-import time
 import datetime
 
 from PyQt5 import QtCore, QtWidgets, QtGui
@@ -352,7 +351,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
     def updateTrayIndicator(self, forceRefresh=True ):
         currDateTime = datetime.datetime.now()
         weekDay = currDateTime.weekday()                               # 0 for Monday
-        if weekDay == 5 or weekDay == 6:
+        if weekDay in (5, 6):
             ## regular Saturday or Sunday -- no stock
             self.trayIcon.clearString()
             return

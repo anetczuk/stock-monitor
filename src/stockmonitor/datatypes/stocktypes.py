@@ -63,7 +63,7 @@ class StockDataWrapper( BaseWorksheetDAOProvider ):
 
     def __init__( self, data=None ):
         BaseWorksheetDAOProvider.__init__(self, data)
-        self.stockHeaders: Dict[ int, str ]      = dict()
+        self.stockHeaders: Dict[ int, str ]      = {}
 
     @property
     def headers(self) -> Dict[ int, str ]:
@@ -76,14 +76,14 @@ class StockDataWrapper( BaseWorksheetDAOProvider ):
 class DoubleDict():
 
     def __init__( self, factory_function=None ):
-        self.dataDict = dict()
+        self.dataDict = {}
         self.factory_function = factory_function
 
     def getData( self, key, subkey ):
         subDict = self._subdict( key )
         dictValue = subDict.get( subkey, None )
         if dictValue is None:
-            dictValue = self._makeValue( key, subkey )
+            dictValue = self.makeValue( key, subkey )
             subDict[ subkey ] = dictValue
         return dictValue
 
@@ -98,19 +98,18 @@ class DoubleDict():
         return retList
 
     def printData(self):
-        for key in self.dataDict:
-            subDict = self.dataDict[ key ]
+        for key, subDict in self.dataDict.items():
             for subkey in subDict:
-                print( "key: %s-%s" % ( key, subkey ) )
+                print( f"key: {key}-{subkey}" )
 
-    def _subdict(self, key):
+    def _subdict(self, key) -> dict:
         subDict = self.dataDict.get( key, None )
         if subDict is None:
-            subDict = dict()
+            subDict = {}
             self.dataDict[ key ] = subDict
         return subDict
 
-    def _makeValue(self, key, subkey):
+    def makeValue(self, key, subkey):
         if self.factory_function is None:
             return None
         return self.factory_function( key, subkey )
@@ -120,7 +119,7 @@ class GpwStockIntradayMap( StockDataProvider ):
     """Container for stock data for stock charts."""
 
     def __init__(self):
-        self.dataDict = DoubleDict( self._makeValue )
+        self.dataDict = DoubleDict( GpwStockIntradayMap.makeValue )
 
     ## override
     def accessData(self, forceRefresh=True):
@@ -142,7 +141,8 @@ class GpwStockIntradayMap( StockDataProvider ):
     def printData(self):
         self.dataDict.printData()
 
-    def _makeValue(self, isin, rangeCode):
+    @staticmethod
+    def makeValue(isin, rangeCode):
         return GpwCurrentStockIntradayData( isin, rangeCode )
 
 
@@ -150,7 +150,7 @@ class GpwIndexIntradayMap( StockDataProvider ):
     """Container for index data for index charts."""
 
     def __init__(self):
-        self.dataDict = DoubleDict( self._makeValue )
+        self.dataDict = DoubleDict( GpwIndexIntradayMap.makeValue )
 
     ## override
     def accessData(self, forceRefresh=True):
@@ -172,5 +172,6 @@ class GpwIndexIntradayMap( StockDataProvider ):
     def printData(self):
         self.dataDict.printData()
 
-    def _makeValue(self, isin, rangeCode):
+    @staticmethod
+    def makeValue(isin, rangeCode):
         return GpwCurrentIndexIntradayData( isin, rangeCode )

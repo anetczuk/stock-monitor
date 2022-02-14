@@ -178,8 +178,7 @@ class VolumenAnalysis:
             rawData = dataTuple[0]
             if rawData:
                 validDataNum += 1
-        if validDataNum < 1:
-            validDataNum = 1
+        validDataNum = max(validDataNum, 1)
 
         lastDayDict = lastDayTuple[1]
 
@@ -236,7 +235,7 @@ class VolumenAnalysis:
         if file is None:
             file = tmp_dir + "out/output_volumen.csv"
 
-        headerList = list()
+        headerList = []
         headerList.append( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
         headerList.append( ["value_sum:", "sum_value{fromDay, toDay-1}"] )
         headerList.append( ["value_avg:", "value_sum / (toDay-1 - fromDay)"] )
@@ -258,7 +257,7 @@ class VolumenAnalysis:
 
         if self.forceRecalc is False:
             dateString = currDate.isoformat()
-            picklePath = tmp_dir + "data/volumen/%s.pickle" % dateString
+            picklePath = f"{tmp_dir}data/volumen/{dateString}.pickle"
             dataPair = persist.load_object_simple( picklePath, None )
             if dataPair is None:
                 _LOGGER.debug( "no precalculated data found -- precalculating" )
@@ -328,7 +327,7 @@ def calculate_change( dataSeries ):
         return pandas.Series()
     if dSize < 2:
         return pandas.Series( [ 0.0 ] )
-    retList = list()
+    retList = []
     for i in range(1, dSize):
         diff = ( dataSeries[i] / dataSeries[i - 1] - 1.0 ) * 100.0
         retList.append( diff )
@@ -339,7 +338,7 @@ def write_to_csv( file, headerList, dataFrame ):
     dirPath = os.path.dirname( file )
     os.makedirs( dirPath, exist_ok=True )
 
-    with open(file, 'w') as f:
+    with open(file, 'w', encoding="utf-8") as f:
         writer = csv.writer( f )
         for row in headerList:
             writer.writerow( row )

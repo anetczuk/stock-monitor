@@ -26,8 +26,7 @@ import unittest
 
 from teststockmonitor.data import get_data_path
 from stockmonitor.dataaccess.datatype import StockDataType
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
-    GpwCurrentIndexesData
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 

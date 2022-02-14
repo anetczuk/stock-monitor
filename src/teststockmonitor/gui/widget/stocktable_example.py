@@ -41,7 +41,7 @@ from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.widget.stocktable import StockFullTable
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 
-import teststockmonitor.data as data
+from teststockmonitor import data
 
 
 ## ============================= main section ===================================
@@ -61,7 +61,7 @@ app.setOrganizationName("arnet")
 
 dataAccess = GpwCurrentStockData()
 dataPath = data.get_data_path( "akcje_2020-04-14_15-50.xls" )
-dataframe = dataAccess.dao._parseDataFromFile( dataPath )
+dataframe = dataAccess.dao.parseWorksheetFromFile( dataPath )
 
 # csvPath = data.get_data_root_path() + "/akcje_2020-04-14_15-50.csv"
 # dataframe.to_csv( csvPath, encoding='utf-8', index=False )

@@ -46,7 +46,7 @@ import subprocess
 
 import tempfile
 
-import stockmonitor.logger as logger
+from stockmonitor import logger
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -193,8 +193,8 @@ if __name__ == '__main__':
 
             if profiler_outfile is not None:
                 ##pyprof2calltree -i $PROF_FILE -k
-                print( "Launching: pyprof2calltree -i {} -k".format(profiler_outfile) )
-                subprocess.call(["pyprof2calltree", "-i", profiler_outfile, "-k"])
+                print( f"Launching: pyprof2calltree -i {profiler_outfile} -k" )
+                subprocess.call( ["pyprof2calltree", "-i", profiler_outfile, "-k"] )
 
         ## prepare coverage results
         if coverageData is not None:

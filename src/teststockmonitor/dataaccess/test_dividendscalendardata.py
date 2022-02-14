@@ -22,9 +22,9 @@
 #
 
 import unittest
+import datetime
 from teststockmonitor.data import get_data_path
 
-import datetime
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 

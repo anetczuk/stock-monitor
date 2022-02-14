@@ -83,7 +83,7 @@ class DataContainer():
     def load( self, inputDir ):
         self.userContainer.load( inputDir )
         inputFile = inputDir + "/gpwcurrentheaders.obj"
-        headers = persist.load_object_simple( inputFile, dict() )
+        headers = persist.load_object_simple( inputFile, {} )
         self.gpwCurrentSource.stockHeaders = headers
         #self.gpwCurrentHeaders = headers
         self.updateWalletFavGroup()
@@ -423,7 +423,8 @@ class DataContainer():
         refWalletValue = round( refWalletValue, 2 )
         if refWalletValue != 0.0:
             referenceFactor = walletValue / refWalletValue - 1
-            changeToRef = "%s%%" % round( referenceFactor * 100, 2 )
+            rounded_factor = round( referenceFactor * 100, 2 )
+            changeToRef = f"{rounded_factor}%"
         else:
             changeToRef = "--"
         totalGain      = round( totalGain, 2 )
@@ -807,15 +808,15 @@ class DataContainer():
     def gpwCurrentData(self) -> GpwCurrentStockData:
         return self.gpwCurrentSource.stockData                  # type: ignore
 
-    def getStockIntradayDataByTicker(self, ticker):
-        isin = self.gpwCurrentData.getStockIsinFromTicker(ticker)
-        return self.gpwStockIntradayData.getData(isin)
+#     def getStockIntradayDataByTicker(self, ticker):
+#         isin = self.gpwCurrentData.getStockIsinFromTicker(ticker)
+#         return self.gpwStockIntradayData.getData(isin)
 
-    def getStockIntradayDataByIsin(self, isin):
-        return self.gpwStockIntradayData.getData(isin)
+#     def getStockIntradayDataByIsin(self, isin):
+#         return self.gpwStockIntradayData.getData(isin)
 
-    def getIndexIntradayDataByIsin(self, isin):
-        return self.gpwIndexIntradayData.getData(isin)
+#     def getIndexIntradayDataByIsin(self, isin):
+#         return self.gpwIndexIntradayData.getData(isin)
 
 
 ## stockData contains two columns: 't' and 'c'

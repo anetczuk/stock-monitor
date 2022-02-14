@@ -34,10 +34,12 @@ from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
 from stockmonitor.gui.widget.stocktable import wallet_background_color, insert_new_action,\
     marker_background_color
 
-from .. import uiloader
-from .stocktable import StockTable, TableRowColorDelegate
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.dataaccess.datatype import StockDataType
+
+from .stocktable import StockTable, TableRowColorDelegate
+
+from .. import uiloader
 
 
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )

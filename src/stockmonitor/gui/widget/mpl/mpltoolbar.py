@@ -2,6 +2,7 @@
 #
 #
 
+import sys
 import logging
 
 try:
@@ -15,7 +16,7 @@ try:
 except ImportError:
     ### No module named <name>
     logging.exception("Exception while importing")
-    exit(1)
+    sys.exit(1)
 
 
 _LOGGER = logging.getLogger(__name__)

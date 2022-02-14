@@ -43,7 +43,7 @@ class ElidedLabel( QtWidgets.QLabel ):
         metrics = QtGui.QFontMetrics( self.font() )
         newText = metrics.elidedText( self.original, self.defaultType, self.width() )
         if self.urlLink is not None:
-            urlText = "<a href=\"%s\">%s</a>" % (self.urlLink, newText)
+            urlText = "<a href=\"{urlLink}\">{newText}</a>"
             super().setText( urlText )
         else:
             super().setText( newText )

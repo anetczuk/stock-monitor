@@ -22,6 +22,7 @@
 #
 
 import os
+import sys
 
 import logging
 
@@ -31,7 +32,7 @@ try:
 except ImportError:
     ### No module named <name>
     logging.exception("Exception while importing")
-    exit(1)
+    sys.exit(1)
 
 
 base_dir = os.path.dirname( __file__ )
@@ -63,9 +64,3 @@ def load_ui_from_class_name(uiFilename):
 def load_ui_from_module_path(uiFilename):
     ui_file = generate_ui_file_name(uiFilename)
     return load_ui( ui_file )
-
-
-def printsyspath():
-    import sys
-    for p in sys.path:
-        print( "path:", p )

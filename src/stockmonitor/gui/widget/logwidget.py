@@ -213,7 +213,7 @@ class LogWidget( QtBaseClass ):           # type: ignore
 
     def _updateText(self):
         if self.ui.splitByThredCB.isChecked() is False:
-            with open(self.logFile, "r") as myfile:
+            with open(self.logFile, "r", encoding="utf-8") as myfile:
                 fileText = myfile.read()
                 content = str(fileText)
                 textEdit = self._getTextEdit( "full" )
@@ -222,14 +222,14 @@ class LogWidget( QtBaseClass ):           # type: ignore
 
         threadsDict = {}
 
-        with open(self.logFile, "r") as myfile:
+        with open(self.logFile, "r", encoding="utf-8") as myfile:
             linesContent = myfile.readlines()
             recentThread = None
             for line in linesContent:
                 fields = line.split()
 
                 threadName = "full"
-                threadLines = threadsDict.get( threadName, list() )
+                threadLines = threadsDict.get( threadName, [] )
                 threadLines.append( line )
                 threadsDict[ threadName ] = threadLines
 
@@ -239,7 +239,7 @@ class LogWidget( QtBaseClass ):           # type: ignore
                 if recentThread is None:
                     continue
 
-                threadLines = threadsDict.get( recentThread, list() )
+                threadLines = threadsDict.get( recentThread, [] )
                 threadLines.append( line )
                 threadsDict[ recentThread ] = threadLines
 
