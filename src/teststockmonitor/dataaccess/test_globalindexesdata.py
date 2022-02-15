@@ -25,6 +25,7 @@ import unittest
 from teststockmonitor.data import get_data_path
 
 from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
+from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class GlobalIndexesDataTest(unittest.TestCase):
@@ -39,6 +40,7 @@ class GlobalIndexesDataTest(unittest.TestCase):
 
     def test_parseWorksheetFromFile(self):
         filePath = get_data_path( "global_indexes_data.html" )
+        self.dataAccess.dao.storage = WorksheetStorageMock()
         currData = self.dataAccess.dao.parseWorksheetFromFile( filePath )
         dataLen = len( currData )
         self.assertEqual(dataLen, 48)

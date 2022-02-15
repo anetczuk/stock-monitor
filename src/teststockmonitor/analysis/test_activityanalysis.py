@@ -49,6 +49,7 @@ class GpwCurrentIntradayProviderMock( GpwCurrentIntradayProvider ):
             return get_data_path( "cdr.chart.04-09.txt" )
 
         intradayData.dao.getDataPath = data_path           # type: ignore
+        intradayData.dao.storage = WorksheetStorageMock()
         worksheet = intradayData.dao.parseWorksheetFromFile( data_path() )
         return worksheet
 
