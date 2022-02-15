@@ -20,7 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 # ## old implementation
-# def urlretrieve( url, outputPath ):
+# def retrieve_url_urlopen( url, outputPath ):
 #     ##
 #     ## Under Ubuntu 20 SSL configuration has changed causing problems with SSL keys.
 #     ## For more details see: https://forums.raspberrypi.com/viewtopic.php?t=255167
@@ -91,7 +91,7 @@ def access_url_list( session, url_list ):
     return content_data
 
 
-def retrieve_url( url, outputPath ):
+def retrieve_url_session( url, outputPath ):
     with init_session() as currSession:
         url_list = [ url ]
         content_data = access_url_list( currSession, url_list )
@@ -120,3 +120,23 @@ def retrieve_url_list( url_list, outputPath ):
         raise
 
     return content_data
+
+
+## =========================================================
+
+
+def retrieve_url_wget( url, outputPath ):
+    wget_command = "wget -q -O " + outputPath + " '" + url + "'"
+    _LOGGER.debug( "calling wget: %s", wget_command )
+    os.system( wget_command )
+
+    with open( outputPath, 'r', encoding="utf-8" ) as out_file:
+        return out_file.read()
+
+
+## =========================================================
+
+
+retrieve_url = retrieve_url_wget
+#retrieve_url = retrieve_url_session
+#retrieve_url = retrieve_url_urlopen

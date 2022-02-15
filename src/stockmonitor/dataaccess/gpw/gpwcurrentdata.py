@@ -36,8 +36,7 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
-    BaseWorksheetData, BaseWorksheetDAO, download_html_content,\
-    download_html_content_list
+    BaseWorksheetData, BaseWorksheetDAO, download_html_content
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
 from stockmonitor.synchronized import synchronized
@@ -65,10 +64,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
             _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
-                url_list = []
-#                 url_list.append( "https://www.gpw.pl/akcje" )
-                url_list.append( url )
-                download_html_content_list( url_list, filePath )
+                download_html_content( url, filePath )
             except BaseException as ex:
                 _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
                 raise
