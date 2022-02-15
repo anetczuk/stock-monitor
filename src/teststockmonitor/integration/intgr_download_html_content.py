@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+import tempfile
 
 try:
     ## following import success only when file is directly executed from command line
@@ -38,7 +39,7 @@ import logging
 
 from stockmonitor import logger
 
-from stockmonitor.dataaccess import worksheetdata
+from stockmonitor.dataaccess import download_html_content
 
 
 ## ============================= main section ===================================
@@ -58,9 +59,10 @@ _LOGGER.debug( "Starting the application" )
 
 
 url = "https://www.stockwatch.pl/dywidendy/"
-output = "/dev/null"
 
-content = worksheetdata.download_html_content( url, output )
+with tempfile.NamedTemporaryFile( mode='w+t' ) as tmpfile:
+    output = tmpfile.name
+    content = download_html_content( url, output )
 
-print( "content:" )
-print( content )
+    print( "content:" )
+    print( content )

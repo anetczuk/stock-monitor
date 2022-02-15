@@ -28,8 +28,8 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO,\
-    download_html_content
+from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockmonitor.dataaccess import download_html_content
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.pprint import fullname

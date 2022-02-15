@@ -6,9 +6,11 @@ import os
 import logging
 import pprint
 
+import urllib
 from urllib import request
 import ssl
 import requests
+import wget
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -126,6 +128,12 @@ def retrieve_url_list( url_list, outputPath ):
 
 
 def retrieve_url_wget( url, outputPath ):
+    out_file_path = wget.download( url, out=outputPath, bar=None )
+    with open( out_file_path, 'r', encoding="utf-8" ) as out_file:
+        return out_file.read()
+
+
+def retrieve_url_syswget( url, outputPath ):
     wget_command = "wget -q -O " + outputPath + " '" + url + "'"
     _LOGGER.debug( "calling wget: %s", wget_command )
     os.system( wget_command )
@@ -138,5 +146,42 @@ def retrieve_url_wget( url, outputPath ):
 
 
 retrieve_url = retrieve_url_wget
+# retrieve_url = retrieve_url_syswget
+
 #retrieve_url = retrieve_url_session
 #retrieve_url = retrieve_url_urlopen
+
+
+## =========================================================
+
+
+def download_html_content( url, outputPath ):
+    try:
+        return retrieve_url( url, outputPath )
+
+    except urllib.error.HTTPError:
+        _LOGGER.exception( "exception when accessing: %s", url, exc_info=False )
+        raise
+    except urllib.error.URLError as ex:
+        _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
+        raise
+    except ConnectionResetError as ex:
+        _LOGGER.exception( "unable to access -- connection reset: %s %s", url, ex, exc_info=False )
+        raise
+
+
+def download_html_content_list( url_list, outputPath ):
+    return retrieve_url_list( url_list, outputPath )
+
+#     try:
+#         return retrieve_url_list( url_list, outputPath )
+#
+#     except urllib.error.HTTPError:
+#         _LOGGER.exception( "exception when accessing: %s", url_list[-1], exc_info=False )
+#         raise
+#     except urllib.error.URLError as ex:
+#         _LOGGER.exception( "unable to access: %s %s", url_list[-1], ex, exc_info=False )
+#         raise
+#     except ConnectionResetError as ex:
+#         _LOGGER.exception( "unable to access -- connection reset: %s %s", url_list[-1], ex, exc_info=False )
+#         raise

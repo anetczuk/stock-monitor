@@ -27,49 +27,15 @@ from typing import List
 
 import datetime
 import abc
-import urllib
 
 from pandas.core.frame import DataFrame
 
 from stockmonitor import persist
 from stockmonitor.synchronized import synchronized
-from stockmonitor.dataaccess import retrieve_url, retrieve_url_list
 from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def download_html_content( url, outputPath ):
-    try:
-        return retrieve_url( url, outputPath )
-
-    except urllib.error.HTTPError:
-        _LOGGER.exception( "exception when accessing: %s", url, exc_info=False )
-        raise
-    except urllib.error.URLError as ex:
-        _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
-        raise
-    except ConnectionResetError as ex:
-        _LOGGER.exception( "unable to access -- connection reset: %s %s", url, ex, exc_info=False )
-        raise
-
-
-def download_html_content_list( url_list, outputPath ):
-    return retrieve_url_list( url_list, outputPath )
-
-#     try:
-#         return retrieve_url_list( url_list, outputPath )
-#
-#     except urllib.error.HTTPError:
-#         _LOGGER.exception( "exception when accessing: %s", url_list[-1], exc_info=False )
-#         raise
-#     except urllib.error.URLError as ex:
-#         _LOGGER.exception( "unable to access: %s %s", url_list[-1], ex, exc_info=False )
-#         raise
-#     except ConnectionResetError as ex:
-#         _LOGGER.exception( "unable to access -- connection reset: %s %s", url_list[-1], ex, exc_info=False )
-#         raise
 
 
 ## ==============================================================================

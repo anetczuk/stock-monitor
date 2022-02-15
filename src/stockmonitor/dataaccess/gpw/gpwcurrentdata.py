@@ -36,9 +36,10 @@ from pandas.core.frame import DataFrame
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
-    BaseWorksheetData, BaseWorksheetDAO, download_html_content
+    BaseWorksheetData, BaseWorksheetDAO
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
+from stockmonitor.dataaccess import download_html_content
 from stockmonitor.synchronized import synchronized
 from stockmonitor.pprint import fullname
 
