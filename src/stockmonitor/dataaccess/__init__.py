@@ -10,7 +10,11 @@ import urllib
 from urllib import request
 import ssl
 import requests
-import wget
+
+import pycurl
+from io import BytesIO
+from http import HTTPStatus
+# import wget
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -127,14 +131,62 @@ def retrieve_url_list( url_list, outputPath ):
 ## =========================================================
 
 
-def retrieve_url_wget( url, outputPath ):
-    out_file_path = wget.download( url, out=outputPath, bar=None )
-    with open( out_file_path, 'r', encoding="utf-8" ) as out_file:
-        return out_file.read()
+class CUrlConnectionRAII(object):
+
+    def __init__(self):
+        self.connection = pycurl.Curl()
+        
+    def __enter__(self):
+        return self.connection
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.connection.close()
+
+
+def retrieve_url_pycurl( url, outputPath ):
+    b_obj = BytesIO()
+    
+    with CUrlConnectionRAII() as crl:
+#         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" )
+#         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
+#         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
+        # Set URL value
+        crl.setopt(pycurl.URL, url)
+        
+        # Write bytes that are utf-8 encoded
+        crl.setopt(pycurl.WRITEDATA, b_obj)
+        
+        # Perform a file transfer 
+        crl.perform()
+        
+        resp_code = crl.getinfo( pycurl.RESPONSE_CODE )
+        if resp_code != 200:
+            message = HTTPStatus( resp_code ).phrase
+#             _LOGGER.info( "error code: %s: %s", resp_code, message )
+            raise urllib.error.HTTPError( url, resp_code, message, None, None )
+        
+    # Get the content stored in the BytesIO object (in byte characters) 
+    get_body = b_obj.getvalue()
+    
+    try:
+        with open(outputPath, 'wb') as of:
+            of.write( get_body )
+    except UnicodeDecodeError as ex:
+        _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
+        raise
+    
+    return get_body.decode('utf8')
+
+
+# def retrieve_url_wget( url, outputPath ):
+#     out_file_path = wget.download( url, out=outputPath, bar=None )
+#     with open( out_file_path, 'r', encoding="utf-8" ) as out_file:
+#         return out_file.read()
 
 
 def retrieve_url_syswget( url, outputPath ):
-    wget_command = "wget -q -O " + outputPath + " '" + url + "'"
+#     wget_command = "wget -q -O " + outputPath + " '" + url + "'"
+    wget_command = "wget -O " + outputPath + " '" + url + "'"
     _LOGGER.debug( "calling wget: %s", wget_command )
     os.system( wget_command )
 
@@ -145,11 +197,15 @@ def retrieve_url_syswget( url, outputPath ):
 ## =========================================================
 
 
-retrieve_url = retrieve_url_wget
+retrieve_url = retrieve_url_pycurl
+
+## unable to easily get http response codes
 # retrieve_url = retrieve_url_syswget
 
-#retrieve_url = retrieve_url_session
-#retrieve_url = retrieve_url_urlopen
+### causes 104 error
+# retrieve_url = retrieve_url_wget
+# retrieve_url = retrieve_url_session
+# retrieve_url = retrieve_url_urlopen
 
 
 ## =========================================================

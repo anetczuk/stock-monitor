@@ -64,5 +64,4 @@ with tempfile.NamedTemporaryFile( mode='w+t' ) as tmpfile:
     output = tmpfile.name
     content = download_html_content( url, output )
 
-    print( "content:" )
-    print( content )
+    _LOGGER.info( "content size: %s", len(content) )
