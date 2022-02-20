@@ -563,6 +563,11 @@ class DataFrameTable( QTableView ):
         settings.setValue("customHeaders", self.pandaModel.customHeader )
         settings.endGroup()
 
+    def clearSorting(self):
+        header = self.horizontalHeader()
+        header.setSortIndicator( -1, Qt.AscendingOrder )
+        header.setSortIndicatorShown( False )
+
     def showColumnsConfiguration(self):
         if self._rawData is None:
             return

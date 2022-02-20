@@ -108,9 +108,11 @@ class StockTable( DataFrameTable ):
 
         contextMenu.addSeparator()
 
+        clearSortingAction  = contextMenu.addAction("Clear sorting")
         filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
 
+        clearSortingAction.triggered.connect( self.clearSorting )
         filterDataAction.triggered.connect( self.showFilterConfiguration )
         configColumnsAction.triggered.connect( self.showColumnsConfiguration )
 
@@ -385,9 +387,12 @@ class StockIndexesTable( StockTable ):
                     stockInfoMenu.addAction( action )
 
         contextMenu.addSeparator()
+
+        clearSortingAction  = contextMenu.addAction("Clear sorting")
         filterDataAction    = contextMenu.addAction("Filter data")
         configColumnsAction = contextMenu.addAction("Configure columns")
 
+        clearSortingAction.triggered.connect( self.clearSorting )
         filterDataAction.triggered.connect( self.showFilterConfiguration )
         configColumnsAction.triggered.connect( self.showColumnsConfiguration )
 
@@ -580,8 +585,8 @@ def wallet_background_color( dataObject, ticker ):
     return None
 
 
-def marker_background_color( dataObject, ticker ):
-    currentStock = dataObject.gpwCurrentData
+def marker_background_color( dataObject: DataObject, ticker ):
+    currentStock: GpwCurrentStockData = dataObject.gpwCurrentData
     recentValue = currentStock.getRecentValueByTicker( ticker )
     if recentValue is None:
         return None
