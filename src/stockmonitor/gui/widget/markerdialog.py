@@ -49,6 +49,9 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
         for operation in MarkerEntry.OperationType:
             self.ui.operationCB.addItem( operation.name, operation )
 
+        self.ui.valueSB.valueChanged.connect( self._updatePrice )
+        self.ui.amountSP.valueChanged.connect( self._updatePrice )
+
         self.colorDialog = QtWidgets.QColorDialog( self )
         self.colorDialog.colorSelected.connect( self._pickerColorChanged )      #type: ignore
 
@@ -84,6 +87,12 @@ class MarkerDialog( QtBaseClass ):           # type: ignore
             self.ui.notesLE.setText( self.entry.notes )
 
 #         self.adjustSize()
+
+    def _updatePrice(self):
+        value = self.ui.valueSB.value()
+        amount = self.ui.amountSP.value()
+        price = value * amount
+        self.ui.priceLabel.setText( str(price) )
 
     def _pickColor(self):
         self.colorDialog.exec_()                                ## modal mode

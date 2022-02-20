@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>761</width>
-    <height>204</height>
+    <height>235</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,13 +57,6 @@
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Amount:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QSpinBox" name="amountSP">
-       <property name="maximum">
-        <number>999999999</number>
        </property>
       </widget>
      </item>
@@ -121,6 +114,37 @@
      <item row="5" column="1">
       <widget class="QLineEdit" name="notesLE"/>
      </item>
+     <item row="3" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
+       <item>
+        <widget class="QSpinBox" name="amountSP">
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Price:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="priceLabel">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
    </item>
    <item>
@@ -139,7 +163,6 @@
   <tabstop>tickerLE</tabstop>
   <tabstop>operationCB</tabstop>
   <tabstop>valueSB</tabstop>
-  <tabstop>amountSP</tabstop>
   <tabstop>pickColorPB</tabstop>
  </tabstops>
  <resources/>
