@@ -348,7 +348,7 @@ class MarkersContainer( persist.Versionable ):
                 ## marker value is cheaper than stock value -- skip
                 return None
             return item.color.lower()
-        elif item.operation is MarkerEntry.OperationType.SELL:
+        if item.operation is MarkerEntry.OperationType.SELL:
             ## check of expensive stock
             if stockPrice < item.value:
                 ## marker value is more expensive than stock value -- skip

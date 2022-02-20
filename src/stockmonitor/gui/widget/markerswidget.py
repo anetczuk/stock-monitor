@@ -31,12 +31,12 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtCore import Qt
 
 from stockmonitor.datatypes.datatypes import MarkerEntry
+from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.markerdialog import MarkerDialog
 from stockmonitor.gui.widget.dataframetable import DataFrameTableModel,\
     TableRowColorDelegate
 from stockmonitor.gui.widget.stocktable import StockTable, insert_new_action
-from stockmonitor.gui.widget.stocktable import marker_background_color
 
 from .. import uiloader
 
@@ -92,7 +92,7 @@ class MarkersColorDelegate( TableRowColorDelegate ):
         dataRow = index.row()
         dataIndex = self.parent.index( dataRow, 1, sourceParent )       ## get ticker
         ticker = dataIndex.data()
-        
+
         currentStock: GpwCurrentStockData = self.dataObject.gpwCurrentData
         recentValue = currentStock.getRecentValueByTicker( ticker )
         if recentValue is None:

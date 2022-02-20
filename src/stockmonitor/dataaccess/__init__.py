@@ -9,11 +9,12 @@ import pprint
 import urllib
 from urllib import request
 import ssl
-import requests
 
-import pycurl
 from io import BytesIO
 from http import HTTPStatus
+
+import requests
+import pycurl
 # import wget
 
 
@@ -131,11 +132,11 @@ def retrieve_url_list( url_list, outputPath ):
 ## =========================================================
 
 
-class CUrlConnectionRAII(object):
+class CUrlConnectionRAII():
 
     def __init__(self):
         self.connection = pycurl.Curl()
-        
+
     def __enter__(self):
         return self.connection
 
@@ -145,36 +146,35 @@ class CUrlConnectionRAII(object):
 
 def retrieve_url_pycurl( url, outputPath ):
     b_obj = BytesIO()
-    
+
     with CUrlConnectionRAII() as crl:
-#         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" )
 #         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
 #         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
         # Set URL value
         crl.setopt(pycurl.URL, url)
-        
+
         # Write bytes that are utf-8 encoded
         crl.setopt(pycurl.WRITEDATA, b_obj)
-        
-        # Perform a file transfer 
+
+        # Perform a file transfer
         crl.perform()
-        
+
         resp_code = crl.getinfo( pycurl.RESPONSE_CODE )
         if resp_code != 200:
             message = HTTPStatus( resp_code ).phrase
 #             _LOGGER.info( "error code: %s: %s", resp_code, message )
             raise urllib.error.HTTPError( url, resp_code, message, None, None )
-        
-    # Get the content stored in the BytesIO object (in byte characters) 
+
+    # Get the content stored in the BytesIO object (in byte characters)
     get_body = b_obj.getvalue()
-    
+
     try:
         with open(outputPath, 'wb') as of:
             of.write( get_body )
     except UnicodeDecodeError as ex:
         _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
         raise
-    
+
     return get_body.decode('utf8')
 
 
