@@ -272,6 +272,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
             self.worksheet = DataFrame()
             for dataAccess in self.dataList:
                 dataFrame = dataAccess.getDataFrame()
+#                 self.worksheet.concat( dataFrame, copy=False )
                 self.worksheet = self.worksheet.append( dataFrame )
             return self.worksheet
 
