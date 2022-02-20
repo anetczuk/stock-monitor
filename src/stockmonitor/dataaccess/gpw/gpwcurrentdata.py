@@ -102,7 +102,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
             except KeyError:
                 _LOGGER.exception( "unable to get values by key" )
 
-            append_stock_isin( dataFrame, dataFile )
+#             append_stock_isin( dataFrame, dataFile )
 
             return dataFrame
 
@@ -460,27 +460,28 @@ def convert_indexes_data( dataFrame: DataFrame ):
     apply_on_column( dataFrame, '% otw. portfela', convert_int )
 
 
-def append_stock_isin( dataFrame, dataFile ):
-    with open(dataFile, 'r', encoding="utf-8") as file:
-        fileContent = file.read()
-
-    isinList = []
-
-    for name in dataFrame["Nazwa"]:
-        # pylint: disable=W1401
-        pattern = r'<a\s*href="spolka\?isin=(\S*?)">' + name + r'.*?</a>'
-        matchObj = re.search( pattern, fileContent )
-        if matchObj is None:
-            isinList.append( None )
-            continue
-        groups = matchObj.groups()
-        if len(groups) < 1:
-            isinList.append( None )
-            continue
-        isin = groups[0]
-        isinList.append( isin )
-
-    dataFrame["isin"] = isinList
+# ## find isin's in file and append to dataframe
+# def append_stock_isin( dataFrame, dataFile ):
+#     with open(dataFile, 'r', encoding="utf-8") as file:
+#         fileContent = file.read()
+# 
+#     isinList = []
+# 
+#     for name in dataFrame["Nazwa"]:
+#         # pylint: disable=W1401
+#         pattern = r'<a\s*href="spolka\?isin=(\S*?)">' + name + r'.*?</a>'
+#         matchObj = re.search( pattern, fileContent )
+#         if matchObj is None:
+#             isinList.append( None )
+#             continue
+#         groups = matchObj.groups()
+#         if len(groups) < 1:
+#             isinList.append( None )
+#             continue
+#         isin = groups[0]
+#         isinList.append( isin )
+# 
+#     dataFrame["isin"] = isinList
 
 
 def append_indexes_isin( dataFrame, dataFile ):
@@ -503,4 +504,4 @@ def append_indexes_isin( dataFrame, dataFile ):
         isin = groups[0]
         isinList.append( isin )
 
-    dataFrame["isin"] = isinList
+    dataFrame["ISIN"] = isinList

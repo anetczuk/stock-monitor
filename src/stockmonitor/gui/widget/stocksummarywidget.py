@@ -68,7 +68,7 @@ class StockSummaryWidget(QtBaseClass):                    # type: ignore
             return
         dataFrame: DataFrame = espiData.getWorksheetData()
         if dataFrame is not None:
-            dataFrame = dataFrame[ dataFrame['isin'] == self.isin ]
+            dataFrame = dataFrame[ dataFrame['ISIN'] == self.isin ]
         self.ui.espiList.setData( dataFrame )
 
 

@@ -44,7 +44,7 @@ if frame is None:
 else:
     _LOGGER.info( "loaded data:\n%s", frame )
     _LOGGER.info( "loaded data size: %s", frame.shape )
-    if frame.shape != (397, 27):
+    if frame.shape != (397, 26):
         failed_counter += 1
         _LOGGER.warning( "unexpected data size" )
 
