@@ -335,6 +335,27 @@ class MarkersContainer( persist.Versionable ):
             return bestBuy.color.lower()        ## lower for tests compatibility
         return None
 
+    def getMatchingColor(self, itemIndex, stockPrice):
+        if itemIndex >= len(self.markers):
+            return None
+        item = self.markers[ itemIndex ]
+        if item.value is None:
+            ## invalid value
+            return None
+        if item.operation is MarkerEntry.OperationType.BUY:
+            ## check for cheap stock
+            if stockPrice > item.value:
+                ## marker value is cheaper than stock value -- skip
+                return None
+            return item.color.lower()
+        elif item.operation is MarkerEntry.OperationType.SELL:
+            ## check of expensive stock
+            if stockPrice < item.value:
+                ## marker value is more expensive than stock value -- skip
+                return None
+            return item.color.lower()
+        return None
+
     def add( self, ticker, value, amount, operation: MarkerEntry.OperationType, colorName: str = None ):
         entry = MarkerEntry()
         entry.ticker = ticker

@@ -24,7 +24,7 @@
 import logging
 from datetime import timedelta
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import QModelIndex
 
 ## workaround for mypy type errors
@@ -92,7 +92,17 @@ class MarkersColorDelegate( TableRowColorDelegate ):
         dataRow = index.row()
         dataIndex = self.parent.index( dataRow, 1, sourceParent )       ## get ticker
         ticker = dataIndex.data()
-        return marker_background_color( self.dataObject, ticker )
+        
+        currentStock: GpwCurrentStockData = self.dataObject.gpwCurrentData
+        recentValue = currentStock.getRecentValueByTicker( ticker )
+        if recentValue is None:
+            return None
+        if recentValue == "-":
+            return None
+        markerColor = self.dataObject.markers.getMatchingColor( dataRow, recentValue )
+        if markerColor is not None:
+            return QtGui.QColor( markerColor )
+        return None
 
 
 ## ===========================================================
