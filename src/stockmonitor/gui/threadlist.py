@@ -62,16 +62,18 @@ class ThreadList():
 
 class BaseWorker( QtCore.QObject ):
 
-    finished = QtCore.pyqtSignal()
+    workerFinished = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__( None )
+        
+        self.threadName = None
 
         self.thread = QtCore.QThread( parent )
         self.moveToThread( self.thread )
-        self.thread.started.connect( self.processWorker, Qt.QueuedConnection )
-        self.finished.connect( self.thread.quit )
-        self.finished.connect( self.deleteLater )
+        self.thread.started.connect( self._startWorker, Qt.QueuedConnection )
+        self.workerFinished.connect( self.thread.quit )
+        self.workerFinished.connect( self.deleteLater )
         self.thread.finished.connect( self.thread.deleteLater )
 
     def start(self):
@@ -83,6 +85,14 @@ class BaseWorker( QtCore.QObject ):
     @abc.abstractmethod
     def processWorker(self):
         raise NotImplementedError('You need to define this method in derived class!')
+
+    def _startWorker(self):
+        ##self.threadId = int(QtCore.QThread.currentThreadId())
+        self.threadName = threading.current_thread().name
+        try:
+            self.processWorker()
+        finally:
+            self.workerFinished.emit()
 
 
 class ThreadWorker( BaseWorker ):
@@ -106,8 +116,6 @@ class ThreadWorker( BaseWorker ):
         # pylint: disable=W0703
         except Exception:
             _LOGGER.exception("work terminated" )
-        finally:
-            self.finished.emit()
 
 
 class QThreadList( QtCore.QObject ):
@@ -121,7 +129,7 @@ class QThreadList( QtCore.QObject ):
         self.logging = logs
 
     def appendFunction(self, function, args=None):
-        worker = ThreadWorker( function, args, self, self.logging )
+        worker = ThreadWorker( function, args, self, False )
         worker.thread.finished.connect( self._threadFinished )
         self.threads.append( worker )
 
@@ -141,13 +149,25 @@ class QThreadList( QtCore.QObject ):
 
     def _threadFinished(self):
         self.finishCounter += 1
-        if self.finishCounter == len( self.threads ):
+        threadsSize = len( self.threads )
+        if self.logging:
+            thread = self.sender()
+            worker = self.findWorkerByThread( thread )
+            ## thread_name = threading.current_thread().name
+            _LOGGER.info( "worker[%s] finished %s / %s", worker.threadName, self.finishCounter, threadsSize )
+        if self.finishCounter == threadsSize:
             self._computingFinished()
 
     def _computingFinished(self):
         if self.logging:
             _LOGGER.info( "all threads finished" )
         self.finished.emit()
+        
+    def findWorkerByThread(self, thread):
+        for worker in self.threads:
+            if worker.thread == thread:
+                return worker
+        return None
 
 
 class QThreadMeasuredList( QThreadList ):
@@ -234,8 +254,6 @@ class ProcessWorker( BaseWorker ):
         # pylint: disable=W0703
         except Exception:
             _LOGGER.exception("work terminated" )
-        finally:
-            self.finished.emit()
 
 
 class ProcessList( QtCore.QObject ):
