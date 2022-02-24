@@ -435,7 +435,7 @@ class DataContainer():
     # pylint: disable=R0914
     def getWalletBuyTransactions(self):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
-                        "Kurs", "Zm.do k.odn.(%)",
+                        "Kurs aktualny", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
@@ -554,7 +554,7 @@ class DataContainer():
     # pylint: disable=R0914
     def getAllTransactions(self):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
-                        "Kurs", "Zm.do k.odn.(%)",
+                        "Kurs aktualny", "Zm.do k.odn.(%)",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
