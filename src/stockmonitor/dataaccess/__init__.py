@@ -148,10 +148,19 @@ def retrieve_url_pycurl( url, outputPath ):
     b_obj = BytesIO()
 
     with CUrlConnectionRAII() as crl:
-#         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
+#         crl.setopt(pycurl.VERBOSE, 1)
+
+#         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:97.0) Gecko/20100101 Firefox/97.0" )
+        crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
 #         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
         # Set URL value
         crl.setopt(pycurl.URL, url)
+
+        headers = []
+        headers.append( "Connection: keep-alive" )
+#         headers.append( "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" )
+        if len(headers) > 0:
+            crl.setopt(pycurl.HTTPHEADER, headers)
 
         # Write bytes that are utf-8 encoded
         crl.setopt(pycurl.WRITEDATA, b_obj)
@@ -175,7 +184,8 @@ def retrieve_url_pycurl( url, outputPath ):
         _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
         raise
 
-    return get_body.decode('utf8')
+    return get_body
+    #return get_body.decode('utf8')
 
 
 # def retrieve_url_wget( url, outputPath ):
