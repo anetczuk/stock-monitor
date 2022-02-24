@@ -684,8 +684,8 @@
      <addaction name="actionMatch_recent"/>
     </widget>
     <addaction name="menuMatch_transactions"/>
-    <addaction name="actionOverall_profit_chart"/>
     <addaction name="actionGain_chart"/>
+    <addaction name="actionOverall_profit_chart"/>
     <addaction name="actionImport_mb_transactions"/>
    </widget>
    <addaction name="menuFile"/>

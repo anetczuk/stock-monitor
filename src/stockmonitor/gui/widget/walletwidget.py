@@ -33,7 +33,7 @@ from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import marker_background_color
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
 from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window,\
-    create_walletprofit_window, create_walletgain_window
+    create_overallprofit_window, create_walletgain_window
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 
 from .. import uiloader
@@ -198,10 +198,10 @@ class WalletWidget( QtBaseClass ):           # type: ignore
     def importMBTransactions(self):
         self.ui.walletTable.importTransactions()
 
-    def openWalletProfitChart(self):
+    def openOveralProfitChart(self):
         if self.dataObject is None:
             return
-        create_walletprofit_window( self.dataObject, self )
+        create_overallprofit_window( self.dataObject, self )
 
     def openWalletGainChart(self):
         if self.dataObject is None:

@@ -42,7 +42,7 @@ _LOGGER = logging.getLogger(__name__)
 UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
 
 
-class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
+class ValueChartWidget(QtBaseClass):                    # type: ignore
 
 #     updateFinished = QtCore.pyqtSignal()
 
@@ -67,6 +67,9 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
+
+    def setXLabel(self, xLabel):
+        self.ui.dataChart.setXLabel( xLabel )
 
     def clearData(self):
         self.ui.dataChart.clearPlot()
@@ -150,7 +153,7 @@ class ValueChartBasicWidget(QtBaseClass):                    # type: ignore
 
 
 # pylint: disable=W0223
-class ValueChartWidget( ValueChartBasicWidget ):
+class DataValueChartWidget( ValueChartWidget ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -184,7 +187,7 @@ class ValueChartWidget( ValueChartBasicWidget ):
         return intraSource
 
 
-class StockValueChartWidget( ValueChartWidget ):
+class StockValueChartWidget( DataValueChartWidget ):
 
     def _getDataFrame(self):
         rangeText = self.ui.rangeCB.currentText()
@@ -192,7 +195,7 @@ class StockValueChartWidget( ValueChartWidget ):
         return dataFrame
 
 
-class StockProfitChartWidget( ValueChartWidget ):
+class StockProfitChartWidget( DataValueChartWidget ):
 
     def _getDataFrame(self):
         rangeText = self.ui.rangeCB.currentText()
@@ -200,7 +203,7 @@ class StockProfitChartWidget( ValueChartWidget ):
         return dataFrame
 
 
-class WalletProfitChartWidget( ValueChartBasicWidget ):
+class OverallProfitChartWidget( ValueChartWidget ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -241,7 +244,7 @@ class WalletProfitChartWidget( ValueChartBasicWidget ):
         return dataFrame
 
 
-class WalletGainChartWidget( ValueChartBasicWidget ):
+class WalletGainChartWidget( ValueChartWidget ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -321,20 +324,20 @@ def create_stockprofit_window( dataObject, ticker, parent=None ):
     return create_window(dataObject, ticker, StockProfitChartWidget, parent)
 
 
-def create_walletprofit_window( dataObject, parent=None ):
+def create_overallprofit_window( dataObject, parent=None ):
     chartWindow = ChartAppWindow( parent )
-    chart = WalletProfitChartWidget( chartWindow )
+    chart = OverallProfitChartWidget( chartWindow )
+    chart.setXLabel( "Profit" )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
 
     chart.connectData(dataObject)
 
-    title = "Wallet"
+    title = "Overall profit"
     chartWindow.setWindowTitleSuffix( "- " + title )
     chart.ui.stockLabel.setText( title )
 
     chartWindow.show()
-
     return chartWindow
 
 

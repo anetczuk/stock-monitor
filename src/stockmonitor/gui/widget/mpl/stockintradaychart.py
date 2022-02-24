@@ -38,13 +38,18 @@ class PriceIntradayChart( BaseIntradayChart ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
 
+        self.xlabel = "Price"
         self.pricePlot  = self.figure.add_subplot(1, 1, 1)      ## matplotlib.axes._subplots.AxesSubplot
         self.clearPlot()
+
+    def setXLabel(self, xLabel):
+        self.xlabel = xLabel
+        _configure_plot( self.pricePlot, self.xlabel )
 
     def clearPlot(self):
         super().clearPlot()
 
-        _configure_plot( self.pricePlot, "Price" )
+        _configure_plot( self.pricePlot, self.xlabel )
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
