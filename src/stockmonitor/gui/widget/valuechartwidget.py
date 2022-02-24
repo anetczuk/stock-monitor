@@ -344,12 +344,13 @@ def create_overallprofit_window( dataObject, parent=None ):
 def create_walletgain_window( dataObject, parent=None ):
     chartWindow = ChartAppWindow( parent )
     chart = WalletGainChartWidget( chartWindow )
+    chart.setXLabel( "Gain" )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
 
     chart.connectData(dataObject)
 
-    title = "Wallet"
+    title = "Gain"
     chartWindow.setWindowTitleSuffix( "- " + title )
     chart.ui.stockLabel.setText( title )
 
