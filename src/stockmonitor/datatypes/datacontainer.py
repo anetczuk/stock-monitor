@@ -772,20 +772,20 @@ class DataContainer():
             func( *args )
 
     def refreshStockList(self, forceRefresh=False):
-        stockList: List[ StockDataProvider ] = self.dataStockProvidersList()
+        stockList: List[ StockDataProvider ] = self._dataStockProvidersList()
         retList = []
         for stock in stockList:
             retList.append( (stock.accessData, [forceRefresh] ) )
         return retList
 
     def refreshAllList(self, forceRefresh=False):
-        stockList: List[ StockDataProvider ] = self.dataAllProvidersList()
+        stockList: List[ StockDataProvider ] = self._dataAllProvidersList()
         retList = []
         for stock in stockList:
             retList.append( (stock.accessData, [forceRefresh] ) )
         return retList
 
-    def dataAllProvidersList(self) -> List[ StockDataProvider ]:
+    def _dataAllProvidersList(self) -> List[ StockDataProvider ]:
 #         retList = []
 #         retList.append( self.gpwCurrentSource )
 #         retList.append( self.gpwStockIntradayData )
@@ -793,7 +793,7 @@ class DataContainer():
 #         retList.append( BaseWorksheetDAOProvider( self.gpwESPIData ) )
 #         retList.append( BaseWorksheetDAOProvider( self.gpwIndexesData ) )
 
-        retList = self.dataStockProvidersList()
+        retList = self._dataStockProvidersList()
 
         retList.append( BaseWorksheetDAOProvider( self.globalIndexesData ) )
         retList.append( BaseWorksheetDAOProvider( self.gpwIndicatorsData ) )
@@ -804,11 +804,14 @@ class DataContainer():
 #         retList.append( self.gpwIsinMap )
         return retList
 
-    def dataStockProvidersList(self) -> List[ StockDataProvider ]:
+    def _dataStockProvidersList(self) -> List[ StockDataProvider ]:
         retList = []
         retList.append( self.gpwCurrentSource )
-        retList.append( self.gpwStockIntradayData )
-        retList.append( self.gpwIndexIntradayData )
+        
+        ## do not refresh charts
+#         retList.append( self.gpwStockIntradayData )
+#         retList.append( self.gpwIndexIntradayData )
+
         retList.append( BaseWorksheetDAOProvider( self.gpwESPIData ) )
         retList.append( BaseWorksheetDAOProvider( self.gpwIndexesData ) )
         return retList
