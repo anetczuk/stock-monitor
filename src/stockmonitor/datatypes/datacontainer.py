@@ -381,14 +381,13 @@ class DataContainer():
 
     # pylint: disable=R0914
     def getWalletBuyTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
-                        "Kurs aktualny", "Zm.do k.odn.(%)",
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna", "Wartość",
+                        "Kurs aktualny",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
 
         stockNameIndex  = currentStock.getDataColumnIndex( StockDataType.STOCK_NAME )
-        dataChangeIndex = currentStock.getDataColumnIndex( StockDataType.CHANGE_TO_REF )
 
         rowsList = []
 
@@ -407,37 +406,35 @@ class DataContainer():
                     trans_amount     = item[0]
                     trans_unit_price = item[1]
                     trans_date       = item[2]
-                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
+                    trans_value      = round( trans_amount * trans_unit_price, 2 )
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, trans_value,
+                                      "-",
+                                      "-", "-", trans_date] )
                 continue
 
             stockName = currentStockRow.iloc[ stockNameIndex ]
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
-            currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
-            currChange    = 0
-            if currChangeRaw != "-":
-                currChange = float( currChangeRaw )
-
             currTransactions = transactions.currentTransactions( transMode )
             for item in currTransactions:
                 trans_amount     = item[0]
                 trans_unit_price = item[1]
                 trans_date       = item[2]
+                trans_value      = trans_amount * trans_unit_price
 
                 currValue = currUnitValue * trans_amount
-                buyValue  = trans_unit_price * trans_amount
-                profit    = currValue - buyValue
+                profit    = currValue - trans_value
                 profitPnt = 0
-                if buyValue != 0:
-                    profitPnt = profit / buyValue * 100.0
+                if trans_value != 0:
+                    profitPnt = profit / trans_value * 100.0
 
                 trans_unit_price = round( trans_unit_price, 4 )
                 profitPnt      = round( profitPnt, 2 )
                 profit         = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price,
-                                   currUnitValue, currChange,
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, round( trans_value, 2 ),
+                                   currUnitValue,
                                    profitPnt, profit, trans_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
@@ -445,7 +442,7 @@ class DataContainer():
 
     def getWalletSellTransactions(self):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna",
-                        "Kurs sprzedaży", "Zm.do k.odn.(%)",
+                        "Kurs sprzedaży", "Wartość",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
@@ -466,10 +463,10 @@ class DataContainer():
                     trans_amount     = buy[0]
                     trans_unit_price = buy[1]
                     trans_date       = buy[2]
-                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price,
+                                      "-", "-",
+                                      "-", "-", trans_date] )
                 continue
-
-            currChange    = "-"
 
             currTransactions = transactions.sellTransactions( transMode )
             for buy, sell in currTransactions:
@@ -480,9 +477,9 @@ class DataContainer():
                 sell_unit_price = sell[1]
                 sell_date       = sell[2]
 
-                currValue = sell_unit_price * trans_amount
+                sellValue = sell_unit_price * trans_amount
                 buyValue  = buy_unit_price * trans_amount
-                profit    = currValue - buyValue
+                profit    = sellValue - buyValue
                 profitPnt = 0
                 if buyValue != 0:
                     profitPnt = profit / buyValue * 100.0
@@ -492,7 +489,7 @@ class DataContainer():
                 profit         = round( profit, 2 )
 
                 rowsList.append( [ stockName, ticker, -trans_amount, buy_unit_price,
-                                   sell_unit_price, currChange,
+                                   sell_unit_price, round( sellValue, 2 ),
                                    profitPnt, profit, sell_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
@@ -500,14 +497,13 @@ class DataContainer():
 
     # pylint: disable=R0914
     def getAllTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji",
-                        "Kurs aktualny", "Zm.do k.odn.(%)",
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", "Wartość",
+                        "Kurs aktualny",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
 
         stockNameIndex  = currentStock.getDataColumnIndex( StockDataType.STOCK_NAME )
-        dataChangeIndex = currentStock.getDataColumnIndex( StockDataType.CHANGE_TO_REF )
 
         rowsList = []
 
@@ -520,18 +516,17 @@ class DataContainer():
                     trans_amount     = item[0]
                     trans_unit_price = item[1]
                     trans_date       = item[2]
-                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, "-", "-", "-", "-", trans_date] )
+                    trans_value      = round( trans_amount * trans_unit_price, 2 )
+
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, trans_value,
+                                      "-",
+                                      "-", "-", trans_date] )
                 continue
 
             stockName  = currentStockRow.iloc[ stockNameIndex ]
             currAmount = transactions.currentAmount()
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
-
-            currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
-            currChange    = 0
-            if currChangeRaw != "-":
-                currChange = float( currChangeRaw )
 
             currTransactions = transactions.allTransactions()
             for item in currTransactions:
@@ -540,10 +535,13 @@ class DataContainer():
                 trans_date       = item[2]
 
                 if currAmount <= 0:
+                    ## sell
                     trans_unit_price = round( trans_unit_price, 4 )
+                    trans_value      = "-"
                     profitPnt        = "-"
                     profit           = "-"
                 else:
+                    ## buy
                     currValue = abs( currUnitValue * trans_amount )
                     buyValue  = abs( trans_unit_price * trans_amount )
 
@@ -556,8 +554,8 @@ class DataContainer():
                     profitPnt        = round( profitPnt, 2 )
                     profit           = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price,
-                                   currUnitValue, currChange,
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, round( buyValue, 2 ),
+                                   currUnitValue,
                                    profitPnt, profit, trans_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
