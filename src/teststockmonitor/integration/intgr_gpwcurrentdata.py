@@ -32,10 +32,10 @@ failed_counter = 0
 
 _LOGGER.info( "loading stock worksheet" )
 
-dataAccess = GpwCurrentStockData()
-dataAccess.loadWorksheet()
+stockAccess = GpwCurrentStockData()
+stockAccess.loadWorksheet()
 
-frame = dataAccess.dao.storage.worksheet
+frame = stockAccess.dao.storage.worksheet
 if frame is None:
     failed_counter += 1
     _LOGGER.warning( "" )
@@ -51,10 +51,10 @@ else:
 
 _LOGGER.info( "loading indexes worksheet" )
 
-dataAccess = GpwCurrentIndexesData()
-dataAccess.loadWorksheet()
+indexAccess = GpwCurrentIndexesData()
+indexAccess.loadWorksheet()
 
-frame = dataAccess.dao.getDataFrame()
+frame = indexAccess.dao.getDataFrame()
 if frame is None:
     failed_counter += 1
     _LOGGER.warning( "" )

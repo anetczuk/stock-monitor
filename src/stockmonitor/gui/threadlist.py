@@ -66,7 +66,7 @@ class BaseWorker( QtCore.QObject ):
 
     def __init__(self, parent=None):
         super().__init__( None )
-        
+
         self.threadName = None
 
         self.thread = QtCore.QThread( parent )
@@ -162,7 +162,7 @@ class QThreadList( QtCore.QObject ):
         if self.logging:
             _LOGGER.info( "all threads finished" )
         self.finished.emit()
-        
+
     def findWorkerByThread(self, thread):
         for worker in self.threads:
             if worker.thread == thread:

@@ -158,7 +158,9 @@ def retrieve_url_pycurl( url, outputPath ):
 
         headers = []
         headers.append( "Connection: keep-alive" )
-#         headers.append( "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" )
+#         headers.append( "Accept: "
+#                         "text/html,application/xhtml+xml,application/xml;"
+#                         "q=0.9,image/avif,image/webp,*/*;q=0.8" )
         if len(headers) > 0:
             crl.setopt(pycurl.HTTPHEADER, headers)
 

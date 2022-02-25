@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>859</width>
+    <width>889</width>
     <height>600</height>
    </rect>
   </property>
@@ -573,13 +573,19 @@
       </item>
       <item>
        <widget class="QLabel" name="label_8">
+        <property name="toolTip">
+         <string>Sum of differences between sell and buy prices</string>
+        </property>
         <property name="text">
-         <string>Gain:</string>
+         <string>Total Gain:</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="gainLabel">
+        <property name="toolTip">
+         <string>Sum of differences between sell and buy prices</string>
+        </property>
         <property name="text">
          <string>None</string>
         </property>
@@ -587,6 +593,9 @@
       </item>
       <item>
        <widget class="QLabel" name="label_7">
+        <property name="toolTip">
+         <string>Sum of: total gain and wallet profit</string>
+        </property>
         <property name="text">
          <string>Overall profit:</string>
         </property>
@@ -594,6 +603,9 @@
       </item>
       <item>
        <widget class="QLabel" name="overallProfitLabel">
+        <property name="toolTip">
+         <string>Sum of: total gain and wallet profit</string>
+        </property>
         <property name="text">
          <string>None</string>
         </property>
@@ -649,7 +661,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>859</width>
+     <width>889</width>
      <height>22</height>
     </rect>
    </property>
@@ -685,6 +697,7 @@
     </widget>
     <addaction name="menuMatch_transactions"/>
     <addaction name="actionGain_chart"/>
+    <addaction name="actionWallet_profit_chart"/>
     <addaction name="actionOverall_profit_chart"/>
     <addaction name="actionImport_mb_transactions"/>
    </widget>
@@ -774,6 +787,11 @@
   <action name="actionGain_chart">
    <property name="text">
     <string>Gain chart</string>
+   </property>
+  </action>
+  <action name="actionWallet_profit_chart">
+   <property name="text">
+    <string>Wallet profit chart</string>
    </property>
   </action>
  </widget>

@@ -358,7 +358,7 @@ class DataContainer():
             if buyValue != 0:
                 profitPnt = profit / buyValue * 100.0
 
-            totalProfit  = transactions.transactionsProfit()
+            totalProfit  = transactions.transactionsOverallProfit()
             totalProfit += currValue - broker_commission( currValue )
 
             rowDict = {}
@@ -378,59 +378,6 @@ class DataContainer():
 
         dataFrame = DataFrame( rowsList )
         return dataFrame
-
-    ## wallet summary: wallet value, wallet profit, ref change, gain, overall profit
-    def getWalletState(self, includeCommission=True):
-        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
-
-        transMode = self.userContainer.transactionsMatchMode
-
-        walletValue    = 0.0
-        refWalletValue = 0.0
-        walletProfit   = 0.0
-        totalGain      = 0.0
-        for ticker, transactions in self.wallet.stockList.items():
-            amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
-
-            stockGain  = transactions.transactionsGain( transMode, includeCommission )
-            totalGain += stockGain
-
-            if amount == 0:
-                continue
-
-            currentStockRow = currentStock.getRowByTicker( ticker )
-            if currentStockRow is None or currentStockRow.empty:
-                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
-                continue
-
-            currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
-
-            stockValue     = currUnitValue * amount
-            stockProfit    = stockValue
-            stockProfit   -= buy_unit_price * amount
-            if includeCommission:
-                stockProfit -= broker_commission( stockValue )
-
-            walletValue   += stockValue
-            walletProfit  += stockProfit
-
-            refUnitValue  = GpwCurrentStockData.unitReferencePrice( currentStockRow )
-            referenceValue = refUnitValue * amount
-            refWalletValue += referenceValue
-
-        walletValue    = round( walletValue, 2 )
-        walletProfit   = round( walletProfit, 2 )
-        refWalletValue = round( refWalletValue, 2 )
-        if refWalletValue != 0.0:
-            referenceFactor = walletValue / refWalletValue - 1
-            rounded_factor = round( referenceFactor * 100, 2 )
-            changeToRef = f"{rounded_factor}%"
-        else:
-            changeToRef = "--"
-        totalGain      = round( totalGain, 2 )
-        overallProfit  = walletProfit + totalGain
-        overallProfit  = round( overallProfit, 2 )
-        return ( walletValue, walletProfit, changeToRef, totalGain, overallProfit )
 
     # pylint: disable=R0914
     def getWalletBuyTransactions(self):
@@ -653,7 +600,78 @@ class DataContainer():
 
         return dataFrame
 
-    def getWalletStockProfitData(self, ticker, rangeCode) -> DataFrame:
+    ## wallet summary: wallet value, wallet profit, ref change, gain, overall profit
+    def getWalletState(self, includeCommission=True):
+        currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
+
+        transMode = self.userContainer.transactionsMatchMode
+
+        walletValue    = 0.0
+        refWalletValue = 0.0
+        walletProfit   = 0.0
+        totalGain      = 0.0
+        for ticker, transactions in self.wallet.stockList.items():
+            amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
+
+            stockGain  = transactions.transactionsGain( transMode, includeCommission )
+            totalGain += stockGain
+
+            if amount == 0:
+                continue
+
+            currentStockRow = currentStock.getRowByTicker( ticker )
+            if currentStockRow is None or currentStockRow.empty:
+                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
+                continue
+
+            currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
+
+            sellValue      = currUnitValue * amount
+            stockProfit    = sellValue
+            if includeCommission:
+                stockProfit -= broker_commission( sellValue )
+            buyValue       = buy_unit_price * amount
+            stockProfit   -= buyValue
+
+            walletValue   += sellValue
+            walletProfit  += stockProfit
+
+            refUnitValue  = GpwCurrentStockData.unitReferencePrice( currentStockRow )
+            referenceValue = refUnitValue * amount
+            refWalletValue += referenceValue
+
+        walletValue    = round( walletValue, 2 )
+        walletProfit   = round( walletProfit, 2 )
+        refWalletValue = round( refWalletValue, 2 )
+        if refWalletValue != 0.0:
+            referenceFactor = walletValue / refWalletValue - 1
+            rounded_factor = round( referenceFactor * 100, 2 )
+            changeToRef = f"{rounded_factor}%"
+        else:
+            changeToRef = "--"
+        totalGain      = round( totalGain, 2 )
+        overallProfit  = walletProfit + totalGain
+        overallProfit  = round( overallProfit, 2 )
+        return ( walletValue, walletProfit, changeToRef, totalGain, overallProfit )
+
+    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
+    def getWalletGainHistory(self, rangeCode):
+        startDateTime = get_start_date( rangeCode )
+
+        transMode = self.userContainer.transactionsMatchMode
+        mergedList = None
+        for _, transactions in self.wallet.stockList.items():
+            gainList = transactions.transactionsGainHistory( transMode, True, startDateTime )
+            stockData = DataFrame( gainList, columns=["t", "c"] )
+            mergedList = join_list_dataframe( mergedList, stockData )
+
+        retData = DataFrame( mergedList, columns=["t", "c"] )
+        return retData
+
+    ## calculate profit of single stock
+    def getWalletStockProfitHistory(self, ticker, rangeCode, calculateOverall: bool=True) -> DataFrame:
+        includeCommission = True
+
         transactions: TransHistory = self.wallet.transactions( ticker )
         if transactions is None:
             return None
@@ -664,88 +682,85 @@ class DataContainer():
         if stockData is None:
             return None
 
+        transMode = self.userContainer.transactionsMatchMode
+
         startDateTime = stockData.iloc[0, 0]        ## first date
         startDate = startDateTime.date()
 
         transBefore  = transactions.transactionsBefore( startDate )
         pendingTrans = transactions.transactionsAfter( startDate )
 
-        dataFrame = stockData[ ["t", "c"] ].copy()
-        rowsNum   = dataFrame.shape[0]
-        rowIndex  = 0
+        stockValuesFrame = stockData[ ["t", "c"] ].copy()
+        rowsNum          = stockValuesFrame.shape[0]
+        rowIndex         = 0
 
-        for item in reversed( pendingTrans ):                           # type: ignore
-            transTime = item[2]
-            amountBefore = transBefore.currentAmount()
-            totalProfit  = transBefore.transactionsProfit()
+        ## iterate over transactions
+        ## calculate values based on transactions and stock price changes
+        for nextTrans in reversed( pendingTrans ):                           # type: ignore
+            transTime = nextTrans[2]
+            transAmount = transBefore.currentAmount()
+            transProfit = 0
+            if calculateOverall:
+                transProfit = transBefore.transactionsOverallProfit( includeCommission )
+            else:
+                ## cost of stock buy
+                currTransAvg = transBefore.currentTransactionsAvg( transMode )
+                buyValue = currTransAvg[0] * currTransAvg[1]
+                transProfit -= buyValue
+
+            ## iterate over stock historic prices
             while rowIndex < rowsNum:
-                stockTime = dataFrame.at[ rowIndex, "t" ]
+                stockTime = stockValuesFrame.at[ rowIndex, "t" ]
                 if stockTime < transTime:
-                    if amountBefore > 0:
-                        profit = totalProfit - broker_commission( amountBefore, stockTime )
-                        dataFrame.at[ rowIndex, "c" ] = dataFrame.at[ rowIndex, "c" ] * amountBefore + profit
+                    ## stock time is before transaction time -- calculate values
+                    if transAmount > 0:
+                        profit = transProfit
+                        stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
+                        sellValue  = stockPrice * transAmount
+                        if includeCommission:
+                            profit -= broker_commission( sellValue, stockTime )
+                        stockValuesFrame.at[ rowIndex, "c" ] = sellValue + profit
                     else:
-                        dataFrame.at[ rowIndex, "c" ] = totalProfit
+                        stockValuesFrame.at[ rowIndex, "c" ] = transProfit
                     rowIndex += 1
                 else:
+                    ## stock time is after transaction time -- break
                     break
-            transBefore.appendItem( item )
+            transBefore.appendItem( nextTrans )
 
-        amountBefore = transBefore.currentAmount()
-        totalProfit  = transBefore.transactionsProfit()
+        ## last iteration
+        transAmount = transBefore.currentAmount()
+        transProfit = 0
+        if calculateOverall:
+            transProfit = transBefore.transactionsOverallProfit( includeCommission )
+        else:
+            ## cost of stock buy
+            currTransAvg = transBefore.currentTransactionsAvg( transMode )
+            buyValue = currTransAvg[0] * currTransAvg[1]
+            transProfit -= buyValue
+
         while rowIndex < rowsNum:
-            stockTime = dataFrame.at[ rowIndex, "t" ]
-            if amountBefore > 0:
-                profit = totalProfit - broker_commission( amountBefore, stockTime )
-                dataFrame.at[ rowIndex, "c" ] = dataFrame.at[ rowIndex, "c" ] * amountBefore + profit
+            stockTime = stockValuesFrame.at[ rowIndex, "t" ]
+            if transAmount > 0:
+                profit = transProfit
+                stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
+                sellValue  = stockPrice * transAmount
+                if includeCommission:
+                    profit -= broker_commission( sellValue, stockTime )
+                stockValuesFrame.at[ rowIndex, "c" ] = sellValue + profit
             else:
-                dataFrame.at[ rowIndex, "c" ] = totalProfit
+                stockValuesFrame.at[ rowIndex, "c" ] = transProfit
             rowIndex += 1
 
-        return dataFrame
+        return stockValuesFrame
 
     ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
-    def getWalletOverallProfitData(self, rangeCode):
+    def getWalletProfitHistory(self, rangeCode, calculateOverall: bool=True):
         mergedList = None
         for ticker in self.wallet.tickers():
-            stockData = self.getWalletStockProfitData( ticker, rangeCode )
+            stockData = self.getWalletStockProfitHistory( ticker, rangeCode, calculateOverall )
             if stockData is None:
                 continue
-            mergedList = join_list_dataframe( mergedList, stockData )
-
-        retData = DataFrame( mergedList, columns=["t", "c"] )
-        return retData
-
-    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
-    def getWalletGainData(self, rangeCode):
-        startDateTime = datetime.now()
-        if rangeCode == "1D":
-            startDateTime -= timedelta( days=1 )
-        elif rangeCode == "14D":
-            startDateTime -= timedelta( days=14 )
-        elif rangeCode == "1M":
-            startDateTime -= timedelta( days=31 )
-        elif rangeCode == "3M":
-            startDateTime -= timedelta( weeks=13 )
-        elif rangeCode == "6M":
-            startDateTime -= timedelta( weeks=26 )
-        elif rangeCode == "1R":
-            startDateTime -= timedelta( weeks=52 )
-        elif rangeCode == "2R":
-            startDateTime -= timedelta( weeks=104 )
-        elif rangeCode == "3R":
-            startDateTime -= timedelta( weeks=156 )
-        elif rangeCode == "MAX":
-            startDateTime = None
-        else:
-            _LOGGER.warning( "unknown range code: %s", rangeCode )
-            startDateTime = None
-
-        transMode = self.userContainer.transactionsMatchMode
-        mergedList = None
-        for _, transactions in self.wallet.stockList.items():
-            gainList = transactions.transactionsGainHistory( transMode, True, startDateTime )
-            stockData = DataFrame( gainList, columns=["t", "c"] )
             mergedList = join_list_dataframe( mergedList, stockData )
 
         retData = DataFrame( mergedList, columns=["t", "c"] )
@@ -891,3 +906,29 @@ def join_list_dataframe( mergedList, stockData: DataFrame ):
         m += 1
 
     return newList
+
+
+def get_start_date( rangeCode ):
+    startDateTime = datetime.now()
+    if rangeCode == "1D":
+        startDateTime -= timedelta( days=1 )
+    elif rangeCode == "14D":
+        startDateTime -= timedelta( days=14 )
+    elif rangeCode == "1M":
+        startDateTime -= timedelta( days=31 )
+    elif rangeCode == "3M":
+        startDateTime -= timedelta( weeks=13 )
+    elif rangeCode == "6M":
+        startDateTime -= timedelta( weeks=26 )
+    elif rangeCode == "1R":
+        startDateTime -= timedelta( weeks=52 )
+    elif rangeCode == "2R":
+        startDateTime -= timedelta( weeks=104 )
+    elif rangeCode == "3R":
+        startDateTime -= timedelta( weeks=156 )
+    elif rangeCode == "MAX":
+        startDateTime = None
+    else:
+        _LOGGER.warning( "unknown range code: %s", rangeCode )
+        startDateTime = None
+    return startDateTime

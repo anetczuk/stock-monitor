@@ -464,9 +464,9 @@ def convert_indexes_data( dataFrame: DataFrame ):
 # def append_stock_isin( dataFrame, dataFile ):
 #     with open(dataFile, 'r', encoding="utf-8") as file:
 #         fileContent = file.read()
-# 
+#
 #     isinList = []
-# 
+#
 #     for name in dataFrame["Nazwa"]:
 #         # pylint: disable=W1401
 #         pattern = r'<a\s*href="spolka\?isin=(\S*?)">' + name + r'.*?</a>'
@@ -480,7 +480,7 @@ def convert_indexes_data( dataFrame: DataFrame ):
 #             continue
 #         isin = groups[0]
 #         isinList.append( isin )
-# 
+#
 #     dataFrame["isin"] = isinList
 
 

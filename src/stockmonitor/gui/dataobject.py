@@ -317,9 +317,6 @@ class DataObject( QObject ):
     def getWalletStock(self):
         return self.dataContainer.getWalletStock()
 
-    def getWalletState(self, includeCommission=True):
-        return self.dataContainer.getWalletState( includeCommission )
-
     def getWalletBuyTransactions(self):
         return self.dataContainer.getWalletBuyTransactions()
 
@@ -332,14 +329,19 @@ class DataObject( QObject ):
     def getWalletStockValueData(self, ticker, rangeCode):
         return self.dataContainer.getWalletStockValueData( ticker, rangeCode )
 
-    def getWalletStockProfitData(self, ticker, rangeCode):
-        return self.dataContainer.getWalletStockProfitData( ticker, rangeCode )
+    ## wallet summary: wallet value, wallet profit, ref change, gain, overall profit
+    def getWalletState(self, includeCommission=True):
+        return self.dataContainer.getWalletState( includeCommission )
 
-    def getWalletOverallProfitData(self, rangeCode):
-        return self.dataContainer.getWalletOverallProfitData( rangeCode )
+    def getWalletGainHistory(self, rangeCode):
+        return self.dataContainer.getWalletGainHistory( rangeCode )
 
-    def getWalletGainData(self, rangeCode):
-        return self.dataContainer.getWalletGainData( rangeCode )
+    ## calculate profit of single stock
+    def getWalletStockOverallProfitHistory(self, ticker, rangeCode):
+        return self.dataContainer.getWalletStockProfitHistory( ticker, rangeCode )
+
+    def getWalletProfitHistory(self, rangeCode, calculateOverall: bool=True):
+        return self.dataContainer.getWalletProfitHistory( rangeCode, calculateOverall )
 
     ## ======================================================================
 

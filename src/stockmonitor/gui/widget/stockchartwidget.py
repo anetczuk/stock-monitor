@@ -48,6 +48,7 @@ UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
 
 
 class StockChartWidget(QtBaseClass):                    # type: ignore
+    ## double, price and volumen chart
 
 #     updateFinished = QtCore.pyqtSignal()
 
@@ -253,5 +254,4 @@ def create_window( dataObject, ticker, parent=None ):
     chartWindow.show()
 
     chart.updateData( access=True )
-
     return chartWindow

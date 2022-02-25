@@ -137,36 +137,18 @@ class TransHistory():
 
     ## =============================================================
 
-#     def calcAvg(self):
-#         ## Buy value raises then current unit price rises
-#         ## Sell value raises then current unit price decreases
-#         currAmount = 0
-#         currValue  = 0
-#
-#         for amount, unit_price, _ in self.transactions:
-#             currAmount += amount
-#             currValue  += amount * unit_price
-#
-#         if currAmount == 0:
-#             ## ignore no wallet stock transaction
-#             return (0, 0)
-#
-#         currUnitPrice = currValue / currAmount
-#         return ( currAmount, currUnitPrice )
+    def transactionsBefore(self, endDate) -> 'TransHistory':
+        transList = []
+        for item in self.transactions:
+            transTime = item[2]
+            transDate = transTime.date()
+            if transDate < endDate:
+                transList.append( item )
+        retTrans = TransHistory()
+        retTrans.appendList( transList )
+        return retTrans
 
-    ## calculate overall profit of made transactions
-    def transactionsProfit(self, considerCommission=True):
-        profitValue = 0
-        for amount, unit_price, transTime in self.transactions:
-            ## positive amount: buy  -- decrease transactions sum
-            ## negative amount: sell -- increase transactions sum
-            currValue = amount * unit_price
-            profitValue -= currValue
-            if considerCommission:
-                commission = broker_commission( currValue, transTime )
-                profitValue -= commission
-        return profitValue
-
+    ## most recent transaction in front (first index)
     def transactionsAfter(self, startDate) -> 'TransHistory':
         transList = []
         for item in self.transactions:
@@ -179,23 +161,12 @@ class TransHistory():
         retTrans.appendList( transList )
         return retTrans
 
-    def transactionsBefore(self, endDate) -> 'TransHistory':
-        transList = []
-        for item in self.transactions:
-            transTime = item[2]
-            transDate = transTime.date()
-            if transDate < endDate:
-                transList.append( item )
-        retTrans = TransHistory()
-        retTrans.appendList( transList )
-        return retTrans
-
     ## buy transactions in wallet
     def currentTransactions( self, mode: TransactionMatchMode ) -> BuyTransactionsMatch:
         retPair = self.matchTransactions( mode )
         return retPair[0]
 
-    ## average value of current amount of stock
+    ## average buy unit price of current amount of stock
     ## returns pair: (amount, unit_price)
     def currentTransactionsAvg(self, mode: TransactionMatchMode):
         ## Buy value raises then current unit price rises
@@ -247,6 +218,7 @@ class TransHistory():
 
             entryDate: datetime = sellDate
             if startDate is not None and entryDate < startDate:
+                ## accumulates older values in one entry 'entryDate'
                 entryDate = startDate
 
             if not ret:
@@ -260,12 +232,32 @@ class TransHistory():
 
         return ret
 
-    def matchTransactions( self, mode: TransactionMatchMode ) -> TransactionsMatch:
+    ## calculate overall profit (sum of differences between sell and buy values) of made transactions
+    ## buy transactions are interpreted as cost
+    def transactionsOverallProfit(self, considerCommission=True):
+        profitValue = 0
+        for amount, unit_price, transTime in self.transactions:
+            ## positive amount: buy  -- decrease transactions sum
+            ## negative amount: sell -- increase transactions sum
+            transValue = amount * unit_price
+            profitValue -= transValue
+            if considerCommission:
+                commission = broker_commission( transValue, transTime )
+                profitValue -= commission
+        return profitValue
+
+    ## =============================================================
+
+    def matchTransactions( self, mode: TransactionMatchMode, matchTime: datetime=None ) -> TransactionsMatch:
         ## Buy value raises then current unit price rises
         ## Sell value raises then current unit price decreases
         sellList = []
         currTransactions = TransHistory()
+        ## Transaction
         for item in reversed( self.transactions ):
+            transactionTimestamp = item[2]
+            if matchTime is not None and transactionTimestamp > matchTime:
+                break
             amount = item[0]
             if amount > 0:
                 ## buy transaction
@@ -323,104 +315,6 @@ class TransHistory():
         if amount > 0:
             _LOGGER.warning( "invalid case %s", amount )
         return retList
-
-#         if mode is TransactionMatchMode.OLDEST:
-#             return self.reduceOldest( amount )
-#         elif mode is TransactionMatchMode.BEST:
-#             return self.reduceCheapest( amount )
-#         elif mode is TransactionMatchMode.RECENT_PROFIT:
-#             return self.reduceRecentProfit( amount )
-#
-#         _LOGGER.warning("mode not handled: %s, best fit returned", mode)
-#         return self.reduceCheapest( amount )
-
-#     ## returns reduced buy transactions
-#     def reduceOldest(self, amount) -> BuyTransactionsMatch:
-#         retList: List[ Transaction ] = []
-#         while amount > 0:
-#             if len( self.transactions ) < 1:
-#                 ## if this happens then it means there is problem with importing transactions history
-#                 ## perhaps the importer didn't recognized or badly merged transactions
-#                 _LOGGER.error( "empty transactions" )
-#                 return retList
-#             bestIndex = -1
-#
-#             ## reduce amount
-#             bestItem = self.transactions[ bestIndex ]
-#             if bestItem[0] > amount:
-#                 self.addAmount(bestIndex, -amount)
-#                 unit_price = bestItem[1]
-#                 trans_time = bestItem[2]
-#                 retList.append( ( amount, unit_price, trans_time ) )
-#                 return retList
-#
-#             ## bestItem[0] <= amount
-#             amount -= bestItem[0]
-#             retList.append( self.transactions[ bestIndex ] )
-#             del self.transactions[ bestIndex ]
-#
-#         if amount > 0:
-#             _LOGGER.warning( "invalid case %s", amount )
-#         return retList
-#
-#     ## returns reduced buy transactions
-#     def reduceCheapest(self, amount) -> BuyTransactionsMatch:
-#         retList: List[ Transaction ] = []
-#         while amount > 0:
-#             bestIndex = self.findCheapest()
-#             if bestIndex < 0:
-#                 ## if this happens then it means there is problem with importing transactions history
-#                 ## perhaps the importer didn't recognized or badly merged transactions
-#                 _LOGGER.error( "invalid index %s %s", bestIndex, self.size() )
-#                 return retList
-#
-#             ## reduce amount
-#             bestItem = self.transactions[ bestIndex ]
-#             if bestItem[0] > amount:
-#                 self.addAmount(bestIndex, -amount)
-#                 unit_price = bestItem[1]
-#                 trans_time = bestItem[2]
-#                 retList.append( ( amount, unit_price, trans_time ) )
-#                 return retList
-#
-#             ## bestItem[0] <= amount
-#             amount -= bestItem[0]
-#             retList.append( self.transactions[ bestIndex ] )
-#             del self.transactions[ bestIndex ]
-#
-#         if amount > 0:
-#             _LOGGER.warning( "invalid case %s", amount )
-#         return retList
-#
-#     ## returns reduced buy transactions
-#     def reduceRecentProfit(self, amount) -> BuyTransactionsMatch:
-#         #TODO: implement
-#         return []
-# #         retList: List[ Transaction ] = []
-# #         while amount > 0:
-# #             bestIndex = self.findCheapest()
-# #             if bestIndex < 0:
-# #                 ## if this happens then it means there is problem with importing transactions history
-# #                 ## perhaps the importer didn't recognized or badly merged transactions
-# #                 _LOGGER.error( "invalid index %s %s", bestIndex, self.size() )
-# #                 return retList
-# #             ## reduce amount
-# #             bestItem = self.transactions[ bestIndex ]
-# #             if bestItem[0] > amount:
-# #                 self.addAmount(bestIndex, -amount)
-# #                 unit_price = bestItem[1]
-# #                 trans_time = bestItem[2]
-# #                 retList.append( ( amount, unit_price, trans_time ) )
-# #                 return retList
-# #
-# #             ## bestItem[0] <= amount
-# #             amount -= bestItem[0]
-# #             retList.append( self.transactions[ bestIndex ] )
-# #             del self.transactions[ bestIndex ]
-# #
-# #         if amount > 0:
-# #             _LOGGER.warning( "invalid case %s", amount )
-# #         return retList
 
     def findMatchingTransaction( self, sellTransaction: Transaction, mode: TransactionMatchMode ):
         if mode is TransactionMatchMode.OLDEST:
@@ -552,6 +446,7 @@ class WalletData( persist.Versionable ):
     def clear(self):
         self.stockList.clear()
 
+    ## return all tickers (even sold)
     def tickers(self):
         return self.stockList.keys()
 

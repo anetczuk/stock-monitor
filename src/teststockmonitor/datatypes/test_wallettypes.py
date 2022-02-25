@@ -53,7 +53,7 @@ class TransHistoryTest(unittest.TestCase):
         amount = data.amountBeforeDate( datetime.date( year=2020, month=5, day=3 ) )
         self.assertEqual( amount, 9 )
 
-    def test_transactionsProfit(self):
+    def test_transactionsOverallProfit(self):
         data = TransHistory()
         ## reverse order
         data.append( 10, 10.0, datetime.datetime( year=2020, month=5, day=5 ) )
@@ -61,7 +61,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append(  9, 30.0, datetime.datetime( year=2020, month=5, day=1 ) )
         data.sort()
 
-        data.transactionsProfit( False )
+        data.transactionsOverallProfit( False )
 
         amount = data.amountBeforeDate( datetime.date( year=2020, month=5, day=4 ) )
         self.assertEqual( amount, 1 )
