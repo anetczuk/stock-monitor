@@ -21,16 +21,16 @@
 # SOFTWARE.
 #
 
-import logging
-
-import pandas
-
-from .mplcanvas import matplotlib, MplCanvas
-
-
-_LOGGER = logging.getLogger(__name__)
-
-
+# import logging
+#
+# import pandas
+#
+# from .mplcanvas import matplotlib, MplCanvas
+#
+#
+# _LOGGER = logging.getLogger(__name__)
+#
+#
 # class TimelineChart( MplCanvas ):
 #
 #     def __init__(self, parentWidget=None):

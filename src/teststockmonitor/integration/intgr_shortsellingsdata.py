@@ -35,7 +35,7 @@ class CheckShortSelling( unittest.TestCase ):
 
         frame = dataAccess.dao.storage.worksheet
         self.assertIsNotNone( frame )
-        self.assertEqual( frame.shape, (6, 5), "loaded data:\n%s" % frame )
+        self.assertEqual( frame.shape, (6, 5), f"loaded data:\n{frame}" )
 
     def test_history( self ):
         dataAccess = HistoryShortSellingsData()
@@ -43,7 +43,7 @@ class CheckShortSelling( unittest.TestCase ):
 
         frame = dataAccess.dao.storage.worksheet
         self.assertIsNotNone( frame )
-        self.assertEqual( frame.shape, (30, 5), "loaded data:\n%s" % frame )
+        self.assertEqual( frame.shape, (30, 5), f"loaded data:\n{frame}" )
 
 
 ## ==============================================================

@@ -18,7 +18,8 @@ except ImportError:
     logging.exception("Exception while importing")
     sys.exit(1)
 
-from PyQt5 import QtCore, QtWidgets
+# from PyQt5 import QtCore
+from PyQt5 import QtWidgets
 
 
 _LOGGER = logging.getLogger(__name__)

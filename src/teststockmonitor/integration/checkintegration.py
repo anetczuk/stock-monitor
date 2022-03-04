@@ -124,8 +124,8 @@ if __name__ == '__main__':
         ## not empty
         suite = match_tests( args.run_test )
     else:
-        loader = get_loader()
-        suite = loader.discover( SCRIPT_DIR, pattern=FILE_PATTERN )
+        testLoader = get_loader()
+        suite = testLoader.discover( SCRIPT_DIR, pattern=FILE_PATTERN )
 
     testsRepeats = int(args.repeat)
 

@@ -157,8 +157,10 @@ def retrieve_url_pycurl( url, outputPath ):
     with CUrlConnectionRAII() as crl:
         # crl.setopt(pycurl.VERBOSE, 1)
 
-        crl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" )
-#         crl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
+        crl.setopt( pycurl.USERAGENT,
+                    "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" )
+#         crl.setopt( pycurl.USERAGENT,
+#                     "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
 #         crl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
         # Set URL value
         crl.setopt( pycurl.URL, url )

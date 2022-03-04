@@ -27,7 +27,7 @@ class CheckGpwCurrentData( unittest.TestCase ):
 
         frame = stockAccess.dao.storage.worksheet
         self.assertIsNotNone( frame )
-        self.assertEqual( frame.shape, (397, 26), "loaded data:\n%s" % frame )
+        self.assertEqual( frame.shape, (397, 26), f"loaded data:\n{frame}" )
 
     def test_indexesstock(self):
         indexAccess = GpwCurrentIndexesData()
@@ -35,7 +35,7 @@ class CheckGpwCurrentData( unittest.TestCase ):
 
         frame = indexAccess.dao.getDataFrame()
         self.assertIsNotNone( frame )
-        self.assertEqual( frame.shape, (27, 13), "loaded data:\n%s" % frame )
+        self.assertEqual( frame.shape, (27, 13), f"loaded data:\n{frame}" )
 
 
 ## ==============================================================
