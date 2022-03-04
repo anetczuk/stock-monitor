@@ -90,9 +90,9 @@ else:
     def data_path():
         return get_data_path( "test_stock_data.html" )
 
-    currentStock.getDataPath = data_path           # type: ignore
-    currentStock.storage = WorksheetStorageMock()
-    currentStock.parseWorksheetFromFile( data_path() )
+    currentStock.dao.getDataPath = data_path           # type: ignore
+    currentStock.dao.storage = WorksheetStorageMock()
+    currentStock.dao.parseWorksheetFromFile( data_path() )
 
     window.data.addFav("abc", ["ALR"])
     window.data.addFav("abc", ["CDR"])
