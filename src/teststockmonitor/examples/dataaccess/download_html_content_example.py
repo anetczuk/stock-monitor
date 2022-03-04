@@ -17,7 +17,7 @@ from stockmonitor.dataaccess import download_html_content
 
 
 if __name__ == '__main__':
-    
+
     ##
     ## get information about request
     ##

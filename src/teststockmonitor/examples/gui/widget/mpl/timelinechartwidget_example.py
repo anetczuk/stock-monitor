@@ -23,8 +23,8 @@
 # # SOFTWARE.
 # #
 # import datetime
-# 
-# 
+#
+#
 # try:
 #     ## following import success only when file is directly executed from command line
 #     ## otherwise will throw exception when executing as parameter for "python -m"
@@ -34,55 +34,55 @@
 #     ## when import fails then it means that the script was executed indirectly
 #     ## in this case __init__ is already loaded
 #     pass
-# 
+#
 # import sys
 # import logging
-# 
+#
 # from PyQt5.QtWidgets import QApplication
-# 
+#
 # from stockmonitor import logger
 # from stockmonitor.gui.sigint import setup_interrupt_handling
 # from stockmonitor.gui.widget.mpl.timelinechartwidget import TimelineChartWidget
-# 
-# 
+#
+#
 # ## ============================= main section ===================================
-# 
-# 
+#
+#
 # if __name__ != '__main__':
 #     sys.exit(0)
-# 
-# 
+#
+#
 # logFile = logger.get_logging_output_file()
 # logger.configure( logFile )
-# 
+#
 # _LOGGER = logging.getLogger(__name__)
-# 
-# 
+#
+#
 # app = QApplication(sys.argv)
 # app.setApplicationName("StockMonitor")
 # app.setOrganizationName("arnet")
-# 
+#
 # # dataObject = DataObject()
 # # dataObject.loadDownloadedStocks()
 # # dataObject.wallet.add( "EAT", 10, 15.2 )
 # # dataObject.wallet.add( "ALR", 280, 216.57 )
 # # dataObject.wallet.add( "XXX", 80,  3.33 )
 # # dataObject.wallet.add( "CDR", 300, 80.33 )
-# 
+#
 # # csvPath = data.get_data_root_path() + "/akcje_2020-04-14_15-50.csv"
 # # dataframe.to_csv( csvPath, encoding='utf-8', index=False )
-# 
+#
 # xdata = [ datetime.datetime.fromtimestamp( 100000 ), datetime.datetime.fromtimestamp( 200000 ),
 #           datetime.datetime.fromtimestamp( 300000 ), datetime.datetime.fromtimestamp( 400000 ),
 #           datetime.datetime.fromtimestamp( 500000 ) ]
 # ydata = [1, 10, 5, 4, 7]
-# 
+#
 # setup_interrupt_handling()
-# 
+#
 # widget = TimelineChartWidget()
 # widget.resize( 1024, 768 )
 # widget.setData( xdata, ydata )
 # # widget.connectData(dataObject)
 # widget.show()
-# 
+#
 # sys.exit( app.exec_() )
