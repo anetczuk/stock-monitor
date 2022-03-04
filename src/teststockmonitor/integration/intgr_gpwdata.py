@@ -15,18 +15,18 @@ except ImportError:
 
 import unittest
 
-from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
+from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
 
 
-class CheckDividendsCalendar( unittest.TestCase ):
+class CheckGpwData( unittest.TestCase ):
 
-    def test_load(self):
-        dataAccess = DividendsCalendarData()
-        dataAccess.loadWorksheet()
+    def test_indicators( self ):
+        stockAccess = GpwIndicatorsData()
+        stockAccess.loadWorksheet()
 
-        frame = dataAccess.dao.storage.worksheet
+        frame = stockAccess.dao.storage.worksheet
         self.assertIsNotNone( frame )
-        self.assertEqual( frame.shape, (38, 8), "loaded data:\n%s" % frame )
+        self.assertEqual( frame.shape, (427, 12), "loaded data:\n%s" % frame )
 
 
 ## ==============================================================

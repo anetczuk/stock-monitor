@@ -13,6 +13,8 @@ except ImportError:
     ## in this case __init__ is already loaded
     pass
 
+import unittest
+
 import logging
 
 from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
@@ -22,42 +24,30 @@ from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
 _LOGGER = logging.getLogger(__name__)
 
 
-logging.basicConfig( level=logging.DEBUG )
+# logging.basicConfig( level=logging.DEBUG )
 
 
-def check_current():
-    _LOGGER.info( "loading worksheet" )
+class CheckShortSelling( unittest.TestCase ):
 
-    dataAccess = CurrentShortSellingsData()
+    def test_current( self ):
+        dataAccess = CurrentShortSellingsData()
+        dataAccess.loadWorksheet()
 
-    dataAccess.loadWorksheet()
+        frame = dataAccess.dao.storage.worksheet
+        self.assertIsNotNone( frame )
+        self.assertEqual( frame.shape, (6, 5), "loaded data:\n%s" % frame )
 
-    frame = dataAccess.dao.storage.worksheet
-    if frame is None:
-        _LOGGER.warning( "" )
-        _LOGGER.warning( "unable to load data" )
-        _LOGGER.warning( "" )
-    else:
-        _LOGGER.info( "loaded data:\n%s", frame )
+    def test_history( self ):
+        dataAccess = HistoryShortSellingsData()
+        dataAccess.loadWorksheet()
 
-
-def check_history():
-    _LOGGER.info( "loading worksheet" )
-
-    dataAccess = HistoryShortSellingsData()
-
-    dataAccess.loadWorksheet()
-
-    frame = dataAccess.dao.storage.worksheet
-    if frame is None:
-        _LOGGER.warning( "" )
-        _LOGGER.warning( "unable to load data" )
-        _LOGGER.warning( "" )
-    else:
-        _LOGGER.info( "loaded data:\n%s", frame )
+        frame = dataAccess.dao.storage.worksheet
+        self.assertIsNotNone( frame )
+        self.assertEqual( frame.shape, (30, 5), "loaded data:\n%s" % frame )
 
 
-## =============
+## ==============================================================
 
-check_current()
-check_history()
+
+if __name__ == '__main__':
+    unittest.main()
