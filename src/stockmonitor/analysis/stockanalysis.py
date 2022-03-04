@@ -115,7 +115,7 @@ class StockAnalysis():
         self.sumValue = ret.stock
         self.sumDate  = [fromDay, toDay]
 
-    def loadCurr(self, dataType: ArchiveDataType, day: datetime.date=datetime.date.today(), offset=-1):
+    def loadCurr(self, dataType: ArchiveDataType, day: datetime.date = datetime.date.today(), offset=-1):
         _LOGGER.debug( "Loading current: %s %s %s", dataType, day, offset )
         currDay  = day + datetime.timedelta(days=offset)
         nowDate = datetime.datetime.now().date()
@@ -383,16 +383,16 @@ class StockAnalysis():
 
         self.logger.debug( "Found companies: %s", len(rowsList) )
 
-    def calcMonday(self, numOfWeeks=1, lastDay: datetime.date=datetime.date.today(), outFilePath=None):
+    def calcMonday(self, numOfWeeks=1, lastDay: datetime.date = datetime.date.today(), outFilePath=None):
         self.logger.info( "Calculating Monday stock" )
         return self._calcDayOfWeek( 0, numOfWeeks, lastDay, outFilePath, True )
 
-    def calcFriday(self, numOfWeeks=1, lastDay: datetime.date=datetime.date.today(), outFilePath=None):
+    def calcFriday(self, numOfWeeks=1, lastDay: datetime.date = datetime.date.today(), outFilePath=None):
         self.logger.info( "Calculating Friday stock" )
         return self._calcDayOfWeek( 4, numOfWeeks, lastDay, outFilePath, False )
 
     # pylint: disable=R0914
-    def calcWeekend(self, numOfWeeks=1, lastDay: datetime.date=datetime.date.today(), outFilePath=None):
+    def calcWeekend(self, numOfWeeks=1, lastDay: datetime.date = datetime.date.today(), outFilePath=None):
         file = outFilePath
         if file is None:
             file = tmp_dir + "out/weekend_change.csv"
@@ -666,12 +666,12 @@ class StockAnalysis():
 
     # ==========================================================================
 
-    def getRecentValidDay(self, fromDay: datetime.date=datetime.date.today(), checkGiven=False ):
+    def getRecentValidDay(self, fromDay: datetime.date = datetime.date.today(), checkGiven=False ):
         if checkGiven is False:
             fromDay -= datetime.timedelta(days=1)
         return self.data.getRecentValidDay( fromDay )
 
-    def getNextValidDay(self, fromDay: datetime.date=datetime.date.today() ):
+    def getNextValidDay(self, fromDay: datetime.date = datetime.date.today() ):
         return self.data.getNextValidDay( fromDay )
 
     def getMoneyPlLink(self, name):
@@ -686,7 +686,7 @@ class StockAnalysis():
 
     # ==========================================================================
 
-    def _calcDayOfWeek( self, numOfDay, numOfWeeks=1, lastDay: datetime.date=datetime.date.today(),
+    def _calcDayOfWeek( self, numOfDay, numOfWeeks=1, lastDay: datetime.date = datetime.date.today(),
                         outFilePath=None, validDirection=True ):
         # ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         dayName = calendar.day_name[ numOfDay ].lower()

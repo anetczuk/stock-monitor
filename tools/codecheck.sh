@@ -17,7 +17,6 @@ src_dir=$SCRIPT_DIR/../src
 ## E202 whitespace before ')'
 ## E221 multiple spaces before equal operator
 ## E241 multiple spaces after ':'
-## E252 missing whitespace around parameter equals
 ## E262 inline comment should start with '# '
 ## E265 block comment should start with '# '
 ## E266 too many leading '#' for block comment
@@ -25,7 +24,7 @@ src_dir=$SCRIPT_DIR/../src
 ## E501 line too long (80 > 79 characters)
 ## W391 blank line at end of file
 ## D    all docstyle checks
-ignore_errors=E115,E126,E201,E202,E221,E241,E252,E262,E265,E266,E402,E501,W391,D
+ignore_errors=E115,E126,E201,E202,E221,E241,E262,E265,E266,E402,E501,W391,D
 
 
 echo "running pycodestyle"

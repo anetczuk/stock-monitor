@@ -101,7 +101,7 @@ class TransHistory():
                 stockAmount += item[0]
         return stockAmount
 
-    def append(self, amount, unitPrice, transTime: datetime=None):
+    def append(self, amount, unitPrice, transTime: datetime = None):
         self.transactions.insert( 0, (amount, unitPrice, transTime) )
 
     def appendItem(self, item):
@@ -248,7 +248,7 @@ class TransHistory():
 
     ## =============================================================
 
-    def matchTransactions( self, mode: TransactionMatchMode, matchTime: datetime=None ) -> TransactionsMatch:
+    def matchTransactions( self, mode: TransactionMatchMode, matchTime: datetime = None ) -> TransactionsMatch:
         ## Buy value raises then current unit price rises
         ## Sell value raises then current unit price decreases
         sellList = []
@@ -465,7 +465,7 @@ class WalletData( persist.Versionable ):
                 ret.append( (key, val[0], val[1]) )
         return ret
 
-    def add( self, ticker, amount, unitPrice, transTime: datetime=datetime.today(), joinSimilar=True ):
+    def add( self, ticker, amount, unitPrice, transTime: datetime = datetime.today(), joinSimilar=True ):
         transactions: TransHistory = self.stockList.get( ticker, None )
         if transactions is None:
             transactions = TransHistory()

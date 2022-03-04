@@ -667,7 +667,7 @@ class DataContainer():
         return retData
 
     ## calculate profit of single stock
-    def getWalletStockProfitHistory(self, ticker, rangeCode, calculateOverall: bool=True) -> DataFrame:
+    def getWalletStockProfitHistory(self, ticker, rangeCode, calculateOverall: bool = True) -> DataFrame:
         includeCommission = True
 
         transactions: TransHistory = self.wallet.transactions( ticker )
@@ -753,7 +753,7 @@ class DataContainer():
         return stockValuesFrame
 
     ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
-    def getWalletProfitHistory(self, rangeCode, calculateOverall: bool=True):
+    def getWalletProfitHistory(self, rangeCode, calculateOverall: bool = True):
         mergedList = None
         for ticker in self.wallet.tickers():
             stockData = self.getWalletStockProfitHistory( ticker, rangeCode, calculateOverall )
@@ -807,7 +807,7 @@ class DataContainer():
     def _dataStockProvidersList(self) -> List[ StockDataProvider ]:
         retList = []
         retList.append( self.gpwCurrentSource )
-        
+
         ## do not refresh charts
 #         retList.append( self.gpwStockIntradayData )
 #         retList.append( self.gpwIndexIntradayData )

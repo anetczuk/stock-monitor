@@ -342,7 +342,7 @@ def create_walletgain_window( dataObject, parent=None ):
     return chartWindow
 
 
-def create_wallet_profit_window( dataObject, calculateOverall: bool=True, parent=None ):
+def create_wallet_profit_window( dataObject, calculateOverall: bool = True, parent=None ):
     chartWindow = ChartAppWindow( parent )
     chart = WalletProfitChartWidget( chartWindow )
     chart.calculateOverall = calculateOverall

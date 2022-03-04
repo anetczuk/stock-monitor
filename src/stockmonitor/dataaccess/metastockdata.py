@@ -50,7 +50,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
     class DAO( WorksheetData ):
         """Data access object."""
 
-        def __init__( self, dataDate: datetime.date=None ):
+        def __init__( self, dataDate: datetime.date = None ):
             super().__init__()
             if dataDate is None:
                 dataDate = datetime.datetime.now().date()
@@ -114,7 +114,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
 
     ## ==========================================================
 
-    def __init__(self, dataDate: datetime.date=None):
+    def __init__(self, dataDate: datetime.date = None):
         dao = MetaStockIntradayData.DAO( dataDate )
         super().__init__( dao )
 
