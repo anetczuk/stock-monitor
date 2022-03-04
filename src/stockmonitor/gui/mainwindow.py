@@ -280,6 +280,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.refreshAllPB.setEnabled( True )
         self.ui.refreshStockPB.setEnabled( True )
 
+        if self.canDisplayIndicator():
+            self._handleTrayIndicatorUpdate( False )
+
         _LOGGER.info( "stock views refreshed" )
         self.setStatusMessage( "Stock data refreshed" )
 
@@ -319,7 +322,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     ## ====================================================================
 
-    def setStatusMessage(self, firstStatus, changeStatus: list=None, timeout=6000):
+    def setStatusMessage(self, firstStatus, changeStatus: list = None, timeout=6000):
         if not changeStatus:
             changeStatus = [ firstStatus + " +", firstStatus + " =" ]
         statusBar = self.statusBar()
@@ -350,20 +353,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
             w.setWindowIconTheme( theme )
 
     def updateTrayIndicator(self, forceRefresh=True ):
-        currDateTime = datetime.datetime.now()
-        weekDay = currDateTime.weekday()                               # 0 for Monday
-        if weekDay in (5, 6):
-            ## regular Saturday or Sunday -- no stock
-            self.trayIcon.clearString()
-            return
-        currTime = currDateTime.time()
-        sessionStart = datetime.time(8, 55, 0)
-        sessionEnd   = datetime.time(17, 10, 0)
-        if currTime < sessionStart:
-            ## before start of session
-            self.trayIcon.clearString()
-            return
-        if currTime > sessionEnd:
+        if self.canDisplayIndicator() is False:
             ## after end of session
             self.trayIcon.clearString()
             return
@@ -382,6 +372,23 @@ class MainWindow( QtBaseClass ):           # type: ignore
         threads.appendFunction( self._handleTrayIndicatorUpdate, [forceRefresh] )
 
         threads.start()
+
+    def canDisplayIndicator(self):
+        currDateTime = datetime.datetime.now()
+        weekDay = currDateTime.weekday()                               # 0 for Monday
+        if weekDay in (5, 6):
+            ## regular Saturday or Sunday -- no stock
+            return False
+        currTime = currDateTime.time()
+        sessionStart = datetime.time(8, 55, 0)
+        sessionEnd   = datetime.time(17, 10, 0)
+        if currTime < sessionStart:
+            ## before start of session
+            return False
+        if currTime > sessionEnd:
+            ## after end of session
+            return False
+        return True
 
     def _handleTrayIndicatorUpdate(self, forceRefresh=True):
         _LOGGER.debug("updating tray indicator")
