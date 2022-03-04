@@ -28,7 +28,7 @@ from pandas.core.frame import DataFrame
 
 from bs4 import BeautifulSoup
 
-from stockmonitor.dataaccess import tmp_dir, init_session
+from stockmonitor.dataaccess import tmp_dir, requests_init_session
 from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockmonitor.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def grab_content( url, button ):
-    with init_session() as currSession:
+    with requests_init_session() as currSession:
         resp = currSession.get( url )
         resp.raise_for_status()
         content = resp.content

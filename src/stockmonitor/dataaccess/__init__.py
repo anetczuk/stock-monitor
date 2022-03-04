@@ -1,4 +1,9 @@
 ##
+## Browser headers:     https://httpbin.org/anything
+## Referrer:            https://www.similarweb.com/
+## Common user agents:  https://www.networkinghowtos.com/howto/common-user-agent-list/
+## User agent tools:    https://developers.whatismybrowser.com/useragents/
+## Whats my user agent: https://whatmyuseragent.com/
 ##
 ##
 
@@ -18,9 +23,9 @@ import pycurl
 # import wget
 
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
+SCRIPT_DIR = os.path.dirname( os.path.realpath(__file__) )
 
-tmp_dir = os.path.abspath( script_dir + "/../../../tmp/" ) + "/"
+tmp_dir = os.path.abspath( SCRIPT_DIR + "/../../../tmp/" ) + "/"
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -72,7 +77,7 @@ def set_raise( response, *args, **kwargs ):
     response.raise_for_status()
 
 
-def init_session():
+def requests_init_session():
     currSession = requests.Session()
 
     ## changed "user-agent" fixes blocking by server
@@ -86,20 +91,8 @@ def init_session():
     return currSession
 
 
-def access_url_list( session, url_list ):
-    content_data = None
-
-    for url in url_list:
-        _LOGGER.debug( "requesting url: %s", url )
-        result = session.get( url )
-        result.raise_for_status()
-        content_data = result.content
-
-    return content_data
-
-
-def retrieve_url_session( url, outputPath ):
-    with init_session() as currSession:
+def retrieve_url_requests( url, outputPath ):
+    with requests_init_session() as currSession:
         url_list = [ url ]
         content_data = access_url_list( currSession, url_list )
 
@@ -114,8 +107,22 @@ def retrieve_url_session( url, outputPath ):
     return content_data
 
 
+def access_url_list( session, url_list ):
+    content_data = None
+
+    for url in url_list:
+        _LOGGER.debug( "requesting url: %s", url )
+#         pprint.pprint( dict( session.headers ) )
+        result = session.get( url )
+        # print( "cccccccccxx:", dict(session.request.headers) )
+        result.raise_for_status()
+        content_data = result.content
+
+    return content_data
+
+
 def retrieve_url_list( url_list, outputPath ):
-    with init_session() as currSession:
+    with requests_init_session() as currSession:
         content_data = access_url_list( currSession, url_list )
 
     try:
@@ -148,21 +155,29 @@ def retrieve_url_pycurl( url, outputPath ):
     b_obj = BytesIO()
 
     with CUrlConnectionRAII() as crl:
-#         crl.setopt(pycurl.VERBOSE, 1)
+        # crl.setopt(pycurl.VERBOSE, 1)
 
-#         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:97.0) Gecko/20100101 Firefox/97.0" )
-        crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
-#         crl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
+        crl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" )
+#         crl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
+#         crl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
         # Set URL value
-        crl.setopt(pycurl.URL, url)
+        crl.setopt( pycurl.URL, url )
+        crl.setopt( pycurl.FOLLOWLOCATION, 1 )
 
-        headers = []
-        headers.append( "Connection: keep-alive" )
-#         headers.append( "Accept: "
-#                         "text/html,application/xhtml+xml,application/xml;"
-#                         "q=0.9,image/avif,image/webp,*/*;q=0.8" )
+        headers = {}
+#         headers[ "Connection" ] = "keep-alive"
+
+        headers.update( {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8", 
+            "Accept-Encoding": "gzip, deflate, br", 
+            "Accept-Language": "en-US,en;q=0.5", 
+        } )
+
         if len(headers) > 0:
-            crl.setopt(pycurl.HTTPHEADER, headers)
+            headersList = []
+            for key, value in headers.items():
+                headersList.append( f"{key}: {value}" )
+            crl.setopt( pycurl.HTTPHEADER, headersList )
 
         # Write bytes that are utf-8 encoded
         crl.setopt(pycurl.WRITEDATA, b_obj)
@@ -179,15 +194,19 @@ def retrieve_url_pycurl( url, outputPath ):
     # Get the content stored in the BytesIO object (in byte characters)
     get_body = b_obj.getvalue()
 
-    try:
-        with open(outputPath, 'wb') as of:
-            of.write( get_body )
-    except UnicodeDecodeError as ex:
-        _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
-        raise
+    if outputPath is not None:
+        try:
+            with open(outputPath, 'wb') as of:
+                of.write( get_body )
+        except UnicodeDecodeError as ex:
+            _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
+            raise
 
     return get_body
     #return get_body.decode('utf8')
+
+
+## =========================================================
 
 
 # def retrieve_url_wget( url, outputPath ):
@@ -210,13 +229,16 @@ def retrieve_url_syswget( url, outputPath ):
 
 
 retrieve_url = retrieve_url_pycurl
+# retrieve_url = retrieve_url_syswget
+# retrieve_url = retrieve_url_requests
+
 
 ## unable to easily get http response codes
 # retrieve_url = retrieve_url_syswget
 
 ### causes 104 error
 # retrieve_url = retrieve_url_wget
-# retrieve_url = retrieve_url_session
+# retrieve_url = retrieve_url_requests
 # retrieve_url = retrieve_url_urlopen
 
 
