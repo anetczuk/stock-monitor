@@ -63,7 +63,7 @@ def load_mb_transactions( filePath ):
             _LOGGER.error("unable to find data header")
             return ( None, -1 )
 
-        importedData = parse_mb_transactions_data( tmpfile )
+        importedData = parse_mb_transactions_file( tmpfile )
         ## print("importing:", importedData)
 
     if historyFound:
@@ -76,8 +76,9 @@ def load_mb_transactions( filePath ):
     return ( None, -1 )
 
 
-def parse_mb_transactions_data( sourceFile ):
+def parse_mb_transactions_file( sourceFile ):
     with fix_separator( sourceFile ) as tmpfile:
+#     with sourceFile as tmpfile:
 #         print( "file:\n" + tmpfile.read() )
 #         tmpfile.seek(0)
 
@@ -95,7 +96,7 @@ def parse_mb_transactions_data( sourceFile ):
 #         print( "header:", header, columns )
 
         dataFrame = pandas.read_csv( tmpfile, names=header,
-                                     sep=r'[;\t]', decimal='.', thousands=' ', engine='python', encoding='utf_8' )
+                                     sep=r'[;\t]', decimal=',', thousands=' ', engine='python', encoding='utf_8' )
 
 #     print( "raw data:\n" + str( dataFrame ) )
 
@@ -122,16 +123,20 @@ def fix_separator( sourceFile ):
     for line in sourceFile:
         colonsNum = line.count( "," )
         if colonsNum == 10:
+            ## old -- without commission fields
             ## example: 21.11.2020 11:22:33,ENTER,WWA-GPW,S,100,22,70,PLN,2 270,0,PLN
-            line = replace_nth( line, ",", ".", 9 )
-            line = replace_nth( line, ",", ".", 6 )
-            line = line.replace( ",", ";" )
+            line = replace_nth( line, ",", ".", 9 )     ## decimal separator
+            line = replace_nth( line, ",", ".", 6 )     ## decimal separator
+            line = line.replace( ",", ";" )             ## set proper field separator
+            line = line.replace( ".", "," )             ## restore old decimal separator
         elif colonsNum == 13:
+            ## new -- with commission fields
             ## example: 18.10.2021 10:54:59,ENTER,WWA-GPW,K,120,12,30,PLN,5,76,PLN,1 476,0,PLN
-            line = replace_nth( line, ",", ".", 12 )
-            line = replace_nth( line, ",", ".", 9 )
-            line = replace_nth( line, ",", ".", 6 )
-            line = line.replace( ",", ";" )
+            line = replace_nth( line, ",", ".", 12 )    ## decimal separator
+            line = replace_nth( line, ",", ".", 9 )     ## decimal separator
+            line = replace_nth( line, ",", ".", 6 )     ## decimal separator
+            line = line.replace( ",", ";" )             ## set proper field separator
+            line = line.replace( ".", "," )             ## restore old decimal separator
         tmpfile.write(line)
 
     tmpfile.seek(0)

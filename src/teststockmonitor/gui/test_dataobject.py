@@ -28,7 +28,7 @@ import codecs
 from pandas.core.frame import DataFrame
 
 from stockmonitor.datatypes.wallettypes import WalletData, TransHistory
-from stockmonitor.dataaccess.transactionsloader import parse_mb_transactions_data
+from stockmonitor.dataaccess.transactionsloader import parse_mb_transactions_file
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
@@ -199,7 +199,7 @@ class DataObjectTest(unittest.TestCase):
         transactionsPath = get_data_path( "transactions_bad_separator.csv" )
 
         with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
-            importedData = parse_mb_transactions_data( srcFile )
+            importedData = parse_mb_transactions_file( srcFile )
 
         dataObject = DataObject()
         dataObject.importWalletTransactions( importedData )

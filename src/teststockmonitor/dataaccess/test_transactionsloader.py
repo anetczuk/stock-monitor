@@ -27,7 +27,7 @@ import codecs
 # import pandas
 
 from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.transactionsloader import parse_mb_transactions_data
+from stockmonitor.dataaccess.transactionsloader import parse_mb_transactions_file
 
 
 ## =================================================================
@@ -43,26 +43,36 @@ class TransactionsLoaderTest(unittest.TestCase):
         ## Called after testfunction was executed
         pass
 
-    def test_parse_mb_transactions_data_valid(self):
+    def test_parse_mb_transactions_file_valid(self):
         transactionsPath = get_data_path( "transactions_valid.csv" )
         with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
-            dataFrame = parse_mb_transactions_data( srcFile )
+            dataFrame = parse_mb_transactions_file( srcFile )
 
         self.assertEqual( dataFrame["currency"][0], "PLN" )
         self.assertEqual( dataFrame["unit_price"][1], 3.288 )
 
-    def test_parse_mb_transactions_data_badseparator(self):
+    def test_parse_mb_transactions_file_badseparator(self):
         transactionsPath = get_data_path( "transactions_bad_separator.csv" )
         with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
-            dataFrame = parse_mb_transactions_data( srcFile )
+            dataFrame = parse_mb_transactions_file( srcFile )
 
         self.assertEqual( dataFrame["currency"][0], "PLN" )
         self.assertEqual( dataFrame["unit_price"][1], 18.95 )
 
-    def test_parse_mb_transactions_data_badseparator_02(self):
+    def test_parse_mb_transactions_file_badseparator_02(self):
         transactionsPath = get_data_path( "transactions_bad_separator2.csv" )
         with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
-            dataFrame = parse_mb_transactions_data( srcFile )
+            dataFrame = parse_mb_transactions_file( srcFile )
 
         self.assertEqual( dataFrame["currency"][0], "PLN" )
         self.assertEqual( dataFrame["unit_price"][1], 4.42 )
+
+    def test_parse_mb_transactions_file_commision_valid(self):
+        transactionsPath = get_data_path( "transactions_commision_valid.csv" )
+        with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
+            dataFrame = parse_mb_transactions_file( srcFile )
+
+        self.assertEqual( dataFrame["currency"][0], "PLN" )
+        self.assertEqual( dataFrame["commision_value"][0], 11.7 )
+        self.assertEqual( dataFrame["price"][0], 3001.20 )
+        self.assertEqual( dataFrame["unit_price"][1], 6.2 )
