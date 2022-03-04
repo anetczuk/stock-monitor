@@ -117,6 +117,7 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
         self.rejected.connect( parentTable.settingsRejected )
 
         self.ui.resizeColumnsPB.clicked.connect( parentTable.resizeColumnsToContents )
+        self.ui.resetPB.clicked.connect( self._resetToDefault )
 
 #         self.adjustSize()
 
@@ -193,6 +194,10 @@ class TableSettingsDialog(TableSettingsDialogBaseClass):           # type: ignor
         ##restore old settings
         self.parentTable.setHeadersText( self.oldHeaders )
         self.parentTable.setColumnsVisibility( self.oldColumns )
+
+    def _resetToDefault(self):
+        self.parentTable.setHeadersText( None )
+        self.parentTable.setColumnsVisibility( None )
 
 
 ## =========================================================
@@ -329,7 +334,10 @@ class DataFrameTableModel( QAbstractTableModel ):
         self.endResetModel()
 
     def setHeaders(self, headersDict, orientation=QtCore.Qt.Horizontal):
-        self.customHeader = copy.deepcopy( headersDict )
+        if headersDict is not None:
+            self.customHeader = copy.deepcopy( headersDict )
+        else:
+            self.customHeader = {}
         colsNum = self.columnCount()
         self.headerDataChanged.emit( orientation, 0, colsNum - 1 )
 
@@ -641,7 +649,10 @@ class DataFrameTable( QTableView ):
         self.columnsConfigurationChanged.emit()
 
     def setColumnsVisibility( self, settingsDict ):
-        self.columnsVisible = settingsDict
+        if settingsDict is not None:
+            self.columnsVisible = settingsDict
+        else:
+            self.columnsVisible = {}
         colsCount = self.pandaModel.columnCount()
         for col in range(0, colsCount):
             self.showColumn( col )
