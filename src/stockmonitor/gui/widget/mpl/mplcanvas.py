@@ -62,69 +62,69 @@ class MplCanvas(FigureCanvas):
         self.figure.tight_layout()
 
 
-class DynamicMplCanvas( MplCanvas ):
-    """A canvas that updates itself every second with a new plot."""
-
-    logger = None
-
-    def __init__(self, *args, **kwargs):
-        MplCanvas.__init__(self, *args, **kwargs)
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self._update)
-        self._setTimer(True)
-
-    def setEnabled(self, enabled):
-        super().setEnabled(enabled)
-        if enabled is True:
-            self._update()
-            self._setTimer(enabled)
-        else:
-            self._setTimer(enabled)
-            self.clearData()
-            self.drawFigure()
-
-    def clearData(self):
-        ## implement if needed
-        pass
-
-    def updateData(self):
-        ## implement if needed
-        return False
-
-    def drawFigure(self):
-        if self._hasData() is False:
-            ## no data - nothing to do
-            self.showFigure( False )
-            return
-        self.showFigure( True )
-
-#         self.figure.canvas.draw()
-#         self.figure.canvas.flush_events()
-
-        ##self.draw()                         ## QWidget draw
-        self.draw_idle()
-
-    def _update(self):
-        self.updateData()
-        self.drawFigure()
-
-    def _setTimer(self, enabled):
-        if enabled is True:
-            self.timer.start(1000)
-        else:
-            self.timer.stop()
-
-    def _hasData(self):
-        axes = self.figure.get_axes()
-        if len(axes) < 1:
-            return False
-        ax = axes[0]
-        lines = ax.get_lines()
-#         self.logger.info("data:\n%r", lines)
-        if len(lines) < 1:
-            return False
-        ll = lines[0]
-        xdata = ll.get_xdata()
-        if len(xdata) < 1:
-            return False
-        return True
+# class DynamicMplCanvas( MplCanvas ):
+#     """A canvas that updates itself every second with a new plot."""
+#
+#     logger = None
+#
+#     def __init__(self, *args, **kwargs):
+#         MplCanvas.__init__(self, *args, **kwargs)
+#         self.timer = QtCore.QTimer(self)
+#         self.timer.timeout.connect(self._update)
+#         self._setTimer(True)
+#
+#     def setEnabled(self, enabled):
+#         super().setEnabled(enabled)
+#         if enabled is True:
+#             self._update()
+#             self._setTimer(enabled)
+#         else:
+#             self._setTimer(enabled)
+#             self.clearData()
+#             self.drawFigure()
+#
+#     def clearData(self):
+#         ## implement if needed
+#         pass
+#
+#     def updateData(self):
+#         ## implement if needed
+#         return False
+#
+#     def drawFigure(self):
+#         if self._hasData() is False:
+#             ## no data - nothing to do
+#             self.showFigure( False )
+#             return
+#         self.showFigure( True )
+#
+# #         self.figure.canvas.draw()
+# #         self.figure.canvas.flush_events()
+#
+#         ##self.draw()                         ## QWidget draw
+#         self.draw_idle()
+#
+#     def _update(self):
+#         self.updateData()
+#         self.drawFigure()
+#
+#     def _setTimer(self, enabled):
+#         if enabled is True:
+#             self.timer.start(1000)
+#         else:
+#             self.timer.stop()
+#
+#     def _hasData(self):
+#         axes = self.figure.get_axes()
+#         if len(axes) < 1:
+#             return False
+#         ax = axes[0]
+#         lines = ax.get_lines()
+# #         self.logger.info("data:\n%r", lines)
+#         if len(lines) < 1:
+#             return False
+#         ll = lines[0]
+#         xdata = ll.get_xdata()
+#         if len(xdata) < 1:
+#             return False
+#         return True

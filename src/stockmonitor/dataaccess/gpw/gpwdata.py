@@ -54,14 +54,16 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
         ## override
         def downloadData(self, filePath):
             url = self.getDataUrl()
+            url_short = url.split("?", maxsplit=1)[0]
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url_short, relPath )
 
             try:
                 download_html_content( url, filePath )
             except BaseException as ex:
-                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                _LOGGER.exception( "unable to load object data from %s -- %s: %s",
+                                   url_short, fullname(ex), ex, exc_info=False )
                 raise
 
         @synchronized
