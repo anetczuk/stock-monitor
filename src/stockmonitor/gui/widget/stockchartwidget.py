@@ -188,18 +188,18 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
             if self.ui.showTransactionsLevelsCB.isChecked():
                 currTransactions = walletStock.currentTransactions( transMode )
                 for item in currTransactions:
-                    buy_unit_price = item[1]
+                    buy_unit_price = item.unitPrice
                     refY = [ buy_unit_price, buy_unit_price ]
                     self.ui.dataChart.addPriceLine( refX, refY, color='blue', style="--" )
 
             if self.ui.showTransactionsPointsCB.isChecked():
                 allTransactions = walletStock.allTransactions()
                 for item in allTransactions:
-                    trans_time     = item[2]
+                    trans_time     = item.transTime
                     if trans_time < timeData[0]:
                         continue
-                    amount         = item[0]
-                    buy_unit_price = item[1]
+                    amount         = item.amount
+                    buy_unit_price = item.unitPrice
                     if amount > 0:
                         self.ui.dataChart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="+" )
                     else:

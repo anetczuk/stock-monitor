@@ -209,11 +209,12 @@ class DataContainer():
         importWallet = WalletData()
 
         for _, row in dataFrame.iterrows():
-            transTime  = row['trans_time']
-            stockName  = row['name']
-            oper       = row['k_s']
-            amount     = row['amount']
-            unit_price = row['unit_price']
+            transTime   = row['trans_time']
+            stockName   = row['name']
+            oper        = row['k_s']
+            amount      = row['amount']
+            unit_price  = row['unit_price']
+            commission  = row.get('commission_value', 0.0)
 
 #             print("raw row:", transTime, stockName, oper, amount, unit_price)
 
@@ -230,9 +231,9 @@ class DataContainer():
                 continue
 
             if oper == "K":
-                importWallet.add( ticker,  amount, unit_price, dateObject, False )
+                importWallet.add( ticker,  amount, unit_price, dateObject, False, commission=commission )
             elif oper == "S":
-                importWallet.add( ticker, -amount, unit_price, dateObject, False )
+                importWallet.add( ticker, -amount, unit_price, dateObject, False, commission=commission )
 
         if addTransactions:
             ## merge wallets
@@ -381,7 +382,7 @@ class DataContainer():
 
     # pylint: disable=R0914
     def getWalletBuyTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna", "Wartość",
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna", "Opłata", "Wartość",
                         "Kurs aktualny",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
@@ -403,11 +404,12 @@ class DataContainer():
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 currTransactions = transactions.currentTransactions( transMode )
                 for item in currTransactions:
-                    trans_amount     = item[0]
-                    trans_unit_price = item[1]
-                    trans_date       = item[2]
+                    trans_amount     = item.amount
+                    trans_unit_price = item.unitPrice
+                    trans_commission = round( item.commission, 2 )
+                    trans_date       = item.transTime
                     trans_value      = round( trans_amount * trans_unit_price, 2 )
-                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, trans_value,
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, trans_commission, trans_value,
                                       "-",
                                       "-", "-", trans_date] )
                 continue
@@ -418,9 +420,10 @@ class DataContainer():
 
             currTransactions = transactions.currentTransactions( transMode )
             for item in currTransactions:
-                trans_amount     = item[0]
-                trans_unit_price = item[1]
-                trans_date       = item[2]
+                trans_amount     = item.amount
+                trans_unit_price = item.unitPrice
+                trans_commission = round( item.commission, 2 )
+                trans_date       = item.transTime
                 trans_value      = trans_amount * trans_unit_price
 
                 currValue = currUnitValue * trans_amount
@@ -433,8 +436,8 @@ class DataContainer():
                 profitPnt      = round( profitPnt, 2 )
                 profit         = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, round( trans_value, 2 ),
-                                   currUnitValue,
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, trans_commission,
+                                   round( trans_value, 2 ), currUnitValue,
                                    profitPnt, profit, trans_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
@@ -442,7 +445,7 @@ class DataContainer():
 
     def getWalletSellTransactions(self):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna",
-                        "Kurs sprzedaży", "Wartość",
+                        "Kurs sprzedaży", "Opłata", "Wartość",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
@@ -460,11 +463,12 @@ class DataContainer():
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 currTransactions = transactions.sellTransactions( transMode )
                 for buy, sell in currTransactions:
-                    trans_amount     = buy[0]
-                    trans_unit_price = buy[1]
-                    trans_date       = buy[2]
+                    trans_amount     = buy.amount
+                    trans_unit_price = buy.unitPrice
+                    trans_commission = round( buy.commission, 2 )
+                    trans_date       = buy.transTime
                     rowsList.append( ["-", ticker, trans_amount, trans_unit_price,
-                                      "-", "-",
+                                      "-", trans_commission, "-",
                                       "-", "-", trans_date] )
                 continue
 
@@ -472,13 +476,14 @@ class DataContainer():
             for buy, sell in currTransactions:
                 stockName = currentStockRow["Nazwa"]
 
-                trans_amount    = buy[0]
-                buy_unit_price  = buy[1]
-                sell_unit_price = sell[1]
-                sell_date       = sell[2]
+                trans_amount    = buy.amount
+                buy_unit_price  = buy.unitPrice
+                sell_unit_price = sell.unitPrice
+                sell_commission = round( sell.commission, 2 )
+                sell_date       = sell.transTime
 
                 sellValue = sell_unit_price * trans_amount
-                buyValue  = buy_unit_price * trans_amount
+                buyValue  = buy_unit_price  * trans_amount
                 profit    = sellValue - buyValue
                 profitPnt = 0
                 if buyValue != 0:
@@ -489,7 +494,7 @@ class DataContainer():
                 profit         = round( profit, 2 )
 
                 rowsList.append( [ stockName, ticker, -trans_amount, buy_unit_price,
-                                   sell_unit_price, round( sellValue, 2 ),
+                                   sell_unit_price, sell_commission, round( sellValue, 2 ),
                                    profitPnt, profit, sell_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
@@ -497,7 +502,7 @@ class DataContainer():
 
     # pylint: disable=R0914
     def getAllTransactions(self):
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", "Wartość",
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", "Opłata", "Wartość",
                         "Kurs aktualny",
                         "Zysk %", "Zysk", "Data transakcji" ]
 
@@ -513,12 +518,13 @@ class DataContainer():
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 currTransactions = transactions.allTransactions()
                 for item in currTransactions:
-                    trans_amount     = item[0]
-                    trans_unit_price = item[1]
-                    trans_date       = item[2]
+                    trans_amount     = item.amount
+                    trans_unit_price = item.unitPrice
+                    trans_commission = item.commission
+                    trans_date       = item.transTime
                     trans_value      = round( trans_amount * trans_unit_price, 2 )
 
-                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, trans_value,
+                    rowsList.append( ["-", ticker, trans_amount, trans_unit_price, trans_commission, trans_value,
                                       "-",
                                       "-", "-", trans_date] )
                 continue
@@ -530,9 +536,10 @@ class DataContainer():
 
             currTransactions = transactions.allTransactions()
             for item in currTransactions:
-                trans_amount     = item[0]
-                trans_unit_price = item[1]
-                trans_date       = item[2]
+                trans_amount     = item.amount
+                trans_unit_price = item.unitPrice
+                trans_commission = item.commission
+                trans_date       = item.transTime
 
                 if currAmount <= 0:
                     ## sell
@@ -554,8 +561,8 @@ class DataContainer():
                     profitPnt        = round( profitPnt, 2 )
                     profit           = round( profit, 2 )
 
-                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, round( buyValue, 2 ),
-                                   currUnitValue,
+                rowsList.append( [ stockName, ticker, trans_amount, trans_unit_price, trans_commission,
+                                   round( buyValue, 2 ), currUnitValue,
                                    profitPnt, profit, trans_date ] )
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
@@ -583,14 +590,14 @@ class DataContainer():
         currAmount = amountBefore
 
         for item in reversed( transList ):
-            transTime = item[2]
+            transTime = item.transTime
             while rowIndex < rowsNum:
                 if dataFrame.at[ rowIndex, "t" ] < transTime:
                     dataFrame.at[ rowIndex, "c" ] = dataFrame.at[ rowIndex, "c" ] * currAmount
                     rowIndex += 1
                 else:
                     break
-            currAmount += item[0]
+            currAmount += item.amount
 
         while rowIndex < rowsNum:
             dataFrame.at[ rowIndex, "c" ] = dataFrame.at[ rowIndex, "c" ] * currAmount
@@ -695,7 +702,7 @@ class DataContainer():
         ## iterate over transactions
         ## calculate values based on transactions and stock price changes
         for nextTrans in reversed( pendingTrans ):                           # type: ignore
-            transTime = nextTrans[2]
+            transTime = nextTrans.transTime
             transAmount = transBefore.currentAmount()
             transProfit = 0
             if calculateOverall:
@@ -712,6 +719,7 @@ class DataContainer():
                 if stockTime < transTime:
                     ## stock time is before transaction time -- calculate values
                     if transAmount > 0:
+                        ## calculate hypotetical profit if stock would be sold out
                         profit = transProfit
                         stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
                         sellValue  = stockPrice * transAmount
@@ -740,6 +748,7 @@ class DataContainer():
         while rowIndex < rowsNum:
             stockTime = stockValuesFrame.at[ rowIndex, "t" ]
             if transAmount > 0:
+                ## calculate hypotetical profit if stock would be sold out
                 profit = transProfit
                 stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
                 sellValue  = stockPrice * transAmount

@@ -187,13 +187,13 @@ class DataObjectTest(unittest.TestCase):
 
         trans: TransHistory = wallet["CCC"]
         self.assertEqual( len( trans ), 1 )
-        self.assertEqual( trans[0][0], -10 )
+        self.assertEqual( trans[0].amount, -10 )
 
         dataObject.importWalletTransactions( importedData, True )
 
         self.assertEqual( wallet.size(), 1 )
         self.assertEqual( len( trans ), 1 )
-        self.assertEqual( trans[0][0], -10 )
+        self.assertEqual( trans[0].amount, -10 )
 
     def test_importWalletTransactions_sametime(self):
         transactionsPath = get_data_path( "transactions_bad_separator.csv" )

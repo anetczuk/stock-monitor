@@ -46,7 +46,7 @@ class TransactionsColorDelegate( TableRowColorDelegate ):
     def foreground(self, index: QModelIndex ):
         dataColumn = index.column()
         ## "Zysk %"
-        if dataColumn == 6:
+        if dataColumn == 7:
             stockChangeString = index.data()
             if stockChangeString != "-":
                 stockChange = float(stockChangeString)

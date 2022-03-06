@@ -67,12 +67,12 @@ class TransactionsLoaderTest(unittest.TestCase):
         self.assertEqual( dataFrame["currency"][0], "PLN" )
         self.assertEqual( dataFrame["unit_price"][1], 4.42 )
 
-    def test_parse_mb_transactions_file_commision_valid(self):
+    def test_parse_mb_transactions_file_commission_valid(self):
         transactionsPath = get_data_path( "transactions_commision_valid.csv" )
         with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
             dataFrame = parse_mb_transactions_file( srcFile )
 
         self.assertEqual( dataFrame["currency"][0], "PLN" )
-        self.assertEqual( dataFrame["commision_value"][0], 11.7 )
+        self.assertEqual( dataFrame["commission_value"][0], 11.7 )
         self.assertEqual( dataFrame["price"][0], 3001.20 )
         self.assertEqual( dataFrame["unit_price"][1], 6.2 )

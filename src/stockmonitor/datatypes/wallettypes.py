@@ -24,6 +24,7 @@
 from enum import Enum, unique
 import logging
 from datetime import datetime, date, timedelta
+from copy import deepcopy
 
 from typing import Dict, List, Tuple
 
@@ -34,9 +35,62 @@ from stockmonitor import persist
 _LOGGER = logging.getLogger(__name__)
 
 
-## amount, unit_price, transaction time
+## amount, unit_price, commission, transaction time
 ## amount > 0 -- buy transaction, otherwise sell transaction
-Transaction = Tuple[int, float, datetime]
+#Transaction = Tuple[int, float, float, datetime]
+class Transaction:
+
+    def __init__(self, amount, unitPrice, commission, transTime: datetime):
+        self.amount     = amount
+        self.unitPrice  = unitPrice
+        self.commission = commission
+        self.transTime  = transTime
+
+#     def __getitem__(self, key):
+#         if key == 0:
+#             return self.amount
+#         if key == 1:
+#             return self.unitPrice
+#         raise IndexError( f"bad index: {key}" )
+
+    ## unpack operator
+    def __iter__(self):
+        return iter( (self.amount, self.unitPrice, self.commission, self.transTime) )
+
+    def getValue(self):
+        return self.amount * self.unitPrice
+
+    def getCommission(self):
+        if self.commission < 0.01:
+            cost = self.amount * self.unitPrice
+            return broker_commission( cost, self.transTime )
+        return self.commission
+
+    def add(self, amount, commission):
+        self.amount     += amount
+        self.commission += commission
+
+    def reduceAmount(self, amount):
+        self.commission *= 1.0 - float( amount ) / self.amount
+        self.amount -= amount
+
+    @staticmethod
+    def sortDate( tuple1, tuple2 ):
+        date1 = tuple1.transTime
+        if date1 is None:
+            return 1
+        date2 = tuple2.transTime
+        if date2 is None:
+            return -1
+        return date1 < date2
+
+    @staticmethod
+    def sortKey( tupleValue ):
+        retDate = tupleValue.transTime
+        if retDate is None:
+            return datetime.min
+        return retDate
+
 
 ## list of buy transactions
 BuyTransactionsMatch  = List[ Transaction ]
@@ -90,57 +144,53 @@ class TransHistory():
     def currentAmount(self):
         stockAmount = 0
         for item in self.transactions:
-            stockAmount += item[0]
+            stockAmount += item.amount
         return stockAmount
 
     def amountBeforeDate(self, transDate):
         stockAmount = 0
         for item in self.transactions:
-            itemDate = item[2].date()
+            itemDate = item.transTime.date()
             if itemDate < transDate:
-                stockAmount += item[0]
+                stockAmount += item.amount
         return stockAmount
 
-    def append(self, amount, unitPrice, transTime: datetime = None):
-        self.transactions.insert( 0, (amount, unitPrice, transTime) )
+    def append(self, amount, unitPrice, commission, transTime: datetime = None):
+        self.transactions.insert( 0, Transaction(amount, unitPrice, commission, transTime) )
 
     def appendItem(self, item):
-        self.transactions.insert( 0, (item[0], item[1], item[2]) )
+        self.transactions.insert( 0, Transaction( *item ) )
 
     def appendList(self, itemList):
         for item in itemList:
             self.appendItem( item )
         self.sort()
 
-    def add(self, amount, unitPrice, transTime=None, joinSimilar=True):
+    def add(self, amount, unitPrice, commission, transTime=None, joinSimilar=True):
         if joinSimilar is False:
 #                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
-            self.append( amount, unitPrice, transTime )
+            self.append( amount, unitPrice, commission, transTime )
             self.sort()
             return
-        sameIndex = self._findSame( unitPrice, transTime, amount )
+        sameIndex = self._findSame( unitPrice, transTime, amount, commission )
         if sameIndex > -1:
             return
         similarIndex = self._findSimilar( unitPrice, transTime )
         if similarIndex < 0:
 #                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
-            self.append( amount, unitPrice, transTime )
+            self.append( amount, unitPrice, commission, transTime )
             self.sort()
             return
-        _LOGGER.debug( "joining transaction: %s %s %s", amount, unitPrice, transTime )
-        self.addAmount( similarIndex, amount )
-
-    def addAmount(self, index, value):
-        item = self.transactions[ index ]
-        newAmount = item[0] + value
-        self.transactions[ index ] = ( newAmount, item[1], item[2] )
+        _LOGGER.debug( "joining transaction: %s %s %s %s", amount, unitPrice, commission, transTime )
+        item = self.transactions[ similarIndex ]
+        item.add( amount, commission )
 
     ## =============================================================
 
     def transactionsBefore(self, endDate) -> 'TransHistory':
         transList = []
         for item in self.transactions:
-            transTime = item[2]
+            transTime = item.transTime
             transDate = transTime.date()
             if transDate < endDate:
                 transList.append( item )
@@ -152,7 +202,7 @@ class TransHistory():
     def transactionsAfter(self, startDate) -> 'TransHistory':
         transList = []
         for item in self.transactions:
-            transTime = item[2]
+            transTime = item.transTime
             transDate = transTime.date()
             if transDate < startDate:
                 continue
@@ -179,8 +229,8 @@ class TransHistory():
         currAmount = 0
         currValue  = 0.0
         for transItem in transList:
-            amount     = transItem[0]
-            unit_price = transItem[1]
+            amount     = transItem.amount
+            unit_price = transItem.unitPrice
             currAmount += amount
             currValue  += amount * unit_price
 
@@ -204,16 +254,16 @@ class TransHistory():
         totalGain: float = 0.0
         sellTransactions: SellTransactionsMatch = self.sellTransactions( mode )
         for buyTrans, sellTrans in sellTransactions:
-            buyAmount, buyPrice, buyDate = buyTrans
-            sellAmount, sellPrice, sellDate = sellTrans
+            buyAmount,  buyPrice,  buyComm,  _        = buyTrans
+            sellAmount, sellPrice, sellComm, sellDate = sellTrans
             buyCost    = buyAmount * buyPrice
             sellProfit = sellAmount * sellPrice
             profitValue = -sellProfit - buyCost
             if considerCommission:
-                buyCommission = broker_commission( buyCost, buyDate )
-                profitValue -= buyCommission
-                sellCommission = broker_commission( sellProfit, sellDate )
-                profitValue -= sellCommission
+                buyComm  = buyTrans.getCommission()
+                sellComm = sellTrans.getCommission()
+                profitValue -= buyComm
+                profitValue -= sellComm
             totalGain += profitValue
 
             entryDate: datetime = sellDate
@@ -236,14 +286,12 @@ class TransHistory():
     ## buy transactions are interpreted as cost
     def transactionsOverallProfit(self, considerCommission=True):
         profitValue = 0
-        for amount, unit_price, transTime in self.transactions:
+        for transItem in self.transactions:
             ## positive amount: buy  -- decrease transactions sum
             ## negative amount: sell -- increase transactions sum
-            transValue = amount * unit_price
-            profitValue -= transValue
+            profitValue -= transItem.getValue()
             if considerCommission:
-                commission = broker_commission( transValue, transTime )
-                profitValue -= commission
+                profitValue -= transItem.getCommission()
         return profitValue
 
     ## =============================================================
@@ -255,10 +303,10 @@ class TransHistory():
         currTransactions = TransHistory()
         ## Transaction
         for item in reversed( self.transactions ):
-            transactionTimestamp = item[2]
+            transactionTimestamp = item.transTime
             if matchTime is not None and transactionTimestamp > matchTime:
                 break
-            amount = item[0]
+            amount = item.amount
             if amount > 0:
                 ## buy transaction
                 currTransactions.appendItem( item )
@@ -269,7 +317,10 @@ class TransHistory():
 #                 _LOGGER.info( "invalid reduction: %s %s", item, mode )
 #                 pprint( self.transactions )
             for buy in reducedBuy:
-                sell = ( -buy[0], item[1], item[2] )
+                sell = deepcopy( item )
+                amountDiff = sell.amount + buy.amount
+                sell.reduceAmount( amountDiff )
+#                 sell = Transaction( -buy.amount, item.unitPrice, item.commission, item.transTime )
                 pair = ( buy, sell )
                 sellList.append( pair )
         walletList = currTransactions.transactions
@@ -288,7 +339,7 @@ class TransHistory():
     ## returns reduced buy transactions
     def reduceTransactions(self, sellTransaction: Transaction, mode: TransactionMatchMode) -> BuyTransactionsMatch:
         retList: List[ Transaction ] = []
-        amount = -sellTransaction[0]
+        amount = -sellTransaction.amount
         while amount > 0:
             bestIndex = self.findMatchingTransaction( sellTransaction, mode )
             if bestIndex < 0:
@@ -299,16 +350,18 @@ class TransHistory():
                 return retList
 
             ## reduce amount
-            bestItem = self.transactions[ bestIndex ]
-            if bestItem[0] > amount:
-                self.addAmount(bestIndex, -amount)
-                unit_price = bestItem[1]
-                trans_time = bestItem[2]
-                retList.append( ( amount, unit_price, trans_time ) )
+            bestItem: Transaction = self.transactions[ bestIndex ]
+            bestAmount = bestItem.amount
+            amountDiff = bestAmount - amount
+            if amountDiff > 0:
+                bestCopied = deepcopy( bestItem )
+                bestCopied.reduceAmount( amountDiff )
+                retList.append( bestCopied )
+                bestItem.reduceAmount( amount )
                 return retList
 
-            ## bestItem[0] <= amount
-            amount -= bestItem[0]
+            ## bestAmount <= amount
+            amount -= bestAmount
             retList.append( self.transactions[ bestIndex ] )
             del self.transactions[ bestIndex ]
 
@@ -332,9 +385,9 @@ class TransHistory():
         if cSize < 1:
             return -1
         bestIndex = 0
-        bestPrice = self.transactions[0][1]
+        bestPrice = self.transactions[0].unitPrice
         for i in range(1, cSize):
-            currPrice = self.transactions[i][1]
+            currPrice = self.transactions[i].unitPrice
             if currPrice < bestPrice:
                 bestPrice = currPrice
                 bestIndex = i
@@ -344,25 +397,27 @@ class TransHistory():
         cSize = self.size()
         if cSize < 1:
             return -1
-        sellPrice = sellTransaction[1]
+        sellPrice = sellTransaction.unitPrice
         for i in range(0, cSize):
             item = self.transactions[i]
-            if item[0] < 1:
+            if item.amount < 1:
                 ## sell transaction -- ignore
                 continue
-            if item[1] < sellPrice:
+            if item.unitPrice < sellPrice:
                 ## recent profit found -- return
                 return i
         ## no cheaper found -- find best
         return self.findCheapest()
 
-    def _findSame(self, unit_price, trans_date, amount):
+    def _findSame(self, unit_price, trans_date, amount, commission):
 #         for i in range( len( self.transactions ) ):
         for i, item in enumerate( self.transactions ):
-            itemAmount, itemPrice, itemTime = item
+            itemAmount, itemPrice, itemCommission, itemTime = item
             if itemAmount != amount:
                 continue
             if itemPrice != unit_price:
+                continue
+            if itemCommission != commission:
                 continue
             if itemTime != trans_date:
                 continue
@@ -373,33 +428,16 @@ class TransHistory():
 #         for i in range( len( self.transactions ) ):
 #             item = self.transactions[i]
         for i, item in enumerate( self.transactions ):
-            if item[1] != unit_price:
+            if item.unitPrice != unit_price:
                 continue
-            diff = item[2] - trans_date
+            diff = item.transTime - trans_date
             # print("diff:", item[2], trans_date, diff)
             if -timedelta( minutes=5 ) < diff < timedelta( minutes=5 ):
                 return i
         return -1
 
     def sort(self):
-        self.transactions.sort( key=self._sortKey, reverse=True )
-
-    @staticmethod
-    def _sortDate( tuple1, tuple2 ):
-        date1 = tuple1[2]
-        if date1 is None:
-            return 1
-        date2 = tuple2[2]
-        if date2 is None:
-            return -1
-        return date1 < date2
-
-    @staticmethod
-    def _sortKey( tupleValue ):
-        retDate = tupleValue[2]
-        if retDate is None:
-            return datetime.min
-        return retDate
+        self.transactions.sort( key=Transaction.sortKey, reverse=True )
 
 
 ## =======================================================
@@ -410,7 +448,8 @@ class WalletData( persist.Versionable ):
     ## 0 - first version
     ## 1 - dict instead of list
     ## 2 - sort transactions
-    _class_version = 2
+    ## 3 - add 'commission' field to transaction
+    _class_version = 3
 
     def __init__(self):
         ## ticker, TransHistory
@@ -430,9 +469,21 @@ class WalletData( persist.Versionable ):
 
         if dictVersion_ == 1:
             histDict = dict_["stockList"]
-            for _, item in histDict.items():
-                item.sort()
+            for _, transHist in histDict.items():
+                transHist.sort()
             dictVersion_ = 2
+
+        if dictVersion_ == 2:
+            ## add commission field
+            histDict = dict_["stockList"]
+            for _, transHist in histDict.items():
+                transSize = len(transHist.transactions)
+                convertedList = []
+                for i in range( 0, transSize ):
+                    trans = transHist.transactions[i]
+                    convertedList.append( Transaction( trans[0], trans[1], 0.0, trans[2] ) )
+                transHist.transactions = convertedList
+            dictVersion_ = 3
 
         # pylint: disable=W0201
         self.__dict__ = dict_
@@ -465,16 +516,18 @@ class WalletData( persist.Versionable ):
                 ret.append( (key, val[0], val[1]) )
         return ret
 
-    def add( self, ticker, amount, unitPrice, transTime: datetime = datetime.today(), joinSimilar=True ):
+    def add( self, ticker, amount, unitPrice, transTime: datetime = datetime.today(),
+             joinSimilar=True, commission=0.0 ):
         transactions: TransHistory = self.stockList.get( ticker, None )
         if transactions is None:
             transactions = TransHistory()
             self.stockList[ ticker ] = transactions
-        _LOGGER.debug( "adding transaction: %s %s %s %s", ticker, amount, unitPrice, transTime )
-        transactions.add( amount, unitPrice, transTime, joinSimilar )
+        _LOGGER.debug( "adding transaction: %s %s %s %s %s", ticker, amount, unitPrice, commission, transTime )
+        transactions.add( amount, unitPrice, commission, transTime, joinSimilar )
 
     def addTransaction( self, ticker, transaction: Transaction, joinSimilar=True ):
-        self.add( ticker, transaction[0], transaction[1], transaction[2], joinSimilar )
+        self.add( ticker, transaction.amount, transaction.unitPrice,
+                  transaction.transTime, joinSimilar, commission=transaction.commission )
 
     def addWallet(self, wallet: 'WalletData', joinSimilar=True):
         for ticker, hist in wallet.stockList.items():

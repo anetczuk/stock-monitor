@@ -91,7 +91,7 @@ def parse_mb_transactions_file( sourceFile ):
                        "unit_price", "unit_currency", "price", "currency" ]
         elif columns == 10:
             header = [ "trans_time", "name", "stock_id", "k_s", "amount",
-                       "unit_price", "unit_currency", "commision_value", "commision_currency", "price", "currency" ]
+                       "unit_price", "unit_currency", "commission_value", "commission_currency", "price", "currency" ]
 
 #         print( "header:", header, columns )
 
