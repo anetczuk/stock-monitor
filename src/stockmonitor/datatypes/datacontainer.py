@@ -40,7 +40,8 @@ from stockmonitor.datatypes.datatypes import UserContainer,\
     FavData, WalletData, MarkersContainer, MarkerEntry
 from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
     GpwIndexIntradayMap, StockDataProvider, StockDataWrapper
-from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory
+from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory,\
+    Transaction
 from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
 from stockmonitor.dataaccess.datatype import StockDataType
 
@@ -381,7 +382,7 @@ class DataContainer():
         return dataFrame
 
     # pylint: disable=R0914
-    def getWalletBuyTransactions(self):
+    def getWalletBuyTransactions(self, groupByDay=False):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna", "Opłata", "Wartość",
                         "Kurs aktualny",
                         "Zysk %", "Zysk", "Data transakcji" ]
@@ -419,6 +420,9 @@ class DataContainer():
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
             currTransactions = transactions.currentTransactions( transMode )
+            if groupByDay:
+                currTransactions = TransHistory.groupTransactionsByDay( currTransactions )
+
             for item in currTransactions:
                 trans_amount     = item.amount
                 trans_unit_price = item.unitPrice
@@ -443,7 +447,7 @@ class DataContainer():
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
 
-    def getWalletSellTransactions(self):
+    def getWalletSellTransactions(self, groupByDay=False):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna",
                         "Kurs sprzedaży", "Opłata", "Wartość",
                         "Zysk %", "Zysk", "Data transakcji" ]
@@ -456,6 +460,9 @@ class DataContainer():
         ticker: str
         transactions: TransHistory
         for ticker, transactions in self.wallet.stockList.items():
+            if groupByDay:
+                transactions = transactions.groupByDay()
+
 #             if ticker == "PCX":
 #                 print( "xxxxx:\n", transactions.items() )
             currentStockRow = currentStock.getRowByTicker( ticker )
@@ -473,6 +480,29 @@ class DataContainer():
                 continue
 
             currTransactions = transactions.sellTransactions( transMode )
+            if groupByDay:
+                newList = []
+                currDate  = None
+                buyTrans  = Transaction.empty()
+                sellTrans = Transaction.empty()
+                for buy, sell in currTransactions:
+                    transTime = sell.transTime
+                    transDate = transTime.date()
+            
+                    if transDate != currDate:
+                        if sellTrans.isEmpty() is False:
+                            newList.append( (buyTrans, sellTrans) )
+                        buyTrans  = Transaction.empty()
+                        sellTrans = Transaction.empty()
+
+                    currDate = transDate
+                    buyTrans.addAvg( buy )
+                    sellTrans.addAvg( sell )
+
+                if sellTrans.isEmpty() is False:
+                    newList.append( (buyTrans, sellTrans) )
+                currTransactions = newList
+
             for buy, sell in currTransactions:
                 stockName = currentStockRow["Nazwa"]
 
@@ -501,7 +531,7 @@ class DataContainer():
         return dataFrame
 
     # pylint: disable=R0914
-    def getAllTransactions(self):
+    def getAllTransactions(self, groupByDay=False):
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs transakcji", "Opłata", "Wartość",
                         "Kurs aktualny",
                         "Zysk %", "Zysk", "Data transakcji" ]
@@ -513,6 +543,9 @@ class DataContainer():
         rowsList = []
 
         for ticker, transactions in self.wallet.stockList.items():
+            if groupByDay:
+                transactions = transactions.groupByDay()
+
             currentStockRow = currentStock.getRowByTicker( ticker )
             if currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
@@ -535,6 +568,9 @@ class DataContainer():
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
             currTransactions = transactions.allTransactions()
+            if groupByDay:
+                currTransactions = TransHistory.groupTransactionsByDay( currTransactions )
+
             for item in currTransactions:
                 trans_amount     = item.amount
                 trans_unit_price = item.unitPrice

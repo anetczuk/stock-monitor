@@ -75,6 +75,10 @@ def heavy_comp( limit ):
     return fact
 
 
+def group_by_day( tansactionsList ):
+    return tansactionsList
+
+
 ## ============================================================================
 
 
@@ -317,14 +321,14 @@ class DataObject( QObject ):
     def getWalletStock(self):
         return self.dataContainer.getWalletStock()
 
-    def getWalletBuyTransactions(self):
-        return self.dataContainer.getWalletBuyTransactions()
+    def getWalletBuyTransactions(self, groupByDay=False ):
+        return self.dataContainer.getWalletBuyTransactions( groupByDay )
 
-    def getWalletSellTransactions(self):
-        return self.dataContainer.getWalletSellTransactions()
+    def getWalletSellTransactions(self, groupByDay=False):
+        return self.dataContainer.getWalletSellTransactions( groupByDay )
 
-    def getAllTransactions(self):
-        return self.dataContainer.getAllTransactions()
+    def getAllTransactions(self, groupByDay=False):
+        return self.dataContainer.getAllTransactions( groupByDay )
 
     def getWalletStockValueData(self, ticker, rangeCode):
         return self.dataContainer.getWalletStockValueData( ticker, rangeCode )

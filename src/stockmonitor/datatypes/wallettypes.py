@@ -57,6 +57,9 @@ class Transaction:
     def __iter__(self):
         return iter( (self.amount, self.unitPrice, self.commission, self.transTime) )
 
+    def isEmpty(self):
+        return self.transTime is None
+
     def getValue( self, includeCommission=False ):
         transValue = self.amount * self.unitPrice
         if includeCommission:
@@ -74,12 +77,26 @@ class Transaction:
         self.amount     += amount
         self.commission += commission
 
+    def addAvg( self, item: "Transaction" ):
+        currVal = self.getValue( False )
+        addVal  = item.getValue( False )
+        sumVal  = currVal + addVal
+
+        self.amount     += item.amount
+        self.unitPrice   = sumVal / self.amount
+        self.commission += item.commission
+        self.transTime   = item.transTime
+
     def reduceAmount(self, amount):
         self.commission *= 1.0 - float( amount ) / self.amount
         self.amount -= amount
         
     def __repr__(self):
         return f"({self.amount}, {self.unitPrice}, {self.commission}, {self.transTime})"
+
+    @staticmethod
+    def empty():
+        return Transaction( 0, 0.0, 0.0, None )
 
     @staticmethod
     def sortDate( tuple1, tuple2 ):
@@ -218,6 +235,51 @@ class TransHistory():
         retTrans.appendList( transList )
         return retTrans
 
+    def groupByDay(self):
+        transList = self.groupTransactionsByDay( self.transactions )
+        retTrans = TransHistory()
+        retTrans.appendList( transList )
+        return retTrans
+
+    @staticmethod
+    def groupTransactionsByDay( transactions ):
+        if len( transactions ) < 1:
+            return transactions
+
+        currDate  = None
+        buyTrans  = Transaction.empty()
+        sellTrans = Transaction.empty()
+        
+        transList = []
+        #for item in self.transactions:
+        for item in reversed( transactions ):
+            transTime = item.transTime
+            transDate = transTime.date()
+
+            if transDate != currDate:
+                ## next day -- store transactions
+                if buyTrans.amount > 0:                
+                    transList.append( buyTrans )
+                buyTrans = Transaction.empty()
+                if sellTrans.amount < 0:                
+                    transList.append( sellTrans )
+                sellTrans = Transaction.empty()
+
+            currDate = transDate
+            if item.amount > 0:
+                buyTrans.addAvg( item )
+            else:
+                sellTrans.addAvg( item )
+
+        ## add day transactions            
+        if buyTrans.amount > 0:                
+            transList.append( buyTrans )
+        if sellTrans.amount < 0:                
+            transList.append( sellTrans )
+
+        transList = reversed( transList )
+        return transList
+
     ## buy transactions in wallet
     def currentTransactions( self, mode: TransactionMatchMode ) -> BuyTransactionsMatch:
         retPair = self.matchTransactions( mode )
@@ -318,7 +380,6 @@ class TransHistory():
                 sell = deepcopy( item )
                 amountDiff = sell.amount + buy.amount
                 sell.reduceAmount( amountDiff )
-#                 sell = Transaction( -buy.amount, item.unitPrice, item.commission, item.transTime )
                 pair = ( buy, sell )
                 sellList.append( pair )
         walletList = currTransactions.transactions

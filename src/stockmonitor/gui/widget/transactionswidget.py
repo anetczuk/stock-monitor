@@ -95,6 +95,7 @@ class TransactionsWidget( QtBaseClass ):           # type: ignore
         self.dataObject = None
 
         self.ui.transactionsScopeCB.currentIndexChanged.connect( self.updateView )
+        self.ui.groupByDayCB.stateChanged.connect( self.updateView )
 
     def connectData(self, dataObject):
         self.dataObject = dataObject
@@ -109,14 +110,15 @@ class TransactionsWidget( QtBaseClass ):           # type: ignore
             self.ui.walletTable.clear()
             return
         _LOGGER.info("updating view")
+        groupByDay = self.ui.groupByDayCB.isChecked()
         transactions = None
         currIndex = self.ui.transactionsScopeCB.currentIndex()
         if currIndex == 0:
-            transactions = self.dataObject.getWalletBuyTransactions()
+            transactions = self.dataObject.getWalletBuyTransactions( groupByDay )
         elif currIndex == 1:
-            transactions = self.dataObject.getWalletSellTransactions()
+            transactions = self.dataObject.getWalletSellTransactions( groupByDay )
         elif currIndex == 2:
-            transactions = self.dataObject.getAllTransactions()
+            transactions = self.dataObject.getAllTransactions( groupByDay )
         if transactions is None:
             self.ui.transactionsTable.clear()
             return

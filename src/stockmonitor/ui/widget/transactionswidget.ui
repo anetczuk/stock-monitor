@@ -67,6 +67,16 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QCheckBox" name="groupByDayCB">
+       <property name="text">
+        <string>Group by day</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
