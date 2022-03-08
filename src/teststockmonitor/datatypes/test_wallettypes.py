@@ -61,7 +61,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=1 ) )
         data.sort()
 
-        data.transactionsOverallProfit( False )
+        data.transactionsOverallProfit()
 
         amount = data.amountBeforeDate( datetime.date( year=2020, month=5, day=4 ) )
         self.assertEqual( amount, 1 )
@@ -254,10 +254,10 @@ class TransHistoryTest(unittest.TestCase):
 
         ## reverse order
         transList = \
-            [ ( -40, 5.0, 0.1, datetime.datetime(2020, 10, 5, 15, 41, 33)),
-              (  30, 3.0, 0.1, datetime.datetime(2020, 9, 25, 13, 11, 31)),
-              (  20, 4.0, 0.1, datetime.datetime(2020, 8, 31,  9, 11, 26)),
-              (  20, 2.0, 0.1, datetime.datetime(2020, 8, 25, 13, 11, 31)) ]
+            [ ( -40, 5.0, 0.4, datetime.datetime(2020, 10, 5, 15, 41, 33)),
+              (  30, 3.0, 0.3, datetime.datetime(2020, 9, 25, 13, 11, 31)),
+              (  20, 4.0, 0.2, datetime.datetime(2020, 8, 31,  9, 11, 26)),
+              (  20, 2.0, 0.2, datetime.datetime(2020, 8, 25, 13, 11, 31)) ]
 
         data.appendList( transList )
 
@@ -265,6 +265,9 @@ class TransHistoryTest(unittest.TestCase):
 
         gainValue = data.transactionsGain( matchMode, False )
         self.assertEqual( gainValue, 100.0 )                     ## 20*3 + 20*2
+
+        gainValue = data.transactionsGain( matchMode, True )
+        self.assertEqual( gainValue, 99.19999999999999 )
 
 
 class WalletDataTest(unittest.TestCase):
@@ -296,10 +299,10 @@ class WalletDataTest(unittest.TestCase):
 
         self.assertEqual( dataobject.size(), 0 )
 
-        dataobject.add( "xxx", 1, 20.0 )
+        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        dataobject.add( "xxx", 1, 10.0 )
+        dataobject.add( "xxx", 1, 10.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
         self.assertEqual( dataobject.transactions("xxx").size(), 2 )
@@ -308,7 +311,7 @@ class WalletDataTest(unittest.TestCase):
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 2 )
-        self.assertEqual( unit_price, 15.0 )
+        self.assertEqual( unit_price, 16.0 )
 
     def test_add_buy_similar(self):
         dataobject = WalletData()
@@ -316,8 +319,8 @@ class WalletDataTest(unittest.TestCase):
 
         self.assertEqual( dataobject.size(), 0 )
 
-        dataobject.add( "xxx", 1, 20.0 )
-        dataobject.add( "xxx", 3, 20.0 )
+        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
+        dataobject.add( "xxx", 3, 20.0, commission=3.0 )
 
         self.assertEqual( dataobject.transactions("xxx").size(), 1 )
 
@@ -325,77 +328,77 @@ class WalletDataTest(unittest.TestCase):
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 4 )
-        self.assertEqual( unit_price, 20.0 )
+        self.assertEqual( unit_price, 21.0 )
 
     def test_add_sell_1(self):
         dataobject = WalletData()
         matchMode = TransactionMatchMode.BEST
 
-        dataobject.add( "xxx", 1, 20.0 )
+        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        dataobject.add( "xxx", 1, 10.0 )
+        dataobject.add( "xxx", 1, 10.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        dataobject.add( "xxx", -1, 10.0 )
+        dataobject.add( "xxx", -1, 10.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
         items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 20.0 )
+        self.assertEqual( unit_price, 21.0 )
 
     def test_add_sell_2(self):
         dataobject = WalletData()
         matchMode = TransactionMatchMode.BEST
 
-        dataobject.add( "xxx", 1, 10.0 )
+        dataobject.add( "xxx", 1, 10.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        dataobject.add( "xxx", 1, 20.0 )
+        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        dataobject.add( "xxx", -1, 20.0 )
+        dataobject.add( "xxx", -1, 20.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
         items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 10.0 )
+        self.assertEqual( unit_price, 11.0 )
 
     def test_add_sell_3(self):
         dataobject = WalletData()
         matchMode = TransactionMatchMode.BEST
 
-        dataobject.add( "xxx", 1, 20.0 )
+        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        dataobject.add( "xxx", 1, 10.0 )
+        dataobject.add( "xxx", 1, 10.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        dataobject.add( "xxx", -1, 15.0 )
+        dataobject.add( "xxx", -1, 15.0, commission=1.0 )
         self.assertEqual( dataobject.size(), 1 )
 
         items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 20.0 )
+        self.assertEqual( unit_price, 21.0 )
 
     def test_add_sell_4(self):
         dataobject = WalletData()
         matchMode = TransactionMatchMode.BEST
 
-        dataobject.add( "xxx", 2, 10.0 )
+        dataobject.add( "xxx", 2, 10.0, commission=2.0 )
         self.assertEqual( dataobject.size(), 1 )
 
-        dataobject.add( "xxx", -1, 20.0 )
+        dataobject.add( "xxx", -1, 20.0, commission=2.0 )
         self.assertEqual( dataobject.size(), 1 )
 
         items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 10.0 )
+        self.assertEqual( unit_price, 11.0 )

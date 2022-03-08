@@ -330,8 +330,8 @@ class DataObject( QObject ):
         return self.dataContainer.getWalletStockValueData( ticker, rangeCode )
 
     ## wallet summary: wallet value, wallet profit, ref change, gain, overall profit
-    def getWalletState(self, includeCommission=True):
-        return self.dataContainer.getWalletState( includeCommission )
+    def getWalletState(self):
+        return self.dataContainer.getWalletState()
 
     def getWalletGainHistory(self, rangeCode):
         return self.dataContainer.getWalletGainHistory( rangeCode )

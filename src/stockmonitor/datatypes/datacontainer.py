@@ -325,8 +325,8 @@ class DataContainer():
                 rowDict[ columnsList[ 0] ] = "-"
                 rowDict[ columnsList[ 1] ] = ticker
                 rowDict[ columnsList[ 2] ] = amount                 ## liczba
-                rowDict[ columnsList[ 3] ] = "-"                    ## sredni kurs nabycia
-                rowDict[ columnsList[ 4] ] = buy_unit_price         ## kurs
+                rowDict[ columnsList[ 3] ] = buy_unit_price         ## sredni kurs nabycia
+                rowDict[ columnsList[ 4] ] = "-"                    ## kurs
                 rowDict[ columnsList[ 5] ] = "-"
                 rowDict[ columnsList[ 6] ] = "-"
                 rowDict[ columnsList[ 7] ] = "-"
@@ -346,21 +346,21 @@ class DataContainer():
             if currChangeRaw != "-":
                 currChangePnt = float( currChangeRaw )
 
-            currValue = currUnitValue * amount
+            sellValue  = currUnitValue * amount                 ## amount is positive
+            sellValue -= broker_commission( sellValue )
 
             ## ( curr_unit_price - ref_unit_price ) * unit_price * amount
-            valueChange = currChangePnt / 100.0 * currValue
+            valueChange = currChangePnt / 100.0 * sellValue
 
-            participation = currValue / walletValue * 100.0
+            participation = sellValue / walletValue * 100.0
 
             buyValue  = buy_unit_price * amount
-            profit    = currValue - buyValue
+            profit    = sellValue - buyValue
             profitPnt = 0
             if buyValue != 0:
                 profitPnt = profit / buyValue * 100.0
 
-            totalProfit  = transactions.transactionsOverallProfit()
-            totalProfit += currValue - broker_commission( currValue )
+            totalProfit = transactions.transactionsOverallProfit() + sellValue
 
             rowDict = {}
             rowDict[ columnsList[ 0] ] = stockName
@@ -370,7 +370,7 @@ class DataContainer():
             rowDict[ columnsList[ 4] ] = round( currUnitValue, 2 )      ## kurs
             rowDict[ columnsList[ 5] ] = round( currChangePnt, 2 )      ## zm. kur. odn %
             rowDict[ columnsList[ 6] ] = round( valueChange, 2 )        ## zm. kur. odn. PLN
-            rowDict[ columnsList[ 7] ] = round( currValue, 2 )          ## wartosc
+            rowDict[ columnsList[ 7] ] = round( sellValue, 2 )          ## wartosc
             rowDict[ columnsList[ 8] ] = round( participation, 2 )      ## udzial
             rowDict[ columnsList[ 9] ] = round( profitPnt, 2 )          ## zysk %
             rowDict[ columnsList[10] ] = round( profit, 2 )             ## zysk PLN
@@ -606,7 +606,7 @@ class DataContainer():
         return dataFrame
 
     ## wallet summary: wallet value, wallet profit, ref change, gain, overall profit
-    def getWalletState(self, includeCommission=True):
+    def getWalletState(self):
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
 
         transMode = self.userContainer.transactionsMatchMode
@@ -615,10 +615,10 @@ class DataContainer():
         refWalletValue = 0.0
         walletProfit   = 0.0
         totalGain      = 0.0
-        for ticker, transactions in self.wallet.stockList.items():
-            amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
+        for ticker, tickerTransactions in self.wallet.stockList.items():
+            amount, buy_unit_price = tickerTransactions.currentTransactionsAvg( transMode )
 
-            stockGain  = transactions.transactionsGain( transMode, includeCommission )
+            stockGain  = tickerTransactions.transactionsGain( transMode, True )
             totalGain += stockGain
 
             if amount == 0:
@@ -631,15 +631,12 @@ class DataContainer():
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
-            sellValue      = currUnitValue * amount
-            stockProfit    = sellValue
-            if includeCommission:
-                stockProfit -= broker_commission( sellValue )
+            sellValue      = currUnitValue * amount             ## amount is positive
+            sellValue     -= broker_commission( sellValue )
             buyValue       = buy_unit_price * amount
-            stockProfit   -= buyValue
 
             walletValue   += sellValue
-            walletProfit  += stockProfit
+            walletProfit  += sellValue - buyValue
 
             refUnitValue  = GpwCurrentStockData.unitReferencePrice( currentStockRow )
             referenceValue = refUnitValue * amount
@@ -675,8 +672,6 @@ class DataContainer():
 
     ## calculate profit of single stock
     def getWalletStockProfitHistory(self, ticker, rangeCode, calculateOverall: bool = True) -> DataFrame:
-        includeCommission = True
-
         transactions: TransHistory = self.wallet.transactions( ticker )
         if transactions is None:
             return None
@@ -706,11 +701,11 @@ class DataContainer():
             transAmount = transBefore.currentAmount()
             transProfit = 0
             if calculateOverall:
-                transProfit = transBefore.transactionsOverallProfit( includeCommission )
+                transProfit = transBefore.transactionsOverallProfit()
             else:
                 ## cost of stock buy
-                currTransAvg = transBefore.currentTransactionsAvg( transMode )
-                buyValue = currTransAvg[0] * currTransAvg[1]
+                buyAmount, buyUnitPrice = transBefore.currentTransactionsAvg( transMode )
+                buyValue = buyAmount * buyUnitPrice
                 transProfit -= buyValue
 
             ## iterate over stock historic prices
@@ -720,12 +715,10 @@ class DataContainer():
                     ## stock time is before transaction time -- calculate values
                     if transAmount > 0:
                         ## calculate hypotetical profit if stock would be sold out
-                        profit = transProfit
                         stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
                         sellValue  = stockPrice * transAmount
-                        if includeCommission:
-                            profit -= broker_commission( sellValue, stockTime )
-                        stockValuesFrame.at[ rowIndex, "c" ] = sellValue + profit
+                        sellValue -= broker_commission( sellValue, stockTime )
+                        stockValuesFrame.at[ rowIndex, "c" ] = transProfit + sellValue
                     else:
                         stockValuesFrame.at[ rowIndex, "c" ] = transProfit
                     rowIndex += 1
@@ -738,23 +731,21 @@ class DataContainer():
         transAmount = transBefore.currentAmount()
         transProfit = 0
         if calculateOverall:
-            transProfit = transBefore.transactionsOverallProfit( includeCommission )
+            transProfit = transBefore.transactionsOverallProfit()
         else:
             ## cost of stock buy
-            currTransAvg = transBefore.currentTransactionsAvg( transMode )
-            buyValue = currTransAvg[0] * currTransAvg[1]
+            buyAmount, buyUnitPrice = transBefore.currentTransactionsAvg( transMode )
+            buyValue = buyAmount * buyUnitPrice
             transProfit -= buyValue
 
         while rowIndex < rowsNum:
             stockTime = stockValuesFrame.at[ rowIndex, "t" ]
             if transAmount > 0:
                 ## calculate hypotetical profit if stock would be sold out
-                profit = transProfit
                 stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
                 sellValue  = stockPrice * transAmount
-                if includeCommission:
-                    profit -= broker_commission( sellValue, stockTime )
-                stockValuesFrame.at[ rowIndex, "c" ] = sellValue + profit
+                sellValue -= broker_commission( sellValue, stockTime )
+                stockValuesFrame.at[ rowIndex, "c" ] = transProfit + sellValue
             else:
                 stockValuesFrame.at[ rowIndex, "c" ] = transProfit
             rowIndex += 1

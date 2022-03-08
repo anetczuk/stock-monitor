@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 class Transaction:
 
     def __init__(self, amount, unitPrice, commission, transTime: datetime):
-        self.amount     = amount
+        self.amount     = amount                ## amount > 0 -- buy transaction, otherwise sell transaction
         self.unitPrice  = unitPrice
         self.commission = commission
         self.transTime  = transTime
@@ -57,12 +57,16 @@ class Transaction:
     def __iter__(self):
         return iter( (self.amount, self.unitPrice, self.commission, self.transTime) )
 
-    def getValue(self):
-        return self.amount * self.unitPrice
+    def getValue( self, includeCommission=False ):
+        transValue = self.amount * self.unitPrice
+        if includeCommission:
+            transValue += self.getCommission()
+        return transValue
 
+    ## returns always positive value
     def getCommission(self):
         if self.commission < 0.01:
-            cost = self.amount * self.unitPrice
+            cost = abs( self.amount ) * self.unitPrice
             return broker_commission( cost, self.transTime )
         return self.commission
 
@@ -73,6 +77,9 @@ class Transaction:
     def reduceAmount(self, amount):
         self.commission *= 1.0 - float( amount ) / self.amount
         self.amount -= amount
+        
+    def __repr__(self):
+        return f"({self.amount}, {self.unitPrice}, {self.commission}, {self.transTime})"
 
     @staticmethod
     def sortDate( tuple1, tuple2 ):
@@ -222,17 +229,15 @@ class TransHistory():
         ## Buy value raises then current unit price rises
         ## Sell value raises then current unit price decreases
 
-        transList = self.currentTransactions( mode )
-        if not transList:
+        buyList = self.currentTransactions( mode )
+        if not buyList:
             return (0, 0)
 
         currAmount = 0
         currValue  = 0.0
-        for transItem in transList:
-            amount     = transItem.amount
-            unit_price = transItem.unitPrice
-            currAmount += amount
-            currValue  += amount * unit_price
+        for transItem in buyList:
+            currAmount += transItem.amount
+            currValue  += transItem.getValue( True )
 
         currUnitPrice = currValue / currAmount
         return ( currAmount, currUnitPrice )
@@ -242,6 +247,7 @@ class TransHistory():
         retPair = self.matchTransactions( mode )
         return retPair[1]
 
+    ## return profit of sold transactions
     def transactionsGain(self, mode: TransactionMatchMode, considerCommission=True):
         totalGain = self.transactionsGainHistory( mode, considerCommission )
         if not totalGain:
@@ -249,24 +255,18 @@ class TransHistory():
         lastItem = totalGain[-1]
         return lastItem[1]
 
+    ## return list of pairs: [(data, value)]
     def transactionsGainHistory(self, mode: TransactionMatchMode, considerCommission=True, startDate=None ):
         ret: List[ List[object] ] = []
         totalGain: float = 0.0
         sellTransactions: SellTransactionsMatch = self.sellTransactions( mode )
         for buyTrans, sellTrans in sellTransactions:
-            buyAmount,  buyPrice,  buyComm,  _        = buyTrans
-            sellAmount, sellPrice, sellComm, sellDate = sellTrans
-            buyCost    = buyAmount * buyPrice
-            sellProfit = sellAmount * sellPrice
+            buyCost    = buyTrans.getValue( considerCommission )
+            sellProfit = sellTrans.getValue( considerCommission )
             profitValue = -sellProfit - buyCost
-            if considerCommission:
-                buyComm  = buyTrans.getCommission()
-                sellComm = sellTrans.getCommission()
-                profitValue -= buyComm
-                profitValue -= sellComm
             totalGain += profitValue
 
-            entryDate: datetime = sellDate
+            entryDate: datetime = sellTrans.transTime
             if startDate is not None and entryDate < startDate:
                 ## accumulates older values in one entry 'entryDate'
                 entryDate = startDate
@@ -284,14 +284,12 @@ class TransHistory():
 
     ## calculate overall profit (sum of differences between sell and buy values) of made transactions
     ## buy transactions are interpreted as cost
-    def transactionsOverallProfit(self, considerCommission=True):
+    def transactionsOverallProfit(self):
         profitValue = 0
         for transItem in self.transactions:
             ## positive amount: buy  -- decrease transactions sum
             ## negative amount: sell -- increase transactions sum
-            profitValue -= transItem.getValue()
-            if considerCommission:
-                profitValue -= transItem.getCommission()
+            profitValue -= transItem.getValue( True )
         return profitValue
 
     ## =============================================================

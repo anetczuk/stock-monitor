@@ -121,16 +121,16 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )
-        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
-        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
+        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
 
-        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState( False )
-        self.assertEqual( walletVal, 191.36 )
-        self.assertEqual( walletProfit, -8.64 )
-        self.assertEqual( change, '-0.87%' )
-        self.assertEqual( gain, 40.0 )
-        self.assertEqual( overallProfit, 31.36 )
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
+        self.assertEqual( walletVal, 186.36 )
+        self.assertEqual( walletProfit, -13.74 )
+        self.assertEqual( change, '-3.46%' )
+        self.assertEqual( gain, 39.8 )
+        self.assertEqual( overallProfit, 26.06 )
 
     def test_getWalletState_best(self):
         dataobject = DataObject()
@@ -141,16 +141,16 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )
-        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
-        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
+        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
 
-        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState( False )
-        self.assertEqual( walletVal, 191.36 )
-        self.assertEqual( walletProfit, -68.64 )
-        self.assertEqual( change, '-0.87%' )
-        self.assertEqual( gain, 100.0 )
-        self.assertEqual( overallProfit, 31.36 )
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
+        self.assertEqual( walletVal, 186.36 )
+        self.assertEqual( walletProfit, -73.74 )
+        self.assertEqual( change, '-3.46%' )
+        self.assertEqual( gain, 99.8 )
+        self.assertEqual( overallProfit, 26.06 )
 
     def test_getWalletState_recent(self):
         dataobject = DataObject()
@@ -161,16 +161,16 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33) )
-        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33) )
-        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33) )
+        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
 
-        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState( False )
-        self.assertEqual( walletVal, 191.36 )
-        self.assertEqual( walletProfit, -8.64 )
-        self.assertEqual( change, '-0.87%' )
-        self.assertEqual( gain, 40.0 )
-        self.assertEqual( overallProfit, 31.36 )
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
+        self.assertEqual( walletVal, 186.36 )
+        self.assertEqual( walletProfit, -13.74 )
+        self.assertEqual( change, '-3.46%' )
+        self.assertEqual( gain, 39.8 )
+        self.assertEqual( overallProfit, 26.06 )
 
     def test_importWalletTransactions(self):
         importedData = DataFrame( {'trans_time': ['28.10.2020 09:10:07'],
