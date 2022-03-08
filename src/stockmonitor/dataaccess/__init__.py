@@ -16,6 +16,7 @@ from urllib import request
 import ssl
 
 from io import BytesIO
+#from io import StringIO
 from http import HTTPStatus
 
 import requests
@@ -152,6 +153,7 @@ class CUrlConnectionRAII():
 
 
 def retrieve_url_pycurl( url, outputPath ):
+    # b_obj = StringIO()
     b_obj = BytesIO()
 
     with CUrlConnectionRAII() as crl:
@@ -171,7 +173,8 @@ def retrieve_url_pycurl( url, outputPath ):
 
         headers.update( {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Encoding": "br",
+            #"Accept-Encoding": "gzip, deflate, br",            ## causes curl to receive bytes instead of string
             "Accept-Language": "en-US,en;q=0.5",
         } )
 
@@ -182,6 +185,7 @@ def retrieve_url_pycurl( url, outputPath ):
             crl.setopt( pycurl.HTTPHEADER, headersList )
 
         # Write bytes that are utf-8 encoded
+        # crl.setopt( pycurl.WRITEFUNCTION, b_obj.write )
         crl.setopt(pycurl.WRITEDATA, b_obj)
 
         # Perform a file transfer
@@ -204,8 +208,18 @@ def retrieve_url_pycurl( url, outputPath ):
             _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
             raise
 
-    return get_body
-    #return get_body.decode('utf8')
+    # print( "xxx:", type(b_obj), type(get_body) )
+    # print( "ccccc:", get_body )
+    # print( 'Output of GET request:\n%s' % get_body.decode('utf8') )
+    
+    try:
+        ## try convert to string
+        return get_body.decode('utf8')
+    except UnicodeDecodeError:
+        return get_body
+
+    # return get_body.decode('utf8')
+    #return get_body
 
 
 ## =========================================================
@@ -249,7 +263,9 @@ retrieve_url = retrieve_url_pycurl
 
 def download_html_content( url, outputPath ):
     try:
-        return retrieve_url( url, outputPath )
+        content = retrieve_url( url, outputPath )
+        # _LOGGER.debug( "content grabbed successfully to %s", outputPath )
+        return content
 
     except urllib.error.HTTPError:
         _LOGGER.exception( "exception when accessing: %s", url, exc_info=False )
