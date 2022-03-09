@@ -176,7 +176,7 @@
   <customwidget>
    <class>PriceChart</class>
    <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.mpl.stockintradaychart</header>
+   <header>stockmonitor.gui.widget.mpl.stockchart</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

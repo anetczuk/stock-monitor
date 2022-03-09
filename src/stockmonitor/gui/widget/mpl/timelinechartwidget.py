@@ -20,49 +20,49 @@
 # # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # # SOFTWARE.
 # #
-# 
+#
 # import logging
-# 
+#
 # from ... import uiloader
-# 
+#
 # from .mpltoolbar import NavigationToolbar
-# 
-# 
+#
+#
 # _LOGGER = logging.getLogger(__name__)
-# 
-# 
+#
+#
 # UiTargetClass, QtBaseClass = uiloader.load_ui_from_class_name( __file__ )
-# 
-# 
+#
+#
 # class TimelineChartWidget(QtBaseClass):             # type: ignore
-# 
+#
 #     def __init__(self, parentWidget=None):
 #         super().__init__(parentWidget)
-# 
+#
 #         self.ui = UiTargetClass()
 #         self.ui.setupUi(self)
-# 
+#
 #         if parentWidget is not None:
 #             bgcolor = parentWidget.palette().color(parentWidget.backgroundRole())
 #             self.ui.dataChart.setBackgroundByQColor( bgcolor )
-# 
+#
 #         self.ui.enabledCB.setChecked( True )
 #         self.ui.enabledCB.stateChanged.connect( self._toggleEnabled )
-# 
+#
 #         self.toolbar = NavigationToolbar(self.ui.dataChart, self)
 #         self.ui.toolbarLayout.addWidget( self.toolbar )
-# 
+#
 #         self._refreshWidget()
-# 
+#
 #     def setData(self, xdata, ydata):
 #         self.ui.dataChart.setData( xdata, ydata )
 #         self._refreshWidget()
-# 
+#
 #     def _refreshWidget(self):
 #         enabledChart = self.ui.enabledCB.isChecked()
 #         self.toolbar.setEnabled( enabledChart )
 #         self.ui.dataChart.setEnabled( enabledChart )
-# 
+#
 #     def _toggleEnabled(self, _):
 #         ## state: 0 -- unchecked
 #         ## state: 2 -- checked

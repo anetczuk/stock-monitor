@@ -41,7 +41,7 @@ from PyQt5.QtWidgets import QApplication
 
 from stockmonitor import logger
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.widget.mpl.stockintradaychart import PriceValueChart, PriceChart
+from stockmonitor.gui.widget.mpl.stockchart import PriceValueChart, PriceChart
 
 
 ## ============================= main section ===================================
