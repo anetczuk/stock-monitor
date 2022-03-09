@@ -64,22 +64,28 @@ class BaseIntradayChart( MplCanvas ):
 
         self._removeMouseIndicators( plot )
 
+        xcoord, ycoord = self._readCoords( event )
+
+        indicators = self.mouseIndicators.get( plot, None )
+        if indicators is None:
+            indicators = [ plot.axhline( y=ycoord, color="y", linestyle="--" ),
+                           plot.axvline( x=xcoord, color="y", linestyle="--" ) ]
+            self.mouseIndicators[ plot ] = indicators
+        else:
+            indicators[0].set_data( [0, 1], [ycoord, ycoord] )
+            indicators[1].set_data( [xcoord, xcoord], [0, 1] )
+
+        self.draw_idle()
+
+    def _readCoords(self, event):
+        plot = event.inaxes
         firstLine = plot.lines[0]
         xdata = firstLine.get_xdata()
         ydata = firstLine.get_ydata()
         xindex = get_index_float( xdata, event.xdata )
         yvalue = ydata[ xindex ]
-
-        indicators = self.mouseIndicators.get( plot, None )
-        if indicators is None:
-            indicators = [ plot.axhline( y=yvalue, color="y", linestyle="--" ),
-                           plot.axvline( x=event.xdata, color="y", linestyle="--" ) ]
-            self.mouseIndicators[ plot ] = indicators
-        else:
-            indicators[0].set_data( [0, 1], [yvalue, yvalue] )
-            indicators[1].set_data( [event.xdata, event.xdata], [0, 1] )
-
-        self.draw_idle()
+        #print( "xxxxxx:", xdata, ydata, event.xdata, xindex, yvalue )
+        return (event.xdata, yvalue)
 
     def _onPlotHideMouseIndicators( self, _ ):
 #     def _onPlotHideMouseIndicators( self, event ):
@@ -159,8 +165,14 @@ def get_index_float( xdata, xvalue ):
     dataSize = len( xdata )
     for i in range(0, dataSize):
         currData = xdata[ i ]
-        if valueDate < currData:
+        if currData <= valueDate:
+            continue
+        nextDist = currData - valueDate
+        prevData = xdata[ i - 1 ]
+        prevDist = valueDate - prevData
+        if prevDist < nextDist:
             return i - 1
+        return i
     return dataSize - 1
 
 
