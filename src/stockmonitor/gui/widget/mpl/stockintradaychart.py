@@ -26,14 +26,14 @@ import datetime
 
 from typing import List
 
-from .baseintradaychart import BaseIntradayChart
-from .baseintradaychart import _configure_plot, _update_plot, get_index_float
+from .mplbasechart import MplBaseChart
+from .mplbasechart import _configure_plot, _update_plot, get_index_float
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class PriceIntradayChart( BaseIntradayChart ):
+class PriceChart( MplBaseChart ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -94,7 +94,7 @@ class PriceIntradayChart( BaseIntradayChart ):
         self.refreshCanvas()
 
 
-class StockIntradayChart( BaseIntradayChart ):
+class PriceValueChart( MplBaseChart ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)

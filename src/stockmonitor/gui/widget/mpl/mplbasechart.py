@@ -32,7 +32,7 @@ from .mplcanvas import matplotlib, MplCanvas
 _LOGGER = logging.getLogger(__name__)
 
 
-class BaseIntradayChart( MplCanvas ):
+class MplBaseChart( MplCanvas ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget, 10, 10, 80)

@@ -63,6 +63,9 @@ class MplCanvas(FigureCanvas):
         self.figure.tight_layout()
 
 
+## =======================================================================
+
+
 # class DynamicMplCanvas( MplCanvas ):
 #     """A canvas that updates itself every second with a new plot."""
 #

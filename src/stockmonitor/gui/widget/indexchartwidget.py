@@ -32,7 +32,7 @@ from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayD
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist
-from stockmonitor.gui.widget.mpl.baseintradaychart import set_ref_format_coord
+from stockmonitor.gui.widget.mpl.mplbasechart import set_ref_format_coord
 from stockmonitor.gui.dataobject import DataObject
 
 from .. import uiloader

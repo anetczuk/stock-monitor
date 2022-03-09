@@ -166,7 +166,7 @@
     </layout>
    </item>
    <item>
-    <widget class="IndexIntradayChart" name="dataChart" native="true">
+    <widget class="PriceChart" name="dataChart" native="true">
      <property name="minimumSize">
       <size>
        <width>0</width>
@@ -213,9 +213,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>IndexIntradayChart</class>
+   <class>PriceChart</class>
    <extends>QWidget</extends>
-   <header>stockmonitor.gui.widget.mpl.indexintradaychart</header>
+   <header>stockmonitor.gui.widget.mpl.stockintradaychart</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

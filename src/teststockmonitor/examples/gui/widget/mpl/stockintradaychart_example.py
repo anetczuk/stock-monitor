@@ -41,8 +41,7 @@ from PyQt5.QtWidgets import QApplication
 
 from stockmonitor import logger
 from stockmonitor.gui.sigint import setup_interrupt_handling
-from stockmonitor.gui.widget.mpl.stockintradaychart import StockIntradayChart,\
-    PriceIntradayChart
+from stockmonitor.gui.widget.mpl.stockintradaychart import PriceValueChart, PriceChart
 
 
 ## ============================= main section ===================================
@@ -70,12 +69,12 @@ vdata = [5, 7, 3, 4, 1]
 
 setup_interrupt_handling()
 
-widget = PriceIntradayChart()
+widget = PriceChart()
 widget.resize( 1024, 768 )
 widget.addPriceLine( xdata, ydata )
 widget.show()
 
-widget = StockIntradayChart()
+widget = PriceValueChart()
 widget.resize( 1024, 768 )
 widget.addPriceLine( xdata, ydata )
 widget.addVolumeLine( xdata, vdata )
