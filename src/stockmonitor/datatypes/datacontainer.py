@@ -488,7 +488,7 @@ class DataContainer():
                 for buy, sell in currTransactions:
                     transTime = sell.transTime
                     transDate = transTime.date()
-            
+
                     if transDate != currDate:
                         if sellTrans.isEmpty() is False:
                             newList.append( (buyTrans, sellTrans) )

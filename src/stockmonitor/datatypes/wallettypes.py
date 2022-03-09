@@ -90,7 +90,7 @@ class Transaction:
     def reduceAmount(self, amount):
         self.commission *= 1.0 - float( amount ) / self.amount
         self.amount -= amount
-        
+
     def __repr__(self):
         return f"({self.amount}, {self.unitPrice}, {self.commission}, {self.transTime})"
 
@@ -249,7 +249,7 @@ class TransHistory():
         currDate  = None
         buyTrans  = Transaction.empty()
         sellTrans = Transaction.empty()
-        
+
         transList = []
         #for item in self.transactions:
         for item in reversed( transactions ):
@@ -258,10 +258,10 @@ class TransHistory():
 
             if transDate != currDate:
                 ## next day -- store transactions
-                if buyTrans.amount > 0:                
+                if buyTrans.amount > 0:
                     transList.append( buyTrans )
                 buyTrans = Transaction.empty()
-                if sellTrans.amount < 0:                
+                if sellTrans.amount < 0:
                     transList.append( sellTrans )
                 sellTrans = Transaction.empty()
 
@@ -271,10 +271,10 @@ class TransHistory():
             else:
                 sellTrans.addAvg( item )
 
-        ## add day transactions            
-        if buyTrans.amount > 0:                
+        ## add day transactions
+        if buyTrans.amount > 0:
             transList.append( buyTrans )
-        if sellTrans.amount < 0:                
+        if sellTrans.amount < 0:
             transList.append( sellTrans )
 
         transList = reversed( transList )

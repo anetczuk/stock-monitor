@@ -211,7 +211,7 @@ def retrieve_url_pycurl( url, outputPath ):
     # print( "xxx:", type(b_obj), type(get_body) )
     # print( "ccccc:", get_body )
     # print( 'Output of GET request:\n%s' % get_body.decode('utf8') )
-    
+
     try:
         ## try convert to string
         return get_body.decode('utf8')

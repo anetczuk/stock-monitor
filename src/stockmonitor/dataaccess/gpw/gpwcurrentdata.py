@@ -62,7 +62,8 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
                    "?action=GPWQuotations&start=showTable&tab=all&lang=PL&type=&full=1&format=html&download_xls=1")
 
             relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            # _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
                 download_html_content( url, filePath )
