@@ -33,7 +33,7 @@ from .mplbasechart import _configure_plot, _update_plot, get_index_float
 _LOGGER = logging.getLogger(__name__)
 
 
-class PriceChart( MplBaseChart ):
+class PriceLineChart( MplBaseChart ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
@@ -94,7 +94,7 @@ class PriceChart( MplBaseChart ):
         self.refreshCanvas()
 
 
-class PriceValueChart( MplBaseChart ):
+class PriceValueLineChart( MplBaseChart ):
 
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
