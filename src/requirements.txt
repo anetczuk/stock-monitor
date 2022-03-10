@@ -3,6 +3,7 @@ pandas>=1.1.2, <1.4.0
 lxml>=4.5
 bs4>=0.0.1
 matplotlib>=3.3.2
+#mplfinance
 tendo
 PyQt5
 watchdog>=0.9.0
