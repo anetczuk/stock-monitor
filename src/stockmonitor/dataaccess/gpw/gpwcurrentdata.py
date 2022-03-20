@@ -257,16 +257,17 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
 
         ## override
         @synchronized
-        def loadWorksheet(self):
+        def loadWorksheet(self, preventDownload=False):
             for dataAccess in self.dataList[:-1]:
-                dataAccess.loadWorksheet()
+                dataAccess.loadWorksheet( preventDownload )
                 ## set random sleep preventing "[Errno 104] Connection reset by peer"
                 ## server seems to reset connection in case of detection of web scrapping
                 randTime = 1.0 + random.random()
                 time.sleep( randTime )
             ## last element (without sleep)
             dataAccess = self.dataList[-1]
-            dataAccess.loadWorksheet()
+            dataAccess.loadWorksheet( preventDownload )
+            return self.getDataFrame()
 
         ## override
         def getDataFrame(self) -> DataFrame:

@@ -23,6 +23,10 @@
 
 import logging
 
+from typing import Dict, List
+
+import pandas
+
 from PyQt5.QtCore import Qt
 # from PyQt5.QtGui import QCloseEvent
 
@@ -33,8 +37,9 @@ from stockmonitor.gui import threadlist
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
-from stockmonitor.gui.widget.mpl.mplbasechart import set_ref_format_coord,\
-    set_int_format_coord
+from stockmonitor.gui.widget.mpl import mplbasechart
+from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
+from stockmonitor.gui.widget.mpl import candlestickchart
 
 from .. import uiloader
 
@@ -64,9 +69,10 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         if parentWidget is not None:
             bgcolor = parentWidget.palette().color(parentWidget.backgroundRole())
             self.ui.dataChart.setBackgroundByQColor( bgcolor )
+            self.ui.candleChart.setBackgroundByQColor( bgcolor )
 
-        self.toolbar = NavigationToolbar(self.ui.dataChart, self)
-        self.ui.toolbarLayout.addWidget( self.toolbar )
+        self.toolbar = None
+        self._changeChartType()
 
         self.ui.sourceLabel.setOpenExternalLinks(True)
 
@@ -81,6 +87,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
+        self.ui.chartTypeCB.currentIndexChanged.connect( self._changeChartType )
 
     def connectData(self, dataObject: DataObject, ticker):
         self.dataObject = dataObject
@@ -90,6 +97,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
     def clearData(self):
         self.ui.dataChart.clearPlot()
+        self.ui.candleChart.clearPlot()
 
     def refreshData(self):
         self.updateData( True )
@@ -98,6 +106,9 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.updateData( False )
 
     def updateData(self, forceRefresh=False, access=False):
+        if self.dataObject is None:
+            return
+
         dataSources = self._dataSourceObjectsList()
         if not dataSources:
             self._updateView()
@@ -125,6 +136,42 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         threads.start()
 
+    def _changeChartType(self):
+        typeText = self.ui.chartTypeCB.currentText()
+        if typeText == "Line":
+            self.ui.dataChart.show()
+            self.ui.candleChart.hide()
+
+            layoutItems = self.ui.toolbarLayout.count()
+            for i in range(0, layoutItems):
+                itemWidget = self.ui.toolbarLayout.itemAt( i ).widget()
+                if itemWidget is None:
+                    continue
+                itemWidget.deleteLater()
+
+            if self.toolbar is not None:
+                del self.toolbar
+            self.toolbar = NavigationToolbar(self.ui.dataChart, self)
+            self.ui.toolbarLayout.addWidget( self.toolbar )
+
+        else:
+            self.ui.dataChart.hide()
+            self.ui.candleChart.show()
+
+            layoutItems = self.ui.toolbarLayout.count()
+            for i in range(0, layoutItems):
+                itemWidget = self.ui.toolbarLayout.itemAt( i ).widget()
+                if itemWidget is None:
+                    continue
+                itemWidget.deleteLater()
+
+            if self.toolbar is not None:
+                del self.toolbar
+            self.toolbar = NavigationToolbar(self.ui.candleChart, self)
+            self.ui.toolbarLayout.addWidget( self.toolbar )
+
+        self.repaintData()
+
     def _dataSourceObjectsList(self):
         retList = []
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
@@ -145,10 +192,11 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
         _LOGGER.debug( "updating chart data, range[%s] isin[%s]", rangeText, isin )
 
-        intraSource = self.getIntradayDataSource()
+        self.clearData()
+
+        intraSource: GpwCurrentStockIntradayData = self.getIntradayDataSource()
         dataFrame = intraSource.getWorksheetData()
 
-        self.clearData()
         if dataFrame is None:
             return
 
@@ -156,41 +204,119 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         currentSource.getWorksheetData()
 
         timeColumn   = dataFrame["t"]
-        priceColumn  = dataFrame["c"]
         volumeColumn = dataFrame["v"]
-#         print( "got intraday data:", priceColumn )
 
         price     = currentSource.getRecentValueByTicker( self.ticker )
         change    = currentSource.getRecentChangeByTicker( self.ticker )
         volumen   = volumeColumn.iloc[-1]
-        refPrice  = currentSource.getReferenceValueByTicker( self.ticker )
         timestamp = timeColumn.iloc[-1]
+
+        self.ui.valueLabel.setText( str(price) )
+        self.ui.changeLabel.setText( str(change) + "%" )
+        self.ui.volumeLabel.setText( str(volumen) )
+        self.ui.timeLabel.setText( str(timestamp) )
+
+        if self.ui.dataChart.isVisible():
+            self._updateLineChart( intraSource )
+
+        if self.ui.candleChart.isVisible():
+            self._updateCandleChart( intraSource )
+
+        set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
+
+    def _updateLineChart(self, intraSource):
+        dataFrame = intraSource.getWorksheetData()
+
+        timeColumn   = dataFrame["t"]
+        priceColumn  = dataFrame["c"]
+        volumeColumn = dataFrame["v"]
+#         print( "got intraday data:", priceColumn )
+
+        currentSource: GpwCurrentStockData = self.getCurrentDataSource()
+        currentSource.getWorksheetData()
+
+        refPrice = currentSource.getReferenceValueByTicker( self.ticker )
+
+        self.ui.dataChart.addPriceSecondaryY( refPrice )
 
         timeData = list(timeColumn)
         self.ui.dataChart.addPriceLine( timeData, priceColumn )
 
-        self.ui.dataChart.addPriceSecondaryY( refPrice )
+        self.ui.dataChart.addPriceHLine( refPrice, style="--" )
 
-        refX = [ timeData[0], timeData[-1] ]
-        refY = [ refPrice, refPrice ]
-        self.ui.dataChart.addPriceLine( refX, refY, style="--" )
+        ## add wallet points
+        self._addWalletData( intraSource, self.ui.dataChart )
+
+        self.ui.dataChart.addVolumeLine( timeData, volumeColumn )
+
+        recentPrice = priceColumn.iloc[-1]
+        self.ui.dataChart.addVolumeSecondaryY( recentPrice )
+
+        mplbasechart.set_ref_format_coord( self.ui.dataChart.pricePlot, refPrice )
+        mplbasechart.set_int_format_coord( self.ui.dataChart.volumePlot )
+
+    def _updateCandleChart( self, intraSource: GpwCurrentStockIntradayData ):
+        ## get data
+        ##intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+        ##return intraSource
+
+        candleFrame = self._getCurrentCandlesData( intraSource, 100 )
+        if candleFrame is None or len( candleFrame ) < 2:
+            ## no data to show
+            return
+
+        dataFrame = intraSource.getWorksheetData()
+
+        timeColumn   = candleFrame.index
+        priceColumn  = candleFrame["Close"]
+
+        currentSource: GpwCurrentStockData = self.getCurrentDataSource()
+        refPrice = currentSource.getReferenceValueByTicker( self.ticker )
+
+        self.ui.candleChart.addPriceSecondaryY( refPrice )
+
+        timeData = list(timeColumn)
+        self.ui.candleChart.addPriceLine( timeData, priceColumn, color='#FF000088' )
+
+        self.ui.candleChart.addPriceHLine( refPrice, color='r' )
+
+        ## add wallet points
+        self._addWalletData( intraSource, self.ui.candleChart )
+
+        closeColumn  = dataFrame["c"]
+        recentPrice = closeColumn.iloc[-1]
+        self.ui.candleChart.addVolumeSecondaryY( recentPrice )
+
+        self.ui.candleChart.addPriceCandles( candleFrame )
+
+        self.ui.candleChart.refreshCanvas()
+
+        candlestickchart.set_ref_format_coord( self.ui.candleChart.pricePlot, refPrice )
+        candlestickchart.set_int_format_coord( self.ui.candleChart.volumePlot )
+
+    def _addWalletData(self, intraSource, chart):
+        dataFrame = intraSource.getWorksheetData()
+        timeColumn = dataFrame["t"]
+        timeData = list(timeColumn)
+#         refX = [ timeData[0], timeData[-1] ]
 
         transMode = self.dataObject.transactionsMatchMode()
-
         walletStock: TransHistory = self.dataObject.wallet[ self.ticker ]
         if walletStock is not None:
             if self.ui.showWalletCB.isChecked():
                 amount, buy_unit_price = walletStock.currentTransactionsAvg( transMode )
                 if amount > 0:
-                    refY = [ buy_unit_price, buy_unit_price ]
-                    self.ui.dataChart.addPriceLine( refX, refY, color='black', style="--" )
+#                     refY = [ buy_unit_price, buy_unit_price ]
+#                     chart.addPriceLine( refX, refY, color='black', style="--" )
+                    chart.addPriceHLine( buy_unit_price, color='black' )
 
             if self.ui.showTransactionsLevelsCB.isChecked():
                 currTransactions = walletStock.currentTransactions( transMode )
                 for item in currTransactions:
                     buy_unit_price = item.unitPrice
-                    refY = [ buy_unit_price, buy_unit_price ]
-                    self.ui.dataChart.addPriceLine( refX, refY, color='blue', style="--" )
+#                     refY = [ buy_unit_price, buy_unit_price ]
+#                     chart.addPriceLine( refX, refY, color='blue', style="--" )
+                    chart.addPriceHLine( buy_unit_price, color='blue' )
 
             if self.ui.showTransactionsPointsCB.isChecked():
                 allTransactions = walletStock.allTransactions()
@@ -201,26 +327,124 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
                     amount         = item.amount
                     buy_unit_price = item.unitPrice
                     if amount > 0:
-                        self.ui.dataChart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="+" )
+                        chart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="+" )
                     else:
-                        self.ui.dataChart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="-" )
+                        chart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="-" )
 
-        self.ui.dataChart.addVolumeLine( timeData, volumeColumn )
+    def _getCurrentCandlesData( self, intraSource: GpwCurrentStockIntradayData, bins=None ):
+        dataFrame = intraSource.getWorksheetData()
 
-        recentPrice = priceColumn.iloc[-1]
-        self.ui.dataChart.addVolumeSecondaryY( recentPrice )
+        recalculate = True
+        if bins is None:
+            recalculate = False
+        elif len( dataFrame ) <= bins:
+            recalculate = False
 
-        set_ref_format_coord( self.ui.dataChart.pricePlot, refPrice )
-        set_int_format_coord( self.ui.dataChart.volumePlot )
+        if recalculate is False:
+            rename_map = { "o": "Open",
+                           "c": "Close",
+                           "l": "Low",
+                           "h": "High",
+                           "v": "Volume"
+                           }
+            renamedData = dataFrame.rename( columns=rename_map )
+            renamedData.index = pandas.DatetimeIndex( renamedData["t"] )
+            # renamedData.drop( columns="t", inplace=True )
+            return renamedData
 
-        self.ui.valueLabel.setText( str(price) )
-        self.ui.changeLabel.setText( str(change) + "%" )
-        self.ui.volumeLabel.setText( str(volumen) )
-        self.ui.timeLabel.setText( str(timestamp) )
+        ## calculate bins
 
-        set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
+        dataFrame[ "bin" ] = pandas.cut( dataFrame["t"], bins=bins, labels=False )
 
-    def getIntradayDataSource(self):
+        recent_bin = -1
+        timestamps = []
+        frame: Dict[ str, List ] = { 'Open': [], 'High': [], 'Low': [], 'Close': [], 'Volume': [] }
+
+        for _, row in dataFrame.iterrows():
+            curr_bin = row["bin"]
+            if curr_bin != recent_bin:
+                recent_bin = curr_bin
+                timestamps.append( row["t"] )
+                frame[ 'Open' ].append( row["o"] )
+                frame[ 'High' ].append( row["h"] )
+                frame[ 'Low' ].append( row["l"] )
+                frame[ 'Close' ].append( row["c"] )
+                frame[ 'Volume' ].append( row["v"] )
+                continue
+
+            # frame[ 'Open' ].append( row["o"] )
+            frame[ 'High' ][-1]    = max( frame[ 'High' ][-1], row["h"] )
+            frame[ 'Low' ][-1]     = min( frame[ 'High' ][-1], row["h"] )
+            frame[ 'Close' ][-1]   = row["c"]
+            frame[ 'Volume' ][-1] += row["v"]
+
+        dataframe = pandas.DataFrame( frame )
+        dataframe.index = pandas.DatetimeIndex( timestamps )
+        return dataframe
+
+#     def _getArchiveCandlesData( self ):
+#         rangeText     = self.ui.rangeCB.currentText()
+#         startDateTime = get_start_date( rangeText )
+#         start_date    = startDateTime.date()
+#
+#         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
+#
+#         openIndex   = GpwArchiveData.getColumnIndex( StockDataType.OPENING )
+#         highIndex   = GpwArchiveData.getColumnIndex( StockDataType.MAX )
+#         lowIndex    = GpwArchiveData.getColumnIndex( StockDataType.MIN )
+#         closeIndex  = GpwArchiveData.getColumnIndex( StockDataType.CLOSING )
+#         volumeIndex = GpwArchiveData.getColumnIndex( StockDataType.VOLUME )
+#
+#         holidayCalendar = HolidayData()
+#
+#         timestamps = []
+#         frame = { 'Open': [], 'High': [], 'Low': [], 'Close': [], 'Volume': [] }
+#         end_date = datetime.datetime.now().date()
+#         delta    = datetime.timedelta(days=1)
+#         curr_date = start_date
+#         while curr_date < end_date:
+#             if holidayCalendar.isHoliday( curr_date ):
+#                 curr_date += delta
+#                 continue
+#
+#             archiveData = GpwArchiveData( curr_date )
+#             dataFrame = archiveData.accessWorksheetData()
+#             # dataFrame = archiveData.loadWorksheet( preventDownload=True )
+#
+#             if dataFrame is None:
+#                 #print( "holiday?", dataFrame )
+#                 holidayCalendar.markHoliday( curr_date )
+#
+#             isinRow = archiveData.getRowByIsin(isin)
+#             if isinRow is None:
+#                 curr_date += delta
+#                 continue
+#             if isinRow.empty is True:
+#                 curr_date += delta
+#                 continue
+#
+#             timestamps.append( curr_date )
+#             curr_date += delta
+#
+#             frame[ 'Open' ].append( isinRow[openIndex] )
+#             frame[ 'High' ].append( isinRow[highIndex] )
+#             frame[ 'Low' ].append( isinRow[lowIndex] )
+#             frame[ 'Close' ].append( isinRow[closeIndex] )
+#             frame[ 'Volume' ].append( isinRow[volumeIndex] )
+#
+# #         ## add current values
+# #         timestamps.append( curr_date )
+# #         frame[ 'Open' ].append( isinRow[openIndex] )
+# #         frame[ 'High' ].append( isinRow[highIndex] )
+# #         frame[ 'Low' ].append( isinRow[lowIndex] )
+# #         frame[ 'Close' ].append( isinRow[closeIndex] )
+# #         frame[ 'Volume' ].append( isinRow[volumeIndex] )
+#
+#         dataframe = pandas.DataFrame( frame )
+#         dataframe.index = pandas.DatetimeIndex( timestamps )
+#         return dataframe
+
+    def getIntradayDataSource(self) -> GpwCurrentStockIntradayData:
         rangeText = self.ui.rangeCB.currentText()
         isin = self.dataObject.getStockIsinFromTicker( self.ticker )
         intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )

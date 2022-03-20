@@ -23,6 +23,9 @@
 
 import logging
 import datetime
+from typing import Dict, List
+
+import pandas
 
 from PyQt5.QtCore import Qt
 
@@ -33,6 +36,7 @@ from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.widget.mpl.mplbasechart import set_ref_format_coord
+from stockmonitor.gui.widget.mpl import candlestickchart
 from stockmonitor.gui.dataobject import DataObject
 
 from .. import uiloader
@@ -60,9 +64,10 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         if parentWidget is not None:
             bgcolor = parentWidget.palette().color(parentWidget.backgroundRole())
             self.ui.dataChart.setBackgroundByQColor( bgcolor )
+            self.ui.candleChart.setBackgroundByQColor( bgcolor )
 
-        self.toolbar = NavigationToolbar(self.ui.dataChart, self)
-        self.ui.toolbarLayout.addWidget( self.toolbar )
+        self.toolbar = None
+        self._changeChartType()
 
         self.ui.sourceLabel.setOpenExternalLinks(True)
 
@@ -70,6 +75,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
+        self.ui.chartTypeCB.currentIndexChanged.connect( self._changeChartType )
 
     def connectData(self, dataObject: DataObject, isin):
         self.dataObject = dataObject
@@ -79,6 +85,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
     def clearData(self):
         self.ui.dataChart.clearPlot()
+        self.ui.candleChart.clearPlot()
 
     def refreshData(self):
         self.updateData( True )
@@ -87,6 +94,9 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.updateData( False )
 
     def updateData(self, forceRefresh=False, access=False):
+        if self.dataObject is None:
+            return
+
         dataSources = self._dataSourceObjectsList()
         if not dataSources:
             self._updateView()
@@ -114,6 +124,42 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         threads.start()
 
+    def _changeChartType(self):
+        typeText = self.ui.chartTypeCB.currentText()
+        if typeText == "Line":
+            self.ui.dataChart.show()
+            self.ui.candleChart.hide()
+
+            layoutItems = self.ui.toolbarLayout.count()
+            for i in range(0, layoutItems):
+                itemWidget = self.ui.toolbarLayout.itemAt( i ).widget()
+                if itemWidget is None:
+                    continue
+                itemWidget.deleteLater()
+
+            if self.toolbar is not None:
+                del self.toolbar
+            self.toolbar = NavigationToolbar(self.ui.dataChart, self)
+            self.ui.toolbarLayout.addWidget( self.toolbar )
+
+        else:
+            self.ui.dataChart.hide()
+            self.ui.candleChart.show()
+
+            layoutItems = self.ui.toolbarLayout.count()
+            for i in range(0, layoutItems):
+                itemWidget = self.ui.toolbarLayout.itemAt( i ).widget()
+                if itemWidget is None:
+                    continue
+                itemWidget.deleteLater()
+
+            if self.toolbar is not None:
+                del self.toolbar
+            self.toolbar = NavigationToolbar(self.ui.candleChart, self)
+            self.ui.toolbarLayout.addWidget( self.toolbar )
+
+        self.repaintData()
+
     def _dataSourceObjectsList(self):
         ## iterate through ranges values and collect data sources
         retList = []
@@ -133,34 +179,52 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         rangeText = self.ui.rangeCB.currentText()
         _LOGGER.debug( "updating chart data, range[%s]", rangeText )
 
+        self.clearData()
+
         intraSource = self.getIntradayDataSource()
         dataFrame = intraSource.getWorksheetData()
 
-        self.clearData()
         if dataFrame is None:
             return
 
         currentSource: GpwCurrentIndexesData = self.getCurrentDataSource()
         currentSource.getWorksheetData()
 
-#         print( "got intraday data:", dataFrame )
         timeColumn   = dataFrame["t"]
-        priceColumn  = dataFrame["c"]
 
         value     = currentSource.getRecentValueByIsin( self.isin )
         change    = currentSource.getRecentChangeByIsin( self.isin )
         timestamp = timeColumn.iloc[-1]
 
-        timeData = list(timeColumn)
-        self.ui.dataChart.addPriceLine( timeData, priceColumn )
+        self.ui.valueLabel.setText( str(value) )
+        self.ui.changeLabel.setText( str(change) + "%" )
+        self.ui.timeLabel.setText( str(timestamp) )
+
+        if self.ui.dataChart.isVisible():
+            self._updateLineChart( intraSource )
+
+        if self.ui.candleChart.isVisible():
+            self._updateCandleChart( intraSource )
+
+        set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
+
+    def _updateLineChart(self, intraSource):
+        dataFrame = intraSource.getWorksheetData()
+
+        timeColumn   = dataFrame["t"]
+        priceColumn  = dataFrame["c"]
+
+        currentSource: GpwCurrentIndexesData = self.getCurrentDataSource()
+        currentSource.getWorksheetData()
 
 #         refPrice = priceColumn[ 0 ]
         refPrice = self.getReferenceValue()
         self.ui.dataChart.addPriceSecondaryY( refPrice )
 
-        refX = [ timeData[0], timeData[-1] ]
-        refY = [ refPrice, refPrice ]
-        self.ui.dataChart.addPriceLine( refX, refY, style="--" )
+        timeData = list(timeColumn)
+        self.ui.dataChart.addPriceLine( timeData, priceColumn )
+
+        self.ui.dataChart.addPriceHLine( refPrice, style="--" )
 
         currTime = datetime.datetime.now() - datetime.timedelta(minutes=15)
         if timeData[0] < currTime < timeData[-1]:
@@ -168,11 +232,83 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         set_ref_format_coord( self.ui.dataChart.pricePlot, refPrice )
 
-        self.ui.valueLabel.setText( str(value) )
-        self.ui.changeLabel.setText( str(change) + "%" )
-        self.ui.timeLabel.setText( str(timestamp) )
+    def _updateCandleChart( self, intraSource ):
+        ## get data
+        ##intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+        ##return intraSource
 
-        set_label_url( self.ui.sourceLabel, intraSource.sourceLink() )
+        candleFrame = self._getCurrentCandlesData( intraSource, 100 )
+        if candleFrame is None or len( candleFrame ) < 2:
+            ## no data to show
+            return
+
+        timeColumn   = candleFrame.index
+        priceColumn  = candleFrame["Close"]
+
+#         refPrice = priceColumn[ 0 ]
+        refPrice = self.getReferenceValue()
+
+        self.ui.candleChart.addPriceSecondaryY( refPrice )
+
+        timeData = list(timeColumn)
+        self.ui.candleChart.addPriceLine( timeData, priceColumn, color='#FF000088' )
+
+        self.ui.candleChart.addPriceHLine( refPrice, color='y' )
+
+        self.ui.candleChart.addPriceCandles( candleFrame )
+
+        self.ui.candleChart.refreshCanvas()
+
+        candlestickchart.set_ref_format_coord( self.ui.candleChart.pricePlot, refPrice )
+
+    def _getCurrentCandlesData( self, intraSource, bins=None ):
+        dataFrame = intraSource.getWorksheetData()
+
+        recalculate = True
+        if bins is None:
+            recalculate = False
+        elif len( dataFrame ) <= bins:
+            recalculate = False
+
+        if recalculate is False:
+            rename_map = { "o": "Open",
+                           "c": "Close",
+                           "l": "Low",
+                           "h": "High",
+                           "v": "Volume"
+                           }
+            renamedData = dataFrame.rename( columns=rename_map )
+            renamedData.index = pandas.DatetimeIndex( renamedData["t"] )
+            # renamedData.drop( columns="t", inplace=True )
+            return renamedData
+
+        ## calculate bins
+
+        dataFrame[ "bin" ] = pandas.cut( dataFrame["t"], bins=bins, labels=False )
+
+        recent_bin = -1
+        timestamps = []
+        frame: Dict[ str, List ] = { 'Open': [], 'High': [], 'Low': [], 'Close': [] }
+
+        for _, row in dataFrame.iterrows():
+            curr_bin = row["bin"]
+            if curr_bin != recent_bin:
+                recent_bin = curr_bin
+                timestamps.append( row["t"] )
+                frame[ 'Open' ].append( row["o"] )
+                frame[ 'High' ].append( row["h"] )
+                frame[ 'Low' ].append( row["l"] )
+                frame[ 'Close' ].append( row["c"] )
+                continue
+
+            # frame[ 'Open' ].append( row["o"] )
+            frame[ 'High' ][-1]    = max( frame[ 'High' ][-1], row["h"] )
+            frame[ 'Low' ][-1]     = min( frame[ 'High' ][-1], row["h"] )
+            frame[ 'Close' ][-1]   = row["c"]
+
+        dataframe = pandas.DataFrame( frame )
+        dataframe.index = pandas.DatetimeIndex( timestamps )
+        return dataframe
 
     def getReferenceValue(self):
         indexData: GpwIndexIntradayMap = self.dataObject.gpwIndexIntradayData

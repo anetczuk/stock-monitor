@@ -29,7 +29,7 @@ import math
 import abc
 import pandas
 
-from stockmonitor.dataaccess.datatype import ArchiveDataType
+from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.gpw.gpwarchivedata import GpwArchiveData
 from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 
@@ -43,7 +43,7 @@ class StockAnalysisData():
     def __init__(self):
         self.dataProvider: GpwArchiveData = GpwArchiveData()
 
-    def getData(self, dataType: ArchiveDataType, day: date):
+    def getData(self, dataType: StockDataType, day: date):
         return self.dataProvider.getData( dataType, day )
 
     def getRecentValidDay(self, day: date ) -> datetime.date:
@@ -60,7 +60,7 @@ class StockAnalysisData():
     def getISINForDate(self, day: date) -> dict:
         validDay = self.getRecentValidDay( day )
         _LOGGER.info("loading recent ISIN data for %s", validDay )
-        return self.dataProvider.getData( ArchiveDataType.ISIN, validDay )
+        return self.dataProvider.getData( StockDataType.ISIN, validDay )
 
     def sourceLink(self):
         return self.dataProvider.sourceLink()

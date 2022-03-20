@@ -24,7 +24,8 @@
 import logging
 from typing import Dict, List
 
-from datetime import datetime, timedelta
+import datetime
+#from datetime import datetime, date, timedelta
 
 from pandas.core.frame import DataFrame
 
@@ -222,7 +223,7 @@ class DataContainer():
             dateObject = None
             try:
                 ## 31.03.2020 13:21:44
-                dateObject = datetime.strptime(transTime, '%d.%m.%Y %H:%M:%S')
+                dateObject = datetime.datetime.strptime(transTime, '%d.%m.%Y %H:%M:%S')
             except ValueError:
                 dateObject = None
 
@@ -946,25 +947,27 @@ def join_list_dataframe( mergedList, stockData: DataFrame ):
 
 
 def get_start_date( rangeCode ):
-    startDateTime = datetime.now()
+    startDateTime = datetime.datetime.now()      # datetime
     if rangeCode == "1D":
-        startDateTime -= timedelta( days=1 )
+        startDateTime -= datetime.timedelta( days=1 )
     elif rangeCode == "14D":
-        startDateTime -= timedelta( days=14 )
+        startDateTime -= datetime.timedelta( days=14 )
     elif rangeCode == "1M":
-        startDateTime -= timedelta( days=31 )
+        startDateTime -= datetime.timedelta( days=31 )
     elif rangeCode == "3M":
-        startDateTime -= timedelta( weeks=13 )
+        startDateTime -= datetime.timedelta( weeks=13 )
     elif rangeCode == "6M":
-        startDateTime -= timedelta( weeks=26 )
+        startDateTime -= datetime.timedelta( weeks=26 )
     elif rangeCode == "1R":
-        startDateTime -= timedelta( weeks=52 )
+        startDateTime -= datetime.timedelta( weeks=52 )
     elif rangeCode == "2R":
-        startDateTime -= timedelta( weeks=104 )
+        startDateTime -= datetime.timedelta( weeks=104 )
     elif rangeCode == "3R":
-        startDateTime -= timedelta( weeks=156 )
+        startDateTime -= datetime.timedelta( weeks=156 )
     elif rangeCode == "MAX":
-        startDateTime = None
+        curr_time  = startDateTime.time()
+        start_date = datetime.date( year=1991, month=4, day=16 )                ## first day of stock
+        startDateTime = datetime.datetime.combine( start_date, curr_time )
     else:
         _LOGGER.warning( "unknown range code: %s", rangeCode )
         startDateTime = None

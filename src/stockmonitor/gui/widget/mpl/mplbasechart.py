@@ -103,16 +103,19 @@ class MplBaseChart( MplCanvas ):
         self.draw_idle()
 
 
-def _configure_plot( plot, ylabel ):
+## set axis formatting
+def _configure_plot( plot, ylabel, xmargin=0.0 ):
     plot.set_xlabel( 'Time', fontsize=14 )
     plot.set_ylabel( ylabel, fontsize=14 )
 
-    plot.margins( y=0.2 )
-    plot.set_xmargin(0.0)      ## prevents empty space between first tick and y axis
+    plot.margins( y=0.2 )               ## top and bottom space between line and edge
+    plot.set_xmargin( xmargin )         ## prevents empty space between first tick and y axis
 
 
-def _update_plot(xdata, plot ):
+## set axis ticks formatting
+def _update_plot( xdata, plot ):
     ticks = _generate_ticks(xdata, 12)
+#     print( "ticks:", ticks )
     plot.set_xticks( ticks )
 
     setLongFormat = False
@@ -160,10 +163,13 @@ def _generate_ticks(xdata, number):
 
 
 def get_index_float( xdata, xvalue ):
+    dataSize = len( xdata )
+    if dataSize < 2:
+        return 0
     valueDate = matplotlib.dates.num2date( xvalue )
     valueDate = valueDate.replace( tzinfo=None )            ## remove timezone info
-    dataSize = len( xdata )
-    for i in range(0, dataSize):
+#     valueDate = xvalue
+    for i in range(1, dataSize):
         currData = xdata[ i ]
         if currData <= valueDate:
             continue
@@ -197,6 +203,8 @@ def set_ref_format_coord( plot, refValue=None ):
 
 
 def set_int_format_coord( plot ):
+    if len(plot.lines) < 1:
+        return
     firstLine  = plot.lines[0]
     xdata      = firstLine.get_xdata()
     ydata      = firstLine.get_ydata()

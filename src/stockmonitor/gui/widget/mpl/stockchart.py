@@ -93,6 +93,9 @@ class PriceLineChart( MplBaseChart ):
 
         self.refreshCanvas()
 
+    def addPriceHLine(self, yvalue, color='y', style="--"):
+        self.pricePlot.axhline( y=yvalue, color=color, linestyle=style )
+
 
 class PriceValueLineChart( MplBaseChart ):
 
@@ -160,6 +163,9 @@ class PriceValueLineChart( MplBaseChart ):
             self.figure.set_visible( True )
 
         self.refreshCanvas()
+
+    def addPriceHLine(self, yvalue, color='y', style="--"):
+        self.pricePlot.axhline( y=yvalue, color=color, linestyle=style )
 
     def addVolumeSecondaryY(self, recentPrice ):
         def volume_to_value( vol ):

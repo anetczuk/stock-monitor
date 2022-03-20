@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>752</width>
-    <height>522</height>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Index Chart</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,0,1">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,1,0,1">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -108,6 +108,20 @@
       </spacer>
      </item>
      <item>
+      <widget class="QComboBox" name="chartTypeCB">
+       <item>
+        <property name="text">
+         <string>CandleStick</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Line</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
       <widget class="QComboBox" name="rangeCB">
        <item>
         <property name="text">
@@ -176,6 +190,9 @@
     </widget>
    </item>
    <item>
+    <widget class="PriceCandleStickChart" name="candleChart" native="true"/>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
@@ -212,6 +229,12 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>PriceCandleStickChart</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.mpl.candlestickchart</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>PriceLineChart</class>
    <extends>QWidget</extends>

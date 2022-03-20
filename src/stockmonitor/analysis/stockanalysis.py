@@ -33,7 +33,7 @@ import csv
 import pandas
 
 from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.datatype import ArchiveDataType
+from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.analysis.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader,\
     VarCalc
 from stockmonitor.analysis.stockanalysisdata import StockAnalysisData
@@ -66,7 +66,7 @@ class StockAnalysis():
     def sourceLink(self):
         return self.data.sourceLink()
 
-    def loadMin(self, dataType: ArchiveDataType, fromDay: datetime.date, toDay: datetime.date):
+    def loadMin(self, dataType: StockDataType, fromDay: datetime.date, toDay: datetime.date):
         nowDate = datetime.datetime.now().date()
         if fromDay >= nowDate:
             fromDay = nowDate - datetime.timedelta(days=1)
@@ -82,7 +82,7 @@ class StockAnalysis():
         self.minValue = ret.stock
         self.minDate  = [fromDay, toDay]
 
-    def loadMax(self, dataType: ArchiveDataType, fromDay: datetime.date, toDay: datetime.date):
+    def loadMax(self, dataType: StockDataType, fromDay: datetime.date, toDay: datetime.date):
         nowDate = datetime.datetime.now().date()
         if fromDay >= nowDate:
             fromDay = nowDate - datetime.timedelta(days=1)
@@ -98,7 +98,7 @@ class StockAnalysis():
         self.maxValue = ret.stock
         self.maxDate  = [fromDay, toDay]
 
-    def loadSum(self, dataType: ArchiveDataType, fromDay: datetime.date, toDay: datetime.date):
+    def loadSum(self, dataType: StockDataType, fromDay: datetime.date, toDay: datetime.date):
         nowDate = datetime.datetime.now().date()
         if fromDay >= nowDate:
             fromDay = nowDate - datetime.timedelta(days=1)
@@ -115,7 +115,7 @@ class StockAnalysis():
         self.sumValue = ret.stock
         self.sumDate  = [fromDay, toDay]
 
-    def loadCurr(self, dataType: ArchiveDataType, day: datetime.date = datetime.date.today(), offset=-1):
+    def loadCurr(self, dataType: StockDataType, day: datetime.date = datetime.date.today(), offset=-1):
         _LOGGER.debug( "Loading current: %s %s %s", dataType, day, offset )
         currDay  = day + datetime.timedelta(days=offset)
         nowDate = datetime.datetime.now().date()
@@ -126,7 +126,7 @@ class StockAnalysis():
         self.currValue = self.data.getData( dataType, validDay )
         self.currDate  = [validDay]
 
-    def loadData(self, dataType: ArchiveDataType, day: datetime.date):
+    def loadData(self, dataType: StockDataType, day: datetime.date):
         return self.data.getData( dataType, day )
 
     def calcGreatestSum(self, outFilePath=None):
@@ -145,7 +145,7 @@ class StockAnalysis():
 
             rowsList = []
 
-            currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+            currTrading = self.loadData( StockDataType.TRADING, self.currDate[0] )
 
             for key, val in self.sumValue.items():
                 tradingVal = currTrading[ key ]
@@ -218,7 +218,7 @@ class StockAnalysis():
                             "potential", "relative", "pot raise[%]", "link" ]
             rowsList = []
 
-            currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+            currTrading = self.loadData( StockDataType.TRADING, self.currDate[0] )
 
             for key, currVal in self.currValue.items():
                 maxVal = self.maxValue.get( key )
@@ -273,7 +273,7 @@ class StockAnalysis():
 
             rowsList = []
 
-            currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+            currTrading = self.loadData( StockDataType.TRADING, self.currDate[0] )
 
             for key, currVal in self.currValue.items():
                 maxVal = self.maxValue.get( key )
@@ -322,7 +322,7 @@ class StockAnalysis():
 
             rowsList = []
 
-            currTrading = self.loadData( ArchiveDataType.TRADING, self.currDate[0] )
+            currTrading = self.loadData( StockDataType.TRADING, self.currDate[0] )
 
             for key, currVal in self.currValue.items():
                 maxVal = self.maxValue.get( key )
@@ -419,8 +419,8 @@ class StockAnalysis():
                 nextDay = self.getNextValidDay(counterMonday)
 
                 ## calc
-                prevValue = self.data.getData( ArchiveDataType.CLOSING, prevDay )
-                nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
+                prevValue = self.data.getData( StockDataType.CLOSING, prevDay )
+                nextValue = self.data.getData( StockDataType.CLOSING, nextDay )
 
                 for key, nextVal in nextValue.items():
                     prevVal = prevValue[ key ]
@@ -435,8 +435,8 @@ class StockAnalysis():
 
             prevDay = self.getRecentValidDay( lastMonday )
             nextDay = self.getNextValidDay( lastMonday )
-            prevValue = self.data.getData( ArchiveDataType.CLOSING, prevDay )
-            nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
+            prevValue = self.data.getData( StockDataType.CLOSING, prevDay )
+            nextValue = self.data.getData( StockDataType.CLOSING, nextDay )
 
             for key, val in raiseCounter.counter.items():
                 currAccuracy = val / numOfWeeks
@@ -470,11 +470,11 @@ class StockAnalysis():
         currDate = fromDay
         while currDate <= toDay:
 #             _LOGGER.debug( "accessing data for dat: %s", currDate )
-            openingVal = self.loadData( ArchiveDataType.OPENING, currDate )
-            minVal = self.loadData( ArchiveDataType.MIN, currDate )
-            maxVal = self.loadData( ArchiveDataType.MAX, currDate )
-            closingVal = self.loadData( ArchiveDataType.CLOSING, currDate )
-            tradingVal = self.loadData( ArchiveDataType.TRADING, currDate )
+            openingVal = self.loadData( StockDataType.OPENING, currDate )
+            minVal = self.loadData( StockDataType.MIN, currDate )
+            maxVal = self.loadData( StockDataType.MAX, currDate )
+            closingVal = self.loadData( StockDataType.CLOSING, currDate )
+            tradingVal = self.loadData( StockDataType.TRADING, currDate )
 
             if tradingVal is None:
                 currDate += datetime.timedelta(days=1)
@@ -723,8 +723,8 @@ class StockAnalysis():
                     nextDay = self.getRecentValidDay( counterMonday, True )
 
                 ## calc
-                prevValue = self.data.getData( ArchiveDataType.OPENING, nextDay )
-                nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
+                prevValue = self.data.getData( StockDataType.OPENING, nextDay )
+                nextValue = self.data.getData( StockDataType.CLOSING, nextDay )
 
                 for key, nextVal in nextValue.items():
                     prevVal = prevValue[ key ]
@@ -748,8 +748,8 @@ class StockAnalysis():
             else:
                 nextDay = self.getRecentValidDay( lastValid, True )
 
-            prevValue = self.data.getData( ArchiveDataType.OPENING, nextDay )
-            nextValue = self.data.getData( ArchiveDataType.CLOSING, nextDay )
+            prevValue = self.data.getData( StockDataType.OPENING, nextDay )
+            nextValue = self.data.getData( StockDataType.CLOSING, nextDay )
 
             for key, val in raiseCounter.items():
                 currAccuracy = val / numOfWeeks

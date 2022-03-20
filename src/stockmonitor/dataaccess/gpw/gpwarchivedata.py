@@ -25,42 +25,123 @@ import os
 import logging
 # import urllib.request
 import datetime
+from typing import List
 
-import urllib.error
-import xlrd
+import pandas
+from pandas.core.frame import DataFrame
 
-from stockmonitor.dataaccess import tmp_dir, retrieve_url
-from stockmonitor.dataaccess.datatype import ArchiveDataType
+from stockmonitor.dataaccess import tmp_dir, download_html_content
+from stockmonitor.dataaccess.datatype import StockDataType
+from stockmonitor.dataaccess.worksheetdata import BaseWorksheetDAO,\
+    WorksheetData
+from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwArchiveData:
+class GpwArchiveData( BaseWorksheetDAO ):
     """Handle GPW archive data."""
 
-    @staticmethod
-    def sourceLink():
+    class DAO( WorksheetData ):
+        """Data access object."""
+
+        def __init__(self, dayDate: datetime.date = None):
+            super().__init__()
+            if dayDate is not None:
+                self.day = dayDate
+            else:
+                self.day = datetime.datetime.now().date()
+
+        def getDataPath(self):
+            return tmp_dir + "data/gpw/arch/" + self.day.strftime("%Y-%m-%d") + ".xls"
+
+        ## override
+        def downloadData(self, filePath):
+            ## pattern example: https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=15-01-2020
+            url = "https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date="\
+                + self.day.strftime("%d-%m-%Y")
+
+            relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            # _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
+
+            dirPath = os.path.dirname( filePath )
+            os.makedirs( dirPath, exist_ok=True )
+
+            try:
+                download_html_content( url, filePath )
+            except BaseException as ex:
+                _LOGGER.exception( "unable to load object data -- %s: %s", type(ex), ex, exc_info=False )
+                raise
+
+        @synchronized
+        def _parseDataFromFile(self, dataFile: str) -> DataFrame:
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
+            dataFrame = pandas.read_excel( dataFile )
+            # pylint: disable=E1101
+            dataFrame.drop( dataFrame.tail(1).index, inplace=True )
+            return dataFrame
+
+#             try:
+#     #             _LOGGER.debug( "opening file: %s", os.path.abspath(dataFile) )
+#                 workbook = xlrd.open_workbook( dataFile )
+#                 worksheet = workbook.sheet_by_index(0)
+#     #             _LOGGER.debug( "found data for: %s", day )
+#                 return worksheet
+#             except xlrd.biffh.XLRDError as err:
+#                 message = str(err)
+#                 if "Unsupported format" not in message:
+#                     _LOGGER.exception( "Error" )
+#                     return None
+#
+#                 # Unsupported format
+#                 if self.isFileWithNoData(dataFile) is False:
+#                     _LOGGER.exception( "Error" )
+#                     return None
+#
+#                 # Brak danych dla wybranych kryteriów.
+#     #             _LOGGER.info("day without stock: %s", day )
+#                 return None
+#             return None
+
+        @staticmethod
+        def isFileWithNoData(filePath):
+            with open( filePath, encoding="utf-8" ) as f:
+                if "Brak danych dla wybranych kryteriów." in f.read():
+                    return True
+            return False
+
+    ## ==========================================================
+
+    def __init__(self, dayDate: datetime.date = None):
+        dao = GpwArchiveData.DAO( dayDate )
+        super().__init__( dao )
+
+    def sourceLink( self ):
         return "https://www.gpw.pl/archiwum-notowan"
 
-    def getData(self, dataType: ArchiveDataType, day: datetime.date):
-        # _LOGGER.debug( "getting stock data for: %s", day )
-        worksheet = self.getWorksheet( day )
+    def getData(self, dataType: StockDataType, day: datetime.date = None):
+        if day is not None:
+            self.dao = GpwArchiveData.DAO( day )
+
+#         _LOGGER.debug( "getting max from date: %s", day )
+        worksheet = self.getWorksheetData()
         if worksheet is None:
-            _LOGGER.warning("worksheet not found for day: %s", day)
             return None
-        _LOGGER.debug("worksheet found for day: %s", day )
-        colIndex = self.getColumnIndex( dataType )
-        if colIndex is None:
-            return None
-        return self.extractColumn( worksheet, colIndex )
+        colIndex = self.getDataColumnIndex( dataType )
+        nameIndex = self.getDataColumnIndex( StockDataType.STOCK_NAME )
+        names  = worksheet.iloc[:, nameIndex]
+        values = worksheet.iloc[:, colIndex]
+        return dict( zip(names, values) )
 
     ## check valid stock day starting from "day" and going past
     def getRecentValidDay(self, day: datetime.date) -> datetime.date:
         currDay = day
         worksheet = None
         while True:
-            worksheet = self.getWorksheet(currDay)
+            self.dao = GpwArchiveData.DAO( currDay )
+            worksheet = self.getWorksheetData()
             if worksheet is not None:
                 return currDay
             currDay -= datetime.timedelta(days=1)
@@ -71,93 +152,107 @@ class GpwArchiveData:
         dayToday = datetime.date.today()
         worksheet = None
         while currDay < dayToday:
-            worksheet = self.getWorksheet(currDay)
+            self.dao = GpwArchiveData.DAO( currDay )
+            worksheet = self.getWorksheetData()
             if worksheet is not None:
                 return currDay
             currDay += datetime.timedelta(days=1)
         return None
 
-    # ==========================================================================
+    def getStockData(self, isinList: List[str] = None):
+        return self.getRowsByValueList( StockDataType.ISIN, isinList )
+
+    def getRowByIsin(self, isin):
+        return self.getRowByValue( StockDataType.ISIN, isin )
+
+    def getIsinField(self, rowIndex: int):
+        return self.getDataByIndex( StockDataType.ISIN, rowIndex )
+
+    ## get column index
+    ## override
+    def getDataColumnIndex( self, columnType: StockDataType ) -> int:
+        return self.getColumnIndex( columnType )
 
     @staticmethod
-    def getColumnIndex(dataType: ArchiveDataType):
+    def getColumnIndex( columnType: StockDataType ) -> int:
         switcher = {
-            ArchiveDataType.DATE:          0,
-            ArchiveDataType.NAME:          1,
-            ArchiveDataType.ISIN:          2,
-            ArchiveDataType.CURRENCY:      3,
-            ArchiveDataType.OPENING:       4,
-            ArchiveDataType.MAX:           5,
-            ArchiveDataType.MIN:           6,
-            ArchiveDataType.CLOSING:       7,
-            ArchiveDataType.CHANGE:        8,
-            ArchiveDataType.VOLUME:        9,
-            ArchiveDataType.TRANSACTIONS: 10,
-            ArchiveDataType.TRADING:      11
+            StockDataType.STOCK_NAME:      1,
+            StockDataType.ISIN:            2,
+            StockDataType.OPENING:         4,
+            StockDataType.MAX:             5,
+            StockDataType.MIN:             6,
+            StockDataType.CLOSING:         7,
+            StockDataType.VOLUME:          9
         }
-        return switcher.get(dataType, None)
+        index = switcher.get(columnType, None)
 
-    def extractColumn(self, worksheet, colIndex):
-        # name col: 1
-        # rows are indexed by 0, first row is header
-        ret = {}
-        nameIndex = self.getColumnIndex( ArchiveDataType.NAME )
-        for row in range(1, worksheet.nrows):
-            name = worksheet.cell(row, nameIndex).value
-            value = worksheet.cell(row, colIndex).value
-            ret[ name ] = value
-        return ret
+        if index is None:
+            raise ValueError( f"Invalid value: {columnType}" )
+        return index
 
-    def getWorksheet(self, day: datetime.date):
-        _LOGGER.debug( "getting data from date: %s", day )
-        dataFile = self.downloadData( day )
-
-        try:
-#             _LOGGER.debug( "opening file: %s", os.path.abspath(dataFile) )
-            workbook = xlrd.open_workbook( dataFile )
-            worksheet = workbook.sheet_by_index(0)
-#             _LOGGER.debug( "found data for: %s", day )
-            return worksheet
-        except xlrd.biffh.XLRDError as err:
-            message = str(err)
-            if "Unsupported format" not in message:
-                _LOGGER.exception( "Error" )
-                return None
-
-            # Unsupported format
-            if self.isFileWithNoData(dataFile) is False:
-                _LOGGER.exception( "Error" )
-                return None
-
-            # Brak danych dla wybranych kryteriów.
-#             _LOGGER.info("day without stock: %s", day )
-            return None
-        return None
-
-    @staticmethod
-    def downloadData(day):
-        filePath = tmp_dir + "data/gpw/arch/" + day.strftime("%Y-%m-%d") + ".xls"
-        if os.path.exists( filePath ):
-            return filePath
-
-        ## pattern example: https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=15-01-2020
-        url = "https://www.gpw.pl/archiwum-notowan?fetch=1&type=10&instrument=&date=" + day.strftime("%d-%m-%Y")
-        _LOGGER.debug( "grabbing data from utl: %s", url.split("?", maxsplit=1)[0] )
-
-        dirPath = os.path.dirname( filePath )
-        os.makedirs( dirPath, exist_ok=True )
-
-        try:
-            retrieve_url( url, filePath )
-
-            return filePath
-        except urllib.error.URLError as ex:
-            _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
-            raise
-
-    @staticmethod
-    def isFileWithNoData(filePath):
-        with open( filePath, encoding="utf-8" ) as f:
-            if "Brak danych dla wybranych kryteriów." in f.read():
-                return True
-        return False
+#     ################################################################
+#
+#     def getData(self, dataType: ArchiveDataType, day: datetime.date):
+#         # _LOGGER.debug( "getting stock data for: %s", day )
+#         worksheet = self.getWorksheet( day )
+#         if worksheet is None:
+#             _LOGGER.warning("worksheet not found for day: %s", day)
+#             return None
+#         _LOGGER.debug("worksheet found for day: %s", day )
+#         colIndex = self.getColumnIndex( dataType )
+#         if colIndex is None:
+#             return None
+#         return self.extractColumn( worksheet, colIndex )
+#
+#     ## check valid stock day starting from "day" and going past
+#     def getRecentValidDay(self, day: datetime.date) -> datetime.date:
+#         currDay = day
+#         worksheet = None
+#         while True:
+#             worksheet = self.getWorksheet(currDay)
+#             if worksheet is not None:
+#                 return currDay
+#             currDay -= datetime.timedelta(days=1)
+#         return None
+#
+#     def getNextValidDay(self, day: datetime.date):
+#         currDay = day
+#         dayToday = datetime.date.today()
+#         worksheet = None
+#         while currDay < dayToday:
+#             worksheet = self.getWorksheet(currDay)
+#             if worksheet is not None:
+#                 return currDay
+#             currDay += datetime.timedelta(days=1)
+#         return None
+#
+#     # ==========================================================================
+#
+#     @staticmethod
+#     def getColumnIndex(dataType: ArchiveDataType):
+#         switcher = {
+#             ArchiveDataType.DATE:          0,
+#             ArchiveDataType.NAME:          1,
+#             ArchiveDataType.ISIN:          2,
+#             ArchiveDataType.CURRENCY:      3,
+#             ArchiveDataType.OPENING:       4,
+#             ArchiveDataType.MAX:           5,
+#             ArchiveDataType.MIN:           6,
+#             ArchiveDataType.CLOSING:       7,
+#             ArchiveDataType.CHANGE:        8,
+#             ArchiveDataType.VOLUME:        9,
+#             ArchiveDataType.TRANSACTIONS: 10,
+#             ArchiveDataType.TRADING:      11
+#         }
+#         return switcher.get(dataType, None)
+#
+#     def extractColumn(self, worksheet, colIndex):
+#         # name col: 1
+#         # rows are indexed by 0, first row is header
+#         ret = {}
+#         nameIndex = self.getColumnIndex( ArchiveDataType.NAME )
+#         for row in range(1, worksheet.nrows):
+#             name = worksheet.cell(row, nameIndex).value
+#             value = worksheet.cell(row, colIndex).value
+#             ret[ name ] = value
+#         return ret

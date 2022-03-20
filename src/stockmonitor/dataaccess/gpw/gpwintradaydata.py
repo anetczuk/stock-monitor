@@ -81,9 +81,9 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
             self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
             return self.getWorksheetData( forceRefresh )
 
-        def loadWorksheet(self):
+        def loadWorksheet(self, preventDownload=False):
             self.dataTime = datetime.datetime.now()
-            super().loadWorksheet()
+            super().loadWorksheet( preventDownload )
 
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:
@@ -173,9 +173,9 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
                 _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
                 raise
 
-        def loadWorksheet(self):
+        def loadWorksheet(self, preventDownload=False):
             self.dataTime = datetime.datetime.now()
-            super().loadWorksheet()
+            super().loadWorksheet( preventDownload )
 
         @synchronized
         def _parseDataFromFile(self, dataFile: str) -> DataFrame:

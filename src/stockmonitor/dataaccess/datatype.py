@@ -80,11 +80,11 @@ class StockDataType(Enum):
 
     NO_DIV_DAY = ()         ## Notowanie bez dywidendy
 
-#     CLOSING = ()            ## kurs zamkniecia
+    CLOSING = ()            ## kurs zamkniecia
 #     CHANGE = ()             ## zmiana kursu
-#     VOLUME = ()             ## wolumen
+    VOLUME = ()             ## wolumen
 #     TRANSACTIONS = ()       ## liczba transakcji
-#     TRADING = ()            ## obrót, val/1k
+    TRADING = ()            ## obrót, val/1k
 
     def __new__(cls):
         value = len(cls.__members__)  # note no + 1

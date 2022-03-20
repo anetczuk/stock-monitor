@@ -62,8 +62,9 @@ class BaseWorksheetData( metaclass=abc.ABCMeta ):
         return self.getDataFrame()
 
     ## load data to internal buffer (include downloading and parsing raw data)
+    ## return loaded data
     @abc.abstractmethod
-    def loadWorksheet(self):
+    def loadWorksheet(self, preventDownload=False):
         raise NotImplementedError('You need to define this method in derived class!')
 
     ## get current data (without scraping -- loading from local cache allowed)
@@ -85,7 +86,7 @@ class WorksheetData( BaseWorksheetData ):
 
     ## override
     @synchronized
-    def loadWorksheet(self):
+    def loadWorksheet(self, preventDownload=False):
         try:
             ## forced refresh or no data -- download new data
             dataPath = self.getDataPath()
@@ -94,11 +95,15 @@ class WorksheetData( BaseWorksheetData ):
             dirPath = os.path.dirname( dataPath )
             os.makedirs( dirPath, exist_ok=True )
 
-            self.downloadData( dataPath )
-            self.parseWorksheetFromFile( dataPath )
+            #preventDownload
+            if preventDownload is False or os.path.exists( dataPath ) is False:
+                self.downloadData( dataPath )
+            return self.parseWorksheetFromFile( dataPath )
 
         except BaseException:
             self.storage.clear()
+
+        return None
 
     @abc.abstractmethod
     def downloadData(self, filePath):
@@ -219,8 +224,8 @@ class WorksheetDataMock( BaseWorksheetData ):
         self.worksheet = data
 
     ## override
-    def loadWorksheet(self):
-        pass
+    def loadWorksheet(self, preventDownload=False):
+        return self.worksheet
 
     ## override
     def getDataFrame(self) -> DataFrame:
@@ -233,19 +238,25 @@ class WorksheetDataMock( BaseWorksheetData ):
 class BaseWorksheetDAO():
 
     def __init__( self, dao ):
+        # self.dao: BaseWorksheetData
         self.dao = dao
 
+    ## get data without downloading it
     def getDataFrame(self) -> DataFrame:
         return self.dao.getDataFrame()
 
+    ## get data without downloading it ('force' causes data to be downloaded)
     def getWorksheetData(self, forceRefresh=False) -> DataFrame:
         return self.dao.getWorksheetData( forceRefresh )
 
+    ## download data in case of None
     def accessWorksheetData(self, forceRefresh=False) -> DataFrame:
         return self.dao.accessWorksheetData( forceRefresh )
 
-    def loadWorksheet(self):
-        return self.dao.loadWorksheet()
+    ## download and parse data to worksheet
+    ## return loaded data
+    def loadWorksheet(self, preventDownload=False):
+        return self.dao.loadWorksheet( preventDownload )
 
     ## ====================================
 
@@ -265,13 +276,13 @@ class BaseWorksheetDAO():
         return retRows.squeeze()                                            ## convert 1 row dataframe to series
 
     # def getRowsByValueList( self, rowColumnType: StockDataType, rowValues: List[str] ):
-    def getRowsByValueList( self, _: StockDataType, rowValues: List[str] ):
+    def getRowsByValueList( self, rowColumnType: StockDataType, rowValues: List[str] ):
         if rowValues is None:
             return None
         dataFrame = self.getWorksheetData()
         if dataFrame is None:
             return None
-        colIndex = self.getDataColumnIndex( StockDataType.TICKER )
+        colIndex = self.getDataColumnIndex( rowColumnType )
         retRows = dataFrame.loc[ dataFrame.iloc[:, colIndex].isin( rowValues ) ]
         return retRows
 

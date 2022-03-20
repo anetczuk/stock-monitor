@@ -115,11 +115,16 @@ class DoubleDict():
         return self.factory_function( key, subkey )
 
 
-class GpwStockIntradayMap( StockDataProvider ):
+class WorksheetMap( StockDataProvider ):
     """Container for stock data for stock charts."""
 
-    def __init__(self):
-        self.dataDict = DoubleDict( GpwStockIntradayMap.makeValue )
+    def __init__(self, factory_function=None):
+        self.dataDict = DoubleDict( factory_function )
+
+    def getSource(self, isin, rangeCode=None):
+        if rangeCode is None:
+            rangeCode = "1D"
+        return self.dataDict.getData( isin, rangeCode )
 
     ## override
     def accessData(self, forceRefresh=True):
@@ -130,48 +135,41 @@ class GpwStockIntradayMap( StockDataProvider ):
         for val in values:
             val.accessWorksheetData( forceRefresh )
 
-    def getSource(self, isin, rangeCode=None) -> GpwCurrentStockIntradayData:
-        if rangeCode is None:
-            rangeCode = "1D"
-        return self.dataDict.getData( isin, rangeCode )
-
     def deleteData(self, isin):
         self.dataDict.deleteData(isin)
 
     def printData(self):
         self.dataDict.printData()
+
+
+class GpwStockIntradayMap( WorksheetMap ):
+    """Container for stock data for stock charts."""
+
+    def __init__(self):
+        super().__init__( GpwStockIntradayMap.makeValue )
 
     @staticmethod
     def makeValue(isin, rangeCode):
         return GpwCurrentStockIntradayData( isin, rangeCode )
 
 
-class GpwIndexIntradayMap( StockDataProvider ):
+class GpwIndexIntradayMap( WorksheetMap ):
     """Container for index data for index charts."""
 
     def __init__(self):
-        self.dataDict = DoubleDict( GpwIndexIntradayMap.makeValue )
-
-    ## override
-    def accessData(self, forceRefresh=True):
-        values = self.dataDict.getValues()
-        if len( values ) < 1:
-            # _LOGGER.debug( "nothing to access (no open charts)" )
-            return
-        for val in values:
-            val.accessWorksheetData( forceRefresh )
-
-    def getSource(self, isin, rangeCode=None) -> GpwCurrentIndexIntradayData:
-        if rangeCode is None:
-            rangeCode = "1D"
-        return self.dataDict.getData( isin, rangeCode )
-
-    def deleteData(self, isin):
-        self.dataDict.deleteData(isin)
-
-    def printData(self):
-        self.dataDict.printData()
+        super().__init__( GpwIndexIntradayMap.makeValue )
 
     @staticmethod
     def makeValue(isin, rangeCode):
         return GpwCurrentIndexIntradayData( isin, rangeCode )
+
+
+# class GpwArchiveDataMap( WorksheetMap ):
+#     """Container for stock data for stock charts."""
+#
+#     def __init__(self):
+#         super().__init__( GpwArchiveDataMap.makeValue )
+#
+#     @staticmethod
+#     def makeValue(isin, rangeCode):
+#         return GpwArchiveData( isin, rangeCode )

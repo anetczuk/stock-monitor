@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+import random
 
 try:
     ## following import success only when file is directly executed from command line
@@ -36,6 +37,7 @@ except ImportError:
 import sys
 import logging
 import datetime
+from typing import Dict
 
 import pandas
 
@@ -63,14 +65,41 @@ app = QApplication(sys.argv)
 app.setApplicationName("StockMonitor")
 app.setOrganizationName("arnet")
 
-xdata = [ datetime.datetime.fromtimestamp( 100000 ), datetime.datetime.fromtimestamp( 200000 ),
-          datetime.datetime.fromtimestamp( 300000 ), datetime.datetime.fromtimestamp( 400000 ),
-          datetime.datetime.fromtimestamp( 500000 ) ]
-ydata = [1, 10, 5, 4, 7]
-vdata = [5, 7, 3, 4, 1]
-priceColumn   = [1, 3, 2, 5, 1 ]
-volumenColumn = [5, 4, 2, 3, 1 ]
-frame = { 'Open': priceColumn, 'High': priceColumn, 'Low': volumenColumn, 'Close': volumenColumn, 'Volume': volumenColumn }
+# xdata = [ datetime.datetime.fromtimestamp( 100000 ), datetime.datetime.fromtimestamp( 200000 ),
+#           datetime.datetime.fromtimestamp( 300000 ), datetime.datetime.fromtimestamp( 400000 ),
+#           datetime.datetime.fromtimestamp( 500000 ) ]
+
+start_date = datetime.datetime.now() - datetime.timedelta(days=20)
+xdata = []
+# for _ in range(0, 5):
+#     xdata.append( start_date )
+#     start_date += datetime.timedelta( days=1 )
+# print( "xxx:", xdata )
+
+# open_data    = [ 1, 10, 5, 4, 1 ]
+# high_data    = [ 5, 11, 5, 5, 8 ]
+# low_data     = [ 1,  3, 2, 2, 1 ]
+# volumen_data = [ 5,  4, 2, 3, 7 ]
+#
+# frame = { 'Open': open_data, 'High': high_data, 'Low': low_data, 'Close': volumen_data, 'Volume': volumen_data }
+frame: Dict = { 'Open': [], 'High': [], 'Low': [], 'Close': [], 'Volume': [] }
+
+for i in range(0, 20):
+    xdata.append( start_date )
+    start_date += datetime.timedelta( days=random.choice( [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2] ) )
+#     start_date += datetime.timedelta( days=1 )
+    vopen = random.randrange( 10 )
+    vclose = vopen + random.randint( -5, 5 )
+    vmin = min( vopen, vclose ) - random.randrange( 3 )
+    vmax = max( vopen, vclose ) + random.randrange( 3 )
+    volume = random.randrange( 10 ) + 1
+
+    frame[ "Open" ].append( vopen )
+    frame[ "High" ].append( vclose )
+    frame[ "Low" ].append( vmin )
+    frame[ "Close" ].append( vmax )
+    frame[ "Volume" ].append( volume )
+
 dataframe = pandas.DataFrame( frame )
 dataframe.index = pandas.DatetimeIndex( xdata )
 
