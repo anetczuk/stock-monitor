@@ -222,17 +222,21 @@ class WalletWidget( QtBaseClass ):           # type: ignore
 
 
 def import_mb_transactions( dataObject, filePath ):
-    importedData, state = load_mb_transactions( filePath )
+    importedData, _ = load_mb_transactions( filePath )
 
 #     print("importing:\n", importedData)
 
-    if state == 0:
-        ## load history transactions
-        _LOGGER.debug( "opening transactions: %s", filePath )
-        dataObject.importWalletTransactions( importedData )
-    elif state == 1:
-        ## add transactions
-        _LOGGER.debug( "opening transactions: %s", filePath )
-        dataObject.importWalletTransactions( importedData, True )
-    else:
-        _LOGGER.warning( "invalid import file: %s", filePath )
+    ## add transactions
+    _LOGGER.debug( "opening transactions: %s", filePath )
+    dataObject.importWalletTransactions( importedData, True )
+
+#     if state == 0:
+#         ## load history transactions
+#         _LOGGER.debug( "opening transactions: %s", filePath )
+#         dataObject.importWalletTransactions( importedData )
+#     elif state == 1:
+#         ## add transactions
+#         _LOGGER.debug( "opening transactions: %s", filePath )
+#         dataObject.importWalletTransactions( importedData, True )
+#     else:
+#         _LOGGER.warning( "invalid import file: %s", filePath )
