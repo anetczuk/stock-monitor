@@ -174,6 +174,9 @@ class WorksheetStorage():
             ## <module 'pandas.core.internals.blocks' from 'site-packages/pandas/core/internals/blocks.py'>
             _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file",
                                picklePath, exc_info=False )
+        except EOFError:
+            _LOGGER.exception( "unable to load object data files[%s], continuing with raw data file",
+                               picklePath, exc_info=False )
 
         self.clear()
         return None

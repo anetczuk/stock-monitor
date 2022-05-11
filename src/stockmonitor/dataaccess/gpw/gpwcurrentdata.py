@@ -48,7 +48,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class GpwCurrentStockData( BaseWorksheetDAO ):
-    """Handle GPW current day data."""
+    """Access GPW session current stock values."""
 
     class DAO( WorksheetData ):
         """Data access object."""

@@ -104,8 +104,10 @@ class MplBaseChart( MplCanvas ):
 
 
 ## set axis formatting
-def _configure_plot( plot, ylabel, xmargin=0.0 ):
-    plot.set_xlabel( 'Time', fontsize=14 )
+def _configure_plot( plot, xlabel=None, ylabel=None, xmargin=0.0 ):
+    if plot is None:
+        return
+    plot.set_xlabel( xlabel, fontsize=14 )
     plot.set_ylabel( ylabel, fontsize=14 )
 
     plot.margins( y=0.2 )               ## top and bottom space between line and edge

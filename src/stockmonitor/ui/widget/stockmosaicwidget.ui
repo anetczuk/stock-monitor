@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>stockMosaicWidet</class>
+ <widget class="QWidget" name="stockMosaicWidet">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>698</width>
+    <height>517</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Stock Mosaic</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,1">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="stockLabel">
+       <property name="text">
+        <string>None</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Time:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="timeLabel">
+       <property name="text">
+        <string>None</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QCheckBox" name="showWalletCB">
+       <property name="text">
+        <string>Wallet</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="showTransactionsLevelsCB">
+       <property name="text">
+        <string>Current trans levels</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="showTransactionsPointsCB">
+       <property name="text">
+        <string>Trans points</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QComboBox" name="sortPlotsCB">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Sort by Name</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Sort by Change</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="rangeCB">
+       <item>
+        <property name="text">
+         <string>1D</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>14D</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1M</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3M</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>6M</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1R</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2R</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3R</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>MAX</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="refreshPB">
+       <property name="text">
+        <string>Refresh</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="PriceValueCandleStickChart" name="candleChart" native="true"/>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="toolbarLayout"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PriceValueCandleStickChart</class>
+   <extends>QWidget</extends>
+   <header>stockmonitor.gui.widget.mpl.candlestickchart</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -39,7 +39,7 @@ from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 
-from stockmonitor.gui.widget import stockchartwidget
+from stockmonitor.gui.widget import stockchartwidget, stockmosaicwidget
 from stockmonitor.gui.widget import indexchartwidget
 # import stockmonitor.gui.widget.stocksummarywidget as stocksummarywidget
 
@@ -155,6 +155,10 @@ class StockTable( DataFrameTable ):
         openChartMenu.setData( tickersList )
         openChartMenu.triggered.connect( self._openChartAction )
 
+        openMosaicMenu = contextMenu.addAction("Open mosaic")
+        openMosaicMenu.setData( tickersList )
+        openMosaicMenu.triggered.connect( self._openMosaicAction )
+
     def _openChartAction(self):
         if self.dataObject is None:
             return
@@ -164,6 +168,15 @@ class StockTable( DataFrameTable ):
             tickerList = list( tickerList )
         for ticker in tickerList:
             stockchartwidget.create_window( self.dataObject, ticker, self )
+
+    def _openMosaicAction(self):
+        if self.dataObject is None:
+            return
+        parentAction = self.sender()
+        tickerList = parentAction.data()
+        if is_iterable( tickerList ) is False:
+            tickerList = list( tickerList )
+        stockmosaicwidget.create_window( self.dataObject, tickerList, self )
 
     def _addFavActions(self, contextMenu):
         favsActions = []

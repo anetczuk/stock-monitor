@@ -593,6 +593,7 @@ class WalletData( persist.Versionable ):
             for trans in hist.transactions:
                 self.addTransaction(ticker, trans, joinSimilar)
 
+    ## get current tickers
     def getCurrentStock(self) -> List[ str ]:
         ret = []
         for key, hist in self.stockList.items():

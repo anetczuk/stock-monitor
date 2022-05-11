@@ -91,6 +91,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.menuEdit.insertAction( self.ui.actionRedo, redoAction )
         self.ui.menuEdit.removeAction( self.ui.actionRedo )
 
+        self.ui.actionOpen_stock_mosaic.triggered.connect( self.ui.walletwidget.openWalletMosaic )
         self.ui.actionWallet_profit_chart.triggered.connect( self.ui.walletwidget.openWalletProfitChart )
         self.ui.actionOverall_profit_chart.triggered.connect( self.ui.walletwidget.openOverallProfitChart )
         self.ui.actionGain_chart.triggered.connect( self.ui.walletwidget.openWalletGainChart )

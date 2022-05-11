@@ -38,18 +38,18 @@ class PriceLineChart( MplBaseChart ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
 
-        self.xlabel = "Price"
+        self.ylabel = "Price"
         self.pricePlot  = self.figure.add_subplot(1, 1, 1)      ## matplotlib.axes._subplots.AxesSubplot
         self.clearPlot()
 
-    def setXLabel(self, xLabel):
-        self.xlabel = xLabel
-        _configure_plot( self.pricePlot, self.xlabel )
+    def setXLabel(self, yLabel):
+        self.ylabel = yLabel
+        _configure_plot( self.pricePlot, xlabel="Time", ylabel=self.ylabel )
 
     def clearPlot(self):
         super().clearPlot()
 
-        _configure_plot( self.pricePlot, self.xlabel )
+        _configure_plot( self.pricePlot, xlabel="Time", ylabel=self.ylabel )
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them
@@ -109,8 +109,8 @@ class PriceValueLineChart( MplBaseChart ):
     def clearPlot(self):
         super().clearPlot()
 
-        _configure_plot( self.pricePlot, "Price" )
-        _configure_plot( self.volumePlot, "Volume" )
+        _configure_plot( self.pricePlot, xlabel="Time", ylabel="Price" )
+        _configure_plot( self.volumePlot, xlabel="Time", ylabel="Volume" )
 
         # rotates and right aligns the x labels, and moves the bottom of the
         # axes up to make room for them

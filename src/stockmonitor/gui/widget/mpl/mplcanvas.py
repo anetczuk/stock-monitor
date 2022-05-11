@@ -53,14 +53,10 @@ class MplCanvas(FigureCanvas):
         self.figure.set_visible(show)
         self.draw()                         ## QWidget draw
 
-    def refreshCanvas(self):
-        self.figure.tight_layout()
+    def refreshCanvas(self, tight=True):
+        if tight:
+            self.figure.tight_layout()
         self.draw_idle()
-
-    ## fix fitting figure to widget
-    def resizeEvent(self, event):
-        super().resizeEvent( event )
-        self.figure.tight_layout()
 
 
 ## =======================================================================

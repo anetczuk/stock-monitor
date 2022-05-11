@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
-    """Handle GPW 1D data chart."""
+    """Access GPW data based on range code."""
 
     class DAO( WorksheetData ):
         """Data access object."""
@@ -133,10 +133,25 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
     def getWorksheetForDate(self, dataDate, forceRefresh=False):
         return self.dao.getWorksheetForDate( dataDate, forceRefresh )
 
+    def getRecentTransTime(self):
+        colIndex = self.getDataColumnIndex( StockDataType.RECENT_TRANS_TIME )
+        dataFrame: DataFrame = self.getDataFrame()
+        if dataFrame is None:
+            return None
+        return dataFrame.iloc[-1, colIndex]
+
     ## get column index
     ## override
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:
-        raise ValueError( f"Invalid value: {columnType}" )
+        switcher = {
+            StockDataType.RECENT_TRANS_TIME:  0
+        }
+        index = switcher.get(columnType, None)
+        if index is None:
+            dataFrame: DataFrame = self.getDataFrame()
+            print( "xxx:", dataFrame )
+            raise ValueError( f"Invalid value: {columnType}" )
+        return index
 
 
 class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):

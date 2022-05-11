@@ -22,7 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-import random
 
 try:
     ## following import success only when file is directly executed from command line
@@ -33,6 +32,9 @@ except ImportError:
     ## when import fails then it means that the script was executed indirectly
     ## in this case __init__ is already loaded
     pass
+
+import random
+from stockmonitor.gui.widget.mpl.mplcanvas import MplCanvas
 
 import sys
 import logging
@@ -84,6 +86,8 @@ xdata = []
 # frame = { 'Open': open_data, 'High': high_data, 'Low': low_data, 'Close': volumen_data, 'Volume': volumen_data }
 frame: Dict = { 'Open': [], 'High': [], 'Low': [], 'Close': [], 'Volume': [] }
 
+random.seed( 10 )
+
 for i in range(0, 20):
     xdata.append( start_date )
     start_date += datetime.timedelta( days=random.choice( [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2] ) )
@@ -105,12 +109,14 @@ dataframe.index = pandas.DatetimeIndex( xdata )
 
 setup_interrupt_handling()
 
+
 widget = PriceCandleStickChart()
 widget.resize( 1024, 768 )
 widget.addPriceCandles( dataframe )
 widget.show()
 
 widget = PriceValueCandleStickChart()
+widget.generateMosaicItems( 4 )
 widget.resize( 1024, 768 )
 widget.addPriceCandles( dataframe )
 widget.show()

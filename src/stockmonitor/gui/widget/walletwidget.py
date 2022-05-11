@@ -37,6 +37,7 @@ from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window,\
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 
 from .. import uiloader
+import stockmonitor.gui.widget.stockmosaicwidget as stockmosaicwidget
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -113,7 +114,7 @@ class WalletStockTable( StockTable ):
         if self.dataObject is not None:
             tickersList = self._getSelectedTickers()
             if tickersList:
-                profitChartAction = insert_new_action(contextMenu, "Open overall profit chart", 1)
+                profitChartAction = insert_new_action(contextMenu, "Open overall profit chart", 2)
                 profitChartAction.setData( tickersList )
                 profitChartAction.triggered.connect( self.openStockProfitChart )
 
@@ -197,6 +198,12 @@ class WalletWidget( QtBaseClass ):           # type: ignore
 
     def importMBTransactions(self):
         self.ui.walletTable.importTransactions()
+
+    def openWalletMosaic(self):
+        if self.dataObject is None:
+            return
+        walletTickers = self.dataObject.wallet.getCurrentStock()
+        stockmosaicwidget.create_window( self.dataObject, walletTickers, parent=self )
 
     def openWalletGainChart(self):
         if self.dataObject is None:
