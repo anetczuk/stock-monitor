@@ -31,6 +31,8 @@ from multiprocessing import Process
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 
+from stockmonitor.logger import flush_handlers
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,8 +47,9 @@ class ThreadList():
             thread.start()
         self.threads.append( thread )
 
-    def appendStart(self, thread: threading.Thread):
-        self.append( thread, True )
+    def appendFunction(self, function, args=None, startThread=False):
+        thread = threading.Thread( target=function, args=args )
+        self.append( thread, startThread )
 
     def start(self):
         for thr in self.threads:
@@ -60,78 +63,70 @@ class ThreadList():
 ## ============================================================
 
 
-class BaseWorker( QtCore.QObject ):
-
-    workerFinished = QtCore.pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__( None )
-
-        self.threadName = None
-
-        self.thread = QtCore.QThread( parent )
-        self.moveToThread( self.thread )
-        self.thread.started.connect( self._startWorker, Qt.QueuedConnection )
-        self.workerFinished.connect( self.thread.quit )
-        self.workerFinished.connect( self.deleteLater )
-        self.thread.finished.connect( self.thread.deleteLater )
-
-    def start(self):
-        self.thread.start()
-
-    def wait(self):
-        self.thread.wait()
-
-    @abc.abstractmethod
-    def processWorker(self):
-        raise NotImplementedError('You need to define this method in derived class!')
-
-    def _startWorker(self):
-        ##self.threadId = int(QtCore.QThread.currentThreadId())
-        self.threadName = threading.current_thread().name
-        try:
-            self.processWorker()
-        finally:
-            self.workerFinished.emit()
-
-
-class ThreadWorker( BaseWorker ):
-
-    def __init__(self, func, args=None, parent=None, logs=True):
-        super().__init__( parent )
+class CommandObject:
+    
+    def __init__(self, func, args=None):
         if args is None:
             args = []
         self.func = func
         self.args = args
-        self.logging = logs
 
-    def processWorker(self):
+    def execute(self):
+        if self.func is not None:
+            self.func( *self.args )
+
+
+class AbstractWorker( QtCore.QObject ):
+
+    workerFinished = QtCore.pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__( parent )
+
+#     def __del__(self):
+#         _LOGGER.info( "object destructor: %s, thread: %s", self, self.threadName )
+#         flush_handlers( _LOGGER )
+
+    def execute(self, command: CommandObject):
 #         _LOGGER.info("executing function: %s %s", self.func, self.args)
         try:
-            if self.func is not None:
-                self.func( *self.args )
-            if self.logging:
-        #         _LOGGER.info("executing finished")
-                _LOGGER.info( "work finished" )
+            command.execute()
         # pylint: disable=W0703
         except Exception:
-            _LOGGER.exception("work terminated" )
+            _LOGGER.exception( "work terminated" )
+        finally:
+            self.workerFinished.emit()
+
+    @abc.abstractmethod
+    def start(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def wait(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def info(self):
+        raise NotImplementedError('You need to define this method in derived class!')
 
 
-class QThreadList( QtCore.QObject ):
+##
+##
+##
+class WorkerList( QtCore.QObject ):
 
     finished = QtCore.pyqtSignal()
 
     def __init__(self, parent=None, logs=True):
         super().__init__( parent )
-        self.threads = []
+        self._workers: AbstractWorker = []
         self.finishCounter = 0
+        self.startTime = None
         self.logging = logs
 
-    def appendFunction(self, function, args=None):
-        worker = ThreadWorker( function, args, self, False )
-        worker.thread.finished.connect( self._threadFinished )
-        self.threads.append( worker )
+#     def __del__(self):
+#         _LOGGER.info( "object destructor: %s", self )
+#         flush_handlers( _LOGGER )
 
 #     def map(self, func, argsList):
 #         for arg in argsList:
@@ -139,59 +134,99 @@ class QThreadList( QtCore.QObject ):
 
     def start(self):
         if self.logging:
-            _LOGGER.info( "starting threads" )
-        for thr in self.threads:
+            _LOGGER.info( "starting workers" )
+            self.startTime = datetime.datetime.now()
+        for thr in self._workers:
             thr.start()
 
     def join(self):
-        for thr in self.threads:
+        for thr in self._workers:
             thr.wait()
 
-    def _threadFinished(self):
+    def _appendWorker(self, worker: AbstractWorker ):
+        worker.workerFinished.connect( self._workerFinished )
+        self._workers.append( worker )
+
+    def _workerFinished(self):
         self.finishCounter += 1
-        threadsSize = len( self.threads )
+        threadsSize = len( self._workers )
         if self.logging:
-            thread = self.sender()
-            worker = self.findWorkerByThread( thread )
-            ## thread_name = threading.current_thread().name
-            _LOGGER.info( "worker[%s] finished %s / %s", worker.threadName, self.finishCounter, threadsSize )
+            worker = self.sender()
+            if worker is not None:
+                _LOGGER.info( "worker[%s] finished %s / %s", worker.info(), self.finishCounter, threadsSize )
+            else:
+                ## thread_name = threading.current_thread().name
+                _LOGGER.info( "unable to find worker, finished %s / %s", self.finishCounter, threadsSize )
+                flush_handlers( _LOGGER )
         if self.finishCounter == threadsSize:
             self._computingFinished()
 
     def _computingFinished(self):
         if self.logging:
-            _LOGGER.info( "all threads finished" )
+            endTime  = datetime.datetime.now()
+            diffTime = endTime - self.startTime
+            _LOGGER.info( "all workers finished, computation time: %s", diffTime )
+
         self.finished.emit()
 
-    def findWorkerByThread(self, thread):
-        for worker in self.threads:
-            if worker.thread == thread:
-                return worker
-        return None
+
+### =========================================================================
 
 
-class QThreadMeasuredList( QThreadList ):
+class ThreadWorker( AbstractWorker ):
+    """ Execute work in separated thread."""
+
+    def __init__(self, func, args=None, parent=None, logs=True):
+        super().__init__( None )
+        self.command = CommandObject( func, args )
+        self.logging = logs
+
+        self.threadName = None
+
+        self.thread = QtCore.QThread( parent )
+        self.moveToThread( self.thread )            ## thread become parent of object
+
+        self.thread.started.connect( self._processtWorker, Qt.QueuedConnection )
+        self.workerFinished.connect( self.thread.quit )
+#         self.workerFinished.connect( self.deleteLater )            ## do not delete himself
+#         self.thread.finished.connect( self.thread.deleteLater )    ## do not delete himself
+
+    def start(self):
+        self.thread.start()
+
+    def wait(self):
+        self.thread.wait()
+
+    def info(self):
+        return self.threadName
+
+    def _processtWorker(self):
+        self.threadName = threading.current_thread().name
+
+        self.execute( self.command )
+        if self.logging:
+    #         _LOGGER.info("executing finished")
+            _LOGGER.info( "work finished" )
+
+
+##
+##
+##
+class QThreadList( WorkerList ):
 
     def __init__(self, parent=None, logs=True):
         super().__init__( parent, logs )
-        self.startTime = None
+
+    def appendFunction(self, function, args=None):
+        worker = ThreadWorker( function, args, self, False )
+        self._appendWorker( worker )
 
     def deleteOnFinish(self):
         self.finished.connect( self.deleteLater )
 
-    def start(self):
-        self.startTime = datetime.datetime.now()
-        super().start()
-
-    def _computingFinished(self):
-        endTime = datetime.datetime.now()
-        diffTime = endTime - self.startTime
-        _LOGGER.info( "computation time: %s", diffTime )
-        super()._computingFinished()
-
     @staticmethod
     def calculate( parent, function, args=None ):
-        threads = QThreadMeasuredList( parent )
+        threads = QThreadList( parent )
         threads.deleteOnFinish()
         threads.appendFunction( function, args )
         threads.start()
@@ -200,105 +235,44 @@ class QThreadMeasuredList( QThreadList ):
 ## ====================================================================
 
 
-class SerialList( QtCore.QObject ):
-    """List without multithreading."""
+class SerialWorker( AbstractWorker ):
 
-    finished = QtCore.pyqtSignal()
-
-    def __init__(self, parent=None, logs=True):
+    def __init__(self, func, args=None, parent=None, logs=True):
         super().__init__( parent )
-        self.commandsList = []
+        self.command = CommandObject( func, args )
         self.logging = logs
-        self.startTime = None
-
-    def appendFunction(self, function, args=None):
-        self.commandsList.append( (function, args) )
 
     def start(self):
-        self.startTime = datetime.datetime.now()
+        self.execute( self.command )
         if self.logging:
-            _LOGGER.info( "starting computation" )
-        for func, args in self.commandsList:
-            if func is not None:
-                func( *args )
-        self.finished.emit()
-        endTime = datetime.datetime.now()
-        diffTime = endTime - self.startTime
-        if self.logging:
-            _LOGGER.info( "computation time: %s", diffTime )
-
-    def join(self):
-        pass
-
-
-## ====================================================================
-
-
-class ProcessWorker( BaseWorker ):
-
-    def __init__(self, func, args=None, parent=None):
-        super().__init__( parent )
-        if args is None:
-            args = []
-        self.func = func
-        self.args = args
-
-    def processWorker(self):
-#         _LOGGER.info("executing function: %s %s", self.func, self.args)
-        try:
-            process = Process( target=self.func, args=self.args )
-            process.start()
-            process.join()
     #         _LOGGER.info("executing finished")
             _LOGGER.info( "work finished" )
-        # pylint: disable=W0703
-        except Exception:
-            _LOGGER.exception("work terminated" )
+
+    def wait(self):
+        ## do nothing
+        pass
+
+    def info(self):
+        return str(self)
 
 
-class ProcessList( QtCore.QObject ):
+##
+##
+##
+class SerialList( WorkerList ):
 
-    finished = QtCore.pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__( parent )
-        self.threads = []
-        self.finishCounter = 0
-        self.startTime = None
+    def __init__(self, parent=None, logs=True):
+        super().__init__( parent, logs )
 
     def appendFunction(self, function, args=None):
-        worker = ProcessWorker( function, args, self )
-        worker.thread.finished.connect( self._threadFinished )
-        self.threads.append( worker )
-
-    def start(self):
-        _LOGGER.info( "starting processes" )
-        self.startTime = datetime.datetime.now()
-        for thr in self.threads:
-            thr.start()
-
-    def join(self):
-        for thr in self.threads:
-            thr.wait()
-
-    def _threadFinished(self):
-        #_LOGGER.info( "process finished" )
-        self.finishCounter += 1
-        if self.finishCounter == len( self.threads ):
-            self._computingFinished()
-
-    def _computingFinished(self):
-        _LOGGER.info( "all processes finished" )
-        self.finished.emit()
-        endTime = datetime.datetime.now()
-        diffTime = endTime - self.startTime
-        _LOGGER.info( "computation time: %s", diffTime )
-
+        worker = SerialWorker( function, args, self, False )
+        self._appendWorker( worker )
+                        
 
 ## ========================================================
 
 
 def get_threading_list():
     """Return threading list class (factory function)."""
-    return QThreadMeasuredList
-#    return SerialList
+    return QThreadList
+#     return SerialList

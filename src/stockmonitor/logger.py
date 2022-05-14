@@ -31,6 +31,11 @@ script_dir = os.path.dirname(__file__)
 log_file = None
 
 
+def flush_handlers( logger ):
+    for hand in logger.handlers:
+        hand.flush()
+
+
 def get_logging_output_file():
     logDir = os.path.join(script_dir, "../../tmp/log")
     logDir = os.path.abspath( logDir )

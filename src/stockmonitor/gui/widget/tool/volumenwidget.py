@@ -73,7 +73,7 @@ class VolumenWidget(QtBaseClass):           # type: ignore
 
     def calculate(self):
         _LOGGER.warning("calculating based on metastock intraday")
-        threadlist.QThreadMeasuredList.calculate( self, self._calculateData )
+        threadlist.QThreadList.calculate( self, self._calculateData )
 
     def _calculateData(self):
         self.ui.calculatePB.setEnabled( False )
