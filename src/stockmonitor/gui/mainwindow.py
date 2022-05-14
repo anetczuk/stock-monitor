@@ -96,6 +96,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui.actionOverall_profit_chart.triggered.connect( self.ui.walletwidget.openOverallProfitChart )
         self.ui.actionGain_chart.triggered.connect( self.ui.walletwidget.openWalletGainChart )
         self.ui.actionImport_mb_transactions.triggered.connect( self.ui.walletwidget.importMBTransactions )
+        self.ui.actionClear_transactions.triggered.connect( self.ui.walletwidget.clearTransactions )
 
         self.ui.actionMatch_oldest.triggered.connect( self.data.matchTransactionsOldest )
         self.ui.actionMatch_best.triggered.connect( self.data.matchTransactionsBest )

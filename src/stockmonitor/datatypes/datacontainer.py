@@ -206,6 +206,10 @@ class DataContainer():
 
     ## ======================================================================
 
+    def clearWalletTransactions(self):
+        self.userContainer.wallet = WalletData()
+        self.updateWalletFavGroup()
+
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
 #         wallet: WalletData = self.wallet
         importWallet = WalletData()

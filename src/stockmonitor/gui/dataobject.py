@@ -295,10 +295,16 @@ class DataObject( QObject ):
 
     ## ======================================================================
 
+    def clearWalletTransactions(self):
+        self.dataContainer.clearWalletTransactions()
+
+        self.favsGrpChanged.emit( "Wallet" )
+        self.walletDataChanged.emit()
+
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
         self.dataContainer.importWalletTransactions( dataFrame, addTransactions )
 
-        self.updateWalletFavGroup()
+        self.favsGrpChanged.emit( "Wallet" )
         self.walletDataChanged.emit()
 
     def updateAllFavsGroup(self):
