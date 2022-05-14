@@ -69,6 +69,9 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
 
+        ## fix fitting figure to widget
+        self.ui.dataChart.setTightAuto()
+
     def setXLabel(self, xLabel):
         self.ui.dataChart.setXLabel( xLabel )
 
@@ -151,7 +154,7 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
     @abc.abstractmethod
     def _getDataFrame(self):
         raise NotImplementedError('You need to define this method in derived class!')
-
+    
 
 # pylint: disable=W0223
 class DataValueChartWidget( ValueChartWidget ):

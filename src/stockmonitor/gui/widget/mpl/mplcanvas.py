@@ -38,6 +38,10 @@ class MplCanvas(FigureCanvas):
                                    QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
+    ## fix fitting figure to widget
+    def setTightAuto( self, enable: bool = True ):
+        self.figure.set_tight_layout( enable )
+
     def setBackgroundByRGB(self, r, g, b):
         rgbColor = ( r / 255, g / 255, b / 255, 1.0 )
         self.figure.patch.set_facecolor( rgbColor )
@@ -57,6 +61,11 @@ class MplCanvas(FigureCanvas):
         if tight:
             self.figure.tight_layout()
         self.draw_idle()
+
+#     ## fix fitting figure to widget
+#     def resizeEvent(self, event):
+#         super().resizeEvent( event )
+#         self.figure.tight_layout()
 
 
 ## =======================================================================
