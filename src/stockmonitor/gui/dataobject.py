@@ -365,7 +365,7 @@ class DataObject( QObject ):
         return self.dataContainer.refreshAllList( forceRefresh )
 
     def refreshStockData(self, forceRefresh=True):
-#         threads = threadlist.QThreadList( self )
+#         threads = threadlist.ThreadList( self )
 #         threads = threadlist.SerialList( self )
 #         threads = threadlist.QThreadMeasuredList( self )
 #         threads = threadlist.ProcessList( self )
@@ -385,7 +385,7 @@ class DataObject( QObject ):
         threads.start()
 
     def refreshAllData(self, forceRefresh=True):
-#         threads = threadlist.QThreadList( self )
+#         threads = threadlist.ThreadList( self )
 #         threads = threadlist.SerialList( self )
 #         threads = threadlist.QThreadMeasuredList( self )
 #         threads = threadlist.ProcessList( self )

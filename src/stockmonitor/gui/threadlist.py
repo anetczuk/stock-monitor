@@ -37,7 +37,7 @@ from stockmonitor.logger import flush_handlers
 _LOGGER = logging.getLogger(__name__)
 
 
-class ThreadList():
+class ThreadingList():
 
     def __init__(self):
         self.threads = []
@@ -120,6 +120,7 @@ class WorkerList( QtCore.QObject ):
     def __init__(self, parent=None, logs=True):
         super().__init__( parent )
         self._workers: AbstractWorker = []
+        self.workersMutex = threading.Lock()
         self.finishCounter = 0
         self.startTime = None
         self.logging = logs
@@ -148,18 +149,15 @@ class WorkerList( QtCore.QObject ):
         self._workers.append( worker )
 
     def _workerFinished(self):
-        self.finishCounter += 1
-        threadsSize = len( self._workers )
-        if self.logging:
-            worker = self.sender()
-            if worker is not None:
-                _LOGGER.info( "worker[%s] finished %s / %s", worker.info(), self.finishCounter, threadsSize )
-            else:
-                ## thread_name = threading.current_thread().name
-                _LOGGER.info( "unable to find worker, finished %s / %s", self.finishCounter, threadsSize )
+        with self.workersMutex:
+            self.finishCounter += 1
+            threadsSize = len( self._workers )
+            if self.logging:
+    #             worker = self.sender()                    ## 'self.sender()' is not reliable
+                _LOGGER.info( "worker finished %s / %s", self.finishCounter, threadsSize )
                 flush_handlers( _LOGGER )
-        if self.finishCounter == threadsSize:
-            self._computingFinished()
+            if self.finishCounter == threadsSize:
+                self._computingFinished()
 
     def _computingFinished(self):
         if self.logging:
@@ -186,10 +184,11 @@ class ThreadWorker( AbstractWorker ):
         self.thread = QtCore.QThread( parent )
         self.moveToThread( self.thread )            ## thread become parent of object
 
-        self.thread.started.connect( self._processtWorker, Qt.QueuedConnection )
+        self.thread.started.connect( self._processtWorker )
         self.workerFinished.connect( self.thread.quit )
 #         self.workerFinished.connect( self.deleteLater )            ## do not delete himself
 #         self.thread.finished.connect( self.thread.deleteLater )    ## do not delete himself
+#         _LOGGER.info( "spawned worker: %s %s", self, self.thread )
 
     def start(self):
         self.thread.start()
@@ -212,7 +211,7 @@ class ThreadWorker( AbstractWorker ):
 ##
 ##
 ##
-class QThreadList( WorkerList ):
+class ThreadList( WorkerList ):
 
     def __init__(self, parent=None, logs=True):
         super().__init__( parent, logs )
@@ -226,7 +225,7 @@ class QThreadList( WorkerList ):
 
     @staticmethod
     def calculate( parent, function, args=None ):
-        threads = QThreadList( parent )
+        threads = ThreadList( parent )
         threads.deleteOnFinish()
         threads.appendFunction( function, args )
         threads.start()
@@ -274,5 +273,5 @@ class SerialList( WorkerList ):
 
 def get_threading_list():
     """Return threading list class (factory function)."""
-    return QThreadList
+    return ThreadList
 #     return SerialList
