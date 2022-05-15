@@ -353,6 +353,9 @@ class DataObject( QObject ):
     def getWalletProfitHistory(self, rangeCode, calculateOverall: bool = True):
         return self.dataContainer.getWalletProfitHistory( rangeCode, calculateOverall )
 
+    def getWalletValueHistory(self, rangeCode):
+        return self.dataContainer.getWalletValueHistory( rangeCode )
+
     ## ======================================================================
 
     def loadDownloadedStocks(self):

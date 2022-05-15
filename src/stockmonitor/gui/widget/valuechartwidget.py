@@ -299,6 +299,47 @@ class WalletProfitChartWidget( ValueChartWidget ):
         return dataFrame
 
 
+class WalletValueChartWidget( ValueChartWidget ):
+
+    def __init__(self, parentWidget=None):
+        super().__init__(parentWidget)
+
+        self.dataObject = None
+
+    def connectData(self, dataObject):
+        self.dataObject = dataObject
+        self.dataObject.stockDataChanged.connect( self.updateData )
+        self.updateData( True )
+
+    def getDataSources(self):
+        retList = []
+        rangeText = self.ui.rangeCB.currentText()
+        walletTickers = self.dataObject.wallet.tickers()
+        for ticker in walletTickers:
+            isin = self.dataObject.getStockIsinFromTicker( ticker )
+            intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+            retList.append( intraSource )
+        return retList
+
+#         retList = []
+#         walletTickers = self.dataObject.wallet.tickers()
+#         for ticker in walletTickers:
+#             isin = self.dataObject.getStockIsinFromTicker( ticker )
+#             for i in range(0, self.ui.rangeCB.count()):
+#                 rangeText = self.ui.rangeCB.itemText( i )
+#                 intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
+#                 retList.append( intraSource )
+#         return retList
+
+    def getDataSourceLink(self):
+        return None
+
+    def _getDataFrame(self):
+        rangeText = self.ui.rangeCB.currentText()
+        dataFrame = self.dataObject.getWalletValueHistory( rangeText )
+        return dataFrame
+
+
 ## ==================================================================================
 
 
@@ -359,6 +400,23 @@ def create_wallet_profit_window( dataObject, calculateOverall: bool = True, pare
         title = "Overall profit"
     else:
         title = "Wallet profit"
+    chartWindow.setWindowTitleSuffix( "- " + title )
+    chart.ui.stockLabel.setText( title )
+
+    chartWindow.show()
+    return chartWindow
+
+
+def create_wallet_value_window( dataObject, parent=None ):
+    chartWindow = ChartAppWindow( parent )
+    chart = WalletValueChartWidget( chartWindow )
+    chart.setXLabel( "Value" )
+    chartWindow.addWidget( chart )
+    chartWindow.refreshAction.triggered.connect( chart.refreshData )
+
+    chart.connectData(dataObject)
+
+    title = "Wallet value"
     chartWindow.setWindowTitleSuffix( "- " + title )
     chart.ui.stockLabel.setText( title )
 

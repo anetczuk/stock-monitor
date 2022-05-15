@@ -805,6 +805,80 @@ class DataContainer():
         retData = DataFrame( mergedList, columns=["t", "c"] )
         return retData
 
+    ## calculate profit of single stock
+    def getWalletStockValueHistory(self, ticker, rangeCode, calculateOverall: bool = True) -> DataFrame:
+        transactions: TransHistory = self.wallet.transactions( ticker )
+        if transactions is None:
+            return None
+
+        isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
+        intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
+        stockData = intraSource.getWorksheetData()
+        if stockData is None:
+            return None
+
+        startDateTime = stockData.iloc[0, 0]        ## first date
+        startDate = startDateTime.date()
+
+        transBefore  = transactions.transactionsBefore( startDate )
+        pendingTrans = transactions.transactionsAfter( startDate )
+
+        stockValuesFrame = stockData[ ["t", "c"] ].copy()
+        rowsNum          = stockValuesFrame.shape[0]
+        rowIndex         = 0
+
+        ## iterate over transactions
+        ## calculate values based on transactions and stock price changes
+        for nextTrans in reversed( pendingTrans ):                           # type: ignore
+            transTime = nextTrans.transTime
+            transAmount = transBefore.currentAmount()
+
+            ## iterate over stock historic prices
+            while rowIndex < rowsNum:
+                stockTime = stockValuesFrame.at[ rowIndex, "t" ]
+                if stockTime < transTime:
+                    ## stock time is before transaction time -- calculate values
+                    if transAmount > 0:
+                        ## calculate hypotetical profit if stock would be sold out
+                        stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
+                        sellValue  = stockPrice * transAmount
+                        stockValuesFrame.at[ rowIndex, "c" ] = sellValue
+                    else:
+                        stockValuesFrame.at[ rowIndex, "c" ] = 0
+                    rowIndex += 1
+                else:
+                    ## stock time is after transaction time -- break
+                    break
+            transBefore.appendItem( nextTrans )
+
+        ## last iteration
+        transAmount = transBefore.currentAmount()
+
+        while rowIndex < rowsNum:
+            stockTime = stockValuesFrame.at[ rowIndex, "t" ]
+            if transAmount > 0:
+                ## calculate hypotetical profit if stock would be sold out
+                stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
+                sellValue  = stockPrice * transAmount
+                stockValuesFrame.at[ rowIndex, "c" ] = sellValue
+            else:
+                stockValuesFrame.at[ rowIndex, "c" ] = 0
+            rowIndex += 1
+
+        return stockValuesFrame
+
+    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
+    def getWalletValueHistory(self, rangeCode):
+        mergedList = None
+        for ticker in self.wallet.tickers():
+            stockData = self.getWalletStockValueHistory( ticker, rangeCode )
+            if stockData is None:
+                continue
+            mergedList = join_list_dataframe( mergedList, stockData )
+
+        retData = DataFrame( mergedList, columns=["t", "c"] )
+        return retData
+
     ## ======================================================================
 
     def loadDownloadedStocks(self):

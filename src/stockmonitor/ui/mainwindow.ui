@@ -697,6 +697,7 @@
     </widget>
     <addaction name="menuMatch_transactions"/>
     <addaction name="actionOpen_stock_mosaic"/>
+    <addaction name="actionValue_chart"/>
     <addaction name="actionWallet_profit_chart"/>
     <addaction name="actionGain_chart"/>
     <addaction name="actionOverall_profit_chart"/>
@@ -805,6 +806,11 @@
   <action name="actionClear_transactions">
    <property name="text">
     <string>Clear transactions</string>
+   </property>
+  </action>
+  <action name="actionValue_chart">
+   <property name="text">
+    <string>Value chart</string>
    </property>
   </action>
  </widget>
