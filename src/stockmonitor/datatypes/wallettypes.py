@@ -482,30 +482,79 @@ class TransHistory():
         
         matchSize     = len( matchIndexes )
         matchStockSum = sum( matchIndexes )
-        rowIndex      = rowsNum - matchStockSum
-        
-#         transMode: TransactionMatchMode = TransactionMatchMode.BEST
+        rowIndex      = rowsNum - matchStockSum - 1     ## -1 because incerment moved in front of loop
         
         ## iterate over transactions
         ## calculate values based on transactions and stock price changes
         for transIndex in range(0, matchSize):
-            rowIndexCounter = matchIndexes[ transIndex ]
-            
-            nextTrans   = revPending[ transIndex ]
+            nextTrans = revPending[ transIndex ]
             transBefore.appendItem( nextTrans )
-            
-#             transAmount, buy_unit_price = transBefore.currentTransactionsAvg( transMode )
             transAmount = transBefore.currentAmount()
 
             ## iterate over stock historic prices
+            rowIndexCounter = matchIndexes[ transIndex ]
             for _ in range(0, rowIndexCounter):
+                rowIndex += 1
                 sellValue = 0
                 if transAmount > 0:
                     stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
                     sellValue  = stockPrice * transAmount
                     sellValue -= broker_commission( sellValue )
                 stockValuesFrame.at[ rowIndex, "c" ] = sellValue
+
+        return stockValuesFrame
+
+    ## calculate profit of single stock
+    def calculateProfitHistory(self, stockData: DataFrame, transMode: TransactionMatchMode, calculateOverall: bool = True) -> DataFrame:
+        if stockData is None:
+            return None
+        if stockData.empty:
+            return stockData
+
+        startDateTime = stockData.iloc[0, 0]        ## first date
+
+        transStartIndex           = self.findIndex( startDateTime )
+        transBefore, pendingTrans = self.splitTransactions( transStartIndex, True )
+        revPending                = pendingTrans[::-1]                           ## reverse list
+
+        stockValuesFrame = stockData[ ["t", "c"] ].copy()
+        rowsNum          = stockData.shape[0]
+        
+        matchIndexes = pendingTrans.matchStockAfter( stockValuesFrame )
+        matchIndexes.reverse()
+        
+        matchSize     = len( matchIndexes )
+        matchStockSum = sum( matchIndexes )
+        rowIndex      = rowsNum - matchStockSum - 1     ## -1 because incerment moved in front of loop
+        
+        ## iterate over transactions
+        ## calculate values based on transactions and stock price changes
+        for transIndex in range(0, matchSize):
+            nextTrans = revPending[ transIndex ]
+            transBefore.appendItem( nextTrans )
+            transAmount = transBefore.currentAmount()
+
+            transProfit = 0
+            if calculateOverall:
+                transProfit = transBefore.transactionsOverallProfit()
+            else:
+                ## cost of stock buy
+                buyAmount, buyUnitPrice = transBefore.currentTransactionsAvg( transMode )
+                buyValue = buyAmount * buyUnitPrice
+                transProfit -= buyValue
+
+            ## iterate over stock historic prices
+            rowIndexCounter = matchIndexes[ transIndex ]
+            for _ in range(0, rowIndexCounter):
                 rowIndex += 1
+                sellValue = 0
+                if transAmount > 0:
+                    ## calculate hypotetical profit if stock would be sold out
+                    stockTime  = stockValuesFrame.at[ rowIndex, "t" ]
+                    stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
+                    sellValue  = stockPrice * transAmount
+                    sellValue -= broker_commission( sellValue, stockTime )
+                stockValuesFrame.at[ rowIndex, "c" ] = transProfit + sellValue
 
         return stockValuesFrame
 

@@ -714,20 +714,6 @@ class DataContainer():
         retData = DataFrame( mergedList, columns=["t", "c"] )
         return retData
 
-    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
-    def getWalletGainHistory(self, rangeCode):
-        startDateTime = get_start_date( rangeCode )
-
-        transMode = self.userContainer.transactionsMatchMode
-        mergedList = None
-        for _, transactions in self.wallet.stockList.items():
-            gainList = transactions.transactionsGainHistory( transMode, True, startDateTime )
-            stockData = DataFrame( gainList, columns=["t", "c"] )
-            mergedList = join_list_dataframe( mergedList, stockData )
-
-        retData = DataFrame( mergedList, columns=["t", "c"] )
-        return retData
-
     ## calculate value of single stock
     def getWalletStockValueHistory( self, ticker, rangeCode ) -> DataFrame:
         transactions: TransHistory = self.wallet.transactions( ticker )
@@ -741,6 +727,20 @@ class DataContainer():
             return None
 
         return transactions.calculateValueHistory( stockData )
+
+    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
+    def getWalletGainHistory(self, rangeCode):
+        startDateTime = get_start_date( rangeCode )
+
+        transMode = self.userContainer.transactionsMatchMode
+        mergedList = None
+        for _, transactions in self.wallet.stockList.items():
+            gainList = transactions.transactionsGainHistory( transMode, True, startDateTime )
+            stockData = DataFrame( gainList, columns=["t", "c"] )
+            mergedList = join_list_dataframe( mergedList, stockData )
+
+        retData = DataFrame( mergedList, columns=["t", "c"] )
+        return retData
 
     ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
     def getWalletProfitHistory(self, rangeCode, calculateOverall: bool = True):
@@ -767,74 +767,7 @@ class DataContainer():
             return None
 
         transMode = self.userContainer.transactionsMatchMode
-
-        startDateTime = stockData.iloc[0, 0]        ## first date
-        startDate     = startDateTime.date()
-
-        transBefore: TransHistory  = transactions.transactionsBefore( startDate )
-        pendingTrans: TransHistory = transactions.transactionsAfter( startDate )
-
-        stockValuesFrame = stockData[ ["t", "c"] ].copy()
-        rowsNum          = stockValuesFrame.shape[0]
-        rowIndex         = 0
-
-        ## iterate over transactions
-        ## calculate values based on transactions and stock price changes
-        for nextTrans in reversed( pendingTrans ):                           # type: ignore
-            transTime = nextTrans.transTime
-            transAmount = transBefore.currentAmount()
-            transProfit = 0
-            if calculateOverall:
-                transProfit = transBefore.transactionsOverallProfit()
-            else:
-                ## cost of stock buy
-                buyAmount, buyUnitPrice = transBefore.currentTransactionsAvg( transMode )
-                buyValue = buyAmount * buyUnitPrice
-                transProfit -= buyValue
-
-            ## iterate over stock historic prices
-            while rowIndex < rowsNum:
-                stockTime = stockValuesFrame.at[ rowIndex, "t" ]
-                if stockTime < transTime:
-                    ## stock time is before transaction time -- calculate values
-                    if transAmount > 0:
-                        ## calculate hypotetical profit if stock would be sold out
-                        stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
-                        sellValue  = stockPrice * transAmount
-                        sellValue -= broker_commission( sellValue, stockTime )
-                        stockValuesFrame.at[ rowIndex, "c" ] = transProfit + sellValue
-                    else:
-                        stockValuesFrame.at[ rowIndex, "c" ] = transProfit
-                    rowIndex += 1
-                else:
-                    ## stock time is after transaction time -- break
-                    break
-            transBefore.appendItem( nextTrans )
-
-        ## last iteration
-        transAmount = transBefore.currentAmount()
-        transProfit = 0
-        if calculateOverall:
-            transProfit = transBefore.transactionsOverallProfit()
-        else:
-            ## cost of stock buy
-            buyAmount, buyUnitPrice = transBefore.currentTransactionsAvg( transMode )
-            buyValue = buyAmount * buyUnitPrice
-            transProfit -= buyValue
-
-        while rowIndex < rowsNum:
-            stockTime = stockValuesFrame.at[ rowIndex, "t" ]
-            if transAmount > 0:
-                ## calculate hypotetical profit if stock would be sold out
-                stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
-                sellValue  = stockPrice * transAmount
-                sellValue -= broker_commission( sellValue, stockTime )
-                stockValuesFrame.at[ rowIndex, "c" ] = transProfit + sellValue
-            else:
-                stockValuesFrame.at[ rowIndex, "c" ] = transProfit
-            rowIndex += 1
-
-        return stockValuesFrame
+        return transactions.calculateProfitHistory( stockData, transMode, calculateOverall )
 
     ## =========================================================================
 

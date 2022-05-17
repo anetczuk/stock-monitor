@@ -406,7 +406,7 @@ class UserContainer():
         self.favs   = FavData()
         self.notes  = { "notes": "" }        ## default notes
         self.wallet = WalletData()
-        self.transactionsMatchMode = TransactionMatchMode.BEST
+        self.transactionsMatchMode: TransactionMatchMode = TransactionMatchMode.BEST
         self.markers = MarkersContainer()
 
     def store( self, outputDir ):
