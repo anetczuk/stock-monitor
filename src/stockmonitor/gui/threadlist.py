@@ -87,16 +87,6 @@ class AbstractWorker( QtCore.QObject ):
 #         _LOGGER.info( "object destructor: %s, thread: %s", self, self.threadName )
 #         flush_handlers( _LOGGER )
 
-    def execute(self, command: CommandObject):
-#         _LOGGER.info("executing function: %s %s", self.func, self.args)
-        try:
-            command.execute()
-        # pylint: disable=W0703
-        except Exception:
-            _LOGGER.exception( "work terminated" )
-        finally:
-            self.workerFinished.emit()
-
     @abc.abstractmethod
     def start(self):
         raise NotImplementedError('You need to define this method in derived class!')
@@ -185,10 +175,8 @@ class ThreadWorker( AbstractWorker ):
         self.moveToThread( self.thread )            ## thread become parent of object
 
         self.thread.started.connect( self._processtWorker )
-        self.workerFinished.connect( self.thread.quit )
-#         self.workerFinished.connect( self.deleteLater )            ## do not delete himself
-#         self.thread.finished.connect( self.thread.deleteLater )    ## do not delete himself
-#         _LOGGER.info( "spawned worker: %s %s", self, self.thread )
+#        self.workerFinished.connect( self.thread.quit )
+        self.thread.finished.connect( self.workerFinished )
 
     def start(self):
         self.thread.start()
@@ -199,13 +187,17 @@ class ThreadWorker( AbstractWorker ):
     def info(self):
         return self.threadName
 
-    def _processtWorker(self):
-        self.threadName = threading.current_thread().name
-
-        self.execute( self.command )
-        if self.logging:
-    #         _LOGGER.info("executing finished")
-            _LOGGER.info( "work finished" )
+    def _processtWorker(self):        
+        try:
+            self.threadName = threading.current_thread().name
+            self.command.execute()
+        # pylint: disable=W0703
+        except Exception:
+            _LOGGER.exception( "work terminated" )
+        finally:
+            if self.logging:
+                _LOGGER.info( "work finished" )
+            self.thread.quit()
 
 
 ##
@@ -242,10 +234,15 @@ class SerialWorker( AbstractWorker ):
         self.logging = logs
 
     def start(self):
-        self.execute( self.command )
-        if self.logging:
-    #         _LOGGER.info("executing finished")
-            _LOGGER.info( "work finished" )
+        try:
+            self.command.execute()
+        # pylint: disable=W0703
+        except Exception:
+            _LOGGER.exception( "work terminated" )
+        finally:
+            if self.logging:
+                _LOGGER.info( "work finished" )
+            self.workerFinished.emit()
 
     def wait(self):
         ## do nothing
