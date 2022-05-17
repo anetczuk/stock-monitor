@@ -676,6 +676,8 @@ class DataContainer():
             sellValue     -= broker_commission( sellValue )
             buyValue       = buy_unit_price * amount
 
+#             _LOGGER.info( "wallet state: %s %s %s %s", ticker, amount, currUnitValue, sellValue )
+
             walletValue   += sellValue
             walletProfit  += sellValue - buyValue
 
@@ -697,6 +699,21 @@ class DataContainer():
         overallProfit  = round( overallProfit, 2 )
         return ( walletValue, walletProfit, changeToRef, totalGain, overallProfit )
 
+    ## =========================================================================
+
+    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
+    def getWalletValueHistory(self, rangeCode):
+        mergedList = None
+        for ticker in self.wallet.tickers():
+            stockData = self.getWalletStockValueHistory( ticker, rangeCode )
+            if stockData is None:
+                continue
+#             _LOGGER.info( "wallet state: %s %s", ticker, stockData.iloc[ -1, 1 ] )
+            mergedList = join_list_dataframe( mergedList, stockData )
+
+        retData = DataFrame( mergedList, columns=["t", "c"] )
+        return retData
+
     ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
     def getWalletGainHistory(self, rangeCode):
         startDateTime = get_start_date( rangeCode )
@@ -706,6 +723,32 @@ class DataContainer():
         for _, transactions in self.wallet.stockList.items():
             gainList = transactions.transactionsGainHistory( transMode, True, startDateTime )
             stockData = DataFrame( gainList, columns=["t", "c"] )
+            mergedList = join_list_dataframe( mergedList, stockData )
+
+        retData = DataFrame( mergedList, columns=["t", "c"] )
+        return retData
+
+    ## calculate value of single stock
+    def getWalletStockValueHistory( self, ticker, rangeCode ) -> DataFrame:
+        transactions: TransHistory = self.wallet.transactions( ticker )
+        if transactions is None:
+            return None
+
+        isin        = self.gpwCurrentData.getStockIsinFromTicker( ticker )
+        intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
+        stockData   = intraSource.getWorksheetData()
+        if stockData is None:
+            return None
+
+        return transactions.calculateValueHistory( stockData )
+
+    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
+    def getWalletProfitHistory(self, rangeCode, calculateOverall: bool = True):
+        mergedList = None
+        for ticker in self.wallet.tickers():
+            stockData = self.getWalletStockProfitHistory( ticker, rangeCode, calculateOverall )
+            if stockData is None:
+                continue
             mergedList = join_list_dataframe( mergedList, stockData )
 
         retData = DataFrame( mergedList, columns=["t", "c"] )
@@ -726,10 +769,10 @@ class DataContainer():
         transMode = self.userContainer.transactionsMatchMode
 
         startDateTime = stockData.iloc[0, 0]        ## first date
-        startDate = startDateTime.date()
+        startDate     = startDateTime.date()
 
-        transBefore  = transactions.transactionsBefore( startDate )
-        pendingTrans = transactions.transactionsAfter( startDate )
+        transBefore: TransHistory  = transactions.transactionsBefore( startDate )
+        pendingTrans: TransHistory = transactions.transactionsAfter( startDate )
 
         stockValuesFrame = stockData[ ["t", "c"] ].copy()
         rowsNum          = stockValuesFrame.shape[0]
@@ -793,93 +836,7 @@ class DataContainer():
 
         return stockValuesFrame
 
-    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
-    def getWalletProfitHistory(self, rangeCode, calculateOverall: bool = True):
-        mergedList = None
-        for ticker in self.wallet.tickers():
-            stockData = self.getWalletStockProfitHistory( ticker, rangeCode, calculateOverall )
-            if stockData is None:
-                continue
-            mergedList = join_list_dataframe( mergedList, stockData )
-
-        retData = DataFrame( mergedList, columns=["t", "c"] )
-        return retData
-
-    ## calculate profit of single stock
-    def getWalletStockValueHistory(self, ticker, rangeCode, calculateOverall: bool = True) -> DataFrame:
-        transactions: TransHistory = self.wallet.transactions( ticker )
-        if transactions is None:
-            return None
-
-        isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
-        intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
-        stockData = intraSource.getWorksheetData()
-        if stockData is None:
-            return None
-
-        startDateTime = stockData.iloc[0, 0]        ## first date
-        startDate = startDateTime.date()
-
-        transBefore  = transactions.transactionsBefore( startDate )
-        pendingTrans = transactions.transactionsAfter( startDate )
-
-        stockValuesFrame = stockData[ ["t", "c"] ].copy()
-        rowsNum          = stockValuesFrame.shape[0]
-        rowIndex         = 0
-
-        ## iterate over transactions
-        ## calculate values based on transactions and stock price changes
-        for nextTrans in reversed( pendingTrans ):                           # type: ignore
-            transTime = nextTrans.transTime
-            transAmount = transBefore.currentAmount()
-
-            ## iterate over stock historic prices
-            while rowIndex < rowsNum:
-                stockTime = stockValuesFrame.at[ rowIndex, "t" ]
-                if stockTime < transTime:
-                    ## stock time is before transaction time -- calculate values
-                    if transAmount > 0:
-                        ## calculate hypotetical profit if stock would be sold out
-                        stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
-                        sellValue  = stockPrice * transAmount
-                        stockValuesFrame.at[ rowIndex, "c" ] = sellValue
-                    else:
-                        stockValuesFrame.at[ rowIndex, "c" ] = 0
-                    rowIndex += 1
-                else:
-                    ## stock time is after transaction time -- break
-                    break
-            transBefore.appendItem( nextTrans )
-
-        ## last iteration
-        transAmount = transBefore.currentAmount()
-
-        while rowIndex < rowsNum:
-            stockTime = stockValuesFrame.at[ rowIndex, "t" ]
-            if transAmount > 0:
-                ## calculate hypotetical profit if stock would be sold out
-                stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
-                sellValue  = stockPrice * transAmount
-                stockValuesFrame.at[ rowIndex, "c" ] = sellValue
-            else:
-                stockValuesFrame.at[ rowIndex, "c" ] = 0
-            rowIndex += 1
-
-        return stockValuesFrame
-
-    ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
-    def getWalletValueHistory(self, rangeCode):
-        mergedList = None
-        for ticker in self.wallet.tickers():
-            stockData = self.getWalletStockValueHistory( ticker, rangeCode )
-            if stockData is None:
-                continue
-            mergedList = join_list_dataframe( mergedList, stockData )
-
-        retData = DataFrame( mergedList, columns=["t", "c"] )
-        return retData
-
-    ## ======================================================================
+    ## =========================================================================
 
     def loadDownloadedStocks(self):
         stockList = self.refreshAllList()

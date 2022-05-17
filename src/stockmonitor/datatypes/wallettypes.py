@@ -29,6 +29,7 @@ from copy import deepcopy
 from typing import Dict, List, Tuple
 
 from stockmonitor import persist
+from pandas.core.frame import DataFrame
 ## from stockmonitor.pprint import pprint
 
 
@@ -211,27 +212,58 @@ class TransHistory():
 
     ## =============================================================
 
-    def transactionsBefore(self, endDate) -> 'TransHistory':
-        transList = []
-        for item in self.transactions:
+    ## find transaction pointed by 'findTime'
+    def findIndex( self, findTime: datetime ) -> 'TransHistory':
+        tSize = len( self.transactions )
+        for i in range(0, tSize):
+            item = self.transactions[ i ]
+            transTime = item.transTime
+            if findTime > transTime:             ## transactions are in reverse order
+                return i
+        return tSize
+    
+    ## find transaction with date before given date and return it's index
+    def findIndexBefore( self, endDate: date ) -> 'TransHistory':
+        tSize = len( self.transactions )
+        for i in range(0, tSize):
+            item = self.transactions[ i ]
             transTime = item.transTime
             transDate = transTime.date()
-            if transDate < endDate:
-                transList.append( item )
-        retTrans = TransHistory()
+            if endDate > transDate:             ## transactions are in reverse order
+                return i
+        return tSize
+
+    def splitTransactions( self, afterIndex, currentAfter = False ) -> 'TransHistory':
+        if currentAfter is True:
+            nextIndex = afterIndex + 1
+            return self.splitTransactions( nextIndex, False )
+            
+        transList   = self.transactions[ afterIndex : ]
+        beforeTrans = TransHistory()
+        beforeTrans.appendList( transList )
+        
+        transList  = self.transactions[ : afterIndex ]
+        afterTrans = TransHistory()
+        afterTrans.appendList( transList )
+        
+        return ( beforeTrans, afterTrans )
+        
+    def transactionsBefore( self, endDate: datetime.date ) -> 'TransHistory':
+        foundIndex = self.findIndexBefore( endDate )
+        if foundIndex >= self.size():
+            return TransHistory()
+        transList = self.transactions[ foundIndex : ]
+        retTrans  = TransHistory()
         retTrans.appendList( transList )
         return retTrans
 
     ## most recent transaction in front (first index)
-    def transactionsAfter(self, startDate) -> 'TransHistory':
-        transList = []
-        for item in self.transactions:
-            transTime = item.transTime
-            transDate = transTime.date()
-            if transDate < startDate:
-                continue
-            transList.append( item )
-        retTrans = TransHistory()
+    def transactionsAfter( self, startDate: datetime.date ) -> 'TransHistory':
+        foundIndex = self.findIndexBefore( startDate )
+        if foundIndex >= self.size():
+            return TransHistory()
+        transList = self.transactions[ : foundIndex ]
+        retTrans  = TransHistory()
         retTrans.appendList( transList )
         return retTrans
 
@@ -355,6 +387,127 @@ class TransHistory():
         return profitValue
 
     ## =============================================================
+
+    ## Return list of indexes. 
+    ## Indicates how many 'stockData' items are before transaction indicated by list index.
+    def matchStockBefore(self, stockData ):
+        if stockData is None:
+            return []
+        if stockData.empty:
+            return []
+        
+        ret = []
+
+        stockValuesFrame = stockData[ ["t", "c"] ]
+        stockRowsNum     = stockValuesFrame.shape[0]
+        stockRowIndex    = 0
+
+        ## iterate over transactions
+        ## calculate values based on transactions and stock price changes
+        for nextTrans in reversed( self.transactions ):                           # type: ignore
+            transTime = nextTrans.transTime
+
+            counter = 0
+            
+            ## iterate over stock historic prices
+            while stockRowIndex < stockRowsNum:
+                stockTime = stockValuesFrame.at[ stockRowIndex, "t" ]
+                if stockTime < transTime:
+                    stockRowIndex += 1
+                    counter += 1
+                else:
+                    ## stock time is after transaction time -- break
+                    break
+
+            ret.append( counter )
+
+        ret.reverse()
+        return ret
+
+    ## Return list of indexes. 
+    ## Indicates how many 'stockData' items are after transaction indicated by list index.
+    ## Returned values in list are indexes of 'stockData'
+    def matchStockAfter(self, stockData ):
+        if stockData is None:
+            return []
+        if stockData.empty:
+            return []
+        
+        ret = []
+
+        stockValuesFrame = stockData[ ["t", "c"] ]
+        stockRowsNum     = stockValuesFrame.shape[0]
+        stockRowIndex    = stockRowsNum - 1
+
+        ## iterate over transactions
+        ## calculate values based on transactions and stock price changes
+        for nextTrans in self.transactions:                           # type: ignore
+            transTime = nextTrans.transTime
+
+            counter = 0
+
+            ## iterate over stock historic prices
+            while stockRowIndex > -1:
+                stockTime = stockValuesFrame.at[ stockRowIndex, "t" ]
+                if stockTime > transTime:
+                    stockRowIndex -= 1
+                    counter += 1
+                else:
+                    ## stock time is after transaction time -- break
+                    break
+
+            ret.append( counter )
+
+        ## no need to reverse 'ret'
+        return ret
+
+    ## calculate profit of single stock
+    def calculateValueHistory( self, stockData: DataFrame ) -> DataFrame:
+        if stockData is None:
+            return None
+        if stockData.empty:
+            return stockData
+
+        startDateTime = stockData.iloc[0, 0]        ## first date
+
+        transStartIndex           = self.findIndex( startDateTime )
+        transBefore, pendingTrans = self.splitTransactions( transStartIndex, True )
+        revPending                = pendingTrans[::-1]                           ## reverse list
+
+        stockValuesFrame = stockData[ ["t", "c"] ].copy()
+        rowsNum          = stockData.shape[0]
+        
+        matchIndexes = pendingTrans.matchStockAfter( stockValuesFrame )
+        matchIndexes.reverse()
+        
+        matchSize     = len( matchIndexes )
+        matchStockSum = sum( matchIndexes )
+        rowIndex      = rowsNum - matchStockSum
+        
+#         transMode: TransactionMatchMode = TransactionMatchMode.BEST
+        
+        ## iterate over transactions
+        ## calculate values based on transactions and stock price changes
+        for transIndex in range(0, matchSize):
+            rowIndexCounter = matchIndexes[ transIndex ]
+            
+            nextTrans   = revPending[ transIndex ]
+            transBefore.appendItem( nextTrans )
+            
+#             transAmount, buy_unit_price = transBefore.currentTransactionsAvg( transMode )
+            transAmount = transBefore.currentAmount()
+
+            ## iterate over stock historic prices
+            for _ in range(0, rowIndexCounter):
+                sellValue = 0
+                if transAmount > 0:
+                    stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
+                    sellValue  = stockPrice * transAmount
+                    sellValue -= broker_commission( sellValue )
+                stockValuesFrame.at[ rowIndex, "c" ] = sellValue
+                rowIndex += 1
+
+        return stockValuesFrame
 
     def matchTransactions( self, mode: TransactionMatchMode, matchTime: datetime = None ) -> TransactionsMatch:
         ## Buy value raises then current unit price rises
