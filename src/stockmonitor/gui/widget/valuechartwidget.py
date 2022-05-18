@@ -98,11 +98,10 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.setEnabled( False )
 
-#         threads = threadlist.QThreadMeasuredList( self )
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self )
-        threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self._updateView, Qt.QueuedConnection )
+        threads.deleteOnFinish()
 
         for source in dataSources:
             threads.appendFunction( source.getWorksheetData, [forceRefresh] )

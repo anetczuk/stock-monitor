@@ -83,10 +83,10 @@ class ActivityWidget(QtBaseClass):           # type: ignore
     def calculate(self):
         if self.ui.todayDataRB.isChecked():
             _LOGGER.warning("calculating based on current intraday")
-            threadlist.ThreadList.calculate( self, self._calculateCurr )
+            threadlist.calculate( self, self._calculateCurr )
         elif self.ui.rangeDataRB.isChecked():
             _LOGGER.warning("calculating based on metastock intraday")
-            threadlist.ThreadList.calculate( self, self._calculatePrev )
+            threadlist.calculate( self, self._calculatePrev )
             #self._calculatePrev()
         else:
             _LOGGER.warning("unknown state")

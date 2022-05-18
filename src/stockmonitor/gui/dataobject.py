@@ -368,15 +368,10 @@ class DataObject( QObject ):
         return self.dataContainer.refreshAllList( forceRefresh )
 
     def refreshStockData(self, forceRefresh=True):
-#         threads = threadlist.ThreadList( self )
-#         threads = threadlist.SerialList( self )
-#         threads = threadlist.QThreadMeasuredList( self )
-#         threads = threadlist.ProcessList( self )
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self )
-
-        threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
+        threads.deleteOnFinish()
 
 #         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
 #         threads.appendFunction( heavy_comp, [300000] )
@@ -388,15 +383,10 @@ class DataObject( QObject ):
         threads.start()
 
     def refreshAllData(self, forceRefresh=True):
-#         threads = threadlist.ThreadList( self )
-#         threads = threadlist.SerialList( self )
-#         threads = threadlist.QThreadMeasuredList( self )
-#         threads = threadlist.ProcessList( self )
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self )
-
-        threads.finished.connect( threads.deleteLater )
         threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
+        threads.deleteOnFinish()
 
 #         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
 #         threads.appendFunction( heavy_comp, [300000] )

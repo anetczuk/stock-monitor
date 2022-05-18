@@ -367,10 +367,9 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self, False )
-        threads.finished.connect( threads.deleteLater )
-
         if activeTimer:
             threads.finished.connect( self.tickTimer.start, QtCore.Qt.QueuedConnection )
+        threads.deleteOnFinish()
 
         threads.appendFunction( self._handleTrayIndicatorUpdate, [forceRefresh] )
 
