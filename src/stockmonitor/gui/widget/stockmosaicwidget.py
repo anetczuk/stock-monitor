@@ -188,9 +188,30 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
 
         self.clearData()
 
-        recentTransTime = None
+        minTransTime = None
+        maxTransTime = None
 
         tickerSize = len( self.tickerList )
+        for index in range( 0, tickerSize ):
+            ticker_pair = self.tickerList[ index ]
+            ticker = ticker_pair[0]
+            isin = self.dataObject.getStockIsinFromTicker( ticker )
+
+            intraSource: GpwCurrentStockIntradayData = self.getIntradayDataSource( ticker )
+
+            transTime = intraSource.getRecentTransTime()
+            if transTime is not None:
+                if maxTransTime is None or transTime > maxTransTime:
+                    maxTransTime = transTime
+                    
+            dataFrame = intraSource.getWorksheetData()
+            if dataFrame is not None:
+                startTime = dataFrame.iloc[ 0 ].at[ 't' ]
+                if minTransTime is None or startTime < minTransTime:
+                    minTransTime = startTime
+                    
+        self.ui.timeLabel.setText( str(maxTransTime) )
+
         for index in range( 0, tickerSize ):
             ticker_pair = self.tickerList[ index ]
             ticker = ticker_pair[0]
@@ -198,18 +219,11 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
             _LOGGER.debug( "updating chart data, range[%s] isin[%s] index[%s]", rangeText, isin, index )
 
             intraSource: GpwCurrentStockIntradayData = self.getIntradayDataSource( ticker )
-            self._updateCandleChart( intraSource, index )
-
-            transTime = intraSource.getRecentTransTime()
-            if transTime is not None:
-                if recentTransTime is None or transTime > recentTransTime:
-                    recentTransTime = transTime
+            self._updateCandleChart( intraSource, index, minTransTime, maxTransTime )
 
         self.ui.candleChart.refreshCanvas()
 
-        self.ui.timeLabel.setText( str(recentTransTime) )
-
-    def _updateCandleChart( self, intraSource: GpwCurrentStockIntradayData, tickerIndex ):
+    def _updateCandleChart( self, intraSource: GpwCurrentStockIntradayData, tickerIndex, minTransTime, maxTransTime ):
         ## get data
         ##intraSource = self.dataObject.gpwStockIntradayData.getSource( isin, rangeText )
         ##return intraSource
@@ -262,9 +276,13 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
 #         recentPrice = closeColumn.iloc[-1]
 #         self.ui.candleChart.addVolumeSecondaryY( recentPrice, index=tickerIndex )
 
+        returnParamsDict = {}
         paramsDict = { "ylabel": "",
                        "ylabel_lower": "",
-                       "axtitle": title
+                       "axtitle": title,
+                       "xlim": (minTransTime, maxTransTime),
+                       "return_calculated_values": returnParamsDict,
+                       "returnfig": True
                        }
         self.ui.candleChart.addPriceCandles( candleFrame, index=tickerIndex, paramsDict=paramsDict )
 

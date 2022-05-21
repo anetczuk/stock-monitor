@@ -486,9 +486,36 @@ def prepare_candle_data( intraSource: GpwCurrentStockIntradayData, bins=None ):
         frame[ 'Close' ][-1]   = row["c"]
         frame[ 'Volume' ][-1] += row["v"]
 
-    dataframe = pandas.DataFrame( frame )
-    dataframe.index = pandas.DatetimeIndex( timestamps )
-    return dataframe
+    retFrame = pandas.DataFrame( frame )
+    retFrame.index = pandas.DatetimeIndex( timestamps )
+    return retFrame
+
+
+## repeat last row, set to given time and clear open. hi. lo and volume fields (just indicate current price)
+def set_end_row( dataFrame, maxTime ):
+    if maxTime is None:
+        return dataFrame
+    if dataFrame.index[-1] == maxTime:
+        return dataFrame
+
+    ## repeat last row and change time value
+
+    newDataFrame = dataFrame.append( dataFrame.iloc[-1] )
+    
+    ind = newDataFrame.index.tolist()
+    ind[ -1 ] = maxTime
+    newDataFrame.index = ind
+    if 't' in newDataFrame.columns:
+        newDataFrame.loc[maxTime, 't'] = maxTime
+
+    closeValue = newDataFrame.loc[maxTime, 'Close']
+    newDataFrame.loc[maxTime, 'Open']   = closeValue
+    newDataFrame.loc[maxTime, 'High']   = closeValue
+    newDataFrame.loc[maxTime, 'Low']    = closeValue
+    newDataFrame.loc[maxTime, 'Volume'] = 0
+
+#     print("ggggggg:", newDataFrame)
+    return newDataFrame
 
 
 ## ==================================================================

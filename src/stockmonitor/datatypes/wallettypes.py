@@ -206,7 +206,7 @@ class TransHistory():
             self.append( amount, unitPrice, commission, transTime )
             self.sort()
             return
-        _LOGGER.debug( "joining transaction: %s %s %s %s", amount, unitPrice, commission, transTime )
+        ## _LOGGER.debug( "joining transaction: %s %s %s %s", amount, unitPrice, commission, transTime )
         item = self.transactions[ similarIndex ]
         item.add( amount, commission )
 

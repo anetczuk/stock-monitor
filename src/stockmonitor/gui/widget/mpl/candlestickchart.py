@@ -275,25 +275,34 @@ def _plot_data( dataframe, pricePlot, volumePlot=False, paramsDict=None ):
 #         mc    = fplt.make_marketcolors( up='green', down='red' )
 #         style = fplt.make_mpf_style( base_mpf_style=CANDLE_STYLE, marketcolors=mc )
 
-    avg_dist_between_points = (xdata[-1] - xdata[0]) / float(len(xdata))
-    start_day = (xdata[0]  - 0.45 * avg_dist_between_points).timestamp() / (60 * 60 * 24)
-    end_day   = (xdata[-1] + 0.45 * avg_dist_between_points).timestamp() / (60 * 60 * 24)
+    minTime = xdata[0]
+    maxTime = xdata[-1]
 
     additionalParams = paramsDict
     if additionalParams is None:
         additionalParams = {}
 #     additionalParams.setdefault( "show_nontrading", True )
 
-    fplt.plot( dataframe,
-               type=CANDLE_TYPE,
-               style=CANDLE_STYLE,
-               ax=pricePlot,
-               volume=volumePlot,
-               datetime_format=date_format,
-               show_nontrading=True,
-               xlim=(start_day, end_day),
-               **additionalParams
-               )
+    if "xlim" in additionalParams:
+        minTime, maxTime = additionalParams[ "xlim" ]
+
+    avg_dist_between_points = (maxTime - minTime) / float(len(xdata))
+    start_day = (minTime - 0.45 * avg_dist_between_points).timestamp() / (60 * 60 * 24)
+    end_day   = (maxTime + 0.45 * avg_dist_between_points).timestamp() / (60 * 60 * 24)
+    additionalParams["xlim"] = (start_day, end_day)
+
+    fplt.plot(   dataframe,
+                 type=CANDLE_TYPE,
+                 style=CANDLE_STYLE,
+                 ax=pricePlot,
+                 volume=volumePlot,
+                 datetime_format=date_format,
+                 show_nontrading=True,
+#                      xlim=(start_day, end_day),
+                 **additionalParams
+                 )
+
+    volumePlot.set_xlim( start_day, end_day )
 
 #     volumePlot.yaxis.set_major_formatter( matplotlib.ticker.FormatStrFormatter('%d') )
 #         _update_plot( xdata, volumePlot )
