@@ -262,7 +262,7 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
 
         refPrice    = currentSource.getReferenceValueByTicker( ticker )
 
-#         self.ui.candleChart.addPriceSecondaryY( refPrice, index=tickerIndex )
+        self.ui.candleChart.addPriceSecondaryY( refPrice, index=tickerIndex, set_label=False )
 
         timeData = list(timeColumn)
         self.ui.candleChart.addPriceLine( timeData, priceColumn, color='#FF000055', index=tickerIndex )
@@ -272,9 +272,9 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
         ## add wallet points
         self._addWalletData( intraSource, self.ui.candleChart, tickerIndex )
 
-#         closeColumn  = dataFrame["c"]
-#         recentPrice = closeColumn.iloc[-1]
-#         self.ui.candleChart.addVolumeSecondaryY( recentPrice, index=tickerIndex )
+        closeColumn  = candleFrame["Close"]
+        recentPrice = closeColumn.iloc[-1]
+        self.ui.candleChart.addVolumeSecondaryY( recentPrice, index=tickerIndex, set_label=False )
 
         returnParamsDict = {}
         paramsDict = { "ylabel": "",

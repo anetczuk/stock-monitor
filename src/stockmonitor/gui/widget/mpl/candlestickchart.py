@@ -222,7 +222,7 @@ class PriceValueCandleStickChart( MplBaseChart ):
 
         # self.refreshCanvas()
 
-    def addPriceSecondaryY(self, referenceValue, index=0 ):
+    def addPriceSecondaryY(self, referenceValue, index=0, set_label=True ):
         pricePlot, _ = self.plotsList[ index ]
 
         def val_to_perc( y ):
@@ -232,11 +232,12 @@ class PriceValueCandleStickChart( MplBaseChart ):
             return ( y / 100.0 + 1.0 ) * referenceValue
 
         secay = pricePlot.secondary_yaxis( 'right', functions=(val_to_perc, perc_to_val) )
-        secay.set_ylabel( "Change [%]" )
+        if set_label:
+            secay.set_ylabel( "Change [%]" )
 
         ## self.refreshCanvas()
 
-    def addVolumeSecondaryY(self, recentPrice, index=0 ):
+    def addVolumeSecondaryY(self, recentPrice, index=0, set_label=True ):
         _, volumePlot = self.plotsList[ index ]
 
         def volume_to_value( vol ):
@@ -246,7 +247,8 @@ class PriceValueCandleStickChart( MplBaseChart ):
             return val / recentPrice * 1000.0
 
         secay = volumePlot.secondary_yaxis( 'right', functions=(volume_to_value, value_to_volume) )
-        secay.set_ylabel( "Value [k]" )
+        if set_label:
+            secay.set_ylabel( "Value [k]" )
 
         ## self.refreshCanvas()
 
@@ -263,11 +265,9 @@ class PriceValueCandleStickChart( MplBaseChart ):
 ## ======================================================================
 
 
-def _plot_data( dataframe, pricePlot, volumePlot=False, paramsDict=None ):
+def _plot_data( dataframe, pricePlot, volumePlot=None, paramsDict=None ):
     if pricePlot is None:
         pricePlot = False
-    if volumePlot is None:
-        volumePlot = False
 
     xdata = dataframe.index
     date_format = get_date_format( xdata )
@@ -291,18 +291,23 @@ def _plot_data( dataframe, pricePlot, volumePlot=False, paramsDict=None ):
     end_day   = (maxTime + 0.45 * avg_dist_between_points).timestamp() / (60 * 60 * 24)
     additionalParams["xlim"] = (start_day, end_day)
 
+    plotVolume = volumePlot
+    if plotVolume is None:
+        plotVolume = False
+
     fplt.plot(   dataframe,
                  type=CANDLE_TYPE,
                  style=CANDLE_STYLE,
                  ax=pricePlot,
-                 volume=volumePlot,
+                 volume=plotVolume,
                  datetime_format=date_format,
                  show_nontrading=True,
 #                      xlim=(start_day, end_day),
                  **additionalParams
                  )
 
-    volumePlot.set_xlim( start_day, end_day )
+    if volumePlot is not None and isinstance( volumePlot, bool ) is False:
+        volumePlot.set_xlim( start_day, end_day )
 
 #     volumePlot.yaxis.set_major_formatter( matplotlib.ticker.FormatStrFormatter('%d') )
 #         _update_plot( xdata, volumePlot )
