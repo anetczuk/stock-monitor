@@ -140,8 +140,7 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
 
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self )
-        threads.finished.connect( self._sortPlots, Qt.QueuedConnection )
-#         threads.finished.connect( self._updateView, Qt.QueuedConnection )
+        threads.finished.connect( self._sortPlots )
         threads.deleteOnFinish()
 
         for source in dataSources:

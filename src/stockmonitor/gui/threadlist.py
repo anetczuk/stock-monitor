@@ -171,7 +171,8 @@ class ThreadPoolList( AbstractWorkerList ):
         self._workers = []
 
     def deleteOnFinish(self):
-        self.finished.connect( self.deleteLater, Qt.QueuedConnection )
+        self.finished.connect( self.deleteLater )
+#         self.finished.connect( self.deleteLater, Qt.QueuedConnection )
 
     def appendFunction(self, function, args=None):
         command = CommandObject( function, args )

@@ -129,7 +129,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self )
-        threads.finished.connect( self._updateView, Qt.QueuedConnection )
+        threads.finished.connect( self._updateView )
         threads.deleteOnFinish()
 
         for source in dataSources:

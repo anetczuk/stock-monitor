@@ -370,7 +370,7 @@ class DataObject( QObject ):
     def refreshStockData(self, forceRefresh=True):
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self )
-        threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
+        threads.finished.connect( self.stockDataChanged )
         threads.deleteOnFinish()
 
 #         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
@@ -385,7 +385,7 @@ class DataObject( QObject ):
     def refreshAllData(self, forceRefresh=True):
         ThreadingListType = threadlist.get_threading_list()
         threads = ThreadingListType( self )
-        threads.finished.connect( self.stockDataChanged, Qt.QueuedConnection )
+        threads.finished.connect( self.stockDataChanged )
         threads.deleteOnFinish()
 
 #         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
