@@ -21,7 +21,8 @@ Aggregates data from several sources in one place. Manages wallet and favorite s
 ## Screens
 
 [![Stock table](doc/mainwindow-stock-small.png "Stock table")](doc/mainwindow-stock-big.png)
-[![Stock chart](doc/stockchartwindow-small.png "Stock table")](doc/stockchartwindow-big.png)
+[![Stock chart](doc/stockchartwindow-small.png "Stock chart")](doc/stockchartwindow-big.png)
+[![Stock mosaic](doc/stockmosaicwidget-small.png "Stock mosaic")](doc/stockmosaicwidget-big.png)
 
 
 ## Disclaimer
