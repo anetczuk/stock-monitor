@@ -35,6 +35,10 @@ from stockmonitor.logger import flush_handlers
 _LOGGER = logging.getLogger(__name__)
 
 
+_SINGLE_THREADED = False
+# _SINGLE_THREADED = True
+
+
 class ThreadingList():
 
     def __init__(self):
@@ -243,4 +247,8 @@ def get_threading_list():
 
 
 def calculate( parent, function, args=None ):
-    ThreadPoolList.calculate(parent, function, args)
+    if _SINGLE_THREADED is False:
+        ThreadPoolList.calculate(parent, function, args)
+    else:
+        command = CommandObject( function, args )
+        command.execute()
