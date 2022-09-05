@@ -211,6 +211,9 @@ class DataContainer():
         self.updateWalletFavGroup()
 
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
+        if dataFrame is None:
+            return False
+
 #         wallet: WalletData = self.wallet
         importWallet = WalletData()
 
@@ -249,6 +252,7 @@ class DataContainer():
             self.userContainer.wallet = importWallet
 
         self.updateWalletFavGroup()
+        return True
 
     def updateAllFavsGroup(self):
         allFavsSet = self.getAllFavs()

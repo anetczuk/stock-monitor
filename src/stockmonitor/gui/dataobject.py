@@ -302,10 +302,13 @@ class DataObject( QObject ):
         self.walletDataChanged.emit()
 
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
-        self.dataContainer.importWalletTransactions( dataFrame, addTransactions )
+        refreshed = self.dataContainer.importWalletTransactions( dataFrame, addTransactions )
+        if refreshed is False:
+            return False
 
         self.favsGrpChanged.emit( "Wallet" )
         self.walletDataChanged.emit()
+        return True
 
     def updateAllFavsGroup(self):
         changed = self.dataContainer.updateAllFavsGroup()

@@ -249,15 +249,6 @@ def import_mb_transactions( dataObject, filePath ):
 
     ## add transactions
     _LOGGER.debug( "opening transactions: %s", filePath )
-    dataObject.importWalletTransactions( importedData, True )
-
-#     if state == 0:
-#         ## load history transactions
-#         _LOGGER.debug( "opening transactions: %s", filePath )
-#         dataObject.importWalletTransactions( importedData )
-#     elif state == 1:
-#         ## add transactions
-#         _LOGGER.debug( "opening transactions: %s", filePath )
-#         dataObject.importWalletTransactions( importedData, True )
-#     else:
-#         _LOGGER.warning( "invalid import file: %s", filePath )
+    imported = dataObject.importWalletTransactions( importedData, True )
+    if imported is False:
+        _LOGGER.warning( "could import transactions" )
