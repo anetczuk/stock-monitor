@@ -124,6 +124,7 @@ class WorksheetData( BaseWorksheetData ):
             self.storage.loadObject( dataPath, False )
         return self.storage.worksheet
 
+    ## return None if no data found
     @abc.abstractmethod
     def _parseDataFromFile(self, dataFile: str) -> DataFrame:
         raise NotImplementedError('You need to define this method in derived class!')
@@ -266,7 +267,11 @@ class BaseWorksheetDAO():
     def getDataByIndex( self, columnType: StockDataType, rowIndex ):
         colIndex = self.getDataColumnIndex( columnType )
         dataFrame: DataFrame = self.getDataFrame()
-        dataColumn = dataFrame.iloc[:, colIndex]
+        try:
+            dataColumn = dataFrame.iloc[:, colIndex]
+        except IndexError as ex:
+            _LOGGER.error( "invalid access: %s in index %s while accessing %s", ex, colIndex, columnType )
+            raise
         return dataColumn.iloc[ rowIndex ]
 
     def getRowByValue( self, rowColumnType: StockDataType, rowValue ):

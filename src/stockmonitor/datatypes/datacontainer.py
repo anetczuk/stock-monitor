@@ -334,9 +334,9 @@ class DataContainer():
                 rowDict = {}
                 rowDict[ columnsList[ 0] ] = "-"
                 rowDict[ columnsList[ 1] ] = ticker
-                rowDict[ columnsList[ 2] ] = amount                 ## liczba
-                rowDict[ columnsList[ 3] ] = buy_unit_price         ## sredni kurs nabycia
-                rowDict[ columnsList[ 4] ] = "-"                    ## kurs
+                rowDict[ columnsList[ 2] ] = amount                         ## liczba
+                rowDict[ columnsList[ 3] ] = round( buy_unit_price, 4 )     ## sredni kurs nabycia
+                rowDict[ columnsList[ 4] ] = "-"                            ## kurs
                 rowDict[ columnsList[ 5] ] = "-"
                 rowDict[ columnsList[ 6] ] = "-"
                 rowDict[ columnsList[ 7] ] = "-"

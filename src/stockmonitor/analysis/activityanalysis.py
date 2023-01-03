@@ -319,7 +319,7 @@ class ActivityAnalysis:
             dateString = currDate.isoformat()
             picklePath = f"{tmp_dir}data/activity/{dateString}.pickle"
             dataPair = persist.load_object_simple( picklePath, None, silent=True )
-            if dataPair is None:
+            if dataPair is None or len(dataPair[0]) < 1:
 #                 _LOGGER.debug( "no precalculated data found -- precalculating [%s]", picklePath )
                 dataPair = self.precalculateData( currDate )
 #                 dataframeList = dataPair[0]
@@ -331,6 +331,7 @@ class ActivityAnalysis:
 
         return list( dataPair ) + [ currDate ]
 
+    ## returns: ( List[DataFrame], Dict )
     def precalculateData(self, currDate):
         dataframeList = self._loadData( currDate )
 

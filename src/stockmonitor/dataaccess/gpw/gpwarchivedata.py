@@ -141,7 +141,8 @@ class GpwArchiveData( BaseWorksheetDAO ):
         worksheet = None
         while True:
             self.dao = GpwArchiveData.DAO( currDay )
-            worksheet = self.getWorksheetData()
+            worksheet = self.accessWorksheetData()
+#             worksheet = self.getWorksheetData()        ## causes 'recent day' to be calculated badly
             if worksheet is not None:
                 return currDay
             currDay -= datetime.timedelta(days=1)

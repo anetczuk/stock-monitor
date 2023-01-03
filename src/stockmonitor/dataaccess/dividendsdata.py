@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 ## https://www.stockwatch.pl/dywidendy/
 class DividendsCalendarData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class DividendsCalendarDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -66,7 +66,14 @@ class DividendsCalendarData( BaseWorksheetDAO ):
 
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
-#             _LOGGER.debug( "opening workbook: %s", dataFile )
+            ## _LOGGER.debug( "opening workbook: %s", dataFile )
+
+            with open( dataFile, encoding="utf-8" ) as file:
+                content = file.read()
+                if "Brak informacji o dywidendach" in content:
+                    ## no data found
+                    return None
+
             dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
             dataFrame = dataFrame[2]
             dataFrame = dataFrame.fillna("-")
@@ -75,7 +82,7 @@ class DividendsCalendarData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = DividendsCalendarData.DAO()
+        dao = DividendsCalendarData.DividendsCalendarDAO()
         super().__init__( dao )
 
     def sourceLink(self):

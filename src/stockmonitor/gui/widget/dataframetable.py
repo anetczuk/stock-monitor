@@ -513,6 +513,7 @@ class DataFrameTable( QTableView ):
         self.setObjectName("dataframetable")
 
         self._rawData = None
+        self.pandaModel: DataFrameTableModel = None
         self.columnsVisible: Dict[ int, bool ] = {}
 
         self.setSortingEnabled( True )
@@ -537,7 +538,7 @@ class DataFrameTable( QTableView ):
 
         self.installEventFilter( self )
 
-    def setSourceModel(self, model):
+    def setSourceModel( self, model: DataFrameTableModel ):
         self.pandaModel = model
         proxyModel = self.model()
         proxyModel.setSourceModel( self.pandaModel )
