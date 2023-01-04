@@ -15,7 +15,7 @@ except ImportError:
 
 import unittest
 
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
 
 

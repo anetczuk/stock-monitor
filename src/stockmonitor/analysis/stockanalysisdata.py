@@ -29,9 +29,9 @@ import math
 import abc
 import pandas
 
-from stockmonitor.dataaccess.datatype import StockDataType
-from stockmonitor.dataaccess.gpw.gpwarchivedata import GpwArchiveData
-from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
+from stockdataaccess.dataaccess.datatype import StockDataType
+from stockdataaccess.dataaccess.gpw.gpwarchivedata import GpwArchiveData
+from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 
 
 _LOGGER = logging.getLogger(__name__)

@@ -29,9 +29,9 @@ import pandas
 
 from PyQt5.QtCore import Qt
 
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData
+from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData
 from stockmonitor.datatypes.stocktypes import GpwIndexIntradayMap
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData
-from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist

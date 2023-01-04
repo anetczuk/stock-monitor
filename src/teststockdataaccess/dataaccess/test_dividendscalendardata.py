@@ -22,24 +22,21 @@
 #
 
 import unittest
-# import datetime
+import datetime
+from teststockdataaccess.data import get_data_path
 
-from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
-
-
-## =================================================================
+from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
 
-class GpwESPIDataTest(unittest.TestCase):
+class DividendsCalendarDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = GpwESPIData()
+        self.dataAccess = DividendsCalendarData()
 
         def data_path():
-            return get_data_path( "espi_data.html" )
+            return get_data_path( "dividends_cal_data.html" )
 
         self.dataAccess.dao.getDataPath = data_path           # type: ignore
         self.dataAccess.dao.storage = WorksheetStorageMock()
@@ -52,20 +49,12 @@ class GpwESPIDataTest(unittest.TestCase):
     def test_getWorksheetData(self):
         currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
-        self.assertEqual(dataLen, 45)
+        self.assertEqual(dataLen, 166)
 
-#     def test_getWorksheet_force(self):
-#         self.dataAccess = GpwESPIData()
-#         currData = self.dataAccess.getWorksheetData( True )
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 45)
+    def test_getStockName(self):
+        rowData = self.dataAccess.getStockName( 3 )
+        self.assertEqual( rowData, "VERBICOM" )
 
-#     def test_getWorksheet_micro(self):
-#         startTime = datetime.datetime.now()
-#         self.dataAccess.getWorksheetData( True )
-#         end1Time = datetime.datetime.now()
-#         self.dataAccess.loadWorksheet( False )
-#         end2Time = datetime.datetime.now()
-#         diff1 = end1Time - startTime
-#         diff2 = end2Time - end1Time
-#         print( "load time:", diff1, diff2 )
+    def test_getLawDate(self):
+        rowData = self.dataAccess.getLawDate( 2 )
+        self.assertEqual( rowData, datetime.date(2020, 11, 23) )

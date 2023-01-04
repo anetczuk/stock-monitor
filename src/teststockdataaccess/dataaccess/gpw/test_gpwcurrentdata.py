@@ -24,10 +24,10 @@
 import unittest
 # import datetime
 
-from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.datatype import StockDataType
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
+from teststockdataaccess.data import get_data_path
+from stockdataaccess.dataaccess.datatype import StockDataType
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 ## =================================================================

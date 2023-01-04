@@ -22,20 +22,56 @@
 #
 
 import unittest
-from teststockmonitor.data import get_data_path
+import datetime
 
-from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
+from teststockdataaccess.data import get_data_path
+from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData,\
+    GpwCurrentIndexIntradayData
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
 
-class CurrentShortSellingsDataTest(unittest.TestCase):
+class GpwCurrentStockIntradayDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = CurrentShortSellingsData()
+        self.dataAccess = GpwCurrentStockIntradayData( "PLOPTTC00011" )
 
         def data_path():
-            return get_data_path( "shortsellings-current.html" )
+            return get_data_path( "cdr.chart.04-09.txt" )
+
+        self.dataAccess.dao.getDataPath = data_path                       # type: ignore
+        self.dataAccess.dao.downloadData = lambda filePath: None          ## empty lambda function
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+#         self.dataAccess.dao.parseWorksheetFromFile( data_path() )
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_getWorksheetData_False(self):
+        currData = self.dataAccess.getWorksheetData( False )
+        self.assertIsNone( currData )
+
+    def test_getWorksheetData_True(self):
+        currData = self.dataAccess.getWorksheetData( True )
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 3104)
+
+    def test_getWorksheetForDate(self):
+        date_object = datetime.date( year=2020, month=9, day=21 )
+        currData = self.dataAccess.getWorksheetForDate( date_object, True )
+        dataLen = len( currData )
+        self.assertEqual(dataLen, 3104)
+
+
+class GpwCurrentIndexIntradayDataTest(unittest.TestCase):
+
+    def setUp(self):
+        ## Called before testfunction is executed
+        self.dataAccess = GpwCurrentIndexIntradayData( "PL9999999987" )
+
+        def data_path():
+            return get_data_path( "wig20.chart.07-09.txt" )
 
         self.dataAccess.dao.getDataPath = data_path           # type: ignore
         self.dataAccess.dao.storage = WorksheetStorageMock()
@@ -45,46 +81,7 @@ class CurrentShortSellingsDataTest(unittest.TestCase):
         ## Called after testfunction was executed
         pass
 
-#     def test__grabContent(self):
-#         url = self.dataAccess.getDataUrl()
-#         content = self.dataAccess._grabContent( url )
-#         self.assertTrue( content )
-#         print( "grabbed content:\n", content )
-
-    def test_getWorksheetData(self):
-        currData = self.dataAccess.getWorksheetData( False )
+    def test_getData(self):
+        currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
-        self.assertEqual(dataLen, 5)
-
-    def test_getISIN(self):
-#         print( self.dataAccess.getWorksheetData() )
-        rowData = self.dataAccess.getISIN( 3 )
-        self.assertEqual( rowData, "PLOPTTC00011" )
-
-
-class HistoryShortSellingsDataTest(unittest.TestCase):
-
-    def setUp(self):
-        ## Called before testfunction is executed
-        self.dataAccess = HistoryShortSellingsData()
-
-        def data_path():
-            return get_data_path( "shortsellings-history.html" )
-
-        self.dataAccess.dao.getDataPath = data_path           # type: ignore
-        self.dataAccess.dao.storage = WorksheetStorageMock()
-        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
-
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
-
-    def test_getWorksheetData(self):
-        currData = self.dataAccess.getWorksheetData( False )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 30)
-
-    def test_getISIN(self):
-#         print( self.dataAccess.getWorksheetData() )
-        rowData = self.dataAccess.getISIN( 3 )
-        self.assertEqual( rowData, "PL11BTS00015" )
+        self.assertEqual(dataLen, 1962)

@@ -25,7 +25,7 @@ import logging
 import datetime
 
 from stockdataaccess import persist
-from stockmonitor.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import tmp_dir
 
 
 _LOGGER = logging.getLogger(__name__)

@@ -22,39 +22,31 @@
 #
 
 import unittest
-import datetime
-from teststockmonitor.data import get_data_path
+from teststockdataaccess.data import get_data_path
 
-from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
+from stockdataaccess.dataaccess.globalindexesdata import GlobalIndexesData
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
 
-class DividendsCalendarDataTest(unittest.TestCase):
+class GlobalIndexesDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = DividendsCalendarData()
-
-        def data_path():
-            return get_data_path( "dividends_cal_data.html" )
-
-        self.dataAccess.dao.getDataPath = data_path           # type: ignore
-        self.dataAccess.dao.storage = WorksheetStorageMock()
-        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
+        self.dataAccess = GlobalIndexesData()
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_getWorksheetData(self):
-        currData = self.dataAccess.getWorksheetData()
+    def test_parseWorksheetFromFile(self):
+        filePath = get_data_path( "global_indexes_data.html" )
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+        currData = self.dataAccess.dao.parseWorksheetFromFile( filePath )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 166)
+        self.assertEqual(dataLen, 48)
 
-    def test_getStockName(self):
-        rowData = self.dataAccess.getStockName( 3 )
-        self.assertEqual( rowData, "VERBICOM" )
-
-    def test_getLawDate(self):
-        rowData = self.dataAccess.getLawDate( 2 )
-        self.assertEqual( rowData, datetime.date(2020, 11, 23) )
+#     def test_getWorksheetData(self):
+#         self.dataAccess.loadWorksheet( True )
+#         currData = self.dataAccess.getWorksheetData()
+#         dataLen = len( currData )
+#         self.assertEqual(dataLen, 783)

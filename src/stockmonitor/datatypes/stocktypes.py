@@ -26,7 +26,7 @@ import abc
 
 from typing import Dict
 
-from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData,\
+from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData,\
     GpwCurrentStockIntradayData
 
 

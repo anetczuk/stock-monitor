@@ -22,26 +22,24 @@
 #
 
 import unittest
-import datetime
+# import datetime
 
-from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.datatype import StockDataType
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
-from stockmonitor.dataaccess.gpw.gpwarchivedata import GpwArchiveData
+from teststockdataaccess.data import get_data_path
+from stockdataaccess.dataaccess.gpw.gpwespidata import GpwESPIData
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 ## =================================================================
 
 
-class GpwArchiveDataTest(unittest.TestCase):
+class GpwESPIDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        day = datetime.date( 2022, 2, 10 )
-        self.dataAccess = GpwArchiveData( day )
+        self.dataAccess = GpwESPIData()
 
         def data_path():
-            return get_data_path( "gpw_archive_2022-02-10_akcje.xls" )
+            return get_data_path( "espi_data.html" )
 
         self.dataAccess.dao.getDataPath = data_path           # type: ignore
         self.dataAccess.dao.storage = WorksheetStorageMock()
@@ -51,11 +49,16 @@ class GpwArchiveDataTest(unittest.TestCase):
         ## Called after testfunction was executed
         pass
 
-    def test_getWorksheetData_False(self):
-        currData = self.dataAccess.getWorksheetData( False )
+    def test_getWorksheetData(self):
+        currData = self.dataAccess.getWorksheetData()
         dataLen = len( currData )
-        self.assertGreaterEqual(dataLen, 395)
-        self.assertIsNotNone( currData )
+        self.assertEqual(dataLen, 45)
+
+#     def test_getWorksheet_force(self):
+#         self.dataAccess = GpwESPIData()
+#         currData = self.dataAccess.getWorksheetData( True )
+#         dataLen = len( currData )
+#         self.assertEqual(dataLen, 45)
 
 #     def test_getWorksheet_micro(self):
 #         startTime = datetime.datetime.now()
@@ -66,31 +69,3 @@ class GpwArchiveDataTest(unittest.TestCase):
 #         diff1 = end1Time - startTime
 #         diff2 = end2Time - end1Time
 #         print( "load time:", diff1, diff2 )
-
-    def test_getStockData_None(self):
-        currData = self.dataAccess.getStockData()
-        self.assertEqual(currData, None)
-
-    def test_getStockData(self):
-        stockList = ["PL4FNMD00013", "LU2237380790"]
-        currData = self.dataAccess.getStockData( stockList )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 2)
-
-    def test_getData(self):
-        currData = self.dataAccess.getData( StockDataType.ISIN )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 427)      ## one removed, because of summary
-
-    def test_getRowByIsin(self):
-        rowData = self.dataAccess.getRowByIsin( "LU2237380790" )
-#         print( rowData )
-        nameIndex = self.dataAccess.getDataColumnIndex( StockDataType.STOCK_NAME )
-        isinIndex = self.dataAccess.getDataColumnIndex( StockDataType.ISIN )
-
-        self.assertEqual( rowData[nameIndex], "ALLEGRO" )
-        self.assertEqual( rowData[isinIndex], "LU2237380790" )
-
-    def test_getIsinField(self):
-        rowData = self.dataAccess.getIsinField( 4 )
-        self.assertEqual( rowData, "PL4FNMD00013" )

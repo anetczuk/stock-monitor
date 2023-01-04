@@ -23,33 +23,35 @@
 
 import os
 import logging
-import datetime
+
 import pandas
 from pandas.core.frame import DataFrame
 
+from bs4 import BeautifulSoup
+
+from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess import download_html_content
+from stockdataaccess.dataaccess.convert import convert_float, convert_percentage,\
+    apply_on_column
 from stockdataaccess.synchronized import synchronized
 from stockdataaccess.pprint import fullname
-from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
-from stockmonitor.dataaccess import download_html_content
-from stockmonitor.dataaccess.datatype import StockDataType
+from stockdataaccess.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-## https://www.stockwatch.pl/dywidendy/
-class DividendsCalendarData( BaseWorksheetDAO ):
+class GlobalIndexesData( BaseWorksheetDAO ):
 
-    class DividendsCalendarDAO( WorksheetData ):
+    class DAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/stockwatch/dividends_cal_data.html"
+            return tmp_dir + "data/bankier/global_indexes_data.html"
 
         def getDataUrl(self):
-            url = "https://www.stockwatch.pl/dywidendy/"
-            return url
+            return "https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy"
 
         ## override
         def downloadData(self, filePath):
@@ -66,47 +68,38 @@ class DividendsCalendarData( BaseWorksheetDAO ):
 
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
-            ## _LOGGER.debug( "opening workbook: %s", dataFile )
+#             _LOGGER.debug( "opening workbook: %s", dataFile )
 
+            # fix HTML: handle multiple tbody inside single table
             with open( dataFile, encoding="utf-8" ) as file:
-                content = file.read()
-                if "Brak informacji o dywidendach" in content:
-                    ## no data found
-                    return None
+                soup = BeautifulSoup(file, "html.parser")
+                for body in soup("tbody"):
+                    body.unwrap()
 
-            dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
-            dataFrame = dataFrame[2]
-            dataFrame = dataFrame.fillna("-")
-            return dataFrame
+                dataFrame = pandas.read_html( str(soup), flavor="bs4" )
+                dataFrame = dataFrame[0]
+
+                dataFrame.dropna( how='all', inplace=True )
+
+                apply_on_column( dataFrame, 'Kurs AD', convert_float )
+                apply_on_column( dataFrame, 'Zmiana AD', convert_float )
+                apply_on_column( dataFrame, 'Zmianaprocentowa AD', convert_percentage )
+                apply_on_column( dataFrame, 'Otwarcie AD', convert_float )
+                apply_on_column( dataFrame, 'Max AD', convert_float )
+                apply_on_column( dataFrame, 'Min AD', convert_float )
+
+                return dataFrame
 
     ## ==========================================================
 
     def __init__(self):
-        dao = DividendsCalendarData.DividendsCalendarDAO()
+        dao = GlobalIndexesData.DAO()
         super().__init__( dao )
 
     def sourceLink(self):
         return self.dao.getDataUrl()
 
-    def getStockName(self, rowIndex):
-        return self.getDataByIndex( StockDataType.STOCK_NAME, rowIndex)
-
-    def getLawDate(self, rowIndex):
-        dateString = self.getDataByIndex( StockDataType.NO_DIV_DAY, rowIndex)
-        try:
-            dateObject = datetime.datetime.strptime(dateString, '%Y-%m-%d').date()
-            return dateObject
-        except ValueError:
-            return datetime.date( 1, 1, 1 )
-
     ## get column index
     ## override
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:
-        switcher = {
-            StockDataType.STOCK_NAME: 0,
-            StockDataType.NO_DIV_DAY: 5
-        }
-        colIndex = switcher.get(columnType, None)
-        if colIndex is None:
-            raise ValueError( f"Invalid value: {columnType}" )
-        return colIndex
+        raise ValueError( f"Invalid value: {columnType}" )

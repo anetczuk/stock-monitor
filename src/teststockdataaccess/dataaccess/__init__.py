@@ -21,36 +21,8 @@
 # SOFTWARE.
 #
 
-import unittest
-import datetime
+import sys
+import os
 
-from stockmonitor.dataaccess.holidaydata import HolidayData
-
-
-class HolidayDataTest(unittest.TestCase):
-
-    def setUp(self):
-        ## Called before testfunction is executed
-        pass
-
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
-
-    def test_isHoliday_WeekDay(self):
-        data = HolidayData()
-        day = datetime.date( year=2022, month=3, day=11 )       ## 2022.03.11 -- Friday
-        holiday = data.isHoliday( day )
-        self.assertEqual( holiday, False )
-
-    def test_isHoliday_EndOfWeek(self):
-        data = HolidayData()
-        day = datetime.date( year=2022, month=3, day=12 )       ## 2022.03.12 -- Saturday
-        holiday = data.isHoliday( day )
-        self.assertEqual( holiday, True )
-
-    def test_isHoliday_holiday(self):
-        data = HolidayData()
-        day = datetime.date( year=2022, month=1, day=6 )
-        holiday = data.isHoliday( day )
-        self.assertEqual( holiday, True )
+#### append source root
+sys.path.append(os.path.abspath( os.path.join(os.path.dirname(__file__), "..", "..") ))

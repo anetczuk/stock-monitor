@@ -39,13 +39,15 @@ from stockmonitor.datatypes.datacontainer import DataContainer
 from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
     GpwIndexIntradayMap
 
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
-from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
-from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
-from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
-from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
-from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
+from stockdataaccess.dataaccess.gpw.gpwdata import GpwIndicatorsData
+from stockdataaccess.dataaccess.gpw.gpwespidata import GpwESPIData
+from stockdataaccess.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
+from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
+from stockdataaccess.dataaccess.globalindexesdata import GlobalIndexesData
+from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
+    HistoryShortSellingsData
 
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand
@@ -57,8 +59,6 @@ from stockmonitor.gui.command.reorderfavgroupscommand import ReorderFavGroupsCom
 from stockmonitor.gui.command.addmarkercommand import AddMarkerCommand
 from stockmonitor.gui.command.editmarketcommand import EditMarketCommand
 from stockmonitor.gui.command.deletemarkercommand import DeleteMarkerCommand
-from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
-    HistoryShortSellingsData
 
 
 _LOGGER = logging.getLogger(__name__)

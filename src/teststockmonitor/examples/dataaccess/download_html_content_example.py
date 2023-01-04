@@ -13,7 +13,7 @@ except ImportError:
     ## in this case __init__ is already loaded
     pass
 
-from stockmonitor.dataaccess import download_html_content
+from stockdataaccess.dataaccess import download_html_content
 
 
 if __name__ == '__main__':

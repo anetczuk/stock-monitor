@@ -27,7 +27,8 @@ from enum import unique, Enum
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
-from stockmonitor.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import tmp_dir
+
 from stockmonitor.analysis.stockanalysis import StockAnalysis
 from stockmonitor.gui.utils import set_label_url
 

@@ -39,7 +39,7 @@ from PyQt5.QtWidgets import QApplication
 
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.widget.stocktable import StockFullTable
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 
 from teststockmonitor import data
 

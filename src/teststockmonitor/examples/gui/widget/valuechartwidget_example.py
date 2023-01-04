@@ -40,8 +40,9 @@
 # from PyQt5.QtWidgets import QApplication
 #
 # from stockdataaccess import logger
-# from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
-# from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
+# from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
+# from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
+#
 # from stockmonitor.gui.dataobject import DataObject
 # from stockmonitor.gui.sigint import setup_interrupt_handling
 # from stockmonitor.gui.widget.valuechartwidget import create_stockvalue_window

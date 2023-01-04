@@ -15,7 +15,7 @@ except ImportError:
 
 import unittest
 
-from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
+from stockdataaccess.dataaccess.gpw.gpwdata import GpwIndicatorsData
 
 
 class CheckGpwData( unittest.TestCase ):

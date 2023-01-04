@@ -42,11 +42,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
 
 from stockdataaccess import logger
+# from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.threadlist import ThreadPoolList
 # from stockmonitor.datatypes.datatypes import MarkerEntry
 # from stockmonitor.gui.mainwindow import MainWindow
-# from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 #
 #from teststockmonitor.data import get_data_path
 

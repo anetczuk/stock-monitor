@@ -23,9 +23,9 @@
 
 import unittest
 
-from teststockmonitor.data import get_data_path
-from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData, GpwIsinMapData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
+from teststockdataaccess.data import get_data_path
+from stockdataaccess.dataaccess.gpw.gpwdata import GpwIndicatorsData, GpwIsinMapData
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class GpwIndicatorsDataTest(unittest.TestCase):

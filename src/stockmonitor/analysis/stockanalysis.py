@@ -32,8 +32,9 @@ from typing import Dict, List
 import csv
 import pandas
 
-from stockmonitor.dataaccess import tmp_dir
-from stockmonitor.dataaccess.datatype import StockDataType
+from stockdataaccess.dataaccess.datatype import StockDataType
+from stockdataaccess.dataaccess import tmp_dir
+
 from stockmonitor.analysis.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader,\
     VarCalc
 from stockmonitor.analysis.stockanalysisdata import StockAnalysisData

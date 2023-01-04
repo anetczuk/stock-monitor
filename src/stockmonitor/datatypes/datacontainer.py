@@ -30,12 +30,15 @@ import datetime
 from pandas.core.frame import DataFrame
 
 from stockdataaccess import persist
-from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
-from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
-from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
-from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData, GpwCurrentIndexesData
-from stockmonitor.dataaccess.gpw.gpwespidata import GpwESPIData
+from stockdataaccess.dataaccess.datatype import StockDataType
+from stockdataaccess.dataaccess.gpw.gpwdata import GpwIndicatorsData
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData, GpwCurrentIndexesData
+from stockdataaccess.dataaccess.gpw.gpwespidata import GpwESPIData
+
+from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
+from stockdataaccess.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
+from stockdataaccess.dataaccess.globalindexesdata import GlobalIndexesData
+from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
 
 from stockmonitor.datatypes.datatypes import UserContainer,\
     FavData, WalletData, MarkersContainer, MarkerEntry
@@ -43,8 +46,6 @@ from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStock
     GpwIndexIntradayMap, StockDataProvider, StockDataWrapper
 from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory,\
     Transaction
-from stockmonitor.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
-from stockmonitor.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)

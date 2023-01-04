@@ -32,7 +32,7 @@ from pandas.core.frame import DataFrame
 
 from stockdataaccess import persist
 from stockdataaccess.synchronized import synchronized
-from stockmonitor.dataaccess.datatype import StockDataType
+from stockdataaccess.dataaccess.datatype import StockDataType
 
 
 _LOGGER = logging.getLogger(__name__)

@@ -23,40 +23,34 @@
 
 import unittest
 import datetime
-from teststockmonitor.data import get_data_path
 
-from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
+from stockdataaccess.dataaccess.holidaydata import HolidayData
 
 
-class MetaStockIntradayDataTest(unittest.TestCase):
+class HolidayDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = MetaStockIntradayData()
-
-        def data_path():
-            return get_data_path( "a_cgl_intraday_2020-08-17.prn" )
-
-        self.dataAccess.dao.getDataPath = data_path                       # type: ignore
-        self.dataAccess.dao.downloadData = lambda filePath: None          ## empty lambda function
-        self.dataAccess.dao.storage = WorksheetStorageMock()
+        pass
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_getWorksheetData_False(self):
-        currData = self.dataAccess.getWorksheetData( False )
-        self.assertIsNone( currData )
+    def test_isHoliday_WeekDay(self):
+        data = HolidayData()
+        day = datetime.date( year=2022, month=3, day=11 )       ## 2022.03.11 -- Friday
+        holiday = data.isHoliday( day )
+        self.assertEqual( holiday, False )
 
-    def test_getWorksheetData_True(self):
-        currData = self.dataAccess.getWorksheetData( True )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 77388)
+    def test_isHoliday_EndOfWeek(self):
+        data = HolidayData()
+        day = datetime.date( year=2022, month=3, day=12 )       ## 2022.03.12 -- Saturday
+        holiday = data.isHoliday( day )
+        self.assertEqual( holiday, True )
 
-    def test_getWorksheetForDate(self):
-        date_object = datetime.date( year=2020, month=9, day=21 )
-        currData = self.dataAccess.getWorksheetForDate( date_object, True )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 77388)
+    def test_isHoliday_holiday(self):
+        data = HolidayData()
+        day = datetime.date( year=2022, month=1, day=6 )
+        holiday = data.isHoliday( day )
+        self.assertEqual( holiday, True )

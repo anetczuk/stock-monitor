@@ -15,7 +15,7 @@ except ImportError:
 
 import unittest
 
-from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
+from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
 
 
 class CheckDividendsCalendar( unittest.TestCase ):

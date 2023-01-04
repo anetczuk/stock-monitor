@@ -22,11 +22,11 @@
 #
 
 import unittest
-from teststockmonitor.data import get_data_path
+from teststockdataaccess.data import get_data_path
 
-from stockmonitor.dataaccess.finreportscalendardata import FinRepsCalendarData,\
+from stockdataaccess.dataaccess.finreportscalendardata import FinRepsCalendarData,\
     PublishedFinRepsCalendarData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class FinRepsCalendarDataTest(unittest.TestCase):

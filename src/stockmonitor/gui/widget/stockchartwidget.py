@@ -30,15 +30,15 @@ import pandas
 from PyQt5.QtCore import Qt
 # from PyQt5.QtGui import QCloseEvent
 
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
+from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.datatypes.stocktypes import GpwStockIntradayMap
 from stockmonitor.datatypes.wallettypes import TransHistory
-from stockmonitor.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui.widget.mpl import mplbasechart
-from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockmonitor.gui.widget.mpl import candlestickchart
 
 from .. import uiloader

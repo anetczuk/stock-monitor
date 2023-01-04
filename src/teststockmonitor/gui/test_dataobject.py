@@ -27,13 +27,14 @@ import datetime
 import codecs
 from pandas.core.frame import DataFrame
 
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
+
 from stockmonitor.datatypes.wallettypes import WalletData, TransHistory
 from stockmonitor.dataaccess.transactionsloader import parse_mb_transactions_file
 from stockmonitor.gui.dataobject import DataObject
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
-from teststockmonitor import data
-from teststockmonitor.data import get_data_path
+from teststockdataaccess import data
+from teststockmonitor import data as localdata
 
 
 class DataObjectTest(unittest.TestCase):
@@ -196,7 +197,7 @@ class DataObjectTest(unittest.TestCase):
         self.assertEqual( trans[0].amount, -10 )
 
     def test_importWalletTransactions_sametime(self):
-        transactionsPath = get_data_path( "transactions_bad_separator.csv" )
+        transactionsPath = localdata.get_data_path( "transactions_bad_separator.csv" )
 
         with codecs.open(transactionsPath, 'r', encoding='utf-8', errors='replace') as srcFile:
             importedData = parse_mb_transactions_file( srcFile )

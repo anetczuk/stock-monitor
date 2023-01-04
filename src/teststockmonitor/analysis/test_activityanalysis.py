@@ -25,12 +25,13 @@ import unittest
 import logging
 import datetime
 
-from teststockmonitor.data import get_data_path
+from teststockdataaccess.data import get_data_path
+
+from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
+from stockdataaccess.dataaccess.metastockdata import MetaStockIntradayData
+from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 from stockmonitor.analysis.activityanalysis import GpwCurrentIntradayProvider,\
     ActivityAnalysis, MetaStockIntradayProvider
-from stockmonitor.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
-from stockmonitor.dataaccess.metastockdata import MetaStockIntradayData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 _LOGGER = logging.getLogger(__name__)

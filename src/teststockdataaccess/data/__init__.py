@@ -21,32 +21,15 @@
 # SOFTWARE.
 #
 
-import unittest
-from teststockmonitor.data import get_data_path
-
-from stockmonitor.dataaccess.globalindexesdata import GlobalIndexesData
-from stockmonitor.dataaccess.worksheetdata import WorksheetStorageMock
+import os
 
 
-class GlobalIndexesDataTest(unittest.TestCase):
+script_dir = os.path.dirname(__file__)
 
-    def setUp(self):
-        ## Called before testfunction is executed
-        self.dataAccess = GlobalIndexesData()
 
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
+def get_data_root_path() -> str:
+    return script_dir
 
-    def test_parseWorksheetFromFile(self):
-        filePath = get_data_path( "global_indexes_data.html" )
-        self.dataAccess.dao.storage = WorksheetStorageMock()
-        currData = self.dataAccess.dao.parseWorksheetFromFile( filePath )
-        dataLen = len( currData )
-        self.assertEqual(dataLen, 48)
 
-#     def test_getWorksheetData(self):
-#         self.dataAccess.loadWorksheet( True )
-#         currData = self.dataAccess.getWorksheetData()
-#         dataLen = len( currData )
-#         self.assertEqual(dataLen, 783)
+def get_data_path( fileName: str ) -> str:
+    return os.path.join( script_dir, fileName )
