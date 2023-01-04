@@ -28,7 +28,7 @@ import datetime
 import json
 from pandas.core.frame import DataFrame
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.dataaccess.convert import apply_on_column, convert_timestamp_datetime
@@ -58,7 +58,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
             modeCode = mode_code( self.rangeCode )
             currDate = self.dataTime.date()
             dateStr  = str(currDate)
-            return f"{tmp_dir}data/gpw/curr/{dateStr}/isin_{self.isin}_{modeCode}.json"
+            return f"{TMP_DIR}data/gpw/curr/{dateStr}/isin_{self.isin}_{modeCode}.json"
 
         ## override
         def downloadData(self, filePath):
@@ -171,7 +171,7 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
             modeCode = mode_code( self.rangeCode )
             currDate = self.dataTime.date()
             dateStr  = str(currDate)
-            return f"{tmp_dir}data/gpw/curr/{dateStr}/isin_{self.isin}_{modeCode}.json"
+            return f"{TMP_DIR}data/gpw/curr/{dateStr}/isin_{self.isin}_{modeCode}.json"
 
         ## override
         def downloadData(self, filePath):

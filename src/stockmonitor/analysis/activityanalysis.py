@@ -32,7 +32,7 @@ import pandas
 import numpy
 
 from stockdataaccess import persist
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockdataaccess.dataaccess.metastockdata import MetaStockIntradayData
@@ -247,7 +247,7 @@ class ActivityAnalysis:
 
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_activity.csv"
+            file = TMP_DIR + "out/output_activity.csv"
 
         refValueDate = toDay
         if self.dataProvider.refDataProvider is not None:
@@ -318,7 +318,7 @@ class ActivityAnalysis:
 
         if self.forceRecalc is False:
             dateString = currDate.isoformat()
-            picklePath = f"{tmp_dir}data/activity/{dateString}.pickle"
+            picklePath = f"{TMP_DIR}data/activity/{dateString}.pickle"
             dataPair = persist.load_object_simple( picklePath, None, silent=True )
             if dataPair is None or len(dataPair[0]) < 1:
 #                 _LOGGER.debug( "no precalculated data found -- precalculating [%s]", picklePath )

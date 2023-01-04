@@ -28,7 +28,7 @@ from pandas.core.frame import DataFrame
 
 from bs4 import BeautifulSoup
 
-from stockdataaccess.dataaccess import tmp_dir, requests_init_session
+from stockdataaccess.dataaccess import TMP_DIR, requests_init_session
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockdataaccess.synchronized import synchronized
 from stockdataaccess.dataaccess.datatype import StockDataType
@@ -105,7 +105,7 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
 
         ## override
         def getDataPath(self):
-            return tmp_dir + "data/knf/shortsellings-current.html"
+            return TMP_DIR + "data/knf/shortsellings-current.html"
 
         ## override
         def getDataUrl(self):
@@ -181,7 +181,7 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
 
         ## override
         def getDataPath(self):
-            return tmp_dir + "data/knf/shortsellings-history.html"
+            return TMP_DIR + "data/knf/shortsellings-history.html"
 
         ## override
         def getDataUrl(self):

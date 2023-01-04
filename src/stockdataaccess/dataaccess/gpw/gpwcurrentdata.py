@@ -33,7 +33,7 @@ import re
 import pandas
 from pandas.core.frame import DataFrame
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData,\
     BaseWorksheetData, BaseWorksheetDAO
@@ -54,7 +54,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/gpw/recent_data.xls"
+            return TMP_DIR + "data/gpw/recent_data.xls"
 
         ## override
         def downloadData(self, filePath):
@@ -334,7 +334,7 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return f"{tmp_dir}data/gpw/indexes_main_data.html"
+            return f"{TMP_DIR}data/gpw/indexes_main_data.html"
 
         ## override
         def downloadData(self, filePath):
@@ -377,7 +377,7 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return f"{tmp_dir}data/gpw/indexes_macro_data.html"
+            return f"{TMP_DIR}data/gpw/indexes_macro_data.html"
 
         ## override
         def downloadData(self, filePath):
@@ -417,7 +417,7 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return f"{tmp_dir}data/gpw/indexes_sectors_data.html"
+            return f"{TMP_DIR}data/gpw/indexes_sectors_data.html"
 
         ## override
         def downloadData(self, filePath):

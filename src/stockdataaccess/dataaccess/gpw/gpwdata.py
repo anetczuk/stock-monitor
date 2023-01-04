@@ -27,7 +27,7 @@ import logging
 import pandas
 from pandas.core.frame import DataFrame
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.convert import convert_float, convert_int, cleanup_column, apply_on_column
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
@@ -46,7 +46,7 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/gpw/indicators_data.html"
+            return TMP_DIR + "data/gpw/indicators_data.html"
 
         def getDataUrl(self):
             return "https://www.gpw.pl/wskazniki"
@@ -118,7 +118,7 @@ class GpwIsinMapData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/gpw/isin_map_data.html"
+            return TMP_DIR + "data/gpw/isin_map_data.html"
 
             ## override
         def downloadData(self, filePath):

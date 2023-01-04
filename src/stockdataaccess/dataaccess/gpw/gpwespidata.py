@@ -30,7 +30,7 @@ import pandas
 from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
@@ -52,7 +52,7 @@ class GpwESPIData( BaseWorksheetDAO ):
             self.messagesLimit = 30
 
         def getDataPath(self):
-            return tmp_dir + "data/gpw/espi_data.html"
+            return TMP_DIR + "data/gpw/espi_data.html"
 
         ## override
         def downloadData(self, filePath):

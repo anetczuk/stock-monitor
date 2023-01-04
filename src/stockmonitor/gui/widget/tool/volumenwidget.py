@@ -27,7 +27,7 @@ import datetime
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 
 from stockmonitor.analysis.stockanalysis import StockAnalysis
 from stockmonitor.analysis.volumenanalysis import VolumenAnalysis, MetaStockIntradayProvider
@@ -86,7 +86,7 @@ class VolumenWidget(QtBaseClass):           # type: ignore
 
         dataProvider = MetaStockIntradayProvider()
         analysis = VolumenAnalysis( dataProvider )
-        self.recentOutput = tmp_dir + "out/output_volumen.csv"
+        self.recentOutput = TMP_DIR + "out/output_volumen.csv"
         resultData = analysis.calcVolumen( fromDate, toDate, self.recentOutput )
 
         self.ui.dataTable.setData( resultData )

@@ -27,7 +27,7 @@ import datetime
 import pandas
 from pandas.core.frame import DataFrame
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
@@ -45,7 +45,7 @@ class DividendsCalendarData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/stockwatch/dividends_cal_data.html"
+            return TMP_DIR + "data/stockwatch/dividends_cal_data.html"
 
         def getDataUrl(self):
             url = "https://www.stockwatch.pl/dywidendy/"

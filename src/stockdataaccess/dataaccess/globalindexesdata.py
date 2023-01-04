@@ -29,7 +29,7 @@ from pandas.core.frame import DataFrame
 
 from bs4 import BeautifulSoup
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.dataaccess.convert import convert_float, convert_percentage,\
@@ -48,7 +48,7 @@ class GlobalIndexesData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/bankier/global_indexes_data.html"
+            return TMP_DIR + "data/bankier/global_indexes_data.html"
 
         def getDataUrl(self):
             return "https://www.bankier.pl/gielda/gieldy-swiatowe/indeksy"

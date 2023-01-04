@@ -30,7 +30,7 @@ import csv
 import pandas
 
 from stockdataaccess import persist
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockdataaccess.dataaccess.metastockdata import MetaStockIntradayData
 from stockmonitor.analysis.stockanalysisdata import VarCalc, SourceDataLoader, StatsDict
@@ -233,7 +233,7 @@ class VolumenAnalysis:
 
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_volumen.csv"
+            file = TMP_DIR + "out/output_volumen.csv"
 
         headerList = []
         headerList.append( ["reference period:", dates_to_string( [fromDay, toDay] ) ] )
@@ -257,7 +257,7 @@ class VolumenAnalysis:
 
         if self.forceRecalc is False:
             dateString = currDate.isoformat()
-            picklePath = f"{tmp_dir}data/volumen/{dateString}.pickle"
+            picklePath = f"{TMP_DIR}data/volumen/{dateString}.pickle"
             dataPair = persist.load_object_simple( picklePath, None )
             if dataPair is None:
                 _LOGGER.debug( "no precalculated data found -- precalculating" )

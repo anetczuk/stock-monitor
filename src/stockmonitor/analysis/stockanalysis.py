@@ -33,7 +33,7 @@ import csv
 import pandas
 
 from stockdataaccess.dataaccess.datatype import StockDataType
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 
 from stockmonitor.analysis.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader,\
     VarCalc
@@ -133,7 +133,7 @@ class StockAnalysis():
     def calcGreatestSum(self, outFilePath=None):
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_sum.csv"
+            file = TMP_DIR + "out/output_sum.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -169,7 +169,7 @@ class StockAnalysis():
     def calcGreater(self, level, outFilePath=None):
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_raise.csv"
+            file = TMP_DIR + "out/output_raise.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -201,7 +201,7 @@ class StockAnalysis():
         self.logger.info( "Calculating potential" )
 
         if outFilePath is None:
-            outFilePath = tmp_dir + "out/output_potentials.csv"
+            outFilePath = TMP_DIR + "out/output_potentials.csv"
         dirPath = os.path.dirname( outFilePath )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -257,7 +257,7 @@ class StockAnalysis():
 
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_raise.csv"
+            file = TMP_DIR + "out/output_raise.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -307,7 +307,7 @@ class StockAnalysis():
 
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_value.csv"
+            file = TMP_DIR + "out/output_value.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -350,7 +350,7 @@ class StockAnalysis():
     def calcBiggestRaise(self, level, outFilePath=None):
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_raise.csv"
+            file = TMP_DIR + "out/output_raise.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -396,7 +396,7 @@ class StockAnalysis():
     def calcWeekend(self, numOfWeeks=1, lastDay: datetime.date = datetime.date.today(), outFilePath=None):
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/weekend_change.csv"
+            file = TMP_DIR + "out/weekend_change.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -512,7 +512,7 @@ class StockAnalysis():
 
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_var.csv"
+            file = TMP_DIR + "out/output_var.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -613,7 +613,7 @@ class StockAnalysis():
 
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/output_activity.csv"
+            file = TMP_DIR + "out/output_activity.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 
@@ -693,7 +693,7 @@ class StockAnalysis():
         dayName = calendar.day_name[ numOfDay ].lower()
         file = outFilePath
         if file is None:
-            file = tmp_dir + "out/" + dayName + "_change.csv"
+            file = TMP_DIR + "out/" + dayName + "_change.csv"
         dirPath = os.path.dirname( file )
         os.makedirs( dirPath, exist_ok=True )
 

@@ -30,7 +30,7 @@ from typing import List
 import pandas
 from pandas.core.frame import DataFrame
 
-from stockdataaccess.dataaccess import tmp_dir, download_html_content
+from stockdataaccess.dataaccess import TMP_DIR, download_html_content
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetDAO,\
     WorksheetData
@@ -54,7 +54,7 @@ class GpwArchiveData( BaseWorksheetDAO ):
                 self.day = datetime.datetime.now().date()
 
         def getDataPath(self):
-            return tmp_dir + "data/gpw/arch/" + self.day.strftime("%Y-%m-%d") + ".xls"
+            return TMP_DIR + "data/gpw/arch/" + self.day.strftime("%Y-%m-%d") + ".xls"
 
         ## override
         def downloadData(self, filePath):

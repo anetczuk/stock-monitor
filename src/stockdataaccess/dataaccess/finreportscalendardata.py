@@ -27,7 +27,7 @@ import logging
 import pandas
 from pandas.core.frame import DataFrame
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
@@ -44,7 +44,7 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/strefa/fin_reps_cal_data.html"
+            return TMP_DIR + "data/strefa/fin_reps_cal_data.html"
 
         ## override
         def downloadData(self, filePath):
@@ -97,7 +97,7 @@ class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
-            return tmp_dir + "data/strefa/fin_reps_cal_publ_data.html"
+            return TMP_DIR + "data/strefa/fin_reps_cal_publ_data.html"
 
         ## override
         def downloadData(self, filePath):

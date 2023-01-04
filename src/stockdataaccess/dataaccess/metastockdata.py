@@ -32,7 +32,7 @@ import shutil
 import pandas
 from pandas.core.frame import DataFrame
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
@@ -68,7 +68,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
 
         def getDataPath(self):
             dateString = self.dataDate.isoformat()
-            return f"{tmp_dir}data/bossa/intraday/{dateString}.prn"
+            return f"{TMP_DIR}data/bossa/intraday/{dateString}.prn"
 
         ## override
         def downloadData(self, filePath):

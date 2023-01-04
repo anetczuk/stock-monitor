@@ -27,7 +27,7 @@ import datetime
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QDesktopServices
 
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 
 from stockmonitor.analysis.stockanalysis import StockAnalysis
 from stockmonitor.analysis.activityanalysis import GpwCurrentIntradayProvider,\
@@ -103,7 +103,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
 
         analysis = ActivityAnalysis( dataProvider )
         today = datetime.datetime.now().date()
-        self.recentOutput = tmp_dir + "out/output_activity.csv"
+        self.recentOutput = TMP_DIR + "out/output_activity.csv"
         resultData = analysis.calcActivity( today, today, thresh, self.recentOutput, True )
 
         self.ui.dataTable.setData( resultData )
@@ -133,7 +133,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
             return
 
         analysis = ActivityAnalysis( dataProvider )
-        self.recentOutput = tmp_dir + "out/output_activity.csv"
+        self.recentOutput = TMP_DIR + "out/output_activity.csv"
         resultData = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )
 
         self.ui.dataTable.setData( resultData )

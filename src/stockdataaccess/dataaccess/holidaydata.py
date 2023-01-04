@@ -25,7 +25,7 @@ import logging
 import datetime
 
 from stockdataaccess import persist
-from stockdataaccess.dataaccess import tmp_dir
+from stockdataaccess.dataaccess import TMP_DIR
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ class HolidayData():
         self.holidaySize = len( self.holidaySet )
 
     def _storageFile(self):
-        return f"{tmp_dir}data/gpw/holidays.pickle"
+        return f"{TMP_DIR}data/gpw/holidays.pickle"
 
 
 def is_stock_holiday( day_date: datetime.date ):
