@@ -45,9 +45,9 @@ import argparse
 from stockdataaccess import logger
 
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# src_dir = os.path.abspath(os.path.join(script_dir, ".."))
+# src_dir = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 # sys.path.insert(0, src_dir)
 
 
@@ -69,7 +69,7 @@ def match_tests( pattern: str ):
     ## rePattern = "^" + rePattern + "$"
     _LOGGER.info( "searching test cases with pattern: %s", rePattern )
     loader = unittest.TestLoader()
-    testsSuite = loader.discover( script_dir )
+    testsSuite = loader.discover( SCRIPT_DIR )
     return match_test_suites(testsSuite, rePattern)
 
 
@@ -123,7 +123,7 @@ if __name__ == '__main__':
         suite = match_tests( args.run_test )
     else:
         testsLoader = unittest.TestLoader()
-        suite = testsLoader.discover( script_dir )
+        suite = testsLoader.discover( SCRIPT_DIR )
 
     testsRepeats = int(args.repeat)
 

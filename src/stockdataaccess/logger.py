@@ -27,7 +27,7 @@ import logging
 from logging import handlers
 
 
-script_dir = os.path.dirname(__file__)
+SCRIPT_DIR = os.path.dirname(__file__)
 log_file = None
 
 
@@ -37,7 +37,7 @@ def flush_handlers( logger ):
 
 
 def get_logging_output_file():
-    logDir = os.path.join(script_dir, "../../tmp/log")
+    logDir = os.path.join( SCRIPT_DIR, "../../tmp/log" )
     logDir = os.path.abspath( logDir )
     os.makedirs( logDir, exist_ok=True )
     if os.path.isdir( logDir ) is False:

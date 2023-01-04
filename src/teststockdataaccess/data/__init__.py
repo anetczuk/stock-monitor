@@ -24,12 +24,12 @@
 import os
 
 
-script_dir = os.path.dirname(__file__)
+SCRIPT_DIR = os.path.dirname(__file__)
 
 
 def get_data_root_path() -> str:
-    return script_dir
+    return SCRIPT_DIR
 
 
 def get_data_path( fileName: str ) -> str:
-    return os.path.join( script_dir, fileName )
+    return os.path.join( SCRIPT_DIR, fileName )
