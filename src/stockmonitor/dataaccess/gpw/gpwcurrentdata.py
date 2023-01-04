@@ -33,6 +33,8 @@ import re
 import pandas
 from pandas.core.frame import DataFrame
 
+from stockdataaccess.synchronized import synchronized
+from stockdataaccess.pprint import fullname
 from stockmonitor.dataaccess import tmp_dir
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
@@ -40,8 +42,6 @@ from stockmonitor.dataaccess.worksheetdata import WorksheetData,\
 from stockmonitor.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
 from stockmonitor.dataaccess import download_html_content
-from stockmonitor.synchronized import synchronized
-from stockmonitor.pprint import fullname
 
 
 _LOGGER = logging.getLogger(__name__)

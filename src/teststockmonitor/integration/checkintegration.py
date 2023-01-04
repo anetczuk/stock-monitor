@@ -40,7 +40,7 @@ import unittest
 import re
 import argparse
 
-from stockmonitor import logger
+from stockdataaccess import logger
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

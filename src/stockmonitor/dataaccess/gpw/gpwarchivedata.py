@@ -30,11 +30,11 @@ from typing import List
 import pandas
 from pandas.core.frame import DataFrame
 
+from stockdataaccess.synchronized import synchronized
 from stockmonitor.dataaccess import tmp_dir, download_html_content
 from stockmonitor.dataaccess.datatype import StockDataType
 from stockmonitor.dataaccess.worksheetdata import BaseWorksheetDAO,\
     WorksheetData
-from stockmonitor.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)

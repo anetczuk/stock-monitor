@@ -28,7 +28,7 @@ import glob
 
 from typing import Dict, List
 
-from stockmonitor import persist
+from stockdataaccess import persist
 from stockmonitor.datatypes.wallettypes import WalletData, TransactionMatchMode
 
 

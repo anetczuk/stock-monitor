@@ -28,9 +28,10 @@ from copy import deepcopy
 
 from typing import Dict, List, Tuple
 
-from stockmonitor import persist
+from stockdataaccess import persist
 from pandas.core.frame import DataFrame
-## from stockmonitor.pprint import pprint
+
+## from stockdataaccess.pprint import pprint
 
 
 _LOGGER = logging.getLogger(__name__)

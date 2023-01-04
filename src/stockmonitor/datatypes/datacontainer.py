@@ -29,7 +29,7 @@ import datetime
 
 from pandas.core.frame import DataFrame
 
-from stockmonitor import persist
+from stockdataaccess import persist
 from stockmonitor.dataaccess.gpw.gpwdata import GpwIndicatorsData
 from stockmonitor.dataaccess.dividendsdata import DividendsCalendarData
 from stockmonitor.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData

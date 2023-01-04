@@ -40,7 +40,7 @@ import argparse
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
-from stockmonitor import logger
+from stockdataaccess import logger
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.widget.logwidget import create_window
 # from stockmonitor.gui.resources import get_root_path

@@ -31,7 +31,7 @@ from PyQt5.QtWidgets import QApplication
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 
-from stockmonitor.logger import get_logging_output_file
+from stockdataaccess.logger import get_logging_output_file
 from stockmonitor.gui.appwindow import AppWindow
 
 from .. import uiloader

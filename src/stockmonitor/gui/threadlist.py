@@ -29,7 +29,7 @@ import abc
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 
-from stockmonitor.logger import flush_handlers
+from stockdataaccess.logger import flush_handlers
 
 
 _LOGGER = logging.getLogger(__name__)

@@ -32,7 +32,7 @@ from tendo import singleton
 
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
-from stockmonitor import logger
+from stockdataaccess import logger
 
 from stockmonitor.gui.mainwindow import MainWindow
 from stockmonitor.gui.sigint import setup_interrupt_handling

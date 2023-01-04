@@ -30,8 +30,8 @@ import abc
 
 from pandas.core.frame import DataFrame
 
-from stockmonitor import persist
-from stockmonitor.synchronized import synchronized
+from stockdataaccess import persist
+from stockdataaccess.synchronized import synchronized
 from stockmonitor.dataaccess.datatype import StockDataType
 
 

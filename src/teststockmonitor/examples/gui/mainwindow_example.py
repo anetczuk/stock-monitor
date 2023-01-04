@@ -39,7 +39,7 @@ import argparse
 
 from PyQt5.QtWidgets import QApplication
 
-from stockmonitor import logger
+from stockdataaccess import logger
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.mainwindow import MainWindow

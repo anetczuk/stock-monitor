@@ -31,7 +31,7 @@ import csv
 import pandas
 import numpy
 
-from stockmonitor import persist
+from stockdataaccess import persist
 from stockmonitor.analysis.stockanalysisdata import VarCalc, SourceDataLoader, StatsDict
 from stockmonitor.analysis.stockanalysisdata import StockAnalysisData
 from stockmonitor.analysis.stockanalysis import dates_to_string

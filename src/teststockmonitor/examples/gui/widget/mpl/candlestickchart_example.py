@@ -45,7 +45,7 @@ import pandas
 
 from PyQt5.QtWidgets import QApplication
 
-from stockmonitor import logger
+from stockdataaccess import logger
 from stockmonitor.gui.sigint import setup_interrupt_handling
 from stockmonitor.gui.widget.mpl.candlestickchart import PriceCandleStickChart, PriceValueCandleStickChart
 
