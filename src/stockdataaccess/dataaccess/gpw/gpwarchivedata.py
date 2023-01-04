@@ -43,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 class GpwArchiveData( BaseWorksheetDAO ):
     """Handle GPW archive data."""
 
-    class DAO( WorksheetData ):
+    class GpwArchiveDAO( WorksheetData ):
         """Data access object."""
 
         def __init__(self, dayDate: datetime.date = None):
@@ -115,7 +115,7 @@ class GpwArchiveData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self, dayDate: datetime.date = None):
-        dao = GpwArchiveData.DAO( dayDate )
+        dao = GpwArchiveData.GpwArchiveDAO( dayDate )
         super().__init__( dao )
 
     def sourceLink( self ):

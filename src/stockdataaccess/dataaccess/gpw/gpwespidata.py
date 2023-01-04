@@ -44,7 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 ## https://www.gpw.pl/komunikaty
 class GpwESPIData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class GpwESPIDAO( WorksheetData ):
         """Data access object."""
 
         def __init__(self):
@@ -119,7 +119,7 @@ class GpwESPIData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = GpwESPIData.DAO()
+        dao = GpwESPIData.GpwESPIDAO()
         super().__init__( dao )
 
     def sourceLink(self):

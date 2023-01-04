@@ -47,7 +47,7 @@ _LOGGER = logging.getLogger(__name__)
 class MetaStockIntradayData( BaseWorksheetDAO ):
 # class MetaStockIntradayData( BaseWorksheetData ):
 
-    class DAO( WorksheetData ):
+    class MetaStockIntradayDAO( WorksheetData ):
         """Data access object."""
 
         def __init__( self, dataDate: datetime.date = None ):
@@ -115,7 +115,7 @@ class MetaStockIntradayData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self, dataDate: datetime.date = None):
-        dao = MetaStockIntradayData.DAO( dataDate )
+        dao = MetaStockIntradayData.MetaStockIntradayDAO( dataDate )
         super().__init__( dao )
 
     def sourceLink(self):

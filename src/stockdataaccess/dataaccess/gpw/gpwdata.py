@@ -42,7 +42,7 @@ _LOGGER = logging.getLogger(__name__)
 ## https://www.gpw.pl/wskazniki
 class GpwIndicatorsData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class GpwIndicatorsDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -87,7 +87,7 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
             return dataFrame
 
     def __init__(self):
-        dao = GpwIndicatorsData.DAO()
+        dao = GpwIndicatorsData.GpwIndicatorsDAO()
         super().__init__( dao )
 
     def sourceLink(self):
@@ -114,7 +114,7 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
 ## http://infostrefa.com/infostrefa/pl/spolki
 class GpwIsinMapData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class GpwIsinMapDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -145,7 +145,7 @@ class GpwIsinMapData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = GpwIsinMapData.DAO()
+        dao = GpwIsinMapData.GpwIsinMapDAO()
         super().__init__( dao )
 
     def getTickerFromIsin(self, stockIsin):

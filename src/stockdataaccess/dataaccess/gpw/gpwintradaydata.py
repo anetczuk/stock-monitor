@@ -43,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
     """Access GPW data based on range code."""
 
-    class DAO( WorksheetData ):
+    class GpwCurrentStockIntradayDAO( WorksheetData ):
         """Data access object."""
 
         def __init__(self, isin, rangeCode=None):
@@ -124,7 +124,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self, isin, rangeCode=None):
-        dao = GpwCurrentStockIntradayData.DAO( isin, rangeCode )
+        dao = GpwCurrentStockIntradayData.GpwCurrentStockIntradayDAO( isin, rangeCode )
         super().__init__( dao )
 
     def sourceLink(self):
@@ -156,7 +156,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
 
 class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class GpwCurrentIndexIntradayDAO( WorksheetData ):
         """Data access object."""
 
         def __init__(self, isin, rangeCode=None):
@@ -218,7 +218,7 @@ class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
             return None
 
     def __init__(self, isin, rangeCode=None):
-        dao = GpwCurrentIndexIntradayData.DAO( isin, rangeCode )
+        dao = GpwCurrentIndexIntradayData.GpwCurrentIndexIntradayDAO( isin, rangeCode )
         super().__init__( dao )
 
     def sourceLink(self):

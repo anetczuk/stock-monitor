@@ -44,7 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class GlobalIndexesData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class GlobalIndexesDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -93,7 +93,7 @@ class GlobalIndexesData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = GlobalIndexesData.DAO()
+        dao = GlobalIndexesData.GlobalIndexesDAO()
         super().__init__( dao )
 
     def sourceLink(self):

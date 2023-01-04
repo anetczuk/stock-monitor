@@ -50,7 +50,7 @@ _LOGGER = logging.getLogger(__name__)
 class GpwCurrentStockData( BaseWorksheetDAO ):
     """Access GPW session current stock values."""
 
-    class DAO( WorksheetData ):
+    class GpwCurrentStockDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -110,7 +110,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = GpwCurrentStockData.DAO()
+        dao = GpwCurrentStockData.GpwCurrentStockDAO()
         super().__init__( dao )
 
     def sourceLink(self):
@@ -245,7 +245,7 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
 
 class GpwCurrentIndexesData( BaseWorksheetDAO ):
 
-    class DAO( BaseWorksheetData ):
+    class GpwCurrentIndexesDAO( BaseWorksheetData ):
         """Data access object."""
 
         def __init__(self):
@@ -281,7 +281,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = GpwCurrentIndexesData.DAO()
+        dao = GpwCurrentIndexesData.GpwCurrentIndexesDAO()
         super().__init__( dao )
 
     def sourceLink(self):
@@ -330,7 +330,7 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
 
 class GpwMainIndexesData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class GpwMainIndexesDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -362,7 +362,7 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
             return dataFrame
 
     def __init__(self):
-        dao = GpwMainIndexesData.DAO()
+        dao = GpwMainIndexesData.GpwMainIndexesDAO()
         super().__init__( dao )
 
     ## get column index
@@ -373,7 +373,7 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
 
 class GpwMacroIndexesData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class GpwMacroIndexesDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -402,7 +402,7 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
             return dataFrame
 
     def __init__(self):
-        dao = GpwMacroIndexesData.DAO()
+        dao = GpwMacroIndexesData.GpwMacroIndexesDAO()
         super().__init__( dao )
 
     ## get column index
@@ -413,7 +413,7 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
 
 class GpwSectorsIndexesData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class GpwSectorsIndexesDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -442,7 +442,7 @@ class GpwSectorsIndexesData( BaseWorksheetDAO ):
             return dataFrame
 
     def __init__(self):
-        dao = GpwSectorsIndexesData.DAO()
+        dao = GpwSectorsIndexesData.GpwSectorsIndexesDAO()
         super().__init__( dao )
 
     ## get column index

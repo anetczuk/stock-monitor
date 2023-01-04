@@ -40,7 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class FinRepsCalendarData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class FinRepsCalendarDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -70,7 +70,7 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = FinRepsCalendarData.DAO()
+        dao = FinRepsCalendarData.FinRepsCalendarDAO()
         super().__init__( dao )
 
     def sourceLink(self):
@@ -93,7 +93,7 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
 
 class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class PublishedFinRepsCalendarDAO( WorksheetData ):
         """Data access object."""
 
         def getDataPath(self):
@@ -124,7 +124,7 @@ class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = PublishedFinRepsCalendarData.DAO()
+        dao = PublishedFinRepsCalendarData.PublishedFinRepsCalendarDAO()
         super().__init__( dao )
 
     def sourceLink(self):

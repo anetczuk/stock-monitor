@@ -100,7 +100,7 @@ def grab_content( url, button ):
 ## https://rss.knf.gov.pl/RssOuterView/
 class CurrentShortSellingsData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class CurrentShortSellingsDAO( WorksheetData ):
         """Data access object."""
 
         ## override
@@ -148,7 +148,7 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = CurrentShortSellingsData.DAO()
+        dao = CurrentShortSellingsData.CurrentShortSellingsDAO()
         super().__init__( dao )
 
     ## override
@@ -176,7 +176,7 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
 ## https://rss.knf.gov.pl/RssOuterView/
 class HistoryShortSellingsData( BaseWorksheetDAO ):
 
-    class DAO( WorksheetData ):
+    class HistoryShortSellingsDAO( WorksheetData ):
         """Data access object."""
 
         ## override
@@ -221,7 +221,7 @@ class HistoryShortSellingsData( BaseWorksheetDAO ):
     ## ==========================================================
 
     def __init__(self):
-        dao = HistoryShortSellingsData.DAO()
+        dao = HistoryShortSellingsData.HistoryShortSellingsDAO()
         super().__init__( dao )
 
     ## override
