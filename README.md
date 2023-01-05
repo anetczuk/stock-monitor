@@ -44,7 +44,7 @@ Moreover there are two configuration scripts:
 
 ### Requirements
 
-Required dependency packages are needed to be installed before first run of application. To do it execute one of commands:
+Required dependency packages are needed to be installed before first run of main application. To do it execute one of commands:
 - `src/install-deps.sh`
 - `pip3 install -r ./src/requirements.txt`
 
@@ -58,6 +58,19 @@ It is possible to run project in virtual environment. Configuration of the envir
 Script alongside the environemnt installs dependencies stated in previous paragraph.
 
 Starting environment after installation can be done by execution of script `{venv_dir}/startvenv.sh`. Moreover there are local versions of `startmonitor`, `configure_menu.sh` and `configure_autostart.sh` executing those programs in virtual environment context.
+
+
+## Data grabber
+
+In addition to main application there is grabber script `grabdata.py` extracting data used in the application. The script can be 
+used separatelly from main application to scrap data to CSV/XLS data. For further information run script `src/grabdata.py --help`.
+
+What data can be obtained using the script? Script scraps for example:
+- GPW stock data
+- GPW stock intraday data
+- dividends calendar
+- financial reports calendar
+- global stock indexes
 
 
 ## Known issues:
