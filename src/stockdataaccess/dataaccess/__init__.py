@@ -156,24 +156,25 @@ def retrieve_url_pycurl( url, outputPath ):
     # b_obj = StringIO()
     b_obj = BytesIO()
 
-    with CUrlConnectionRAII() as crl:
-        # crl.setopt(pycurl.VERBOSE, 1)
+    with CUrlConnectionRAII() as curl:
+        # curl.setopt(pycurl.VERBOSE, 1)
 
-        crl.setopt( pycurl.USERAGENT,
-                    "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" )
-#         crl.setopt( pycurl.USERAGENT,
-#                     "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
-#         crl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
         # Set URL value
-        crl.setopt( pycurl.URL, url )
-        crl.setopt( pycurl.FOLLOWLOCATION, 1 )
+        curl.setopt( pycurl.URL, url )
+        curl.setopt( pycurl.FOLLOWLOCATION, 1 )
+
+        curl.setopt( pycurl.USERAGENT,
+                    "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" )
+#         curl.setopt( pycurl.USERAGENT,
+#                     "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
+#         curl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
 
         headers = {}
 #         headers[ "Connection" ] = "keep-alive"
 
         headers.update( {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Encoding": "br",
+#             "Accept-Encoding": "br",                          ## causes curl to receive bytes instead of string
             #"Accept-Encoding": "gzip, deflate, br",            ## causes curl to receive bytes instead of string
             "Accept-Language": "en-US,en;q=0.5",
         } )
@@ -182,16 +183,21 @@ def retrieve_url_pycurl( url, outputPath ):
             headersList = []
             for key, value in headers.items():
                 headersList.append( f"{key}: {value}" )
-            crl.setopt( pycurl.HTTPHEADER, headersList )
+            curl.setopt( pycurl.HTTPHEADER, headersList )
 
         # Write bytes that are utf-8 encoded
-        # crl.setopt( pycurl.WRITEFUNCTION, b_obj.write )
-        crl.setopt(pycurl.WRITEDATA, b_obj)
+        # curl.setopt( pycurl.WRITEFUNCTION, b_obj.write )
+        curl.setopt(pycurl.WRITEDATA, b_obj)
+
+#         curl.setopt(pycurl.HTTP_VERSION, pycurl.CURL_HTTP_VERSION_2_0)
+#         curl.setopt(pycurl.SSL_VERIFYPEER, 0)
+#         curl.setopt(pycurl.SSL_VERIFYHOST, 0)
+#         curl.setopt(pycurl.COOKIEFILE, "")
 
         # Perform a file transfer
-        crl.perform()
+        curl.perform()
 
-        resp_code = crl.getinfo( pycurl.RESPONSE_CODE )
+        resp_code = curl.getinfo( pycurl.RESPONSE_CODE )
         if resp_code != 200:
             message = HTTPStatus( resp_code ).phrase
 #             _LOGGER.info( "error code: %s: %s", resp_code, message )
@@ -216,6 +222,7 @@ def retrieve_url_pycurl( url, outputPath ):
         ## try convert to string
         return get_body.decode('utf8')
     except UnicodeDecodeError:
+        _LOGGER.error( "unable to convert curl response to string" )
         return get_body
 
     # return get_body.decode('utf8')
