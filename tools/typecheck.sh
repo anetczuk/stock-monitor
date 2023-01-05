@@ -14,6 +14,7 @@ cd $SCRIPT_DIR/../src
 
 
 echo "running mypy"
-mypy --cache-dir $CACHE_DIR --no-strict-optional --ignore-missing-imports -p stockmonitor -p teststockmonitor
+mypy --cache-dir $CACHE_DIR --no-strict-optional --ignore-missing-imports \
+                -p stockdataaccess -p stockmonitor -p teststockdataaccess -p teststockmonitor
 
 echo "mypy finished"

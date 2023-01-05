@@ -53,9 +53,14 @@ fi
 
 echo "flake8 -- no warnings found"
 
-
 echo "running pylint3"
-pylint --rcfile=$SCRIPT_DIR/pylint3.config $src_dir/stockmonitor $src_dir/teststockmonitor $src_dir/*.py
+pylint --rcfile=$SCRIPT_DIR/pylint3.config \
+                    $src_dir/stockdataaccess \
+                    $src_dir/stockmonitor \
+                    $src_dir/teststockdataaccess \
+                    $src_dir/teststockmonitor \
+                    $src_dir/*.py
+
 exit_code=$?
 if [ $exit_code -ne 0 ]; then
     exit $exit_code
