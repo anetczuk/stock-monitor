@@ -27,7 +27,6 @@ import datetime
 import math
 import multiprocessing.dummy
 
-import csv
 import pandas
 import numpy
 
@@ -37,6 +36,7 @@ from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockdataaccess.dataaccess.metastockdata import MetaStockIntradayData
 
+from stockmonitor.analysis import write_to_csv
 from stockmonitor.analysis.stockanalysisdata import VarCalc, SourceDataLoader, StatsDict
 from stockmonitor.analysis.stockanalysisdata import StockAnalysisData
 from stockmonitor.analysis.stockanalysis import dates_to_string
@@ -409,19 +409,3 @@ def calculate_change( dataSeries ):
         diff = ( dataSeries[i] / dataSeries[i - 1] - 1.0 ) * 100.0
         retList.append( diff )
     return pandas.Series( retList )
-
-
-def write_to_csv( file, headerList, dataFrame ):
-    dirPath = os.path.dirname( file )
-    os.makedirs( dirPath, exist_ok=True )
-
-    with open(file, 'w', encoding="utf-8") as f:
-        writer = csv.writer( f )
-        for row in headerList:
-            writer.writerow( row )
-
-        writer.writerow( dataFrame.columns )
-        rowsList = dataFrame.values.tolist()
-        rowsList.sort( key=lambda x: x[0], reverse=True )           ## sort
-        for row in rowsList:
-            writer.writerow( row )
