@@ -66,7 +66,7 @@ class ThreadingList():
 
 
 class CommandObject:
-    
+
     def __init__(self, func, args=None):
         if args is None:
             args = []
@@ -170,7 +170,7 @@ class ThreadPoolList( AbstractWorkerList ):
 
     def __init__(self, parent=None, logs=True):
         super().__init__( parent, logs )
-        
+
         self.pool = QtCore.QThreadPool.globalInstance()
         self._workers = []
 

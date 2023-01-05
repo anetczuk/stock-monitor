@@ -149,7 +149,7 @@ class WalletStockTable( StockTable ):
             return
         _LOGGER.debug( "clearing transactions" )
         self.dataObject.clearWalletTransactions()
-        
+
     def importTransactions(self):
         if self.dataObject is None:
             return
@@ -204,7 +204,7 @@ class WalletWidget( QtBaseClass ):           # type: ignore
 
     def clearTransactions(self):
         self.ui.walletTable.clearTransactions()
-        
+
     def importMBTransactions(self):
         self.ui.walletTable.importTransactions()
 

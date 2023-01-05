@@ -88,12 +88,12 @@ def createThreadList():
     threads.finished.connect( handleFinished, Qt.QueuedConnection )
     #         threads.finished.connect( self._updateView, Qt.QueuedConnection )
     threads.deleteOnFinish()
-    
-    
+
+
     threads.appendFunction( sleep, None )
     threads.appendFunction( sleep, None )
     threads.appendFunction( sleep, None )
-    
+
     threads.start()
 
 

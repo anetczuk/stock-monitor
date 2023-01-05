@@ -202,13 +202,13 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
             if transTime is not None:
                 if maxTransTime is None or transTime > maxTransTime:
                     maxTransTime = transTime
-                    
+
             dataFrame = intraSource.getWorksheetData()
             if dataFrame is not None:
                 startTime = dataFrame.iloc[ 0 ].at[ 't' ]
                 if minTransTime is None or startTime < minTransTime:
                     minTransTime = startTime
-                    
+
         self.ui.timeLabel.setText( str(maxTransTime) )
 
         for index in range( 0, tickerSize ):

@@ -501,7 +501,7 @@ def set_end_row( dataFrame, maxTime ):
     ## repeat last row and change time value
 
     newDataFrame = dataFrame.append( dataFrame.iloc[-1] )
-    
+
     ind = newDataFrame.index.tolist()
     ind[ -1 ] = maxTime
     newDataFrame.index = ind

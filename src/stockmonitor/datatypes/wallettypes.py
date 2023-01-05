@@ -222,7 +222,7 @@ class TransHistory():
             if findTime > transTime:             ## transactions are in reverse order
                 return i
         return tSize
-    
+
     ## find transaction with date before given date and return it's index
     def findIndexBefore( self, endDate: date ) -> 'TransHistory':
         tSize = len( self.transactions )
@@ -238,17 +238,17 @@ class TransHistory():
         if currentAfter is True:
             nextIndex = afterIndex + 1
             return self.splitTransactions( nextIndex, False )
-            
+
         transList   = self.transactions[ afterIndex : ]
         beforeTrans = TransHistory()
         beforeTrans.appendList( transList )
-        
+
         transList  = self.transactions[ : afterIndex ]
         afterTrans = TransHistory()
         afterTrans.appendList( transList )
-        
+
         return ( beforeTrans, afterTrans )
-        
+
     def transactionsBefore( self, endDate: datetime.date ) -> 'TransHistory':
         foundIndex = self.findIndexBefore( endDate )
         if foundIndex >= self.size():
@@ -389,14 +389,14 @@ class TransHistory():
 
     ## =============================================================
 
-    ## Return list of indexes. 
+    ## Return list of indexes.
     ## Indicates how many 'stockData' items are before transaction indicated by list index.
     def matchStockBefore(self, stockData ):
         if stockData is None:
             return []
         if stockData.empty:
             return []
-        
+
         ret = []
 
         stockValuesFrame = stockData[ ["t", "c"] ]
@@ -409,7 +409,7 @@ class TransHistory():
             transTime = nextTrans.transTime
 
             counter = 0
-            
+
             ## iterate over stock historic prices
             while stockRowIndex < stockRowsNum:
                 stockTime = stockValuesFrame.at[ stockRowIndex, "t" ]
@@ -425,7 +425,7 @@ class TransHistory():
         ret.reverse()
         return ret
 
-    ## Return list of indexes. 
+    ## Return list of indexes.
     ## Indicates how many 'stockData' items are after transaction indicated by list index.
     ## Returned values in list are indexes of 'stockData'
     def matchStockAfter(self, stockData ):
@@ -433,7 +433,7 @@ class TransHistory():
             return []
         if stockData.empty:
             return []
-        
+
         ret = []
 
         stockValuesFrame = stockData[ ["t", "c"] ]
@@ -477,14 +477,14 @@ class TransHistory():
 
         stockValuesFrame = stockData[ ["t", "c"] ].copy()
         rowsNum          = stockData.shape[0]
-        
+
         matchIndexes = pendingTrans.matchStockAfter( stockValuesFrame )
         matchIndexes.reverse()
-        
+
         matchSize     = len( matchIndexes )
         matchStockSum = sum( matchIndexes )
         rowIndex      = rowsNum - matchStockSum - 1     ## -1 because incerment moved in front of loop
-        
+
         ## iterate over transactions
         ## calculate values based on transactions and stock price changes
         for transIndex in range(0, matchSize):
@@ -520,14 +520,14 @@ class TransHistory():
 
         stockValuesFrame = stockData[ ["t", "c"] ].copy()
         rowsNum          = stockData.shape[0]
-        
+
         matchIndexes = pendingTrans.matchStockAfter( stockValuesFrame )
         matchIndexes.reverse()
-        
+
         matchSize     = len( matchIndexes )
         matchStockSum = sum( matchIndexes )
         rowIndex      = rowsNum - matchStockSum - 1     ## -1 because incerment moved in front of loop
-        
+
         ## iterate over transactions
         ## calculate values based on transactions and stock price changes
         for transIndex in range(0, matchSize):

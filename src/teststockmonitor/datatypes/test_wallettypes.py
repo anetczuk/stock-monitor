@@ -62,7 +62,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=4, hour= 8 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=3, hour= 8 ) )
         data.sort()                 ## reverse order
-        
+
         indexTime = datetime.datetime( year=2020, month=5, day=4, hour=10 )
         foundIndex = data.findIndex( indexTime )
         self.assertEqual( foundIndex, 3 )
@@ -72,7 +72,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append( -8, 20.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         indexDate = datetime.date( 2020, 5, 1 )
         foundIndex = data.findIndexBefore( indexDate )
         self.assertEqual( foundIndex, 2 )
@@ -82,7 +82,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append( -8, 20.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         indexDate = datetime.date( 2020, 5, 2 )
         foundIndex = data.findIndexBefore( indexDate )
         self.assertEqual( foundIndex, 2 )
@@ -92,7 +92,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append( -8, 20.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         indexDate = datetime.date( 2020, 5, 3 )
         foundIndex = data.findIndexBefore( indexDate )
         self.assertEqual( foundIndex, 1 )
@@ -102,7 +102,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append( -8, 20.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         indexDate = datetime.date( 2020, 5, 4 )
         foundIndex = data.findIndexBefore( indexDate )
         self.assertEqual( foundIndex, 1 )
@@ -112,7 +112,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append( -8, 20.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         indexDate = datetime.date( 2020, 5, 5 )
         foundIndex = data.findIndexBefore( indexDate )
         self.assertEqual( foundIndex, 0 )
@@ -123,7 +123,7 @@ class TransHistoryTest(unittest.TestCase):
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         transBefore, transAfter = data.splitTransactions( 1, False )
         self.assertEqual( transBefore.size(), 2 )
         self.assertEqual( transAfter.size(), 1 )
@@ -134,17 +134,17 @@ class TransHistoryTest(unittest.TestCase):
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         transBefore, transAfter = data.splitTransactions( 1, True )
         self.assertEqual( transBefore.size(), 1 )
         self.assertEqual( transAfter.size(), 2 )
-    
+
     def test_transactionsBefore(self):
         data = TransHistory()
         data.append( -8, 20.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         indexDate = datetime.date( 2020, 5, 4 )
         retList: TransHistory = data.transactionsBefore( indexDate )
         self.assertEqual( retList.size(), 1 )
@@ -155,12 +155,12 @@ class TransHistoryTest(unittest.TestCase):
         data.append( -8, 20.0, 0.1, datetime.datetime( year=2020, month=5, day=4 ) )
         data.append(  9, 30.0, 0.1, datetime.datetime( year=2020, month=5, day=2 ) )
         data.sort()                 ## reverse order
-        
+
         indexDate = datetime.date( 2020, 5, 4 )
         retList: TransHistory = data.transactionsAfter( indexDate )
         self.assertEqual( retList.size(), 1 )
         self.assertEqual( retList[0].transTime, data[0].transTime )
-        
+
     def test_transactionsOverallProfit(self):
         data = TransHistory()
         ## reverse order
@@ -179,16 +179,16 @@ class TransHistoryTest(unittest.TestCase):
 
     def test_matchStockBefore_empty(self):
         data = TransHistory()
-        
+
         dataframe = pandas.DataFrame( {'t': [],
                                        'c': []} )
-        
+
         indexList = data.matchStockBefore( dataframe )
         self.assertEqual( indexList, [] )
 
     def test_matchStockBefore_before(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit, commission, trans time)
         transList = \
             [ ( 100, 4.0, 0.0, datetime.datetime(2020, 10, 2, 12, 0, 0)) ]
@@ -196,15 +196,15 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         indexList = data.matchStockBefore( dataframe )
         self.assertEqual( indexList, [0] )
 
     def test_matchStockBefore_middle(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit, commission, trans time)
         transList = \
             [ ( 100, 4.0, 0.0, datetime.datetime(2020, 10, 8, 12, 0, 0)) ]
@@ -212,15 +212,15 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         indexList = data.matchStockBefore( dataframe )
         self.assertEqual( indexList, [1] )
 
     def test_matchStockBefore_after(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit, commission, trans time)
         transList = \
             [ ( 100, 4.0, 0.0, datetime.datetime(2020, 10, 11, 12, 0, 0)) ]
@@ -228,15 +228,15 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         indexList = data.matchStockBefore( dataframe )
         self.assertEqual( indexList, [2] )
 
     def test_matchStockBefore03(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit, commission, trans time)
         transList = \
             [ ( 100, 5.0, 0.0, datetime.datetime(2020, 10, 8, 12, 0, 0)),
@@ -246,24 +246,24 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         indexList = data.matchStockBefore( dataframe )
         self.assertEqual( indexList, [1, 0, 0] )
 
     def test_matchStockAfter_empty(self):
         data = TransHistory()
-        
+
         dataframe = pandas.DataFrame( {'t': [],
                                        'c': []} )
-        
+
         indexList = data.matchStockAfter( dataframe )
         self.assertEqual( indexList, [] )
 
     def test_matchStockAfter_before(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit, commission, trans time)
         transList = \
             [ ( 100, 4.0, 0.0, datetime.datetime(2020, 10, 2, 12, 0, 0)) ]
@@ -271,15 +271,15 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         indexList = data.matchStockAfter( dataframe )
         self.assertEqual( indexList, [2] )
 
     def test_matchStockAfter_middle(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit, commission, trans time)
         transList = \
             [ ( 100, 4.0, 0.0, datetime.datetime(2020, 10, 8, 12, 0, 0)) ]
@@ -287,15 +287,15 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         indexList = data.matchStockAfter( dataframe )
         self.assertEqual( indexList, [1] )
 
     def test_matchStockAfter_after(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit, commission, trans time)
         transList = \
             [ ( 100, 4.0, 0.0, datetime.datetime(2020, 10, 11, 12, 0, 0)) ]
@@ -303,15 +303,15 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         indexList = data.matchStockAfter( dataframe )
         self.assertEqual( indexList, [0] )
 
     def test_matchStockAfter03(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit, commission, trans time)
         transList = \
             [ ( 100, 5.0, 0.0, datetime.datetime(2020, 10, 8, 12, 0, 0)),
@@ -321,15 +321,15 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         indexList = data.matchStockAfter( dataframe )
         self.assertEqual( indexList, [1, 1, 0] )
-    
+
     def test_calculateValueHistory(self):
         data = TransHistory()
-        
+
         ## reverse order (amount, unit_price, commission, trans time)
         transList = \
             [ ( 100, 3.0, 0.0, datetime.datetime(2020, 10, 11, 12, 0, 0)),
@@ -339,9 +339,9 @@ class TransHistoryTest(unittest.TestCase):
         data.appendList( transList )
 
         dataframe = pandas.DataFrame( [ [ datetime.datetime(2020, 10,  5, 12, 0, 0), 10.0 ],
-                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ] 
+                                        [ datetime.datetime(2020, 10, 10, 12, 0, 0), 12.0 ]
                                        ], columns = [ 't', 'c' ] )
-        
+
         valueFrame = data.calculateValueHistory( dataframe )
         self.assertTrue( valueFrame is not None )
         self.assertEqual( valueFrame.empty, False )

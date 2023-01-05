@@ -153,7 +153,7 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
     @abc.abstractmethod
     def _getDataFrame(self):
         raise NotImplementedError('You need to define this method in derived class!')
-    
+
 
 # pylint: disable=W0223
 class DataValueChartWidget( ValueChartWidget ):

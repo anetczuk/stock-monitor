@@ -242,8 +242,8 @@ class WorksheetDAOMock( BaseWorksheetDAO ):
 class BaseWorksheetData():
 
     def __init__( self, dao ):
-        self.dao: BaseWorksheetDAO = dao
-#         self.dao = dao
+        # self.dao: BaseWorksheetDAO = dao
+        self.dao = dao
 
     ## get data without downloading it
     def getDataFrame(self) -> DataFrame:
