@@ -111,9 +111,13 @@ class WorksheetDAO( BaseWorksheetDAO ):
 
     def parseWorksheetFromFile(self, dataPath: str):
         # _LOGGER.info( "parsing raw data: %s", dataPath )
-        worksheet = self._parseDataFromFile( dataPath )
-        self.storage.storeObject( dataPath, worksheet )
-        return worksheet
+        try:
+            worksheet = self._parseDataFromFile( dataPath )
+            self.storage.storeObject( dataPath, worksheet )
+            return worksheet
+        except Exception as ex:
+            _LOGGER.error( "unable to parse file: %s, reaseon: %s", dataPath, ex )
+            raise
 
     ## ====================================================
 
@@ -122,6 +126,7 @@ class WorksheetDAO( BaseWorksheetDAO ):
         if self.storage.worksheet is None:
             dataPath = self.getDataPath()
             self.storage.loadObject( dataPath, False )
+            ##return self.parseWorksheetFromFile( dataPath )
         return self.storage.worksheet
 
     ## return None if no data found

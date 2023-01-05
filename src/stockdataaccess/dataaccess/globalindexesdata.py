@@ -57,8 +57,8 @@ class GlobalIndexesData( BaseWorksheetData ):
         def downloadData(self, filePath):
             url = self.getDataUrl()
 
-            relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
+            ## relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], filePath )
 
             try:
                 download_html_content( url, filePath )

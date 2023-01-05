@@ -66,8 +66,8 @@ class GpwCurrentStockIntradayData( BaseWorksheetData ):
     #         currTimestamp = self.dataTime.timestamp()
             url = generate_chart_data_url( self.isin, modeCode)
 
-            relPath = os.path.relpath( filePath )
-            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, relPath )
+            ## relPath = os.path.relpath( filePath )
+            _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url, filePath )
 #             _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
