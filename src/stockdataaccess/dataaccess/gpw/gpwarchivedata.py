@@ -123,7 +123,7 @@ class GpwArchiveData( BaseWorksheetData ):
 
     def getData(self, dataType: StockDataType, day: datetime.date = None):
         if day is not None:
-            self.dao = GpwArchiveData.DAO( day )
+            self.dao = GpwArchiveData.GpwArchiveDAO( day )
 
 #         _LOGGER.debug( "getting max from date: %s", day )
         worksheet = self.getWorksheetData()
@@ -140,7 +140,7 @@ class GpwArchiveData( BaseWorksheetData ):
         currDay = day
         worksheet = None
         while True:
-            self.dao = GpwArchiveData.DAO( currDay )
+            self.dao = GpwArchiveData.GpwArchiveDAO( currDay )
             worksheet = self.accessWorksheetData()
 #             worksheet = self.getWorksheetData()        ## causes 'recent day' to be calculated badly
             if worksheet is not None:
@@ -153,7 +153,7 @@ class GpwArchiveData( BaseWorksheetData ):
         dayToday = datetime.date.today()
         worksheet = None
         while currDay < dayToday:
-            self.dao = GpwArchiveData.DAO( currDay )
+            self.dao = GpwArchiveData.GpwArchiveDAO( currDay )
             worksheet = self.getWorksheetData()
             if worksheet is not None:
                 return currDay

@@ -109,7 +109,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetData ):
 
                 if self.rangeCode != "1D":
                     ## add recent value to range other than "1D" (current)
-                    currData = GpwCurrentStockIntradayData.DAO( self.isin )
+                    currData = GpwCurrentStockIntradayData.GpwCurrentStockIntradayDAO( self.isin )
                     currData.dataTime = self.dataTime
                     currWorksheet = currData.getWorksheetData()
                     if currWorksheet is not None:
