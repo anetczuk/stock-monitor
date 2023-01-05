@@ -30,7 +30,7 @@ from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
 from stockdataaccess.dataaccess import TMP_DIR
-from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, BaseWorksheetData
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.dataaccess.convert import convert_float, convert_percentage,\
     apply_on_column
@@ -42,9 +42,9 @@ from stockdataaccess.dataaccess.datatype import StockDataType
 _LOGGER = logging.getLogger(__name__)
 
 
-class GlobalIndexesData( BaseWorksheetDAO ):
+class GlobalIndexesData( BaseWorksheetData ):
 
-    class GlobalIndexesDAO( WorksheetData ):
+    class GlobalIndexesDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):

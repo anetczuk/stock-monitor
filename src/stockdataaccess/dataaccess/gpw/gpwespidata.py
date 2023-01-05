@@ -31,7 +31,7 @@ from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
 from stockdataaccess.dataaccess import TMP_DIR
-from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, BaseWorksheetData
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
 from stockdataaccess.pprint import fullname
@@ -42,9 +42,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## https://www.gpw.pl/komunikaty
-class GpwESPIData( BaseWorksheetDAO ):
+class GpwESPIData( BaseWorksheetData ):
 
-    class GpwESPIDAO( WorksheetData ):
+    class GpwESPIDAO( WorksheetDAO ):
         """Data access object."""
 
         def __init__(self):

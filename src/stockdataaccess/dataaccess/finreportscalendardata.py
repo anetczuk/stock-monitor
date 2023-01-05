@@ -28,7 +28,7 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockdataaccess.dataaccess import TMP_DIR
-from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, BaseWorksheetData
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
 from stockdataaccess.dataaccess.datatype import StockDataType
@@ -38,9 +38,9 @@ from stockdataaccess.pprint import fullname
 _LOGGER = logging.getLogger(__name__)
 
 
-class FinRepsCalendarData( BaseWorksheetDAO ):
+class FinRepsCalendarData( BaseWorksheetData ):
 
-    class FinRepsCalendarDAO( WorksheetData ):
+    class FinRepsCalendarDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
@@ -91,9 +91,9 @@ class FinRepsCalendarData( BaseWorksheetDAO ):
         return colIndex
 
 
-class PublishedFinRepsCalendarData( BaseWorksheetDAO ):
+class PublishedFinRepsCalendarData( BaseWorksheetData ):
 
-    class PublishedFinRepsCalendarDAO( WorksheetData ):
+    class PublishedFinRepsCalendarDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):

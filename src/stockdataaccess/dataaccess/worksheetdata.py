@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 ## ==============================================================================
 
 
-class BaseWorksheetData( metaclass=abc.ABCMeta ):
+class BaseWorksheetDAO( metaclass=abc.ABCMeta ):
 
     ## get data
     @synchronized
@@ -75,7 +75,7 @@ class BaseWorksheetData( metaclass=abc.ABCMeta ):
 
 ##
 ##
-class WorksheetData( BaseWorksheetData ):
+class WorksheetDAO( BaseWorksheetDAO ):
 
     def __init__(self):
         super().__init__()
@@ -221,7 +221,7 @@ class WorksheetStorageMock():
 ## ================================================================================
 
 
-class WorksheetDataMock( BaseWorksheetData ):
+class WorksheetDAOMock( BaseWorksheetDAO ):
 
     def __init__(self, data=None):
         super().__init__()
@@ -239,11 +239,11 @@ class WorksheetDataMock( BaseWorksheetData ):
 ## ================================================================================
 
 
-class BaseWorksheetDAO():
+class BaseWorksheetData():
 
     def __init__( self, dao ):
-        # self.dao: BaseWorksheetData
-        self.dao = dao
+        self.dao: BaseWorksheetDAO = dao
+#         self.dao = dao
 
     ## get data without downloading it
     def getDataFrame(self) -> DataFrame:
@@ -307,7 +307,7 @@ class BaseWorksheetDAO():
         raise NotImplementedError('You need to define this method in derived class!')
 
 
-# class HtmlWorksheetData( WorksheetData ):
+# class HtmlWorksheetData( WorksheetDAO ):
 #
 #     def _parseDataFromFile(self, dataFile: str) -> DataFrame:
 #         _LOGGER.debug( "opening workbook: %s", dataFile )

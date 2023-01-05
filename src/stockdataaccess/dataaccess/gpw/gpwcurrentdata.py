@@ -35,8 +35,8 @@ from pandas.core.frame import DataFrame
 
 from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.datatype import StockDataType
-from stockdataaccess.dataaccess.worksheetdata import WorksheetData,\
-    BaseWorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO,\
+    BaseWorksheetDAO, BaseWorksheetData
 from stockdataaccess.dataaccess.convert import apply_on_column, convert_float,\
     convert_int, cleanup_column
 from stockdataaccess.dataaccess import download_html_content
@@ -47,10 +47,10 @@ from stockdataaccess.pprint import fullname
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwCurrentStockData( BaseWorksheetDAO ):
+class GpwCurrentStockData( BaseWorksheetData ):
     """Access GPW session current stock values."""
 
-    class GpwCurrentStockDAO( WorksheetData ):
+    class GpwCurrentStockDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
@@ -243,14 +243,14 @@ class GpwCurrentStockData( BaseWorksheetDAO ):
 # ============================================================================
 
 
-class GpwCurrentIndexesData( BaseWorksheetDAO ):
+class GpwCurrentIndexesData( BaseWorksheetData ):
 
-    class GpwCurrentIndexesDAO( BaseWorksheetData ):
+    class GpwCurrentIndexesDAO( BaseWorksheetDAO ):
         """Data access object."""
 
         def __init__(self):
             self.worksheet: DataFrame = None
-            self.dataList: List[ BaseWorksheetDAO ] = []
+            self.dataList: List[ BaseWorksheetData ] = []
             self.dataList.append( GpwMainIndexesData() )
             self.dataList.append( GpwMacroIndexesData() )
             self.dataList.append( GpwSectorsIndexesData() )
@@ -328,9 +328,9 @@ class GpwCurrentIndexesData( BaseWorksheetDAO ):
         return f"https://www.money.pl/gielda/indeksy_gpw/{value}/"
 
 
-class GpwMainIndexesData( BaseWorksheetDAO ):
+class GpwMainIndexesData( BaseWorksheetData ):
 
-    class GpwMainIndexesDAO( WorksheetData ):
+    class GpwMainIndexesDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
@@ -371,9 +371,9 @@ class GpwMainIndexesData( BaseWorksheetDAO ):
         raise ValueError( f"Invalid value: {columnType}" )
 
 
-class GpwMacroIndexesData( BaseWorksheetDAO ):
+class GpwMacroIndexesData( BaseWorksheetData ):
 
-    class GpwMacroIndexesDAO( WorksheetData ):
+    class GpwMacroIndexesDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
@@ -411,9 +411,9 @@ class GpwMacroIndexesData( BaseWorksheetDAO ):
         raise ValueError( f"Invalid value: {columnType}" )
 
 
-class GpwSectorsIndexesData( BaseWorksheetDAO ):
+class GpwSectorsIndexesData( BaseWorksheetData ):
 
-    class GpwSectorsIndexesDAO( WorksheetData ):
+    class GpwSectorsIndexesDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):

@@ -30,7 +30,7 @@ from pandas.core.frame import DataFrame
 from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.convert import convert_float, convert_int, cleanup_column, apply_on_column
-from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, BaseWorksheetData
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
 from stockdataaccess.pprint import fullname
@@ -40,9 +40,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## https://www.gpw.pl/wskazniki
-class GpwIndicatorsData( BaseWorksheetDAO ):
+class GpwIndicatorsData( BaseWorksheetData ):
 
-    class GpwIndicatorsDAO( WorksheetData ):
+    class GpwIndicatorsDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):
@@ -112,9 +112,9 @@ class GpwIndicatorsData( BaseWorksheetDAO ):
 
 
 ## http://infostrefa.com/infostrefa/pl/spolki
-class GpwIsinMapData( BaseWorksheetDAO ):
+class GpwIsinMapData( BaseWorksheetData ):
 
-    class GpwIsinMapDAO( WorksheetData ):
+    class GpwIsinMapDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):

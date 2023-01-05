@@ -32,18 +32,18 @@ from pandas.core.frame import DataFrame
 
 from stockdataaccess.dataaccess import TMP_DIR, download_html_content
 from stockdataaccess.dataaccess.datatype import StockDataType
-from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetDAO,\
-    WorksheetData
+from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetData,\
+    WorksheetDAO
 from stockdataaccess.synchronized import synchronized
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwArchiveData( BaseWorksheetDAO ):
+class GpwArchiveData( BaseWorksheetData ):
     """Handle GPW archive data."""
 
-    class GpwArchiveDAO( WorksheetData ):
+    class GpwArchiveDAO( WorksheetDAO ):
         """Data access object."""
 
         def __init__(self, dayDate: datetime.date = None):

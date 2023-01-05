@@ -29,7 +29,7 @@ from pandas.core.frame import DataFrame
 from bs4 import BeautifulSoup
 
 from stockdataaccess.dataaccess import TMP_DIR, requests_init_session
-from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, BaseWorksheetData
 from stockdataaccess.synchronized import synchronized
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.pprint import fullname
@@ -98,9 +98,9 @@ def grab_content( url, button ):
 
 
 ## https://rss.knf.gov.pl/RssOuterView/
-class CurrentShortSellingsData( BaseWorksheetDAO ):
+class CurrentShortSellingsData( BaseWorksheetData ):
 
-    class CurrentShortSellingsDAO( WorksheetData ):
+    class CurrentShortSellingsDAO( WorksheetDAO ):
         """Data access object."""
 
         ## override
@@ -174,9 +174,9 @@ class CurrentShortSellingsData( BaseWorksheetDAO ):
 
 
 ## https://rss.knf.gov.pl/RssOuterView/
-class HistoryShortSellingsData( BaseWorksheetDAO ):
+class HistoryShortSellingsData( BaseWorksheetData ):
 
-    class HistoryShortSellingsDAO( WorksheetData ):
+    class HistoryShortSellingsDAO( WorksheetDAO ):
         """Data access object."""
 
         ## override

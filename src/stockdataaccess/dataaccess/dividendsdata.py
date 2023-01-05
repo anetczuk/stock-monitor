@@ -28,7 +28,7 @@ import pandas
 from pandas.core.frame import DataFrame
 
 from stockdataaccess.dataaccess import TMP_DIR
-from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, BaseWorksheetData
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
 from stockdataaccess.dataaccess.datatype import StockDataType
@@ -39,9 +39,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 ## https://www.stockwatch.pl/dywidendy/
-class DividendsCalendarData( BaseWorksheetDAO ):
+class DividendsCalendarData( BaseWorksheetData ):
 
-    class DividendsCalendarDAO( WorksheetData ):
+    class DividendsCalendarDAO( WorksheetDAO ):
         """Data access object."""
 
         def getDataPath(self):

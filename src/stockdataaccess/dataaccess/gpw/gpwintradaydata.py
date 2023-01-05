@@ -29,7 +29,7 @@ import json
 from pandas.core.frame import DataFrame
 
 from stockdataaccess.dataaccess import TMP_DIR
-from stockdataaccess.dataaccess.worksheetdata import WorksheetData, BaseWorksheetDAO
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, BaseWorksheetData
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.dataaccess.convert import apply_on_column, convert_timestamp_datetime
 from stockdataaccess.synchronized import synchronized
@@ -40,10 +40,10 @@ from stockdataaccess.dataaccess.datatype import StockDataType
 _LOGGER = logging.getLogger(__name__)
 
 
-class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
+class GpwCurrentStockIntradayData( BaseWorksheetData ):
     """Access GPW data based on range code."""
 
-    class GpwCurrentStockIntradayDAO( WorksheetData ):
+    class GpwCurrentStockIntradayDAO( WorksheetDAO ):
         """Data access object."""
 
         def __init__(self, isin, rangeCode=None):
@@ -154,9 +154,9 @@ class GpwCurrentStockIntradayData( BaseWorksheetDAO ):
         return index
 
 
-class GpwCurrentIndexIntradayData( BaseWorksheetDAO ):
+class GpwCurrentIndexIntradayData( BaseWorksheetData ):
 
-    class GpwCurrentIndexIntradayDAO( WorksheetData ):
+    class GpwCurrentIndexIntradayDAO( WorksheetDAO ):
         """Data access object."""
 
         def __init__(self, isin, rangeCode=None):
