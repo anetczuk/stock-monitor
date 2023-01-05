@@ -52,15 +52,15 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def grab_simple_template( GRABBER_CLASS ):
-    
+
     def grab_data( args ):
         provider: BaseWorksheetData = GRABBER_CLASS()
-    
+
         dataframe: DataFrame = provider.accessWorksheetData()
         if dataframe is None:
             _LOGGER.error( "unable to grab data" )
             return
-    
+
         if not args.out_path:
             print( dataframe.to_string() )
             return
@@ -69,20 +69,20 @@ def grab_simple_template( GRABBER_CLASS ):
             dataframe.to_excel( args.out_path, index=False )
         else:
             dataframe.to_csv( args.out_path, encoding='utf-8', index=False )
-    
+
     return grab_data
 
 
 def grab_isin_template( GRABBER_CLASS ):
-    
+
     def grab_data( args ):
         provider: BaseWorksheetData = GRABBER_CLASS( args.isin )
-    
+
         dataframe: DataFrame = provider.accessWorksheetData()
         if dataframe is None:
             _LOGGER.error( "unable to grab data" )
             return
-    
+
         if not args.out_path:
             print( dataframe.to_string() )
             return
@@ -91,22 +91,22 @@ def grab_isin_template( GRABBER_CLASS ):
             dataframe.to_excel( args.out_path, index=False )
         else:
             dataframe.to_csv( args.out_path, encoding='utf-8', index=False )
-    
+
     return grab_data
 
 
 def grab_date_template( GRABBER_CLASS ):
-    
+
     def grab_data( args ):
         input_date = datetime.datetime.strptime( args.date, "%Y-%m-%d").date()
 
         provider: BaseWorksheetData = GRABBER_CLASS( input_date )
-    
+
         dataframe: DataFrame = provider.accessWorksheetData()
         if dataframe is None:
             _LOGGER.error( "unable to grab data" )
             return
-    
+
         if not args.out_path:
             print( dataframe.to_string() )
             return
@@ -115,7 +115,7 @@ def grab_date_template( GRABBER_CLASS ):
             dataframe.to_excel( args.out_path, index=False )
         else:
             dataframe.to_csv( args.out_path, encoding='utf-8', index=False )
-    
+
     return grab_data
 
 
@@ -129,41 +129,41 @@ def grab_date_template( GRABBER_CLASS ):
 def main():
     parser = argparse.ArgumentParser(description='stock data grabber')
     parser.add_argument( '-la', '--logall', action='store_true', help='Log all messages' )
-    
+
     subparsers = parser.add_subparsers( help='data providers' )
-    
+
     ## =================================================
-    
+
     subparser = subparsers.add_parser('gpw_curr_stock', help='GPW current stock')
     subparser.set_defaults( func=grab_simple_template( GpwCurrentStockData ) )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
-    
+
     subparser = subparsers.add_parser('gpw_curr_indexes', help='GPW current indexes')
     subparser.set_defaults( func=grab_simple_template( GpwCurrentIndexesData ) )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
-    
+
 #     subparser = subparsers.add_parser('gpw_main_indexes', help='GPW main indexes')
 #     subparser.set_defaults( func=grab_simple_template( GpwMainIndexesData ) )
 #     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
-#     
+#
 #     subparser = subparsers.add_parser('gpw_macro_indexes', help='GPW macro indexes')
 #     subparser.set_defaults( func=grab_simple_template( GpwMacroIndexesData ) )
 #     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
-#     
+#
 #     subparser = subparsers.add_parser('gpw_sectors_indexes', help='GPW sectors indexes')
 #     subparser.set_defaults( func=grab_simple_template( GpwSectorsIndexesData ) )
 #     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
-     
+
     ## =================================================
 
     subparser = subparsers.add_parser('gpw_isin_data', help='GPW ISIN data')
     subparser.set_defaults( func=grab_simple_template( GpwIsinMapData ) )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
-     
+
     subparser = subparsers.add_parser('gpw_stock_indicators', help='GPW stock indicators')
     subparser.set_defaults( func=grab_simple_template( GpwIndicatorsData ) )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
-     
+
     subparser = subparsers.add_parser('gpw_espi', help='GPW ESPI')
     subparser.set_defaults( func=grab_simple_template( GpwESPIData ) )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )

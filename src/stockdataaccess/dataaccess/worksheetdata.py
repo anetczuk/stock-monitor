@@ -222,15 +222,15 @@ class WorksheetStorageMock():
 
 
 # class WorksheetDAOMock( BaseWorksheetDAO ):
-# 
+#
 #     def __init__(self, data=None):
 #         super().__init__()
 #         self.worksheet = data
-# 
+#
 #     ## override
 #     def loadWorksheet(self, preventDownload=False):
 #         return self.worksheet
-# 
+#
 #     ## override
 #     def getDataFrame(self) -> DataFrame:
 #         return self.worksheet
