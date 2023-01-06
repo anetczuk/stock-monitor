@@ -200,6 +200,8 @@ class ActivityAnalysis:
             subDict       = dataTuple[1]
             self.calculateActivityForDay( dataframeList, subDict, thresholdPercent, dataDicts )
 
+        days_num = len( dataPairList )
+
         namesSet = dataDicts.keys()
         for name in namesSet:
             dataSubdict = dataDicts[ name ]
@@ -242,7 +244,8 @@ class ActivityAnalysis:
             dataSubdict["price change deviation"] = round( val, 4 )
 
             val = dataSubdict["trading [kPLN]"]
-            dataSubdict["trading [kPLN]"] = round( val, 4 )
+            dataSubdict["trading [kPLN]"]     = round( val, 4 )
+            dataSubdict["trading/day [kPLN]"] = round( val / days_num, 4 )
 
         ## =========================
 
@@ -299,6 +302,8 @@ class ActivityAnalysis:
 
             calcRet = precalcSubdict["trading [kPLN]"]
             dataSubdict.add( "trading [kPLN]", calcRet )                                   ## trading
+
+            dataSubdict.add( "trading/day [kPLN]", 0.0 )                    ## placeholder for further calc
 
             dataSubdict["potential"]   = precalcSubdict["potential"]
             dataSubdict["relative"]    = precalcSubdict["relative"]
