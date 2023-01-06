@@ -58,11 +58,15 @@ class MetaStockIntradayData( BaseWorksheetData ):
 
         @synchronized
         def getWorksheetForDate( self, dataDate: datetime.date, forceRefresh=False ):
+            if dataDate != self.dataDate:
+                self.clear()
             self.dataDate = dataDate
             return self.getWorksheetData( forceRefresh )
 
         @synchronized
         def accessWorksheetForDate( self, dataDate: datetime.date, forceRefresh=False ):
+            if dataDate != self.dataDate:
+                self.clear()
             self.dataDate = dataDate
             return self.accessWorksheetData( forceRefresh )
 

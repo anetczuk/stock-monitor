@@ -78,11 +78,19 @@ class GpwCurrentStockIntradayData( BaseWorksheetData ):
 
         @synchronized
         def getWorksheetForDate(self, dataDate, forceRefresh=False):
+            currDate = self.dataTime.date()
+            if dataDate != currDate:
+                self.clear()
             self.dataTime = datetime.datetime.combine( dataDate, datetime.time.max )
             return self.getWorksheetData( forceRefresh )
 
         def loadWorksheet(self, preventDownload=False):
-            self.dataTime = datetime.datetime.now()
+            currDate    = self.dataTime.date()
+            newDateTime = datetime.datetime.now()
+            newDate     = newDateTime.date()
+            if newDate != currDate:
+                self.clear()
+            self.dataTime = newDateTime
             super().loadWorksheet( preventDownload )
 
         @synchronized
@@ -189,7 +197,12 @@ class GpwCurrentIndexIntradayData( BaseWorksheetData ):
                 raise
 
         def loadWorksheet(self, preventDownload=False):
-            self.dataTime = datetime.datetime.now()
+            currDate    = self.dataTime.date()
+            newDateTime = datetime.datetime.now()
+            newDate     = newDateTime.date()
+            if newDate != currDate:
+                self.clear()
+            self.dataTime = newDateTime
             super().loadWorksheet( preventDownload )
 
         @synchronized

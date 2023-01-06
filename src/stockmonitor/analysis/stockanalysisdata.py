@@ -284,6 +284,9 @@ class StatsDict():
         return self.dataDict[ key ]
 #         return self.get( key )
 
+    def empty(self):
+        return not self.dataDict
+
     def keys(self):
         return self.dataDict.keys()
 

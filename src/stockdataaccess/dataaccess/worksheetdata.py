@@ -81,6 +81,9 @@ class WorksheetDAO( BaseWorksheetDAO ):
         super().__init__()
         self.storage = WorksheetStorage()
 
+    def clear(self):
+        self.storage.clear()
+
     def getGrabTimestmp(self) -> datetime.datetime:
         return self.storage.grabTimestamp
 

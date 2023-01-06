@@ -196,8 +196,9 @@ class ActivityAnalysis:
 
         for dataTuple in dataPairList:
             _LOGGER.debug( "calculating results for %s", dataTuple[2] )
-            dataPair = ( dataTuple[0], dataTuple[1] )
-            self.calculateActivityForDay( dataPair, thresholdPercent, dataDicts )
+            dataframeList = dataTuple[0]
+            subDict       = dataTuple[1]
+            self.calculateActivityForDay( dataframeList, subDict, thresholdPercent, dataDicts )
 
         namesSet = dataDicts.keys()
         for name in namesSet:
@@ -271,8 +272,7 @@ class ActivityAnalysis:
 
         return retDataFrame
 
-    def calculateActivityForDay(self, dataPair, thresholdPercent, dataDicts):
-        dataframeList, subDict = dataPair
+    def calculateActivityForDay(self, dataframeList, subDict, thresholdPercent, dataDicts):
         for dataFrame in dataframeList:
             if dataFrame is None:
                 continue
@@ -313,6 +313,7 @@ class ActivityAnalysis:
             calcRet = precalcSubdict["price change deviation"]
             dataSubdict.add( "price change deviation", calcRet )                      ## price change deviation
 
+    ### returns ( dataframe_list, subdict_data, date )
     def getPrecalcData(self, currDate):
 #         _LOGGER.debug( "loading data for: %s", currDate )
 
