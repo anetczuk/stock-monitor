@@ -30,6 +30,7 @@ import datetime
 
 from pandas.core.frame import DataFrame
 
+from stockdataaccess.io import read_dict
 from stockdataaccess.persist import store_object_simple
 
 from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetData
@@ -59,25 +60,31 @@ _LOGGER = logging.getLogger(__name__)
 
 def grab_simple_template( GRABBER_CLASS ):
     def grab_data( args ):
+        _LOGGER.debug( "executing provider: %s", GRABBER_CLASS.__name__ )
         provider: BaseWorksheetData = GRABBER_CLASS()
         store_provider_data2( provider, args.out_format, args.out_path )
+        return True
 
     return grab_data
 
 
 def grab_isin_template( GRABBER_CLASS ):
     def grab_data( args ):
+        _LOGGER.debug( "executing provider: %s", GRABBER_CLASS.__name__ )
         provider: BaseWorksheetData = GRABBER_CLASS( args.isin )
         store_provider_data2( provider, args.out_format, args.out_path )
+        return True
 
     return grab_data
 
 
 def grab_date_template( GRABBER_CLASS ):
     def grab_data( args ):
+        _LOGGER.debug( "executing provider: %s", GRABBER_CLASS.__name__ )
         input_date = datetime.datetime.strptime( args.date, "%Y-%m-%d").date()
         provider: BaseWorksheetData = GRABBER_CLASS( input_date )
         store_provider_data2( provider, args.out_format, args.out_path )
+        return True
 
     return grab_data
 
@@ -136,6 +143,31 @@ def grab_all( args ):
 
     provider: BaseWorksheetData = HistoryShortSellingsData()
     store_provider_data( provider, out_format, out_dir, "hist_shorts" )
+    
+    return True
+
+
+def grab_by_config( parser, args ):
+    config_path = args.config_path
+    if not config_path:
+        ## None or empty format
+        print( "config_path is required" )
+        return
+
+    try:
+        config_dict = read_dict( config_path )
+    except Exception as ex:
+        _LOGGER.exception( "unable to read configuration file %s, reason: %s", config_path, ex )
+        return
+
+
+    for mode, params in config_dict.items():
+        params_list = [ mode ] + params.copy()
+        _LOGGER.info( "executing mode: %s", params_list )
+        mode_args = parser.parse_args( params_list )
+        mode_args.func( mode_args )
+
+    return True
 
 
 ## ===================================================================
@@ -203,6 +235,12 @@ def main():
     parser.add_argument( '-la', '--logall', action='store_true', help='Log all messages' )
 
     subparsers = parser.add_subparsers( help='data providers' )
+
+    ## =================================================
+
+    subparser = subparsers.add_parser('config_mode', help='Store data based on configuration file')
+    subparser.set_defaults( func = lambda args: grab_by_config( parser, args ) )
+    subparser.add_argument( '-cp', '--config_path', action='store', required=True, default="", help="Path for config file." )
 
     ## =================================================
 
@@ -322,11 +360,14 @@ def main():
         ## no command given
         return
 
-    _LOGGER.debug( "starting grab script" )
+    _LOGGER.info( "starting grab script" )
 
-    args.func( args )
+    succeed = args.func( args )
 
-    _LOGGER.debug( "grabbing done" )
+    if succeed:
+        _LOGGER.info( "grabbing done" )
+    else:
+        _LOGGER.info( "unable to grab data" )
 
 
 if __name__ == '__main__':
