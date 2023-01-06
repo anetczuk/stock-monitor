@@ -682,7 +682,7 @@ class StockAnalysis():
         if isin is None:
             return ""
         ## money link: https://www.money.pl/gielda/spolki-gpw/PLAGORA00067.html
-        moneyLink = "https://www.money.pl/gielda/spolki-gpw/" + isin + ".html"
+        moneyLink = f"https://www.money.pl/gielda/spolki-gpw/{isin}.html"
         return moneyLink
 
     # ==========================================================================

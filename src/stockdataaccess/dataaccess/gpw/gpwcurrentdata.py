@@ -192,6 +192,9 @@ class GpwCurrentStockData( BaseWorksheetData ):
     def getMoneyLinkFromIsin(self, isin):
         return f"https://www.money.pl/gielda/spolki-gpw/{isin}.html"
 
+    def getBankierLinkFromName(self, name):
+        return f"https://www.bankier.pl/inwestowanie/profile/quote.html?symbol={name}"
+
     ## ======================================================================
 
     @staticmethod
@@ -326,6 +329,9 @@ class GpwCurrentIndexesData( BaseWorksheetData ):
     def getMoneyLinkFromName(self, name):
         value = name.replace('-', '_')
         return f"https://www.money.pl/gielda/indeksy_gpw/{value}/"
+
+    def getBankierLinkFromName(self, name):
+        return f"https://www.bankier.pl/inwestowanie/profile/quote.html?symbol={name}"
 
 
 class GpwMainIndexesData( BaseWorksheetData ):

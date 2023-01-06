@@ -76,13 +76,18 @@ class StockTable( DataFrameTable ):
 #            stockSummaryAction.setData( isinsList )
 #            stockSummaryAction.triggered.connect( self._stockSummaryAction )
 
-            gpwLinks = self._getGpwInfoLinks()
-            moneyLinks = self._getMoneyInfoLinks()
-            googleLinks = self._getGoogleInfoLinks()
-            if gpwLinks or moneyLinks or googleLinks:
+            gpwLinks     = self._getGpwInfoLinks()
+            bankierLinks = self._getBankierInfoLinks()
+            moneyLinks   = self._getMoneyInfoLinks()
+            googleLinks  = self._getGoogleInfoLinks()
+            if gpwLinks or moneyLinks or googleLinks or bankierLinks:
                 stockInfoMenu = contextMenu.addMenu("Stock info")
                 if gpwLinks:
                     action = self._createActionOpenUrl("gpw.pl", gpwLinks)
+                    action.setParent( stockInfoMenu )
+                    stockInfoMenu.addAction( action )
+                if bankierLinks:
+                    action = self._createActionOpenUrl("bankier.pl", bankierLinks)
                     action.setParent( stockInfoMenu )
                     stockInfoMenu.addAction( action )
                 if moneyLinks:
@@ -268,10 +273,41 @@ class StockTable( DataFrameTable ):
         _LOGGER.debug( "returning links list: %s", ret )
         return ret
 
+    def _getBankierInfoLinks(self):
+        nameList = self._getSelectedNames()
+        if not nameList:
+            _LOGGER.warning( "unable to open stock info: empty ticker list" )
+            return []
+        dataAccess = self.dataObject.gpwCurrentData
+        ret = []
+        for name in nameList:
+            if name is None:
+                continue
+            infoLink = dataAccess.getBankierLinkFromName( name )
+            if infoLink is not None:
+                ret.append( infoLink )
+        _LOGGER.debug( "returning links list: %s", ret )
+        return ret
+
     ## returns list of tickers
     def _getSelectedTickers(self) -> List[str]:                         # pylint: disable=R0201
         ## reimplement if needed
         return []
+
+    ## returns list of tickers
+    def _getSelectedNames(self) -> List[str]:                         # pylint: disable=R0201
+        ## reimplement if needed
+        tickerList = self._getSelectedTickers()
+        if not tickerList:
+            _LOGGER.warning( "unable to open stock info: empty ticker list" )
+            return []
+        ret = []
+        for ticker in tickerList:
+            name = self.dataObject.getNameFromTicker( ticker )
+            if name is None:
+                continue
+            ret.append( name )
+        return ret
 
     ## returns list of isins
     def _getSelectedIsins(self) -> List[str]:

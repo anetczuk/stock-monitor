@@ -126,15 +126,22 @@ class ESPIListWidget( QtWidgets.QListWidget ):                        # type: ig
 
         isin = self._currentISIN()
         dataAccess = self.dataObject.gpwCurrentData
-        gpwLink    = dataAccess.getGpwLinkFromIsin( isin )
-        moneyLink  = dataAccess.getMoneyLinkFromIsin( isin )
         ticker     = self.dataObject.getTickerFromIsin( isin )
-        googleLink = dataAccess.getGoogleLinkFromTicker( ticker )
+        name       = self.dataObject.getNameFromIsin( isin )
+
+        gpwLink     = dataAccess.getGpwLinkFromIsin( isin )
+        moneyLink   = dataAccess.getMoneyLinkFromIsin( isin )
+        googleLink  = dataAccess.getGoogleLinkFromTicker( ticker )
+        bankierLink = dataAccess.getBankierLinkFromName( name )
 
         if gpwLink or moneyLink or googleLink:
             stockInfoMenu = contextMenu.addMenu("Stock info")
             if gpwLink:
                 action = self._createActionOpenUrl("gpw.pl", [gpwLink])
+                action.setParent( stockInfoMenu )
+                stockInfoMenu.addAction( action )
+            if bankierLink:
+                action = self._createActionOpenUrl("bankier.pl", [bankierLink])
                 action.setParent( stockInfoMenu )
                 stockInfoMenu.addAction( action )
             if moneyLink:
