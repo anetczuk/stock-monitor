@@ -23,6 +23,7 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 import argparse
 import datetime
@@ -31,6 +32,7 @@ from pandas.core.frame import DataFrame
 
 from stockdataaccess.persist import store_object_simple
 
+from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetData
 from stockdataaccess.dataaccess.gpw.gpwarchivedata import GpwArchiveData
 from stockdataaccess.dataaccess.gpw.gpwespidata import GpwESPIData
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData,\
@@ -58,8 +60,7 @@ _LOGGER = logging.getLogger(__name__)
 def grab_simple_template( GRABBER_CLASS ):
     def grab_data( args ):
         provider: BaseWorksheetData = GRABBER_CLASS()
-        dataframe: DataFrame = provider.accessWorksheetData()
-        store_dataframe( dataframe, args.out_format, args.out_path )
+        store_provider_data2( provider, args.out_format, args.out_path )
 
     return grab_data
 
@@ -67,8 +68,7 @@ def grab_simple_template( GRABBER_CLASS ):
 def grab_isin_template( GRABBER_CLASS ):
     def grab_data( args ):
         provider: BaseWorksheetData = GRABBER_CLASS( args.isin )
-        dataframe: DataFrame = provider.accessWorksheetData()
-        store_dataframe( dataframe, args.out_format, args.out_path )
+        store_provider_data2( provider, args.out_format, args.out_path )
 
     return grab_data
 
@@ -77,10 +77,81 @@ def grab_date_template( GRABBER_CLASS ):
     def grab_data( args ):
         input_date = datetime.datetime.strptime( args.date, "%Y-%m-%d").date()
         provider: BaseWorksheetData = GRABBER_CLASS( input_date )
-        dataframe: DataFrame = provider.accessWorksheetData()
-        store_dataframe( dataframe, args.out_format, args.out_path )
+        store_provider_data2( provider, args.out_format, args.out_path )
 
     return grab_data
+
+
+## ===================================================================
+
+
+def grab_all( args ):
+    out_format = args.out_format
+    if not out_format:
+        ## None or empty format
+        print( "out_format is required" )
+        return
+
+    out_dir = args.out_dir
+    if out_dir is not None:
+        os.makedirs( out_dir, exist_ok=True )
+
+#     curr_date = datetime.date.today()
+
+    provider: BaseWorksheetData = GpwCurrentStockData()
+    store_provider_data( provider, out_format, out_dir, "gpw_curr_stock" )
+
+    provider: BaseWorksheetData = GpwCurrentIndexesData()
+    store_provider_data( provider, out_format, out_dir, "gpw_curr_indexes" )
+
+    provider: BaseWorksheetData = GpwIsinMapData()
+    store_provider_data( provider, out_format, out_dir, "gpw_isin_map" )
+
+    provider: BaseWorksheetData = GpwIndicatorsData()
+    store_provider_data( provider, out_format, out_dir, "gpw_indicators" )
+
+    provider: BaseWorksheetData = GpwESPIData()
+    store_provider_data( provider, out_format, out_dir, "gpw_espi" )
+
+    provider: BaseWorksheetData = GpwArchiveData()
+    store_provider_data( provider, out_format, out_dir, "gpw_arch_data" )
+
+    provider: BaseWorksheetData = DividendsCalendarData()
+    store_provider_data( provider, out_format, out_dir, "dividends_cal" )
+
+    provider: BaseWorksheetData = FinRepsCalendarData()
+    store_provider_data( provider, out_format, out_dir, "fin_reps_cal" )
+
+    provider: BaseWorksheetData = PublishedFinRepsCalendarData()
+    store_provider_data( provider, out_format, out_dir, "pub_fin_reps_cal" )
+
+    provider: BaseWorksheetData = GlobalIndexesData()
+    store_provider_data( provider, out_format, out_dir, "global_indexes" )
+
+    provider: BaseWorksheetData = MetaStockIntradayData()
+    store_provider_data( provider, out_format, out_dir, "metastock_intraday" )
+
+    provider: BaseWorksheetData = CurrentShortSellingsData()
+    store_provider_data( provider, out_format, out_dir, "curr_shorts" )
+
+    provider: BaseWorksheetData = HistoryShortSellingsData()
+    store_provider_data( provider, out_format, out_dir, "hist_shorts" )
+
+
+## ===================================================================
+
+
+def store_provider_data( provider: BaseWorksheetData, out_format, out_dir, out_file_name ):
+    out_path = None
+    if out_dir is not None:
+        file_name = f"{out_file_name}.{out_format}"
+        out_path  = os.path.join( out_dir, file_name )
+    store_provider_data2( provider, out_format, out_path )
+
+
+def store_provider_data2( provider: BaseWorksheetData, out_format, out_path ):
+    dataframe: DataFrame = provider.accessWorksheetData()
+    store_dataframe( dataframe, out_format, out_path )
 
 
 def store_dataframe( dataframe: DataFrame, out_format, out_path ):
@@ -94,17 +165,7 @@ def store_dataframe( dataframe: DataFrame, out_format, out_path ):
 
     if not out_format:
         ## None or empty format
-        if "csv" in out_path:
-            out_format = "xls"
-        elif "xls" in out_path:
-            out_format = "xls"
-        elif "xlsx" in out_path:
-            out_format = "xls"
-        elif "pickle" in out_path:
-            out_format = "pickle"
-        else:
-            ## unknown extension -- use csv
-            out_format = "csv"
+        out_format = get_format_from_path( out_path )
 
     switcher = {
         "xls":     lambda: dataframe.to_excel( out_path, index=False ),
@@ -120,6 +181,19 @@ def store_dataframe( dataframe: DataFrame, out_format, out_path ):
     store_func()
 
 
+def get_format_from_path( file_path ):
+    if "csv" in file_path:
+        return "xls"
+    if "xls" in file_path:
+        return "xls"
+    if "xlsx" in file_path:
+        return "xls"
+    if "pickle" in file_path:
+        return "pickle"
+    ## unknown extension -- use csv
+    return "csv"
+
+
 ## ===================================================================
 ## ===================================================================
 
@@ -132,30 +206,22 @@ def main():
 
     ## =================================================
 
+    subparser = subparsers.add_parser('all_current', help='Store data from almost all providers using current data if required')
+    subparser.set_defaults( func=grab_all )
+    subparser.add_argument( '-of', '--out_format', action='store', required=True, default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-od', '--out_dir', action='store', default="", help="Output directory" )
+
+    ## =================================================
+
     subparser = subparsers.add_parser('gpw_curr_stock', help='GPW current stock')
     subparser.set_defaults( func=grab_simple_template( GpwCurrentStockData ) )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
-    subparser = subparsers.add_parser('gpw_curr_indexes', help='GPW current indexes')
+    subparser = subparsers.add_parser('gpw_curr_indexes', help='GPW current indexes (main, macro and sectors)')
     subparser.set_defaults( func=grab_simple_template( GpwCurrentIndexesData ) )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
-
-#     subparser = subparsers.add_parser('gpw_main_indexes', help='GPW main indexes')
-#     subparser.set_defaults( func=grab_simple_template( GpwMainIndexesData ) )
-#     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
-#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
-#
-#     subparser = subparsers.add_parser('gpw_macro_indexes', help='GPW macro indexes')
-#     subparser.set_defaults( func=grab_simple_template( GpwMacroIndexesData ) )
-#     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
-#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
-#
-#     subparser = subparsers.add_parser('gpw_sectors_indexes', help='GPW sectors indexes')
-#     subparser.set_defaults( func=grab_simple_template( GpwSectorsIndexesData ) )
-#     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
-#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
