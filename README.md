@@ -63,7 +63,12 @@ Starting environment after installation can be done by execution of script `{ven
 ## Data grabber
 
 In addition to main application there is grabber script `grabdata.py` extracting data used in the application. The script can be 
-used separatelly from main application to scrap data to CSV/XLS data. For further information run script `src/grabdata.py --help`.
+used separatelly from main application to scrap data to local file. For further information run script `src/grabdata.py --help`.
+
+Supported output formats:
+- CSV
+- XLS
+- pickle (`pandas.core.DataFrame` object will be stored)
 
 What data can be obtained using the script? Script scraps for example:
 - GPW stock data

@@ -27,6 +27,10 @@ import logging
 import argparse
 import datetime
 
+from pandas.core.frame import DataFrame
+
+from stockdataaccess.persist import store_object_simple
+
 from stockdataaccess.dataaccess.gpw.gpwarchivedata import GpwArchiveData
 from stockdataaccess.dataaccess.gpw.gpwespidata import GpwESPIData
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData,\
@@ -52,74 +56,68 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def grab_simple_template( GRABBER_CLASS ):
-
     def grab_data( args ):
         provider: BaseWorksheetData = GRABBER_CLASS()
-
         dataframe: DataFrame = provider.accessWorksheetData()
-        if dataframe is None:
-            _LOGGER.error( "unable to grab data" )
-            return
-
-        if not args.out_path:
-            print( dataframe.to_string() )
-            return
-
-        if "xlsx" in args.out_path:
-            dataframe.to_excel( args.out_path, index=False )
-        else:
-            dataframe.to_csv( args.out_path, encoding='utf-8', index=False )
+        store_dataframe( dataframe, args.out_format, args.out_path )
 
     return grab_data
 
 
 def grab_isin_template( GRABBER_CLASS ):
-
     def grab_data( args ):
         provider: BaseWorksheetData = GRABBER_CLASS( args.isin )
-
         dataframe: DataFrame = provider.accessWorksheetData()
-        if dataframe is None:
-            _LOGGER.error( "unable to grab data" )
-            return
-
-        if not args.out_path:
-            print( dataframe.to_string() )
-            return
-
-        if "xlsx" in args.out_path:
-            dataframe.to_excel( args.out_path, index=False )
-        else:
-            dataframe.to_csv( args.out_path, encoding='utf-8', index=False )
+        store_dataframe( dataframe, args.out_format, args.out_path )
 
     return grab_data
 
 
 def grab_date_template( GRABBER_CLASS ):
-
     def grab_data( args ):
         input_date = datetime.datetime.strptime( args.date, "%Y-%m-%d").date()
-
         provider: BaseWorksheetData = GRABBER_CLASS( input_date )
-
         dataframe: DataFrame = provider.accessWorksheetData()
-        if dataframe is None:
-            _LOGGER.error( "unable to grab data" )
-            return
-
-        if not args.out_path:
-            print( dataframe.to_string() )
-            return
-
-        if "xlsx" in args.out_path:
-            dataframe.to_excel( args.out_path, index=False )
-        else:
-            dataframe.to_csv( args.out_path, encoding='utf-8', index=False )
+        store_dataframe( dataframe, args.out_format, args.out_path )
 
     return grab_data
 
 
-## ===================================================================
+def store_dataframe( dataframe: DataFrame, out_format, out_path ):
+    if dataframe is None:
+        _LOGGER.error( "unable to grab data" )
+        return
+
+    if not out_path:
+        print( dataframe.to_string() )
+        return
+
+    if not out_format:
+        ## None or empty format
+        if "csv" in out_path:
+            out_format = "xls"
+        elif "xls" in out_path:
+            out_format = "xls"
+        elif "xlsx" in out_path:
+            out_format = "xls"
+        elif "pickle" in out_path:
+            out_format = "pickle"
+        else:
+            ## unknown extension -- use csv
+            out_format = "csv"
+
+    switcher = {
+        "xls":     lambda: dataframe.to_excel( out_path, index=False ),
+        "csv":     lambda: dataframe.to_csv( out_path, encoding='utf-8', index=False ),
+        "pickle":  lambda: store_object_simple( dataframe, out_path ),
+    }
+    store_func = switcher.get( out_format, None )
+
+    if store_func is None:
+        _LOGGER.error( "unsupported output format: %s", out_format )
+        return
+
+    store_func()
 
 
 ## ===================================================================
@@ -136,95 +134,113 @@ def main():
 
     subparser = subparsers.add_parser('gpw_curr_stock', help='GPW current stock')
     subparser.set_defaults( func=grab_simple_template( GpwCurrentStockData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('gpw_curr_indexes', help='GPW current indexes')
     subparser.set_defaults( func=grab_simple_template( GpwCurrentIndexesData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
 #     subparser = subparsers.add_parser('gpw_main_indexes', help='GPW main indexes')
 #     subparser.set_defaults( func=grab_simple_template( GpwMainIndexesData ) )
-#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+#     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 #
 #     subparser = subparsers.add_parser('gpw_macro_indexes', help='GPW macro indexes')
 #     subparser.set_defaults( func=grab_simple_template( GpwMacroIndexesData ) )
-#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+#     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 #
 #     subparser = subparsers.add_parser('gpw_sectors_indexes', help='GPW sectors indexes')
 #     subparser.set_defaults( func=grab_simple_template( GpwSectorsIndexesData ) )
-#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+#     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+#     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
     subparser = subparsers.add_parser('gpw_isin_data', help='GPW ISIN data')
     subparser.set_defaults( func=grab_simple_template( GpwIsinMapData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('gpw_stock_indicators', help='GPW stock indicators')
     subparser.set_defaults( func=grab_simple_template( GpwIndicatorsData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('gpw_espi', help='GPW ESPI')
     subparser.set_defaults( func=grab_simple_template( GpwESPIData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
     subparser = subparsers.add_parser('gpw_curr_stock_intra', help='GPW current intraday stock data')
     subparser.set_defaults( func=grab_isin_template( GpwCurrentStockIntradayData ) )
     subparser.add_argument( '--isin', action='store', required=True, default="", help="ISIN" )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('gpw_curr_index_intra', help='GPW current intraday index data')
     subparser.set_defaults( func=grab_isin_template( GpwCurrentIndexIntradayData ) )
     subparser.add_argument( '--isin', action='store', required=True, default="", help="ISIN" )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
     subparser = subparsers.add_parser('gpw_archive_data', help='GPW archive data')
     subparser.set_defaults( func=grab_date_template( GpwArchiveData ) )
     subparser.add_argument( '-d', '--date', action='store', required=True, default="", help="Archive date" )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
     subparser = subparsers.add_parser('div_cal', help='Dividends calendar')
     subparser.set_defaults( func=grab_simple_template( DividendsCalendarData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
     subparser = subparsers.add_parser('fin_reps_cal', help='Financial reports calendar')
     subparser.set_defaults( func=grab_simple_template( FinRepsCalendarData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('pub_fin_reps_cal', help='Published financial reports calendar')
     subparser.set_defaults( func=grab_simple_template( PublishedFinRepsCalendarData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
     subparser = subparsers.add_parser('global_indexes', help='Global indexes')
     subparser.set_defaults( func=grab_simple_template( GlobalIndexesData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
     subparser = subparsers.add_parser('metastock_intraday', help='MetaStock intraday data')
     subparser.set_defaults( func=grab_date_template( MetaStockIntradayData ) )
     subparser.add_argument( '-d', '--date', action='store', required=True, default="", help="Archive date" )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
     subparser = subparsers.add_parser('curr_short_sell', help='Current short sellings')
     subparser.set_defaults( func=grab_simple_template( CurrentShortSellingsData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('hist_short_sell', help='History short sellings')
     subparser.set_defaults( func=grab_simple_template( HistoryShortSellingsData ) )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output CSV/XLSX file path" )
+    subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     ## =================================================
 
