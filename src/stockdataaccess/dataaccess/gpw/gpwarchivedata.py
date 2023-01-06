@@ -54,7 +54,9 @@ class GpwArchiveData( BaseWorksheetData ):
                 self.day = datetime.datetime.now().date()
 
         def getDataPath(self):
-            return TMP_DIR + "data/gpw/arch/" + self.day.strftime("%Y-%m-%d") + ".xls"
+            date_year = self.day.year
+            date_str  = self.day.strftime("%Y-%m-%d")
+            return f"{TMP_DIR}data/gpw/arch/{date_year}/{date_str}.xls"
 
         ## override
         def downloadData(self, filePath):
