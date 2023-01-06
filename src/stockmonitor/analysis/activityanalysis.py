@@ -318,7 +318,8 @@ class ActivityAnalysis:
 
         if self.forceRecalc is False:
             dateString = currDate.isoformat()
-            picklePath = f"{TMP_DIR}data/activity/{dateString}.pickle"
+            date_year  = currDate.year
+            picklePath = f"{TMP_DIR}data/activity/{date_year}/{dateString}.pickle"
             dataPair = persist.load_object_simple( picklePath, None, silent=True )
             if dataPair is None or len(dataPair[0]) < 1:
 #                 _LOGGER.debug( "no precalculated data found -- precalculating [%s]", picklePath )

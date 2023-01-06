@@ -68,7 +68,8 @@ class MetaStockIntradayData( BaseWorksheetData ):
 
         def getDataPath(self):
             dateString = self.dataDate.isoformat()
-            return f"{TMP_DIR}data/bossa/intraday/{dateString}.prn"
+            year       = self.dataDate.year
+            return f"{TMP_DIR}data/bossa/intraday/{year}/{dateString}.prn"
 
         ## override
         def downloadData(self, filePath):
