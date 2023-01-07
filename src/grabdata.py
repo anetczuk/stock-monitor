@@ -25,8 +25,8 @@
 
 import os
 import logging
-import argparse
 import datetime
+import argparse
 
 from pandas.core.frame import DataFrame
 
@@ -234,7 +234,7 @@ def main():
     parser = argparse.ArgumentParser(description='stock data grabber')
     parser.add_argument( '-la', '--logall', action='store_true', help='Log all messages' )
 
-    subparsers = parser.add_subparsers( help='data providers' )
+    subparsers = parser.add_subparsers( help='data providers', description="select one of subcommands", dest='subcommand', required=True )
 
     ## =================================================
 
@@ -349,6 +349,11 @@ def main():
     ## =================================================
 
     args = parser.parse_args()
+
+#     if args.subcommand is None:
+#         parser.print_usage()
+#         print( "subcommand required" )
+#         return
 
     logging.basicConfig()
     if args.logall is True:
