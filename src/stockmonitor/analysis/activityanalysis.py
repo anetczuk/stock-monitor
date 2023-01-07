@@ -225,17 +225,14 @@ class ActivityAnalysis:
                 _LOGGER.warning( "invalid data '%s' and '%s'", maxVal, currVal )
                 raise
 
-            potVal    = raiseVal / maxVal
             stockDiff = maxVal - minVal
             relVal = 0.0
             if stockDiff != 0:
                 relVal = raiseVal / stockDiff
             potRaise = (maxVal / currVal - 1.0) * 100.0
-            potVal   = round( potVal, 4 )
             relVal   = round( relVal, 4 )
             potRaise = round( potRaise, 2 )
 
-            dataSubdict["potential"]   = potVal
             dataSubdict["relative"]    = relVal
             dataSubdict["pot raise %"] = potRaise
 
@@ -262,7 +259,6 @@ class ActivityAnalysis:
         headerList = []
         headerList.append( ["analysis period:", dates_to_string( [fromDay, toDay] ) ] )
         headerList.append( ["reference value date:", str( refValueDate ) ] )
-        headerList.append( ["potential:", "(max - ref) / max"] )
         headerList.append( ["relative:",  "(max - ref) / (max - min)"] )
         headerList.append( ["pot raise[%]:",  "(max / ref - 1.0) * 100%"] )
         headerList.append( ["price activity:", ("count( local_max - local_min > threshold )") ] )
@@ -307,7 +303,6 @@ class ActivityAnalysis:
 
             dataSubdict[ "trading/day [kPLN]" ] = 0.0                     ## placeholder for further calc
 
-            dataSubdict["potential"]   = precalcSubdict["potential"]
             dataSubdict["relative"]    = precalcSubdict["relative"]
             dataSubdict["pot raise %"] = precalcSubdict["pot raise %"]
 
@@ -376,7 +371,6 @@ class ActivityAnalysis:
             calcRet = VarCalc.calcSum( tradingColumn )
             dataSubdict["trading [kPLN]"] = calcRet                              ## trading
 
-            dataSubdict["potential"]   = 0.0
             dataSubdict["relative"]    = 0.0
             dataSubdict["pot raise %"] = 0.0
 
