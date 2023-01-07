@@ -201,8 +201,9 @@ class ActivityAnalysis:
             _LOGGER.debug( "calculating results for %s", day_data )
             self.calculateActivityForDay( day_stock_list, day_stats_dict, thresholdPercent, overall_stats )
 
-        day_delta = toDay - fromDay
-        days_num  = day_delta.days + 1
+        days_num = len( precalc_data_list )
+#         day_delta = toDay - fromDay
+#         days_num  = day_delta.days + 1
 
         namesSet = overall_stats.keys()
         for name in namesSet:
