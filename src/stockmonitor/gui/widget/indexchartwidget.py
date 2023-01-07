@@ -110,7 +110,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.setEnabled( False )
 
-        ThreadingListType = threadlist.get_threading_list()
+        ThreadingListType = threadlist.get_threading_list_class()
         threads = ThreadingListType( self )
         threads.finished.connect( self._updateView )
         threads.deleteOnFinish()

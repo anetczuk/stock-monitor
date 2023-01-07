@@ -240,7 +240,7 @@ class SerialList( AbstractWorkerList ):
 ## ========================================================
 
 
-def get_threading_list():
+def get_threading_list_class():
     """Return threading list class (factory function)."""
     return ThreadPoolList
 #     return SerialList

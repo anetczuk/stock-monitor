@@ -371,7 +371,7 @@ class DataObject( QObject ):
         return self.dataContainer.refreshAllList( forceRefresh )
 
     def refreshStockData(self, forceRefresh=True):
-        ThreadingListType = threadlist.get_threading_list()
+        ThreadingListType = threadlist.get_threading_list_class()
         threads = ThreadingListType( self )
         threads.finished.connect( self.stockDataChanged )
         threads.deleteOnFinish()
@@ -386,7 +386,7 @@ class DataObject( QObject ):
         threads.start()
 
     def refreshAllData(self, forceRefresh=True):
-        ThreadingListType = threadlist.get_threading_list()
+        ThreadingListType = threadlist.get_threading_list_class()
         threads = ThreadingListType( self )
         threads.finished.connect( self.stockDataChanged )
         threads.deleteOnFinish()

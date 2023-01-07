@@ -365,7 +365,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         if activeTimer:
             self.tickTimer.stop()
 
-        ThreadingListType = threadlist.get_threading_list()
+        ThreadingListType = threadlist.get_threading_list_class()
         threads = ThreadingListType( self, False )
         if activeTimer:
             threads.finished.connect( self.tickTimer.start, QtCore.Qt.QueuedConnection )
