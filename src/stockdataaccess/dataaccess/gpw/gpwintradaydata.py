@@ -125,6 +125,13 @@ class GpwCurrentStockIntradayData( BaseWorksheetData ):
                         dataFrame = dataFrame.append( lastRow )
                         dataFrame.reset_index( drop=True, inplace=True )
 
+                ## chart data have bug: if volume is equal to 0 then open value ("o" col) is equal to 0
+                ## those cases need to be fixed by cpying value from "c" col
+                for index, row in dataFrame.iterrows():
+                    open_price = row['o']
+                    if open_price == 0.0:
+                        dataFrame.at[ index, 'o' ] = row['c']
+
                 return dataFrame
 
             return None

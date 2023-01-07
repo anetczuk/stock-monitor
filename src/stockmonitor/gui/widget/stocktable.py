@@ -52,7 +52,7 @@ class StockTable( DataFrameTable ):
     def __init__(self, parentWidget=None):
         super().__init__(parentWidget)
         self.setObjectName("stocktable")
-        self.dataObject = None
+        self.dataObject: DataObject = None
 
     def connectData(self, dataObject):
         self.dataObject = dataObject

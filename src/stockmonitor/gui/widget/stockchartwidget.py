@@ -95,7 +95,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.chartTypeCB.currentIndexChanged.connect( self._changeChartType )
 
     def connectData(self, dataObject: DataObject, ticker):
-        self.dataObject = dataObject
+        self.dataObject: DataObject = dataObject
         self.ticker     = ticker
         self.dataObject.stockDataChanged.connect( self.updateData )
 #         self.updateData( False )
@@ -521,7 +521,7 @@ def set_end_row( dataFrame, maxTime ):
 ## ==================================================================
 
 
-def create_window( dataObject, ticker, parent=None ):
+def create_window( dataObject: DataObject, ticker, parent=None ):
     chartWindow = ChartAppWindow( parent )
     chart = StockChartWidget( chartWindow )
     chartWindow.addWidget( chart )
