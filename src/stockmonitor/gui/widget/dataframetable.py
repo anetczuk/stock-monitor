@@ -222,7 +222,7 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
     def connectTable( self, parentTable: 'DataFrameTable' ):
         self.parentTable = parentTable
 
-        model = self.parentTable.model()
+        model: DFProxyModel = self.parentTable.model()
         self.oldState = model.filterState()                                     # type: ignore
 
         self.updateColumnsCombo()
@@ -241,14 +241,14 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
         self.adjustSize()
 
     def updateColumnsCombo(self):
-        tableModel = self.parentTable.model()
-        keyColumn = tableModel.filterKeyColumn()
+        model: DFProxyModel = self.parentTable.model()
+        keyColumn = model.filterKeyColumn()
         newIndex = 0
         self.ui.columnCB.clear()
         self.ui.columnCB.addItem( "No filtering", -1 )
-        colsNum = tableModel.columnCount()
+        colsNum = model.columnCount()
         for col in range(colsNum):
-            text = tableModel.headerData(col, QtCore.Qt.Horizontal)
+            text = model.headerData(col, QtCore.Qt.Horizontal)
             if col == keyColumn:
                 newIndex = self.ui.columnCB.count()
             if self.parentTable.isColumnHidden(col) is False:
@@ -265,7 +265,7 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
         self.updateFilter()
 
     def updateFilter(self):
-        model = self.parentTable.model()
+        model: DFProxyModel = self.parentTable.model()
 
         columnCBIndex = self.ui.columnCB.currentIndex()
         columnIndex = self.ui.columnCB.itemData( columnCBIndex )
@@ -287,7 +287,8 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
         pass
 
     def settingsRejected(self):
-        self.parentTable.model().setFilterState( self.oldState )
+        model: DFProxyModel = self.parentTable.model()
+        model.setFilterState( self.oldState )
 
 
 ## =========================================================
@@ -444,6 +445,17 @@ class DFProxyModel( QtCore.QSortFilterProxyModel ):
             return False
 
         try:
+            leftNum  = float( leftData )
+            rightNum = float( rightData )
+            return leftNum < rightNum
+        except TypeError:
+            ## unable to compare numbers -- falling back to numbers
+            pass
+        except ValueError:
+            ## unable to compare numbers -- falling back to numbers
+            pass
+
+        try:
             return leftData < rightData
         except TypeError:
             _LOGGER.warning( "unable to sort types: %s %s data: >%s< >%s<", type(leftData), type(rightData), leftData, rightData )
@@ -527,7 +539,7 @@ class DataFrameTable( QTableView ):
 
         self.verticalHeader().hide()
 
-        proxyModel = DFProxyModel(self)
+        proxyModel: DFProxyModel = DFProxyModel(self)
         self.setModel( proxyModel )
         pandaModel = DataFrameTableModel( None )
         self.setSourceModel( pandaModel )
@@ -540,11 +552,11 @@ class DataFrameTable( QTableView ):
 
     def setSourceModel( self, model: DataFrameTableModel ):
         self.pandaModel = model
-        proxyModel = self.model()
+        proxyModel: DFProxyModel = self.model()
         proxyModel.setSourceModel( self.pandaModel )
 
     def addProxyModel(self, nextProxyModel):
-        sinkModel   = self.model()
+        sinkModel: DFProxyModel = self.model()
         sourceModel = sinkModel.sourceModel()
         nextProxyModel.setSourceModel( sourceModel )
         sinkModel.setSourceModel( nextProxyModel )
