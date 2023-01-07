@@ -373,7 +373,7 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
     def getCurrentDataSource(self) -> GpwCurrentStockData:
         return self.dataObject.gpwCurrentData
 
-    def deleteData(self):
+    def closeChart(self):
         if not self.dataObject:
             return
         for ticker_pair in self.tickerList:
@@ -412,7 +412,7 @@ def create_window( dataObject, tickerList, parent=None ):
     chart = StockMosaicWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
-    chartWindow.windowClosed.connect( chart.deleteData )
+    chartWindow.windowClosed.connect( chart.closeChart )
 
     chart.connectData( dataObject, tickerList )
 

@@ -378,7 +378,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
     def getCurrentDataSource(self) -> GpwCurrentStockData:
         return self.dataObject.gpwCurrentData
 
-    def deleteData(self):
+    def closeChart(self):
         if self.dataObject:
             isin = self.dataObject.getStockIsinFromTicker( self.ticker )
             dataMap: GpwStockIntradayMap = self.dataObject.gpwStockIntradayData
@@ -526,7 +526,7 @@ def create_window( dataObject: DataObject, ticker, parent=None ):
     chart = StockChartWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
-    chartWindow.windowClosed.connect( chart.deleteData )
+    chartWindow.windowClosed.connect( chart.closeChart )
 
     chart.connectData(dataObject, ticker)
 

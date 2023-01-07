@@ -336,7 +336,7 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
     def getCurrentDataSource(self) -> GpwCurrentIndexesData:
         return self.dataObject.gpwIndexesData
 
-    def deleteData(self):
+    def closeChart(self):
         if self.dataObject:
             dataMap: GpwIndexIntradayMap = self.dataObject.gpwIndexIntradayData
             dataMap.deleteData( self.isin )
@@ -347,7 +347,7 @@ def create_window( dataObject, isin, parent=None ):
     chart = IndexChartWidget( chartWindow )
     chartWindow.addWidget( chart )
     chartWindow.refreshAction.triggered.connect( chart.refreshData )
-    chartWindow.windowClosed.connect( chart.deleteData )
+    chartWindow.windowClosed.connect( chart.closeChart )
 
     chart.connectData(dataObject, isin)
 
