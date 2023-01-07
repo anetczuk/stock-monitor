@@ -104,7 +104,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
         analysis = ActivityAnalysis( dataProvider )
         today = datetime.datetime.now().date()
         self.recentOutput = TMP_DIR + "out/output_activity.csv"
-        resultData = analysis.calcActivity( today, today, thresh, self.recentOutput, True )
+        resultData: pandas.DataFrame = analysis.calcActivity( today, today, thresh, self.recentOutput, True )
 
         self.ui.dataTable.setData( resultData )
 
@@ -134,7 +134,7 @@ class ActivityWidget(QtBaseClass):           # type: ignore
 
         analysis = ActivityAnalysis( dataProvider )
         self.recentOutput = TMP_DIR + "out/output_activity.csv"
-        resultData = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )
+        resultData: pandas.DataFrame = analysis.calcActivity( fromDate, toDate, thresh, self.recentOutput )
 
         self.ui.dataTable.setData( resultData )
 

@@ -336,7 +336,7 @@ class StatsDict():
         for fieldsDict in self.dataDict.values():
             fieldsDict.divFields( value )
 
-    def generateDataFrame( self, namesSet ):
+    def generateDataFrame( self, namesSet ) -> pandas.DataFrame:
         nameValues = self.dataDict.values()
         if not nameValues:
             # empty

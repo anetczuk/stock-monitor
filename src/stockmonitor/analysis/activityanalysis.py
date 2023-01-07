@@ -172,39 +172,41 @@ class ActivityAnalysis:
 
     # pylint: disable=R0914
     def calcActivity( self, fromDay: datetime.date, toDay: datetime.date, thresholdPercent,
-                      outFilePath=None, forceRecalc=False ):
+                      outFilePath=None, forceRecalc=False ) -> pandas.DataFrame:
         _LOGGER.debug( "Calculating stock activity in range: %s %s", fromDay, toDay )
 
         self.forceRecalc = forceRecalc
 
-        dataDicts           = StatsDict()
+        overall_stats       = StatsDict()
         isinDict            = self.getISINForDate( toDay )
         self.isinItems      = isinDict.items()
         self.thresholdPrcnt = thresholdPercent
 
         # === load precalculated data ===
 
-        dataPairList = []
+        precalc_data_list = []
         currDate = fromDay
         currDate -= datetime.timedelta(days=1)
         while currDate < toDay:
             currDate += datetime.timedelta(days=1)
             dataTuple  = self.getPrecalcData( currDate )
-            dataPairList.append( dataTuple )
+            precalc_data_list.append( dataTuple )
 
         # === calculate activity ===
 
-        for dataTuple in dataPairList:
-            _LOGGER.debug( "calculating results for %s", dataTuple[2] )
-            dataframeList = dataTuple[0]
-            subDict       = dataTuple[1]
-            self.calculateActivityForDay( dataframeList, subDict, thresholdPercent, dataDicts )
+        for precalc_day_data in precalc_data_list:
+            day_data                  = precalc_day_data[2]
+            day_stock_list            = precalc_day_data[0]
+            day_stats_dict: StatsDict = precalc_day_data[1]
+            _LOGGER.debug( "calculating results for %s", day_data )
+            self.calculateActivityForDay( day_stock_list, day_stats_dict, thresholdPercent, overall_stats )
 
-        days_num = len( dataPairList )
+        day_delta = toDay - fromDay
+        days_num  = day_delta.days + 1
 
-        namesSet = dataDicts.keys()
+        namesSet = overall_stats.keys()
         for name in namesSet:
-            dataSubdict = dataDicts[ name ]
+            dataSubdict = overall_stats[ name ]
             minVal      = dataSubdict["min price"]
             maxVal      = dataSubdict["max price"]
             currVal     = dataSubdict["ref price"]
@@ -267,7 +269,7 @@ class ActivityAnalysis:
         headerList.append( ["price change deviation:", ("price_change.stddev * len( price_change )") ] )
         headerList.append( [] )
 
-        retDataFrame = dataDicts.generateDataFrame( namesSet )
+        retDataFrame: pandas.DataFrame = overall_stats.generateDataFrame( namesSet )
 
         write_to_csv( file, headerList, retDataFrame )
 
@@ -275,8 +277,8 @@ class ActivityAnalysis:
 
         return retDataFrame
 
-    def calculateActivityForDay(self, dataframeList, subDict, thresholdPercent, dataDicts):
-        for dataFrame in dataframeList:
+    def calculateActivityForDay( self, day_stock_list, stats_dict: StatsDict, thresholdPercent, result_stats: StatsDict ):
+        for dataFrame in day_stock_list:
             if dataFrame is None:
                 continue
             nameColumn = dataFrame['name']
@@ -289,8 +291,8 @@ class ActivityAnalysis:
                 ## no data -- skip
                 continue
 
-            dataSubdict    = dataDicts[ name ]
-            precalcSubdict = subDict[ name ]
+            dataSubdict    = result_stats[ name ]
+            precalcSubdict = stats_dict[ name ]
 
             minValue = precalcSubdict["min price"]
             dataSubdict.minValue( "min price", minValue )                                  ## min value
@@ -303,7 +305,7 @@ class ActivityAnalysis:
             calcRet = precalcSubdict["trading [kPLN]"]
             dataSubdict.add( "trading [kPLN]", calcRet )                                   ## trading
 
-            dataSubdict.add( "trading/day [kPLN]", 0.0 )                    ## placeholder for further calc
+            dataSubdict[ "trading/day [kPLN]" ] = 0.0                     ## placeholder for further calc
 
             dataSubdict["potential"]   = precalcSubdict["potential"]
             dataSubdict["relative"]    = precalcSubdict["relative"]
@@ -318,34 +320,33 @@ class ActivityAnalysis:
             calcRet = precalcSubdict["price change deviation"]
             dataSubdict.add( "price change deviation", calcRet )                      ## price change deviation
 
-    ### returns ( dataframe_list, subdict_data, date )
+    ### returns ( dataframe_list, stats_dict, date )
     def getPrecalcData(self, currDate):
 #         _LOGGER.debug( "loading data for: %s", currDate )
 
+        date_year  = currDate.year
+        dateString = currDate.isoformat()
+        picklePath = f"{TMP_DIR}data/activity/{date_year}/{dateString}.pickle"
+
+        dataPair = None
         if self.forceRecalc is False:
-            dateString = currDate.isoformat()
-            date_year  = currDate.year
-            picklePath = f"{TMP_DIR}data/activity/{date_year}/{dateString}.pickle"
             dataPair = persist.load_object_simple( picklePath, None, silent=True )
-            if dataPair is None or len(dataPair[0]) < 1:
+
+        if dataPair is None or len(dataPair[0]) < 1:
+            ## happens in two cases: loaded cache data is invalid or self.forceRecalc is True
 #                 _LOGGER.debug( "no precalculated data found -- precalculating [%s]", picklePath )
-                dataPair = self.precalculateData( currDate )
-#                 dataframeList = dataPair[0]
-#                 if len( dataframeList ) > 0:
-#                     persist.store_object_simple(dataPair, picklePath)
-                persist.store_object_simple(dataPair, picklePath)
-        else:
             dataPair = self.precalculateData( currDate )
+            persist.store_object_simple(dataPair, picklePath)
 
         return list( dataPair ) + [ currDate ]
 
     ## returns: ( List[DataFrame], Dict )
     def precalculateData(self, currDate):
-        dataframeList = self._loadData( currDate )
+        day_stock_list = self._loadData( currDate )
 
-        dataDicts = StatsDict()
+        stats_dict = StatsDict()
 
-        for dataFrame in dataframeList:
+        for dataFrame in day_stock_list:
             if dataFrame is None:
                 continue
             nameColumn = dataFrame['name']
@@ -358,7 +359,7 @@ class ActivityAnalysis:
                 ## no data -- skip
                 continue
 
-            dataSubdict = dataDicts[ name ]
+            dataSubdict = stats_dict[ name ]
 
             minValue = priceColumn.min()
             if math.isnan( minValue ) is False:
@@ -388,7 +389,7 @@ class ActivityAnalysis:
                 calcRet = 0.0
             dataSubdict["price change deviation"] = calcRet                      ## price change deviation
 
-        return ( dataframeList, dataDicts )
+        return ( day_stock_list, stats_dict )
 
     def _loadData(self, currDate):
         self.dataProvider.setDate( currDate )
