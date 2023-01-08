@@ -44,22 +44,29 @@ class ThreadingList():
     def __init__(self):
         self.threads = []
 
-    def append(self, thread: threading.Thread, startThread=False):
-        if startThread:
+#     def append(self, thread: threading.Thread, startThread=False):
+#         if startThread:
+#             thread.start()
+#         self.threads.append( thread )
+
+    def start(self, call_list):
+        threads_list = []
+        for call_pair in call_list:
+            func, args = call_pair
+            thread = self._appendFunction( func, args )
+            threads_list.append( thread )
+
+        for thread in threads_list:    
             thread.start()
-        self.threads.append( thread )
-
-    def appendFunction(self, function, args=None, startThread=False):
-        thread = threading.Thread( target=function, args=args )
-        self.append( thread, startThread )
-
-    def start(self):
-        for thr in self.threads:
-            thr.start()
 
     def join(self):
         for thr in self.threads:
             thr.join()
+
+    def _appendFunction(self, function, args=None, startThread=False):
+        thread = threading.Thread( target=function, args=args )
+        self.append( thread, startThread )
+        return thread
 
 
 ## ============================================================
@@ -115,6 +122,7 @@ class AbstractWorkerList( QtCore.QObject ):
         self.finishCounter = 0
         self.startTime = None
         self.logging = logs
+        self._stopped = False
 
     @abc.abstractmethod
     def workersNum(self):
@@ -123,6 +131,10 @@ class AbstractWorkerList( QtCore.QObject ):
     @abc.abstractmethod
     def start(self):
         raise NotImplementedError('You need to define this method in derived class!')
+
+    def stopExecution(self):
+        with self.workersMutex:
+            self._stopped = True
 
     def _workerFinished(self):
         with self.workersMutex:
@@ -136,6 +148,10 @@ class AbstractWorkerList( QtCore.QObject ):
                 self._computingFinished()
 
     def _computingFinished(self):
+        if self._stopped:
+            _LOGGER.info( "threads execution stopped, 'finish' signal blocked" )
+            return
+
         if self.logging:
             endTime  = datetime.datetime.now()
             diffTime = endTime - self.startTime
@@ -178,27 +194,34 @@ class ThreadPoolList( AbstractWorkerList ):
         self.finished.connect( self.deleteLater )
 #         self.finished.connect( self.deleteLater, Qt.QueuedConnection )
 
-    def appendFunction(self, function, args=None):
-        command = CommandObject( function, args )
-        worker = ThreadPoolList.Worker( command, self )
-        self._workers.append( worker )
-
     def workersNum(self):
         return len( self._workers )
 
-    def start(self):
+    def start(self, call_list):
         if self.logging:
             _LOGGER.info( "starting workers" )
             self.startTime = datetime.datetime.now()
-        for worker in self._workers:
+
+        workers_list = []
+        for call_pair in call_list:
+            func, args = call_pair
+            worker = self._appendFunction( func, args )
+            workers_list.append( worker )
+
+        for worker in workers_list:
             self.pool.start( worker )
+
+    def _appendFunction(self, function, args=None):
+        command = CommandObject( function, args )
+        worker = ThreadPoolList.Worker( command, self )
+        self._workers.append( worker )
+        return worker
 
     @staticmethod
     def calculate( parent, function, args=None ):
         pool = ThreadPoolList( parent )
         pool.deleteOnFinish()
-        pool.appendFunction( function, args )
-        pool.start()
+        pool.start( [function, args] )
 
 
 ## ====================================================================
@@ -216,16 +239,18 @@ class SerialList( AbstractWorkerList ):
     def workersNum(self):
         return len( self._commands )
 
-    def appendFunction(self, function, args=None):
-        command = CommandObject( function, args )
-        self._commands.append( command )
-
-    def start(self):
+    def start(self, call_list):
         if self.logging:
             _LOGGER.info( "starting workers" )
             self.startTime = datetime.datetime.now()
 
-        for command in self._commands:
+        commands_list = []
+        for call_pair in call_list:
+            func, args = call_pair
+            command = self._appendFunction( func, args )
+            commands_list.append( command )
+
+        for command in commands_list:
             try:
                 command.execute()
             # pylint: disable=W0703
@@ -235,6 +260,11 @@ class SerialList( AbstractWorkerList ):
                 if self.logging:
                     _LOGGER.info( "work finished" )
                 self._workerFinished()
+
+    def _appendFunction(self, function, args=None):
+        command = CommandObject( function, args )
+        self._commands.append( command )
+        return command
 
 
 ## ========================================================

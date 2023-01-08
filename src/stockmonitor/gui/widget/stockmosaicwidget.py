@@ -91,6 +91,11 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
         self.ui.sortPlotsCB.currentIndexChanged.connect( self._sortPlotsChanged )
 
+        ThreadingListType = threadlist.get_threading_list_class()
+        self.threads = ThreadingListType( self )
+        self.threads.finished.connect( self._sortPlots )
+        # self.threads.deleteOnFinish()
+
     def connectData(self, dataObject: DataObject, tickerList):
         self.dataObject = dataObject
         self.tickerList = list( tickerList )
@@ -138,18 +143,16 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.setEnabled( False )
 
-        ThreadingListType = threadlist.get_threading_list_class()
-        threads = ThreadingListType( self )
-        threads.finished.connect( self._sortPlots )
-        threads.deleteOnFinish()
-
+        call_list = []
         for source in dataSources:
             if access is False:
-                threads.appendFunction( source.getWorksheetData, [forceRefresh] )
+                call_list.append( [ source.getWorksheetData, [forceRefresh] ] )
+                # self.threads.appendFunction( source.getWorksheetData, [forceRefresh] )
             else:
-                threads.appendFunction( source.accessWorksheetData, [forceRefresh] )
+                call_list.append( [ source.accessWorksheetData, [forceRefresh] ] )
+                # self.threads.appendFunction( source.accessWorksheetData, [forceRefresh] )
 
-        threads.start()
+        self.threads.start( call_list )
 
     def _sortPlotsChanged(self):
         self._sortPlots( True )
@@ -374,6 +377,9 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
         return self.dataObject.gpwCurrentData
 
     def closeChart(self):
+        ## prevent segfault (calling C++ released object)
+        self.threads.stopExecution()
+
         if not self.dataObject:
             return
         for ticker_pair in self.tickerList:

@@ -77,6 +77,11 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
         self.ui.chartTypeCB.currentIndexChanged.connect( self._changeChartType )
 
+        ThreadingListType = threadlist.get_threading_list_class()
+        self.threads = ThreadingListType( self )
+        self.threads.finished.connect( self._updateView )
+        # self.threads.deleteOnFinish()
+
     def connectData(self, dataObject: DataObject, isin):
         self.dataObject = dataObject
         self.isin       = isin
@@ -110,18 +115,16 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.setEnabled( False )
 
-        ThreadingListType = threadlist.get_threading_list_class()
-        threads = ThreadingListType( self )
-        threads.finished.connect( self._updateView )
-        threads.deleteOnFinish()
-
+        call_list = []
         for source in dataSources:
             if access is False:
-                threads.appendFunction( source.getWorksheetData, [forceRefresh] )
+                call_list.append( [ source.getWorksheetData, [forceRefresh] ] )
+                # self.threads.appendFunction( source.getWorksheetData, [forceRefresh] )
             else:
-                threads.appendFunction( source.accessWorksheetData, [forceRefresh] )
+                call_list.append( [ source.accessWorksheetData, [forceRefresh] ] )
+                # self.threads.appendFunction( source.accessWorksheetData, [forceRefresh] )
 
-        threads.start()
+        self.threads.start( call_list )
 
     def _changeChartType(self):
         typeText = self.ui.chartTypeCB.currentText()
@@ -337,6 +340,9 @@ class IndexChartWidget(QtBaseClass):                    # type: ignore
         return self.dataObject.gpwIndexesData
 
     def closeChart(self):
+        ## prevent segfault (calling C++ released object)
+        self.threads.stopExecution()
+
         if self.dataObject:
             dataMap: GpwIndexIntradayMap = self.dataObject.gpwIndexIntradayData
             dataMap.deleteData( self.isin )

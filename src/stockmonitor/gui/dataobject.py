@@ -376,14 +376,8 @@ class DataObject( QObject ):
         threads.finished.connect( self.stockDataChanged )
         threads.deleteOnFinish()
 
-#         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
-#         threads.appendFunction( heavy_comp, [300000] )
-
         stockList = self.refreshStockList( forceRefresh )
-        for func, args in stockList:
-            threads.appendFunction( func, args )
-
-        threads.start()
+        threads.start( stockList )
 
     def refreshAllData(self, forceRefresh=True):
         ThreadingListType = threadlist.get_threading_list_class()
@@ -391,14 +385,8 @@ class DataObject( QObject ):
         threads.finished.connect( self.stockDataChanged )
         threads.deleteOnFinish()
 
-#         threads.appendFunction( QtCore.QThread.msleep, args=[30*1000] )
-#         threads.appendFunction( heavy_comp, [300000] )
-
         stockList = self.refreshAllList( forceRefresh )
-        for func, args in stockList:
-            threads.appendFunction( func, args )
-
-        threads.start()
+        threads.start( stockList )
 
 #     def dataAllProvidersList(self) -> List[ StockDataProvider ]:
 #         return self.dataContainer.dataAllProvidersList()

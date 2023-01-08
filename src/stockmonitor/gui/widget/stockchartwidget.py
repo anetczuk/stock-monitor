@@ -22,6 +22,7 @@
 #
 
 import logging
+import datetime
 
 from typing import Dict, List
 
@@ -44,7 +45,6 @@ from stockmonitor.gui.widget.mpl import candlestickchart
 from .. import uiloader
 
 from .mpl.mpltoolbar import NavigationToolbar
-import datetime
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -93,6 +93,11 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
         self.ui.chartTypeCB.currentIndexChanged.connect( self._changeChartType )
+        
+        ThreadingListType = threadlist.get_threading_list_class()
+        self.threads = ThreadingListType( self )
+        self.threads.finished.connect( self._updateView )
+        # self.threads.deleteOnFinish()
 
     def connectData(self, dataObject: DataObject, ticker):
         self.dataObject: DataObject = dataObject
@@ -127,18 +132,16 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.setEnabled( False )
 
-        ThreadingListType = threadlist.get_threading_list_class()
-        threads = ThreadingListType( self )
-        threads.finished.connect( self._updateView )
-        threads.deleteOnFinish()
-
+        call_list = []
         for source in dataSources:
             if access is False:
-                threads.appendFunction( source.getWorksheetData, [forceRefresh] )
+                call_list.append( [ source.getWorksheetData, [forceRefresh] ] )
+                # self.threads.appendFunction( source.getWorksheetData, [forceRefresh] )
             else:
-                threads.appendFunction( source.accessWorksheetData, [forceRefresh] )
+                call_list.append( [ source.accessWorksheetData, [forceRefresh] ] )
+                # self.threads.appendFunction( source.accessWorksheetData, [forceRefresh] )
 
-        threads.start()
+        self.threads.start( call_list )
 
     # pylint: disable=R0914
     def _updateView(self):
@@ -379,6 +382,9 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         return self.dataObject.gpwCurrentData
 
     def closeChart(self):
+        ## prevent segfault (calling C++ released object)
+        self.threads.stopExecution()
+
         if self.dataObject:
             isin = self.dataObject.getStockIsinFromTicker( self.ticker )
             dataMap: GpwStockIntradayMap = self.dataObject.gpwStockIntradayData
@@ -431,6 +437,7 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
             self._updateTimerId = self.startTimer( 500 )
         super().resizeEvent( event )
 
+    ## called after triggering timer by "startTimer()" on object
     def timerEvent( self, event ):
         self.killTimer( event.timerId() )
         self._updateTimerId = 0

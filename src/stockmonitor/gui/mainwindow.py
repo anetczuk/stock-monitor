@@ -371,9 +371,11 @@ class MainWindow( QtBaseClass ):           # type: ignore
             threads.finished.connect( self.tickTimer.start, QtCore.Qt.QueuedConnection )
         threads.deleteOnFinish()
 
-        threads.appendFunction( self._handleTrayIndicatorUpdate, [forceRefresh] )
+        call_list = []
+        call_list.append( [ self._handleTrayIndicatorUpdate, [forceRefresh] ] )
+        # threads.appendFunction( self._handleTrayIndicatorUpdate, [forceRefresh] )
 
-        threads.start()
+        threads.start( call_list )
 
     def canDisplayIndicator(self):
         currDateTime = datetime.datetime.now()

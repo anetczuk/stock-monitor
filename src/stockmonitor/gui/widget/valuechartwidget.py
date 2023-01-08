@@ -72,6 +72,11 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
         ## fix fitting figure to widget
         self.ui.dataChart.setTightAuto()
 
+        ThreadingListType = threadlist.get_threading_list_class()
+        self.threads = ThreadingListType( self )
+        self.threads.finished.connect( self._updateView )
+        # self.threads.deleteOnFinish()
+
     def setXLabel(self, xLabel):
         self.ui.dataChart.setXLabel( xLabel )
 
@@ -98,15 +103,12 @@ class ValueChartWidget(QtBaseClass):                    # type: ignore
 
         self.ui.refreshPB.setEnabled( False )
 
-        ThreadingListType = threadlist.get_threading_list_class()
-        threads = ThreadingListType( self )
-        threads.finished.connect( self._updateView )
-        threads.deleteOnFinish()
-
+        call_list = []
         for source in dataSources:
-            threads.appendFunction( source.getWorksheetData, [forceRefresh] )
+            call_list.append( [ source.getWorksheetData, [forceRefresh] ] )
+            # self.threads.appendFunction( source.getWorksheetData, [forceRefresh] )
 
-        threads.start()
+        self.threads.start( call_list )
 
     def _updateView(self):
         rangeText = self.ui.rangeCB.currentText()
