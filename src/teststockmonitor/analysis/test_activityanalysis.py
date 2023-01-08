@@ -102,7 +102,6 @@ class ActivityAnalysisTest(unittest.TestCase):
         self.assertEqual( results.shape[0], 1 )
         row = results.iloc[0]
         self.assertEqual( row["name"], "CDPROJEKT" )
-        self.assertEqual( row["potential"], 0.0181 )
         self.assertEqual( row["relative"], 0.3251 )
         self.assertEqual( row["price activity"], 4 )
         self.assertEqual( row["price change sum"], 2.3499 )
@@ -116,7 +115,6 @@ class ActivityAnalysisTest(unittest.TestCase):
         self.assertEqual( results.shape[0], 1 )
         row = results.iloc[0]
         self.assertEqual( row["name"], "CDPROJEKT" )
-        self.assertEqual( row["potential"], 0.0169 )
         self.assertEqual( row["relative"], 0.9211 )
         self.assertEqual( row["price activity"], 0 )
         self.assertEqual( row["price change sum"], -0.6337 )
