@@ -122,11 +122,13 @@ class AbstractWorkerList( QtCore.QObject ):
         self.finishCounter = 0
         self.startTime = None
         self.logging = logs
+
+        self._workers = []
         self._stopped = False
 
-    @abc.abstractmethod
     def workersNum(self):
-        raise NotImplementedError('You need to define this method in derived class!')
+        with self.workersMutex:
+            return self._workersNum()
 
     @abc.abstractmethod
     def start(self):
@@ -136,10 +138,18 @@ class AbstractWorkerList( QtCore.QObject ):
         with self.workersMutex:
             self._stopped = True
 
+    def _workersNum(self):
+        return len( self._workers )
+
+    def _appendWorker(self, worker):
+        with self.workersMutex:
+            self._workers.append( worker )
+        return worker
+
     def _workerFinished(self):
         with self.workersMutex:
             self.finishCounter += 1
-            workersSize = self.workersNum()
+            workersSize = self._workersNum()
             if self.logging:
     #             worker = self.sender()                    ## 'self.sender()' is not reliable
                 _LOGGER.info( "worker finished %s / %s", self.finishCounter, workersSize )
@@ -148,6 +158,9 @@ class AbstractWorkerList( QtCore.QObject ):
                 self._computingFinished()
 
     def _computingFinished(self):
+        self.finishCounter = 0
+        self._workers.clear()
+
         if self._stopped:
             _LOGGER.info( "threads execution stopped, 'finish' signal blocked" )
             return
@@ -188,14 +201,10 @@ class ThreadPoolList( AbstractWorkerList ):
         super().__init__( parent, logs )
 
         self.pool = QtCore.QThreadPool.globalInstance()
-        self._workers = []
 
     def deleteOnFinish(self):
         self.finished.connect( self.deleteLater )
 #         self.finished.connect( self.deleteLater, Qt.QueuedConnection )
-
-    def workersNum(self):
-        return len( self._workers )
 
     def start(self, call_list):
         if self.logging:
@@ -205,17 +214,13 @@ class ThreadPoolList( AbstractWorkerList ):
         workers_list = []
         for call_pair in call_list:
             func, args = call_pair
-            worker = self._appendFunction( func, args )
+            command = CommandObject( func, args )
+            worker = ThreadPoolList.Worker( command, self )
+            self._appendWorker( worker )
             workers_list.append( worker )
 
         for worker in workers_list:
             self.pool.start( worker )
-
-    def _appendFunction(self, function, args=None):
-        command = CommandObject( function, args )
-        worker = ThreadPoolList.Worker( command, self )
-        self._workers.append( worker )
-        return worker
 
     @staticmethod
     def calculate( parent, function, args=None ):
@@ -234,10 +239,6 @@ class SerialList( AbstractWorkerList ):
 
     def __init__(self, parent=None, logs=True):
         super().__init__( parent, logs )
-        self._commands = []
-
-    def workersNum(self):
-        return len( self._commands )
 
     def start(self, call_list):
         if self.logging:
@@ -248,6 +249,8 @@ class SerialList( AbstractWorkerList ):
         for call_pair in call_list:
             func, args = call_pair
             command = self._appendFunction( func, args )
+            command = CommandObject( func, args )
+            self._appendWorker( command )
             commands_list.append( command )
 
         for command in commands_list:
@@ -260,11 +263,6 @@ class SerialList( AbstractWorkerList ):
                 if self.logging:
                     _LOGGER.info( "work finished" )
                 self._workerFinished()
-
-    def _appendFunction(self, function, args=None):
-        command = CommandObject( function, args )
-        self._commands.append( command )
-        return command
 
 
 ## ========================================================
