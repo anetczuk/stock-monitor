@@ -28,6 +28,8 @@ import logging
 import datetime
 import argparse
 
+from dateutil.rrule import rrule, DAILY
+
 from pandas.core.frame import DataFrame
 
 from stockdataaccess.io import read_dict
@@ -83,10 +85,37 @@ def grab_isin_template( GRABBER_CLASS ):
 def grab_date_template( GRABBER_CLASS ):
     def grab_data( args ):
         _LOGGER.debug( "executing provider: %s", GRABBER_CLASS.__name__ )
-        input_date = datetime.datetime.strptime( args.date, "%Y-%m-%d").date()
-        provider: BaseWorksheetData = GRABBER_CLASS( input_date )
+
+        if not args.date and not args.date_range:
+            _LOGGER.error( "expected required argument: --date or --date_range" )
+            return False
+
         force = args.force
-        store_provider_data2( provider, args.out_format, args.out_path, force_refresh=force )
+
+        if args.date:
+            input_date = datetime.datetime.strptime( args.date, "%Y-%m-%d").date()
+            provider: BaseWorksheetData = GRABBER_CLASS( input_date )
+            store_provider_data2( provider, args.out_format, args.out_path, force_refresh=force )
+
+        if args.date_range:
+            if not args.out_dir:
+                _LOGGER.error( "expected required argument: --out_dir" )
+                return False
+
+            os.makedirs( args.out_dir, exist_ok=True )
+
+            file_ext = "csv"
+            if args.out_format:
+                file_ext = args.out_format
+
+            start_date = args.date_range[0]
+            end_date   = args.date_range[1]
+            for dt in rrule(DAILY, dtstart=start_date, until=end_date):
+                input_date = dt.date()
+                provider: BaseWorksheetData = GRABBER_CLASS( input_date )
+                out_path = os.path.join( args.out_dir, f"{input_date}_{GRABBER_CLASS.__name__}.{file_ext}" )
+                store_provider_data2( provider, args.out_format, out_path, force_refresh=force )
+
         return True
 
     return grab_data
@@ -235,6 +264,16 @@ def get_format_from_path( file_path ):
 ## ===================================================================
 
 
+def date_pair_type( arg: str ):
+    if len( arg ) < 1:
+        return None
+    string_list = [ x for x in arg.split(',') ]
+    date_list   = [ datetime.datetime.strptime( x, "%Y-%m-%d").date() for x in string_list ]
+    if len(date_list) != 2:
+        raise argparse.ArgumentError( "comma separated pair of values expected" )
+    return date_list
+
+
 def main():
     parser = argparse.ArgumentParser(description='stock data grabber')
     parser.add_argument( '-la', '--logall', action='store_true', help='Log all messages' )
@@ -309,10 +348,12 @@ def main():
 
     subparser = subparsers.add_parser('gpw_archive_data', help='GPW archive data')
     subparser.set_defaults( func=grab_date_template( GpwArchiveData ) )
-    subparser.add_argument( '-d', '--date', action='store', required=True, default="", help="Archive date" )
+    subparser.add_argument( '-d', '--date', action='store', default="", help="Archive date" )
+    subparser.add_argument( '-dr', '--date_range', action='store', default="", type=date_pair_type, help="Archive date range" )
     subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path (in case of single date)" )
+    subparser.add_argument( '-od', '--out_dir', action='store', default="", help="Output directory (in case of range)" )
 
     ## =================================================
 
@@ -349,9 +390,11 @@ def main():
     subparser = subparsers.add_parser('metastock_intraday', help='MetaStock intraday data')
     subparser.set_defaults( func=grab_date_template( MetaStockIntradayData ) )
     subparser.add_argument( '-d', '--date', action='store', required=True, default="", help="Archive date" )
+    subparser.add_argument( '-dr', '--date_range', action='store', default="", type=date_pair_type, help="Archive date range" )
     subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
-    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
+    subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path (in case of single date)" )
+    subparser.add_argument( '-od', '--out_dir', action='store', default="", help="Output directory (in case of range)" )
 
     ## =================================================
 
