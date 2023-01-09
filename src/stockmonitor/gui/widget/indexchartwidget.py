@@ -27,6 +27,7 @@ from typing import Dict, List
 
 import pandas
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData
@@ -365,6 +366,8 @@ def create_window( dataObject, isin, parent=None ):
 
     chartWindow.show()
 
-    chart.updateData( access=True )
+    ## timer trigger prevents hanging application when opening multiple chart windows
+    QtCore.QTimer.singleShot( 1, lambda: chart.updateData( access=True ) )
+    ## chart.updateData( access=True )
 
     return chartWindow

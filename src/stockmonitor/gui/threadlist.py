@@ -152,7 +152,7 @@ class AbstractWorkerList( QtCore.QObject ):
             workersSize = self._workersNum()
             if self.logging:
     #             worker = self.sender()                    ## 'self.sender()' is not reliable
-                _LOGGER.info( "worker finished %s / %s", self.finishCounter, workersSize )
+                _LOGGER.info( "%s: worker finished %s / %s", id(self), self.finishCounter, workersSize )
                 flush_handlers( _LOGGER )
             if self.finishCounter == workersSize:
                 self._computingFinished()
@@ -162,13 +162,13 @@ class AbstractWorkerList( QtCore.QObject ):
         self._workers.clear()
 
         if self._stopped:
-            _LOGGER.info( "threads execution stopped, 'finish' signal blocked" )
+            _LOGGER.info( "%s: threads execution stopped, 'finish' signal blocked", id(self) )
             return
 
         if self.logging:
             endTime  = datetime.datetime.now()
             diffTime = endTime - self.startTime
-            _LOGGER.info( "all workers finished, computation time: %s", diffTime )
+            _LOGGER.info( "%s: all workers finished, computation time: %s", id(self), diffTime )
         self.finished.emit()
 
 
@@ -188,11 +188,12 @@ class ThreadPoolList( AbstractWorkerList ):
             self.pool = pool
 
         def run(self):
+            _LOGGER.debug( "worker[%s] started", id(self) )
             try:
                 self.command.execute()
             # pylint: disable=W0703
             except Exception:
-                _LOGGER.exception( "work terminated" )
+                _LOGGER.exception( "worker[%s] terminated", id(self) )
             finally:
                 self.pool._workerFinished()
 
@@ -208,7 +209,7 @@ class ThreadPoolList( AbstractWorkerList ):
 
     def start(self, call_list):
         if self.logging:
-            _LOGGER.info( "starting workers" )
+            _LOGGER.info( "%s: starting workers", id(self) )
             self.startTime = datetime.datetime.now()
 
         workers_list = []
@@ -219,8 +220,17 @@ class ThreadPoolList( AbstractWorkerList ):
             self._appendWorker( worker )
             workers_list.append( worker )
 
+        if self.logging:
+            _LOGGER.info( "%s: executing threads, stack size: %s max: %s", id(self), self.pool.activeThreadCount(), self.pool.maxThreadCount() )
+
+        threads_count = len(workers_list)
+        thread_num    = 0
         for worker in workers_list:
-            self.pool.start( worker )
+            thread_num += 1
+            _LOGGER.debug( "%s: starting worker[%s] %s / %s", id(self), id(worker), thread_num, threads_count )
+            executed = self.pool.start( worker )
+            if executed is False:
+                _LOGGER.debug( "%s: worker[%s] added to queue, threads limit: %s", id(self), id(worker), self.pool.maxThreadCount() )
 
     @staticmethod
     def calculate( parent, function, args=None ):
@@ -248,7 +258,6 @@ class SerialList( AbstractWorkerList ):
         commands_list = []
         for call_pair in call_list:
             func, args = call_pair
-            command = self._appendFunction( func, args )
             command = CommandObject( func, args )
             self._appendWorker( command )
             commands_list.append( command )
@@ -271,7 +280,7 @@ class SerialList( AbstractWorkerList ):
 def get_threading_list_class():
     """Return threading list class (factory function)."""
     return ThreadPoolList
-#     return SerialList
+    # return SerialList
 
 
 def calculate( parent, function, args=None ):

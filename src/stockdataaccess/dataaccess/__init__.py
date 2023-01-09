@@ -93,11 +93,13 @@ def requests_init_session():
 
 
 def retrieve_url_requests( url, outputPath ):
+    _LOGGER.debug( "requesting url: %s", url )
+
     with requests_init_session() as currSession:
-        url_list = [ url ]
-        content_data = access_url_list( currSession, url_list )
+        content_data = access_url_requests( currSession, url )
 
     try:
+        _LOGGER.debug( "writing requests response from %s", url )
         with open(outputPath, 'wb') as of:
             of.write( content_data )
 
@@ -108,31 +110,35 @@ def retrieve_url_requests( url, outputPath ):
     return content_data
 
 
-def access_url_list( session, url_list ):
-    content_data = None
+# def retrieve_url_list( url_list, outputPath ):
+#     with requests_init_session() as currSession:
+#         content_data = access_url_list( currSession, url_list )
+# 
+#     try:
+#         # _LOGGER.debug( "writing requests response from %s", url )
+#         with open(outputPath, 'wb') as of:
+#             of.write( content_data )
+# 
+#     except UnicodeDecodeError as ex:
+#         _LOGGER.exception( "unable to access: %s %s", url_list[-1], ex, exc_info=False )
+#         raise
+# 
+#     return content_data
 
-    for url in url_list:
-        _LOGGER.debug( "requesting url: %s", url )
+
+def access_url_requests( session: requests.Session, url ):
+    headers = { "User-Agent": "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko",
+                "Accept":     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                # "Accept-Encoding": "br",                          ## causes curl to receive bytes instead of string
+                # "Accept-Encoding": "gzip, deflate, br",            ## causes curl to receive bytes instead of string
+                "Accept-Language": "en-US,en;q=0.5"
+               }
+
 #         pprint.pprint( dict( session.headers ) )
-        result = session.get( url )
-        # print( "cccccccccxx:", dict(session.request.headers) )
-        result.raise_for_status()
-        content_data = result.content
-
-    return content_data
-
-
-def retrieve_url_list( url_list, outputPath ):
-    with requests_init_session() as currSession:
-        content_data = access_url_list( currSession, url_list )
-
-    try:
-        with open(outputPath, 'wb') as of:
-            of.write( content_data )
-
-    except UnicodeDecodeError as ex:
-        _LOGGER.exception( "unable to access: %s %s", url_list[-1], ex, exc_info=False )
-        raise
+    result = session.get( url, headers = headers, timeout = 30 )
+    # print( "cccccccccxx:", dict(session.request.headers) )
+    result.raise_for_status()
+    content_data = result.content
 
     return content_data
 
@@ -158,10 +164,12 @@ def retrieve_url_pycurl( url, outputPath ):
 
     with CUrlConnectionRAII() as curl:
         # curl.setopt(pycurl.VERBOSE, 1)
+        # curl.setopt( pycurl.HTTP_VERSION, pycurl.CURL_HTTP_VERSION_1_0 )        ## disable data chunks (causes pycurl to hang)
 
         # Set URL value
         curl.setopt( pycurl.URL, url )
         curl.setopt( pycurl.FOLLOWLOCATION, 1 )
+        curl.setopt( pycurl.TIMEOUT, 30 )
 
         curl.setopt( pycurl.USERAGENT,
                     "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" )
@@ -194,6 +202,8 @@ def retrieve_url_pycurl( url, outputPath ):
 #         curl.setopt(pycurl.SSL_VERIFYHOST, 0)
 #         curl.setopt(pycurl.COOKIEFILE, "")
 
+        _LOGGER.debug( "performing curl request for %s", url )
+
         # Perform a file transfer
         curl.perform()
 
@@ -202,6 +212,8 @@ def retrieve_url_pycurl( url, outputPath ):
             message = HTTPStatus( resp_code ).phrase
 #             _LOGGER.info( "error code: %s: %s", resp_code, message )
             raise urllib.error.HTTPError( url, resp_code, message, None, None )
+
+    _LOGGER.debug( "converting curl response from %s", url )
 
     # Get the content stored in the BytesIO object (in byte characters)
     get_body = b_obj.getvalue()
@@ -222,7 +234,8 @@ def retrieve_url_pycurl( url, outputPath ):
         ## try convert to string
         return get_body.decode('utf8')
     except UnicodeDecodeError:
-        _LOGGER.error( "unable to convert curl response to string" )
+        ## it seems that received binary data (e.g. xls or zip)
+        ## _LOGGER.error( "unable to convert curl response to string" )
         return get_body
 
     # return get_body.decode('utf8')
@@ -252,8 +265,8 @@ def retrieve_url_syswget( url, outputPath ):
 
 
 retrieve_url = retrieve_url_pycurl
-# retrieve_url = retrieve_url_syswget
 # retrieve_url = retrieve_url_requests
+# retrieve_url = retrieve_url_syswget
 
 
 ## unable to easily get http response codes
@@ -261,7 +274,6 @@ retrieve_url = retrieve_url_pycurl
 
 ### causes 104 error
 # retrieve_url = retrieve_url_wget
-# retrieve_url = retrieve_url_requests
 # retrieve_url = retrieve_url_urlopen
 
 
@@ -285,8 +297,8 @@ def download_html_content( url, outputPath ):
         raise
 
 
-def download_html_content_list( url_list, outputPath ):
-    return retrieve_url_list( url_list, outputPath )
+# def download_html_content_list( url_list, outputPath ):
+#     return retrieve_url_list( url_list, outputPath )
 
 #     try:
 #         return retrieve_url_list( url_list, outputPath )
