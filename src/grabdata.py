@@ -199,6 +199,7 @@ def store_dataframe( dataframe: DataFrame, out_format, out_path ):
         ## None or empty format
         out_format = get_format_from_path( out_path )
 
+    _LOGGER.info( "storing data - format: %s path: %s", out_format, out_path )
     switcher = {
         "xls":     lambda: dataframe.to_excel( out_path, index=False ),
         "csv":     lambda: dataframe.to_csv( out_path, encoding='utf-8', index=False ),
@@ -215,7 +216,7 @@ def store_dataframe( dataframe: DataFrame, out_format, out_path ):
 
 def get_format_from_path( file_path ):
     if "csv" in file_path:
-        return "xls"
+        return "csv"
     if "xls" in file_path:
         return "xls"
     if "xlsx" in file_path:
