@@ -62,7 +62,8 @@ def grab_simple_template( GRABBER_CLASS ):
     def grab_data( args ):
         _LOGGER.debug( "executing provider: %s", GRABBER_CLASS.__name__ )
         provider: BaseWorksheetData = GRABBER_CLASS()
-        store_provider_data2( provider, args.out_format, args.out_path )
+        force = args.force
+        store_provider_data2( provider, args.out_format, args.out_path, force_refresh=force )
         return True
 
     return grab_data
@@ -72,7 +73,8 @@ def grab_isin_template( GRABBER_CLASS ):
     def grab_data( args ):
         _LOGGER.debug( "executing provider: %s", GRABBER_CLASS.__name__ )
         provider: BaseWorksheetData = GRABBER_CLASS( args.isin )
-        store_provider_data2( provider, args.out_format, args.out_path )
+        force = args.force
+        store_provider_data2( provider, args.out_format, args.out_path, force_refresh=force )
         return True
 
     return grab_data
@@ -83,7 +85,8 @@ def grab_date_template( GRABBER_CLASS ):
         _LOGGER.debug( "executing provider: %s", GRABBER_CLASS.__name__ )
         input_date = datetime.datetime.strptime( args.date, "%Y-%m-%d").date()
         provider: BaseWorksheetData = GRABBER_CLASS( input_date )
-        store_provider_data2( provider, args.out_format, args.out_path )
+        force = args.force
+        store_provider_data2( provider, args.out_format, args.out_path, force_refresh=force )
         return True
 
     return grab_data
@@ -105,45 +108,47 @@ def grab_all( args ):
 
 #     curr_date = datetime.date.today()
 
+    force = args.force
+
     provider: BaseWorksheetData = GpwCurrentStockData()
-    store_provider_data( provider, out_format, out_dir, "gpw_curr_stock" )
+    store_provider_data( provider, out_format, out_dir, "gpw_curr_stock", force_refresh=force )
 
     provider: BaseWorksheetData = GpwCurrentIndexesData()
-    store_provider_data( provider, out_format, out_dir, "gpw_curr_indexes" )
+    store_provider_data( provider, out_format, out_dir, "gpw_curr_indexes", force_refresh=force )
 
     provider: BaseWorksheetData = GpwIsinMapData()
-    store_provider_data( provider, out_format, out_dir, "gpw_isin_map" )
+    store_provider_data( provider, out_format, out_dir, "gpw_isin_map", force_refresh=force )
 
     provider: BaseWorksheetData = GpwIndicatorsData()
-    store_provider_data( provider, out_format, out_dir, "gpw_indicators" )
+    store_provider_data( provider, out_format, out_dir, "gpw_indicators", force_refresh=force )
 
     provider: BaseWorksheetData = GpwESPIData()
-    store_provider_data( provider, out_format, out_dir, "gpw_espi" )
+    store_provider_data( provider, out_format, out_dir, "gpw_espi", force_refresh=force )
 
     provider: BaseWorksheetData = GpwArchiveData()
-    store_provider_data( provider, out_format, out_dir, "gpw_arch_data" )
+    store_provider_data( provider, out_format, out_dir, "gpw_arch_data", force_refresh=force )
 
     provider: BaseWorksheetData = DividendsCalendarData()
-    store_provider_data( provider, out_format, out_dir, "dividends_cal" )
+    store_provider_data( provider, out_format, out_dir, "dividends_cal", force_refresh=force )
 
     provider: BaseWorksheetData = FinRepsCalendarData()
-    store_provider_data( provider, out_format, out_dir, "fin_reps_cal" )
+    store_provider_data( provider, out_format, out_dir, "fin_reps_cal", force_refresh=force )
 
     provider: BaseWorksheetData = PublishedFinRepsCalendarData()
-    store_provider_data( provider, out_format, out_dir, "pub_fin_reps_cal" )
+    store_provider_data( provider, out_format, out_dir, "pub_fin_reps_cal", force_refresh=force )
 
     provider: BaseWorksheetData = GlobalIndexesData()
-    store_provider_data( provider, out_format, out_dir, "global_indexes" )
+    store_provider_data( provider, out_format, out_dir, "global_indexes", force_refresh=force )
 
     provider: BaseWorksheetData = MetaStockIntradayData()
-    store_provider_data( provider, out_format, out_dir, "metastock_intraday" )
+    store_provider_data( provider, out_format, out_dir, "metastock_intraday", force_refresh=force )
 
     provider: BaseWorksheetData = CurrentShortSellingsData()
-    store_provider_data( provider, out_format, out_dir, "curr_shorts" )
+    store_provider_data( provider, out_format, out_dir, "curr_shorts", force_refresh=force )
 
     provider: BaseWorksheetData = HistoryShortSellingsData()
-    store_provider_data( provider, out_format, out_dir, "hist_shorts" )
-    
+    store_provider_data( provider, out_format, out_dir, "hist_shorts", force_refresh=force )
+
     return True
 
 
@@ -160,7 +165,6 @@ def grab_by_config( parser, args ):
         _LOGGER.exception( "unable to read configuration file %s, reason: %s", config_path, ex )
         return
 
-
     for mode, params in config_dict.items():
         params_list = [ mode ] + params.copy()
         _LOGGER.info( "executing mode: %s", params_list )
@@ -173,7 +177,7 @@ def grab_by_config( parser, args ):
 ## ===================================================================
 
 
-def store_provider_data( provider: BaseWorksheetData, out_format, out_dir, out_file_name ):
+def store_provider_data( provider: BaseWorksheetData, out_format, out_dir, out_file_name, force_refresh=False ):
     out_path = None
     if out_dir is not None:
         file_name = f"{out_file_name}.{out_format}"
@@ -181,8 +185,8 @@ def store_provider_data( provider: BaseWorksheetData, out_format, out_dir, out_f
     store_provider_data2( provider, out_format, out_path )
 
 
-def store_provider_data2( provider: BaseWorksheetData, out_format, out_path ):
-    dataframe: DataFrame = provider.accessWorksheetData()
+def store_provider_data2( provider: BaseWorksheetData, out_format, out_path, force_refresh=False ):
+    dataframe: DataFrame = provider.accessWorksheetData( force_refresh )
     store_dataframe( dataframe, out_format, out_path )
 
 
@@ -247,6 +251,7 @@ def main():
 
     subparser = subparsers.add_parser('all_current', help='Store data from almost all providers using current data if required')
     subparser.set_defaults( func=grab_all )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', required=True, default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-od', '--out_dir', action='store', default="", help="Output directory" )
 
@@ -254,11 +259,13 @@ def main():
 
     subparser = subparsers.add_parser('gpw_curr_stock', help='GPW current stock')
     subparser.set_defaults( func=grab_simple_template( GpwCurrentStockData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('gpw_curr_indexes', help='GPW current indexes (main, macro and sectors)')
     subparser.set_defaults( func=grab_simple_template( GpwCurrentIndexesData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
@@ -266,16 +273,19 @@ def main():
 
     subparser = subparsers.add_parser('gpw_isin_data', help='GPW ISIN data')
     subparser.set_defaults( func=grab_simple_template( GpwIsinMapData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('gpw_stock_indicators', help='GPW stock indicators')
     subparser.set_defaults( func=grab_simple_template( GpwIndicatorsData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('gpw_espi', help='GPW ESPI')
     subparser.set_defaults( func=grab_simple_template( GpwESPIData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
@@ -284,12 +294,14 @@ def main():
     subparser = subparsers.add_parser('gpw_curr_stock_intra', help='GPW current intraday stock data')
     subparser.set_defaults( func=grab_isin_template( GpwCurrentStockIntradayData ) )
     subparser.add_argument( '--isin', action='store', required=True, default="", help="ISIN" )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('gpw_curr_index_intra', help='GPW current intraday index data')
     subparser.set_defaults( func=grab_isin_template( GpwCurrentIndexIntradayData ) )
     subparser.add_argument( '--isin', action='store', required=True, default="", help="ISIN" )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
@@ -298,6 +310,7 @@ def main():
     subparser = subparsers.add_parser('gpw_archive_data', help='GPW archive data')
     subparser.set_defaults( func=grab_date_template( GpwArchiveData ) )
     subparser.add_argument( '-d', '--date', action='store', required=True, default="", help="Archive date" )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
@@ -305,6 +318,7 @@ def main():
 
     subparser = subparsers.add_parser('div_cal', help='Dividends calendar')
     subparser.set_defaults( func=grab_simple_template( DividendsCalendarData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
@@ -312,11 +326,13 @@ def main():
 
     subparser = subparsers.add_parser('fin_reps_cal', help='Financial reports calendar')
     subparser.set_defaults( func=grab_simple_template( FinRepsCalendarData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('pub_fin_reps_cal', help='Published financial reports calendar')
     subparser.set_defaults( func=grab_simple_template( PublishedFinRepsCalendarData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
@@ -324,6 +340,7 @@ def main():
 
     subparser = subparsers.add_parser('global_indexes', help='Global indexes')
     subparser.set_defaults( func=grab_simple_template( GlobalIndexesData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
@@ -332,6 +349,7 @@ def main():
     subparser = subparsers.add_parser('metastock_intraday', help='MetaStock intraday data')
     subparser.set_defaults( func=grab_date_template( MetaStockIntradayData ) )
     subparser.add_argument( '-d', '--date', action='store', required=True, default="", help="Archive date" )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
@@ -339,11 +357,13 @@ def main():
 
     subparser = subparsers.add_parser('curr_short_sell', help='Current short sellings')
     subparser.set_defaults( func=grab_simple_template( CurrentShortSellingsData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
     subparser = subparsers.add_parser('hist_short_sell', help='History short sellings')
     subparser.set_defaults( func=grab_simple_template( HistoryShortSellingsData ) )
+    subparser.add_argument( '-f', '--force', action='store_true', help="Force refresh data" )
     subparser.add_argument( '-of', '--out_format', action='store', default="", help="Output format, one of: csv, xls, pickle. If none given, then will be deduced based on extension of output path." )
     subparser.add_argument( '-op', '--out_path', action='store', default="", help="Output file path" )
 
