@@ -23,18 +23,6 @@
 # SOFTWARE.
 #
 
-try:
-    ## following import success only when file is directly executed from command line
-    ## otherwise will throw exception when executing as parameter for "python -m"
-    # pylint: disable=W0611
-    import __init__
-except ImportError:
-    ## when import fails then it means that the script was executed indirectly
-    ## in this case __init__ is already loaded
-    pass
-
-
-# import sys
 import os
 
 import logging
@@ -46,10 +34,6 @@ from stockdataaccess import logger
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# src_dir = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
-# sys.path.insert(0, src_dir)
-
 
 _LOGGER = logging.getLogger(__name__)
 
