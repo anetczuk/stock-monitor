@@ -788,11 +788,14 @@ class DataContainer():
             retList.append( (stock.accessData, [forceRefresh] ) )
         return retList
 
-    def refreshAllList(self, forceRefresh=False):
+    def refreshAllList(self, forceRefresh=False, access=True):
         stockList: List[ StockDataProvider ] = self._dataAllProvidersList()
         retList = []
         for stock in stockList:
-            retList.append( (stock.accessData, [forceRefresh] ) )
+            if access:
+                retList.append( (stock.accessData, [forceRefresh] ) )
+            else:
+                retList.append( (stock.getData, [forceRefresh] ) )
         return retList
 
     def _dataAllProvidersList(self) -> List[ StockDataProvider ]:

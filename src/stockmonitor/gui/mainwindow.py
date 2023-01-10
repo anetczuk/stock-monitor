@@ -184,7 +184,8 @@ class MainWindow( QtBaseClass ):           # type: ignore
         """Load user related data (e.g. favs, notes)."""
         dataPath = self.getDataPath()
         self.data.load( dataPath )
-        self.data.loadDownloadedStocks()
+        ## commented to prevent downloading data on startup
+        #self.data.loadDownloadedStocks()
         self.refreshView()
 
     def triggerSaveTimer(self):

@@ -40,6 +40,10 @@ class StockDataProvider():
 #         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
+    def getData(self, forceRefresh=True):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
     def accessData(self, forceRefresh=True):
         raise NotImplementedError('You need to define this method in derived class!')
 
@@ -52,6 +56,10 @@ class BaseWorksheetDAOProvider( StockDataProvider ):
 
     def __init__( self, data=None ):
         self.stockData = data
+
+    ## override
+    def getData(self, forceRefresh=True):
+        self.stockData.getWorksheetData( forceRefresh )
 
     ## override
     def accessData(self, forceRefresh=True):
@@ -125,6 +133,15 @@ class WorksheetMap( StockDataProvider ):
         if rangeCode is None:
             rangeCode = "1D"
         return self.dataDict.getData( isin, rangeCode )
+
+    ## override
+    def getData(self, forceRefresh=True):
+        values = self.dataDict.getValues()
+        if len( values ) < 1:
+            # _LOGGER.debug( "nothing to access (no open charts)" )
+            return
+        for val in values:
+            val.getWorksheetData( forceRefresh )
 
     ## override
     def accessData(self, forceRefresh=True):
