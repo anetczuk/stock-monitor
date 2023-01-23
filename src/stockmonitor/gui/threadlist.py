@@ -207,6 +207,7 @@ class ThreadPoolList( AbstractWorkerList ):
         self.finished.connect( self.deleteLater )
 #         self.finished.connect( self.deleteLater, Qt.QueuedConnection )
 
+    ## accepts list of pairs
     def start(self, call_list):
         if self.logging:
             _LOGGER.info( "%s: starting workers", id(self) )
@@ -236,7 +237,8 @@ class ThreadPoolList( AbstractWorkerList ):
     def calculate( parent, function, args=None ):
         pool = ThreadPoolList( parent )
         pool.deleteOnFinish()
-        pool.start( [function, args] )
+        call_list = [ (function, args) ]
+        pool.start( call_list )
 
 
 ## ====================================================================
