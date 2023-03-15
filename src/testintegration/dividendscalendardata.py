@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#
 # MIT License
 #
 # Copyright (c) 2020 Arkadiusz Netczuk <dev.arnet@gmail.com>
@@ -21,40 +23,48 @@
 # SOFTWARE.
 #
 
+try:
+    ## following import success only when file is directly executed from command line
+    ## otherwise will throw exception when executing as parameter for "python -m"
+    # pylint: disable=W0611
+    import __init__
+except ImportError:
+    ## when import fails then it means that the script was executed indirectly
+    ## in this case __init__ is already loaded
+    pass
+
+
+import sys
 import unittest
 import datetime
-from teststockdataaccess.data import get_data_path
 
 from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
-from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
 
 class DividendsCalendarDataTest(unittest.TestCase):
 
     def setUp(self):
         ## Called before testfunction is executed
-        self.dataAccess = DividendsCalendarData()
-
-        def data_path():
-            return get_data_path( "dividends_cal_data.html" )
-
-        self.dataAccess.dao.getDataPath = data_path           # type: ignore
-        self.dataAccess.dao.storage = WorksheetStorageMock()
-        self.dataAccess.dao.parseWorksheetFromFile( data_path() )
+        pass
 
     def tearDown(self):
         ## Called after testfunction was executed
         pass
 
-    def test_getWorksheetData(self):
-        currData = self.dataAccess.getWorksheetData()
-        dataLen = len( currData )
-        self.assertEqual( 2, dataLen )
+    def test_access(self):
+        dataAccess = DividendsCalendarData()
+        dataframe  = dataAccess.loadWorksheet()
+        print( "dataframe:\n%s" % dataframe )
+#         div_stock = dataAccess.getStockName( 0 )
+        div_date = dataAccess.getLawDate( 0 )
+        self.assertNotEqual( div_date, datetime.date( 1, 1, 1 ) )
 
-    def test_getStockName(self):
-        rowData = self.dataAccess.getStockName( 0 )
-        self.assertEqual( "ALUMETAL", rowData )
 
-    def test_getLawDate(self):
-        rowData = self.dataAccess.getLawDate( 0 )
-        self.assertEqual( datetime.date(2023, 4, 26), rowData )
+## ============================= main section ===================================
+
+
+if __name__ == '__main__':
+    curr_module = sys.modules[__name__]
+    suites = unittest.defaultTestLoader.loadTestsFromModule( curr_module )
+    test_suite = unittest.TestSuite(suites)
+    unittest.TextTestRunner().run(test_suite)

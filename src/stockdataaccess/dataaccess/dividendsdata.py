@@ -75,7 +75,7 @@ class DividendsCalendarData( BaseWorksheetData ):
                     return None
 
             dataFrame = pandas.read_html( dataFile, thousands='', decimal=',' )
-            dataFrame = dataFrame[2]
+            dataFrame = dataFrame[1]
             dataFrame = dataFrame.fillna("-")
             return dataFrame
 
@@ -92,11 +92,13 @@ class DividendsCalendarData( BaseWorksheetData ):
         return self.getDataByIndex( StockDataType.STOCK_NAME, rowIndex)
 
     def getLawDate(self, rowIndex):
-        dateString = self.getDataByIndex( StockDataType.NO_DIV_DAY, rowIndex)
         try:
+            dateString = self.getDataByIndex( StockDataType.NO_DIV_DAY, rowIndex)
             dateObject = datetime.datetime.strptime(dateString, '%Y-%m-%d').date()
             return dateObject
         except ValueError:
+            return datetime.date( 1, 1, 1 )
+        except IndexError:
             return datetime.date( 1, 1, 1 )
 
     ## get column index
