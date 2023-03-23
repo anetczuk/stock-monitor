@@ -26,6 +26,7 @@ import logging
 import datetime
 import math
 import multiprocessing.dummy
+import abc
 
 import pandas
 import numpy
@@ -53,6 +54,14 @@ class ActivityIntradayDataProvider():
     def __init__(self):
         super().__init__()
         self.refDataProvider = None
+
+    @abc.abstractmethod
+    def setDate(self, date):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def map(self, isinItems, pool: multiprocessing.dummy.Pool):
+        raise NotImplementedError('You need to define this method in derived class!')
 
     def getReferenceValue(self, name ):
         if self.refDataProvider is None:
@@ -117,7 +126,7 @@ class MetaStockIntradayProvider( ActivityIntradayDataProvider ):
         self.accessDate = date
 
     ## returns list
-    def map(self, isinItems, pool):
+    def map(self, isinItems, pool: multiprocessing.dummy.Pool):
         dataFrame = pool.apply( self._loadData )
         if dataFrame is None:
             return []
@@ -154,6 +163,7 @@ class MetaStockIntradayProvider( ActivityIntradayDataProvider ):
         volumenColumn = nameData[ "obrot" ]
         frame = { 'name': name, 'price': priceColumn, 'volumen': volumenColumn }
         return pandas.DataFrame( frame )
+
 
 ## =========================================================================
 

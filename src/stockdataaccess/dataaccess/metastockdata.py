@@ -38,6 +38,7 @@ from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized
 from stockdataaccess.pprint import fullname
 from stockdataaccess.dataaccess.datatype import StockDataType
+from stockdataaccess.dataaccess.convert import convert_to_float, filter_numeric
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -113,8 +114,15 @@ class MetaStockIntradayData( BaseWorksheetData ):
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrame = pandas.read_csv( dataFile, names=["name", "unknown_1", "date", "time", "kurs_otw",
                                                           "max", "min", "kurs", "obrot", "unknown_2"] )
-            # pylint: disable=E1101
-            dataFrame.drop( dataFrame.tail(1).index, inplace=True )
+
+            dataFrame = filter_numeric( dataFrame, 'date' )
+            dataFrame = filter_numeric( dataFrame, 'time' )
+
+            dataFrame = convert_to_float( dataFrame, 'kurs_otw' )
+            dataFrame = convert_to_float( dataFrame, 'max' )
+            dataFrame = convert_to_float( dataFrame, 'min' )
+            dataFrame = convert_to_float( dataFrame, 'kurs' )
+            dataFrame = convert_to_float( dataFrame, 'obrot' )
             return dataFrame
 
     ## ==========================================================

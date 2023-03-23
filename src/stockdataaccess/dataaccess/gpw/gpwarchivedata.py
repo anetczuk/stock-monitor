@@ -82,7 +82,7 @@ class GpwArchiveData( BaseWorksheetData ):
 #             _LOGGER.debug( "opening workbook: %s", dataFile )
             dataFrame = pandas.read_excel( dataFile )
             # pylint: disable=E1101
-            dataFrame.drop( dataFrame.tail(1).index, inplace=True )
+#             dataFrame.drop( dataFrame.tail(1).index, inplace=True )
             return dataFrame
 
 #             try:

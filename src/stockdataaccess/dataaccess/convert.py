@@ -23,6 +23,12 @@
 
 import re
 import datetime
+import logging
+
+import pandas
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def convert_int( data ):
@@ -49,6 +55,7 @@ def convert_float( data ):
     try:
         return float(value)
     except ValueError:
+        ## _LOGGER.error( "unable to convert to float: %s %s", value, type(value) )
         return value
 
 
@@ -69,6 +76,35 @@ def convert_percentage( data ):
 
 def convert_timestamp_datetime( timestamp ):
     return datetime.datetime.fromtimestamp( timestamp )
+
+
+def is_numeric( value ):
+    if isinstance(value, int):
+        return True
+    if isinstance(value, float):
+        return True
+    if isinstance(value, str):
+        return value.isnumeric()
+    return str(value).isnumeric()
+
+
+class NumericFilter():
+
+    def __eq__(self, other):
+        return is_numeric( other )
+
+    def __contains__(self, item):
+        return is_numeric( item )
+
+
+def filter_numeric( dataFrame, columnName ):
+    numeric_filter = NumericFilter()
+    return dataFrame[ dataFrame[ columnName ] == numeric_filter ]
+
+
+def convert_to_float( dataFrame, columnName ):
+    apply_on_column( dataFrame, columnName, convert_float )
+    return filter_numeric( dataFrame, columnName )
 
 
 def apply_on_column( dataFrame, columnName, function ):

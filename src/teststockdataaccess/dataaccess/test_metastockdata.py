@@ -60,3 +60,109 @@ class MetaStockIntradayDataTest(unittest.TestCase):
         currData = self.dataAccess.getWorksheetForDate( date_object, True )
         dataLen = len( currData )
         self.assertEqual(dataLen, 77388)
+
+
+class MetaStockIntradayDataCorruptTest(unittest.TestCase):
+
+    def setUp(self):
+        ## Called before testfunction is executed
+        self.dataAccess = MetaStockIntradayData()
+
+        def data_path():
+            return get_data_path( "bossa-intraday-2023-03-15.prn" )
+
+        self.dataAccess.dao.getDataPath = data_path                       # type: ignore
+        self.dataAccess.dao.downloadData = lambda filePath: None          ## empty lambda function
+        self.dataAccess.dao.storage = WorksheetStorageMock()
+
+    def tearDown(self):
+        ## Called after testfunction was executed
+        pass
+
+    def test_getWorksheetData_corrupt_row_ALIOR(self):
+        ## raw data contains string in numeric field -- invalid rows should be filtered out
+ 
+        currData = self.dataAccess.getWorksheetData( True )
+        self.assertIsNotNone( currData )
+        self.assertEqual( (3281, 10), currData.shape )
+ 
+        stockData = currData[ currData["name"].eq( "ALIOR" ) ]
+ 
+        priceColumn = stockData["kurs"]
+        self.assertEqual( 36.94, priceColumn.iloc[-1] )
+ 
+        minValue = priceColumn.min()
+        maxValue = priceColumn.max()
+ 
+        self.assertEqual( 36.9, minValue )
+        self.assertEqual( 39.5, maxValue )
+
+    def test_getWorksheetData_corrupt_row_BENEFIT(self):
+        ## raw data contains string in numeric field -- invalid rows should be filtered out
+ 
+        currData = self.dataAccess.getWorksheetData( True )
+        self.assertIsNotNone( currData )
+        self.assertEqual( (3281, 10), currData.shape )
+ 
+        stockData = currData[ currData["name"].eq( "BENEFIT" ) ]
+ 
+        priceColumn = stockData["kurs"]
+        self.assertEqual( 1080.0, priceColumn.iloc[-1] )
+ 
+        minValue = priceColumn.min()
+        maxValue = priceColumn.max()
+ 
+        self.assertEqual( 1080.0, minValue )
+        self.assertEqual( 1095.0, maxValue )
+
+    def test_getWorksheetData_corrupt_row_BIOCELTIX(self):
+        ## raw data contains string in numeric field -- invalid rows should be filtered out
+ 
+        currData = self.dataAccess.getWorksheetData( True )
+        self.assertIsNotNone( currData )
+        self.assertEqual( (3281, 10), currData.shape )
+ 
+        stockData = currData[ currData["name"].eq( "BIOCELTIX" ) ]
+ 
+        priceColumn = stockData["kurs"]
+        self.assertEqual( 40.0, priceColumn.iloc[-1] )
+ 
+        minValue = priceColumn.min()
+        maxValue = priceColumn.max()
+ 
+        self.assertEqual( 39.9, minValue )
+        self.assertEqual( 40.0, maxValue )
+
+    def test_getWorksheetData_corrupt_row_ORANGEPL(self):
+        ## raw data contains string in numeric field -- invalid rows should be filtered out
+ 
+        currData = self.dataAccess.getWorksheetData( True )
+        self.assertIsNotNone( currData )
+        self.assertEqual( (3281, 10), currData.shape )
+ 
+        stockData = currData[ currData["name"].eq( "ORANGEPL" ) ]
+ 
+        priceColumn = stockData["kurs"]
+        self.assertEqual( 6.508, priceColumn.iloc[-1] )
+ 
+        minValue = priceColumn.min()
+        maxValue = priceColumn.max()
+ 
+        self.assertEqual( 6.484, minValue )
+        self.assertEqual( 6.524, maxValue )
+ 
+    def test_getWorksheetData_valid(self):
+        currData = self.dataAccess.getWorksheetData( True )
+        self.assertIsNotNone( currData )
+        self.assertEqual( (3281, 10), currData.shape )
+ 
+        stockData = currData[ currData["name"].eq( "BNPPPL" ) ]
+ 
+        priceColumn = stockData["kurs"]
+        self.assertEqual( 46.8, priceColumn.iloc[-1] )
+ 
+        minValue = priceColumn.min()
+        maxValue = priceColumn.max()
+ 
+        self.assertEqual( 46.0, minValue )
+        self.assertEqual( 47.5, maxValue )
