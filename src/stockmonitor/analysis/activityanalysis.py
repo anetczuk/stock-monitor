@@ -205,21 +205,26 @@ class ActivityAnalysis:
         # === calculate activity ===
 
         for precalc_day_data in precalc_data_list:
-            day_data                  = precalc_day_data[2]
             day_stock_list            = precalc_day_data[0]
+            if len( day_stock_list ) < 1:
+                continue
+            day_data                  = precalc_day_data[2]
             day_stats_dict: StatsDict = precalc_day_data[1]
             _LOGGER.debug( "calculating results for %s", day_data )
             self.calculateActivityForDay( day_stock_list, day_stats_dict, thresholdPercent, overall_stats )
 
-        days_num = len( precalc_data_list )
-#         day_delta = toDay - fromDay
-#         days_num  = day_delta.days + 1
-
         namesSet = overall_stats.keys()
         for name in namesSet:
-            dataSubdict = overall_stats[ name ]
+            dataSubdict: StatsDict.SubDict = overall_stats[ name ]
             minVal      = dataSubdict["min price"]
             maxVal      = dataSubdict["max price"]
+
+            days_num    = dataSubdict["stock_days"]
+            dataSubdict.rem("stock_days")                           ## do not show column
+
+            avgVal      = dataSubdict["avg price"] / days_num
+            dataSubdict["avg price"] = round( avgVal, 2 )
+
             currVal     = dataSubdict["ref price"]
             refVal      = self.dataProvider.getReferenceValue( name )
             if refVal is not None:
@@ -236,13 +241,25 @@ class ActivityAnalysis:
                 _LOGGER.warning( "invalid data '%s' and '%s'", maxVal, currVal )
                 raise
 
-            stockDiff = maxVal - minVal
+            maxMinDiff = maxVal - minVal
             relVal = 0.0
-            if stockDiff != 0:
-                relVal = raiseVal / stockDiff
+            if maxMinDiff != 0:
+                relVal = raiseVal / maxMinDiff
             potRaise = (maxVal / currVal - 1.0) * 100.0
             relVal   = round( relVal, 4 )
             potRaise = round( potRaise, 2 )
+
+            minMaxAvg       = (maxVal + minVal) / 2
+
+            avgBalanceValue = 0.0
+            if maxMinDiff > 0.0:
+                avgBalanceValue = (minMaxAvg - avgVal) / maxMinDiff
+            dataSubdict["avg balance"] = round( avgBalanceValue, 2 )
+
+            refBalanceValue = 0.0
+            if maxMinDiff > 0.0:
+                refBalanceValue = (avgVal - currVal) / maxMinDiff
+            dataSubdict["ref balance"] = round( refBalanceValue, 2 )
 
             dataSubdict["relative"]    = relVal
             dataSubdict["pot raise %"] = potRaise
@@ -254,8 +271,8 @@ class ActivityAnalysis:
             dataSubdict["price change deviation"] = round( val, 4 )
 
             val = dataSubdict["trading [kPLN]"]
-            dataSubdict["trading [kPLN]"]     = round( val, 4 )
-            dataSubdict["trading/day [kPLN]"] = round( val / days_num, 4 )
+            dataSubdict["trading [kPLN]"]     = round( val, 2 )
+            dataSubdict["trading/day [kPLN]"] = round( val / days_num, 2 )
 
         ## =========================
 
@@ -270,6 +287,8 @@ class ActivityAnalysis:
         headerList = []
         headerList.append( ["analysis period:", dates_to_string( [fromDay, toDay] ) ] )
         headerList.append( ["reference value date:", str( refValueDate ) ] )
+        headerList.append( ["avg balance:",  "[0.5 * (max + min) - avg] / (max - min)"] )
+        headerList.append( ["ref balance:",  "[avg - ref] / (max - min)"] )
         headerList.append( ["relative:",  "(max - ref) / (max - min)"] )
         headerList.append( ["pot raise[%]:",  "(max / ref - 1.0) * 100%"] )
         headerList.append( ["price activity:", ("count( local_max - local_min > threshold )") ] )
@@ -292,13 +311,15 @@ class ActivityAnalysis:
             name = nameColumn.iloc[0]
 #                 _LOGGER.debug( "calculating results for: %s %s, len: %s", currDate, name, dataFrame.shape[0] )
 
+            dataSubdict: StatsDict.SubDict = result_stats[ name ]
+            dataSubdict.add( "stock_days", 1 )
+
             priceColumn = dataFrame["price"]
             priceSize = priceColumn.shape[0]
             if priceSize < 1:
                 ## no data -- skip
                 continue
 
-            dataSubdict    = result_stats[ name ]
             precalcSubdict = stats_dict[ name ]
 
             minValue = precalcSubdict["min price"]
@@ -308,6 +329,12 @@ class ActivityAnalysis:
             dataSubdict.maxValue( "max price", maxValue )                                  ## max value
 
             dataSubdict["ref price"] = precalcSubdict["ref price"]
+
+            avgValue = precalcSubdict["avg price"]
+            dataSubdict.add( "avg price", avgValue )                                       ## avg value
+
+            dataSubdict["avg balance"] = 0.0                                    ## placeholder for further calc
+            dataSubdict["ref balance"] = 0.0                                    ## placeholder for further calc
 
             calcRet = precalcSubdict["trading [kPLN]"]
             dataSubdict.add( "trading [kPLN]", calcRet )                                   ## trading
@@ -376,6 +403,10 @@ class ActivityAnalysis:
                 dataSubdict["max price"] = maxValue                              ## max value
 
             dataSubdict["ref price"] = priceColumn.iloc[ priceSize - 1 ]         ## get last value
+
+            avgValue = priceColumn.mean()
+            if math.isnan( avgValue ) is False:
+                dataSubdict["avg price"] = avgValue                              ## avg value
 
             volumenColumn = dataFrame["volumen"]
             tradingColumn = priceColumn * volumenColumn / 1000

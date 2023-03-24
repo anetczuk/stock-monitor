@@ -215,6 +215,9 @@ class StatsDict():
         def __setitem__(self, key, value):
             self.valueDict[ key ] = value
 
+        def rem(self, key):
+            del self.valueDict[ key ]
+
         def keys(self):
             return self.valueDict.keys()
 
@@ -277,7 +280,10 @@ class StatsDict():
     def __init__(self):
         self.dataDict = {}      ## ticker => fields dict
 
-    def __getitem__(self, key):
+    def __len__(self):
+        return len( self.dataDict )
+
+    def __getitem__(self, key) -> 'StatsDict.SubDict':
         data = self.dataDict.get( key, None )
         if data is None:
             self.dataDict[ key ] = StatsDict.SubDict()

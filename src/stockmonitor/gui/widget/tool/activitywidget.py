@@ -75,8 +75,10 @@ class ActivityWidget(QtBaseClass):           # type: ignore
 
         self.ui.limitResultsCB.currentIndexChanged.connect( self.ui.dataTable.limitResults )
 
-        self.ui.todayDataRB.click()
-        self.ui.currentRefRB.click()
+        self.ui.rangeDataRB.click()
+        self.ui.rangeRefRB.click()
+#         self.ui.todayDataRB.click()
+#         self.ui.currentRefRB.click()
 
     def connectData(self, dataObject):
         self.ui.dataTable.connectData( dataObject )
