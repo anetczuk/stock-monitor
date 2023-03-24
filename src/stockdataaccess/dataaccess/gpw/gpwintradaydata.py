@@ -113,6 +113,10 @@ class GpwCurrentStockIntradayData( BaseWorksheetData ):
                 dataFrame = DataFrame( data_field )
     #             print( "xxx:\n", dataFrame )
 
+                ## sometimes 'v' column contain NaN values
+                ## it happens e.g. when stock is delisted (removed from stock exchange)
+                dataFrame['v'] = dataFrame['v'].fillna(0)
+
                 apply_on_column( dataFrame, 't', convert_timestamp_datetime )
 
                 if self.rangeCode != "1D":
@@ -126,7 +130,7 @@ class GpwCurrentStockIntradayData( BaseWorksheetData ):
                         dataFrame.reset_index( drop=True, inplace=True )
 
                 ## chart data have bug: if volume is equal to 0 then open value ("o" col) is equal to 0
-                ## those cases need to be fixed by cpying value from "c" col
+                ## those cases need to be fixed by copying value from "c" col
                 for index, row in dataFrame.iterrows():
                     open_price = row['o']
                     if open_price == 0.0:
