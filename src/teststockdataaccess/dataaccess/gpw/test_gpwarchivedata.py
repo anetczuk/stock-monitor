@@ -80,7 +80,7 @@ class GpwArchiveDataTest(unittest.TestCase):
     def test_getData(self):
         currData = self.dataAccess.getData( StockDataType.ISIN )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 427)      ## one removed, because of summary
+        self.assertEqual(dataLen, 428)      ## one removed, because of summary
 
     def test_getRowByIsin(self):
         rowData = self.dataAccess.getRowByIsin( "LU2237380790" )

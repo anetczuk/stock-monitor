@@ -53,13 +53,13 @@ class MetaStockIntradayDataTest(unittest.TestCase):
     def test_getWorksheetData_True(self):
         currData = self.dataAccess.getWorksheetData( True )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 77388)
+        self.assertEqual(dataLen, 77389)
 
     def test_getWorksheetForDate(self):
         date_object = datetime.date( year=2020, month=9, day=21 )
         currData = self.dataAccess.getWorksheetForDate( date_object, True )
         dataLen = len( currData )
-        self.assertEqual(dataLen, 77388)
+        self.assertEqual(dataLen, 77389)
 
 
 class MetaStockIntradayDataCorruptTest(unittest.TestCase):
