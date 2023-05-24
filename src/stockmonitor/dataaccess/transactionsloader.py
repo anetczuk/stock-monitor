@@ -73,6 +73,8 @@ def load_mb_transactions( filePath ):
         ## add transactions
         return ( importedData, 1 )
     # else
+
+    _LOGGER.warning( "unable to load transactions from file %s", filePath )
     return ( None, -1 )
 
 

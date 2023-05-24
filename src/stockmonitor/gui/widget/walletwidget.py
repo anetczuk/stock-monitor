@@ -242,7 +242,7 @@ class WalletWidget( QtBaseClass ):           # type: ignore
 ##=============================================================
 
 
-def import_mb_transactions( dataObject, filePath ):
+def import_mb_transactions( dataObject: DataObject, filePath ):
     importedData, _ = load_mb_transactions( filePath )
 
 #     print("importing:\n", importedData)
@@ -251,4 +251,4 @@ def import_mb_transactions( dataObject, filePath ):
     _LOGGER.debug( "opening transactions: %s", filePath )
     imported = dataObject.importWalletTransactions( importedData, True )
     if imported is False:
-        _LOGGER.warning( "could import transactions" )
+        _LOGGER.warning( "could not import transactions" )

@@ -213,6 +213,7 @@ class DataContainer():
 
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
         if dataFrame is None:
+            _LOGGER.warning( "None dataframe given" )
             return False
 
 #         wallet: WalletData = self.wallet
