@@ -169,7 +169,13 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
         if sortIndex == 1:
             ## sort by change
             self._refreshTickersList()
-            self.tickerList = sorted( self.tickerList, key=lambda x: x[2] )
+            try:
+                ## there can be float values and string "-" meaning no value available 
+                self.tickerList = sorted( self.tickerList, key=lambda x: str(x[2]) )
+            except Exception as ex:
+                _LOGGER.error("exception: %s", ex)
+                _LOGGER.error("ticker list: %s", self.tickerList)
+                raise
             self.tickerList.reverse()
             if update_view:
                 self._updateView()
