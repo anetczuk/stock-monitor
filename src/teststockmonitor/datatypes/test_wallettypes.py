@@ -26,7 +26,6 @@ import unittest
 import datetime
 import pandas
 
-from stockmonitor.datatypes.datatypes import WalletData
 from stockmonitor.datatypes.wallettypes import TransHistory, Transaction,\
     TransactionMatchMode, TransactionsMatch, BuyTransactionsMatch, SellTransactionsMatch
 
@@ -352,7 +351,7 @@ class TransHistoryTest(unittest.TestCase):
         self.assertEqual( valueFrame.at[1, "t"], pandas.Timestamp('2020-10-10 12:00:00') )
         self.assertEqual( valueFrame.at[1, "c"], 2390.64 )
 
-    def test_matchTransactionsRecent01(self):
+    def test_matchTransactionsFirst01(self):
         data = TransHistory()
 
         ## reverse order
@@ -366,7 +365,7 @@ class TransHistoryTest(unittest.TestCase):
 
         self.assertEqual( data.currentAmount(), 400 )
 
-        transList: TransactionsMatch = data.matchTransactionsRecent()
+        transList: TransactionsMatch = data.matchTransactionsFirst()
         buyList: BuyTransactionsMatch = transList[0]
         self.assertEqual( len( buyList ), 2 )
 
@@ -551,137 +550,3 @@ class TransHistoryTest(unittest.TestCase):
 
         gainValue = data.transactionsGain( matchMode, True )
         self.assertEqual( gainValue, 99.19999999999999 )
-
-
-class WalletDataTest(unittest.TestCase):
-    def setUp(self):
-        ## Called before testfunction is executed
-        pass
-
-    def tearDown(self):
-        ## Called after testfunction was executed
-        pass
-
-    def test_add_sort(self):
-        dataobject = WalletData()
-        self.assertEqual( dataobject.size(), 0 )
-
-        dataobject.add( "xxx", 2, 20.0, datetime.datetime(2, 2, 2), commission=0.4 )
-        dataobject.add( "xxx", 1, 20.0, datetime.datetime(1, 1, 1), commission=0.2 )
-        dataobject.add( "xxx", 3, 20.0, datetime.datetime(3, 3, 3), commission=0.6 )
-
-        items = dataobject.transactions("xxx").items()
-        self.assertEqual( len( items ), 3 )
-        self.assertEqual( items[0].amount, 3 )
-        self.assertEqual( items[1].amount, 2 )
-        self.assertEqual( items[2].amount, 1 )
-
-    def test_add_buy(self):
-        dataobject = WalletData()
-        matchMode = TransactionMatchMode.BEST
-
-        self.assertEqual( dataobject.size(), 0 )
-
-        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        dataobject.add( "xxx", 1, 10.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        self.assertEqual( dataobject.transactions("xxx").size(), 2 )
-
-        items = dataobject.currentItems( matchMode )
-        ticker, amount, unit_price = items[0]
-        self.assertEqual( ticker, "xxx" )
-        self.assertEqual( amount, 2 )
-        self.assertEqual( unit_price, 16.0 )
-
-    def test_add_buy_similar(self):
-        dataobject = WalletData()
-        matchMode = TransactionMatchMode.BEST
-
-        self.assertEqual( dataobject.size(), 0 )
-
-        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
-        dataobject.add( "xxx", 3, 20.0, commission=3.0 )
-
-        self.assertEqual( dataobject.transactions("xxx").size(), 1 )
-
-        items = dataobject.currentItems( matchMode )
-        ticker, amount, unit_price = items[0]
-        self.assertEqual( ticker, "xxx" )
-        self.assertEqual( amount, 4 )
-        self.assertEqual( unit_price, 21.0 )
-
-    def test_add_sell_1(self):
-        dataobject = WalletData()
-        matchMode = TransactionMatchMode.BEST
-
-        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        dataobject.add( "xxx", 1, 10.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        dataobject.add( "xxx", -1, 10.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        items = dataobject.currentItems( matchMode )
-        ticker, amount, unit_price = items[0]
-        self.assertEqual( ticker, "xxx" )
-        self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 21.0 )
-
-    def test_add_sell_2(self):
-        dataobject = WalletData()
-        matchMode = TransactionMatchMode.BEST
-
-        dataobject.add( "xxx", 1, 10.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        dataobject.add( "xxx", -1, 20.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        items = dataobject.currentItems( matchMode )
-        ticker, amount, unit_price = items[0]
-        self.assertEqual( ticker, "xxx" )
-        self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 11.0 )
-
-    def test_add_sell_3(self):
-        dataobject = WalletData()
-        matchMode = TransactionMatchMode.BEST
-
-        dataobject.add( "xxx", 1, 20.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        dataobject.add( "xxx", 1, 10.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        dataobject.add( "xxx", -1, 15.0, commission=1.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        items = dataobject.currentItems( matchMode )
-        ticker, amount, unit_price = items[0]
-        self.assertEqual( ticker, "xxx" )
-        self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 21.0 )
-
-    def test_add_sell_4(self):
-        dataobject = WalletData()
-        matchMode = TransactionMatchMode.BEST
-
-        dataobject.add( "xxx", 2, 10.0, commission=2.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        dataobject.add( "xxx", -1, 20.0, commission=2.0 )
-        self.assertEqual( dataobject.size(), 1 )
-
-        items = dataobject.currentItems( matchMode )
-        ticker, amount, unit_price = items[0]
-        self.assertEqual( ticker, "xxx" )
-        self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 11.0 )

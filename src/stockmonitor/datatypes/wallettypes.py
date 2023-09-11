@@ -26,9 +26,8 @@ import logging
 from datetime import datetime, date, timedelta
 from copy import deepcopy
 
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
-from stockdataaccess import persist
 from pandas.core.frame import DataFrame
 
 ## from stockdataaccess.pprint import pprint
@@ -128,7 +127,7 @@ TransactionsMatch     = Tuple[ BuyTransactionsMatch, SellTransactionsMatch ]
 
 @unique
 class TransactionMatchMode(Enum):
-    OLDEST = ()
+    OLDEST = ()             # FIFO
     BEST = ()
     RECENT_PROFIT = ()
 
@@ -140,6 +139,7 @@ class TransactionMatchMode(Enum):
         return obj
 
 
+# TRansactions of single stock
 class TransHistory():
 
     def __init__(self):
@@ -589,7 +589,7 @@ class TransHistory():
         return ( walletList, sellList )
 
     ## current stock in wallet (similar to mb calculation)
-    def matchTransactionsRecent(self) -> TransactionsMatch:
+    def matchTransactionsFirst(self) -> TransactionsMatch:
         return self.matchTransactions( TransactionMatchMode.OLDEST )
 
     def matchTransactionsBestFit(self) -> TransactionsMatch:
@@ -703,107 +703,6 @@ class TransHistory():
 
 
 ## =======================================================
-
-
-class WalletData( persist.Versionable ):
-
-    ## 0 - first version
-    ## 1 - dict instead of list
-    ## 2 - sort transactions
-    ## 3 - add 'commission' field to transaction
-    _class_version = 3
-
-    def __init__(self):
-        ## ticker, TransHistory
-        self.stockList: Dict[ str, TransHistory ] = {}
-
-    def _convertstate_(self, dict_, dictVersion_ ):
-        _LOGGER.info( "converting object from version %s to %s", dictVersion_, self._class_version )
-
-        if dictVersion_ is None:
-            dictVersion_ = 0
-
-        dictVersion_ = max(dictVersion_, 0)
-
-        if dictVersion_ == 0:
-            dict_["stockList"] = {}
-            dictVersion_ = 1
-
-        if dictVersion_ == 1:
-            histDict = dict_["stockList"]
-            for _, transHist in histDict.items():
-                transHist.sort()
-            dictVersion_ = 2
-
-        if dictVersion_ == 2:
-            ## add commission field
-            histDict = dict_["stockList"]
-            for _, transHist in histDict.items():
-                transSize = len(transHist.transactions)
-                convertedList = []
-                for i in range( 0, transSize ):
-                    trans = transHist.transactions[i]
-                    convertedList.append( Transaction( trans[0], trans[1], 0.0, trans[2] ) )
-                transHist.transactions = convertedList
-            dictVersion_ = 3
-
-        # pylint: disable=W0201
-        self.__dict__ = dict_
-
-    def __getitem__(self, ticker) -> TransHistory:
-        return self.stockList.get( ticker, None )
-
-    def size(self):
-        return len( self.stockList )
-
-    def clear(self):
-        self.stockList.clear()
-
-    ## return all tickers (even sold)
-    def tickers(self):
-        return self.stockList.keys()
-
-    def transactions(self, ticker) -> TransHistory:
-        return self.stockList.get( ticker, None )
-
-    ## returns List[ (ticker, curr amount, avg unit price) ]
-    def currentItems( self, mode: TransactionMatchMode ) -> List[ Tuple[str, int, float] ]:
-        ret: List[ Tuple[str, int, float] ] = []
-        for key, hist in self.stockList.items():
-            if key is None:
-                _LOGGER.warning("found wallet None key")
-                continue
-            val = hist.currentTransactionsAvg( mode )     # pair: (amount, unit_price)
-            if val is not None:
-                ret.append( (key, val[0], val[1]) )
-        return ret
-
-    def add( self, ticker, amount, unitPrice, transTime: datetime = datetime.today(),
-             joinSimilar=True, commission=0.0 ):
-        transactions: TransHistory = self.stockList.get( ticker, None )
-        if transactions is None:
-            transactions = TransHistory()
-            self.stockList[ ticker ] = transactions
-        _LOGGER.debug( "adding transaction: %s %s %s %s %s", ticker, amount, unitPrice, commission, transTime )
-        transactions.add( amount, unitPrice, commission, transTime, joinSimilar )
-
-    def addTransaction( self, ticker, transaction: Transaction, joinSimilar=True ):
-        self.add( ticker, transaction.amount, transaction.unitPrice,
-                  transaction.transTime, joinSimilar, commission=transaction.commission )
-
-    def addWallet(self, wallet: 'WalletData', joinSimilar=True):
-        for ticker, hist in wallet.stockList.items():
-            for trans in hist.transactions:
-                self.addTransaction(ticker, trans, joinSimilar)
-
-    ## get current tickers
-    def getCurrentStock(self) -> List[ str ]:
-        ret = []
-        for key, hist in self.stockList.items():
-            amount = hist.currentAmount()
-            if amount > 0:
-                ret.append( key )
-        return ret
 
 
 def broker_commission( value, transTime=None ):
