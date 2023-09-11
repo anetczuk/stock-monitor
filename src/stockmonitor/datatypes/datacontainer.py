@@ -22,7 +22,7 @@
 #
 
 import logging
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import datetime
 #from datetime import datetime, date, timedelta
@@ -211,6 +211,7 @@ class DataContainer():
         self.userContainer.wallet = WalletData()
         self.updateWalletFavGroup()
 
+    # return True if data changed, otherwise False
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
         if dataFrame is None:
             _LOGGER.warning( "None dataframe given" )
@@ -239,12 +240,11 @@ class DataContainer():
             ticker = self.gpwCurrentData.getTickerFromName( stockName )
             if ticker is None:
                 _LOGGER.warning( "could not find stock ticker for name: >%s<", stockName )
-                continue
 
             if oper == "K":
-                importWallet.add( ticker,  amount, unit_price, dateObject, False, commission=commission )
+                importWallet.addTransaction( stockName, ticker,  amount, unit_price, dateObject, False, commission=commission )
             elif oper == "S":
-                importWallet.add( ticker, -amount, unit_price, dateObject, False, commission=commission )
+                importWallet.addTransaction( stockName, ticker, -amount, unit_price, dateObject, False, commission=commission )
 
         if addTransactions:
             ## merge wallets
@@ -327,7 +327,8 @@ class DataContainer():
 
         transMode = self.userContainer.transactionsMatchMode
 
-        for ticker, transactions in self.wallet.stockList.items():
+        for stock_id, transactions in self.wallet._stockDict.items():
+            ticker = stock_id[1] if stock_id else None
             amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
             currentStockRow = currentStock.getRowByTicker( ticker )
 
@@ -406,9 +407,10 @@ class DataContainer():
 
         transMode = self.userContainer.transactionsMatchMode
 
-        ticker: str
+        stock_id: Tuple[ str, str ]
         transactions: TransHistory
-        for ticker, transactions in self.wallet.stockList.items():
+        for stock_id, transactions in self.wallet._stockDict.items():
+            ticker: str = stock_id[1] if stock_id else None
 #             if ticker == "PCX":
 #                 print( "xxxxx:\n", transactions.items() )
             currentStockRow = currentStock.getRowByTicker( ticker )
@@ -468,9 +470,10 @@ class DataContainer():
 
         transMode = self.userContainer.transactionsMatchMode
 
-        ticker: str
+        stock_id: Tuple[ str, str ]
         transactions: TransHistory
-        for ticker, transactions in self.wallet.stockList.items():
+        for stock_id, transactions in self.wallet._stockDict.items():
+            ticker: str = stock_id[1] if stock_id else None
             if groupByDay:
                 transactions = transactions.groupByDay()
 
@@ -553,7 +556,8 @@ class DataContainer():
 
         rowsList = []
 
-        for ticker, transactions in self.wallet.stockList.items():
+        for stock_id, transactions in self.wallet._stockDict.items():
+            ticker = stock_id[1] if stock_id else None
             if groupByDay:
                 transactions = transactions.groupByDay()
 
@@ -662,7 +666,8 @@ class DataContainer():
         refWalletValue = 0.0
         walletProfit   = 0.0
         totalGain      = 0.0
-        for ticker, tickerTransactions in self.wallet.stockList.items():
+        for stock_id, tickerTransactions in self.wallet._stockDict.items():
+            ticker = stock_id[1] if stock_id else None
             amount, buy_unit_price = tickerTransactions.currentTransactionsAvg( transMode )
 
             stockGain  = tickerTransactions.transactionsGain( transMode, True )
@@ -740,7 +745,7 @@ class DataContainer():
 
         transMode = self.userContainer.transactionsMatchMode
         mergedList = None
-        for _, transactions in self.wallet.stockList.items():
+        for _, transactions in self.wallet._stockDict.items():
             gainList = transactions.transactionsGainHistory( transMode, True, startDateTime )
             stockData = DataFrame( gainList, columns=["t", "c"] )
             mergedList = join_list_dataframe( mergedList, stockData )

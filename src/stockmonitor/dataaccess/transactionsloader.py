@@ -35,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def load_mb_transactions( filePath ):
-    ## imported transaction values are not affected by borker's commission
+    ## imported transaction values are not affected by broker's commission
     ## real sell profit is transaction value decreased by broker's commission
     ## real buy cost is transaction value increased by broker's commission
     ## broker commission: greater of 5PLN and 0.39%

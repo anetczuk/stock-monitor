@@ -29,7 +29,8 @@ from pandas.core.frame import DataFrame
 
 from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 
-from stockmonitor.datatypes.wallettypes import WalletData, TransHistory
+from stockmonitor.datatypes.wallettypes import TransHistory
+from stockmonitor.datatypes.walletdata import WalletData
 from stockmonitor.dataaccess.transactionsloader import parse_mb_transactions_file
 from stockmonitor.gui.dataobject import DataObject
 
@@ -109,7 +110,7 @@ class DataObjectTest(unittest.TestCase):
         dataPath = data.get_data_path( "recent_data_TKO.xls" )
         dataobject.gpwCurrentSource.stockData.dao.storage = WorksheetStorageMock()
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
-        dataobject.wallet.add( "CDR", 1, 300.0 )
+        dataobject.wallet.addTransactionData( "CDR", 1, 300.0 )
         stock = dataobject.getWalletStock()
         self.assertEqual( stock is not None, True )
 
@@ -122,9 +123,9 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
 
         walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
         self.assertEqual( walletVal, 186.36 )
@@ -142,9 +143,9 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
 
         walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
         self.assertEqual( walletVal, 186.36 )
@@ -162,9 +163,9 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.add( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.add( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.add( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
 
         walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
         self.assertEqual( walletVal, 186.36 )

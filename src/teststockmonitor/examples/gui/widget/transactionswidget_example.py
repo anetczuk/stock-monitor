@@ -63,10 +63,10 @@ app.setOrganizationName("arnet")
 
 dataObject = DataObject()
 dataObject.loadDownloadedStocks()
-dataObject.wallet.add( "EAT", 111, 11.1 )
-dataObject.wallet.add( "ALR", 222, 22.2 )
-dataObject.wallet.add( "CDR", 333, 33.3 )
-dataObject.wallet.add( "YYY", 444, 44.4 )
+dataObject.wallet.addTransactionData( "EAT", 111, 11.1 )
+dataObject.wallet.addTransactionData( "ALR", 222, 22.2 )
+dataObject.wallet.addTransactionData( "CDR", 333, 33.3 )
+dataObject.wallet.addTransactionData( "YYY", 444, 44.4 )
 
 setup_interrupt_handling()
 

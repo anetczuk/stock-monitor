@@ -98,20 +98,20 @@ else:
     window.data.addFav("abc", ["ALR"])
     window.data.addFav("abc", ["CDR"])
 
-    window.data.wallet.add( "CDR", 10, 300 )
-    window.data.wallet.add( "XXX", 10, 300 )
-    window.data.wallet.add( "ABC", 10, 300 )
-#     window.data.wallet.add( "AAA1", 300, 10 )
-#     window.data.wallet.add( "AAA2", 300, 10 )
-#     window.data.wallet.add( "AAA3", 300, 10 )
-#     window.data.wallet.add( "AAA4", 300, 10 )
+    window.data.wallet.addTransactionData( "CDR", 10, 300 )
+    window.data.wallet.addTransactionData( "XXX", 10, 300 )
+    window.data.wallet.addTransactionData( "ABC", 10, 300 )
+#     window.data.wallet.addTransactionData( "AAA1", 300, 10 )
+#     window.data.wallet.addTransactionData( "AAA2", 300, 10 )
+#     window.data.wallet.addTransactionData( "AAA3", 300, 10 )
+#     window.data.wallet.addTransactionData( "AAA4", 300, 10 )
 
-    window.data.markers.add( "ABC", 11, 22, MarkerEntry.OperationType.BUY )
-    window.data.markers.add( "XYZ", 33, 44, MarkerEntry.OperationType.BUY )
-    window.data.markers.add( "AAA1", 20, 100, MarkerEntry.OperationType.BUY )
-    window.data.markers.add( "AAA2",  5, 100, MarkerEntry.OperationType.BUY )
-    window.data.markers.add( "AAA3", 20, 100, MarkerEntry.OperationType.SELL, "red" )
-    window.data.markers.add( "AAA4",  5, 100, MarkerEntry.OperationType.SELL, "yellow" )
+    window.data.markers.addTransactionData( "ABC", 11, 22, MarkerEntry.OperationType.BUY )
+    window.data.markers.addTransactionData( "XYZ", 33, 44, MarkerEntry.OperationType.BUY )
+    window.data.markers.addTransactionData( "AAA1", 20, 100, MarkerEntry.OperationType.BUY )
+    window.data.markers.addTransactionData( "AAA2",  5, 100, MarkerEntry.OperationType.BUY )
+    window.data.markers.addTransactionData( "AAA3", 20, 100, MarkerEntry.OperationType.SELL, "red" )
+    window.data.markers.addTransactionData( "AAA4",  5, 100, MarkerEntry.OperationType.SELL, "yellow" )
 
     window.data.notes["notes"] = "example note"
     window.data.notes["aaa note"] = "notes example"

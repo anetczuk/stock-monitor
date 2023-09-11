@@ -357,7 +357,7 @@ class MarkersContainer( persist.Versionable ):
             return item.color.lower()
         return None
 
-    def add( self, ticker, value, amount, operation: MarkerEntry.OperationType, colorName: str = None ):
+    def addMarker( self, ticker, value, amount, operation: MarkerEntry.OperationType, colorName: str = None ):
         entry = MarkerEntry()
         entry.ticker = ticker
         entry.value = value
