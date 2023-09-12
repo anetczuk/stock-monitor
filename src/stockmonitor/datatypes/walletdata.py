@@ -122,13 +122,20 @@ class WalletData( persist.Versionable ):
     def currentItems( self, mode: TransactionMatchMode ) -> List[ Tuple[str, int, float] ]:
         ret: List[ Tuple[str, int, float] ] = []
         for stock_id, hist in self._stockDict.items():
-            key = stock_id[1]
-            if key is None:
-                _LOGGER.warning("found wallet None key")
+            ticker = stock_id[1]
+            if ticker is None:
+                _LOGGER.warning("found wallet None ticker")
                 continue
             val = hist.currentTransactionsAvg( mode )     # pair: (amount, unit_price)
             if val is not None:
-                ret.append( (key, val[0], val[1]) )
+                ret.append( (ticker, val[0], val[1]) )
+        return ret
+
+    def matchTransactions( self, mode: TransactionMatchMode):
+        ret = []
+        for stock_id, hist in self._stockDict.items():
+            trans_match = hist.matchTransactions( mode )
+            ret.append( (stock_id[0], stock_id[1], trans_match) )
         return ret
 
     # for backward compatibility
