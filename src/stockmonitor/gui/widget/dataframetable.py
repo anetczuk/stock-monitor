@@ -79,7 +79,7 @@ def is_nan( value ):
 def is_invalid_number( value ):
     if value is None:
         return True
-    if value in ("-", "--", "x"):
+    if value in ("-", "--", "x", ""):
         return True
     if is_nan( value ):
         return True

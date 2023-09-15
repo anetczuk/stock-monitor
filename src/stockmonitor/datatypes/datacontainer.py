@@ -340,59 +340,79 @@ class DataContainer():
             if not ticker:
                 ticker = ""
 
-            if currentStockRow is None or currentStockRow.empty:
-                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
-                rowDict = {}
-                rowDict[ columnsList[ 0] ] = stock_name
-                rowDict[ columnsList[ 1] ] = ticker
-                rowDict[ columnsList[ 2] ] = amount                         ## liczba
-                rowDict[ columnsList[ 3] ] = round( buy_unit_price, 4 )     ## sredni kurs nabycia
-                rowDict[ columnsList[ 4] ] = "-"                            ## kurs
-                rowDict[ columnsList[ 5] ] = "-"
-                rowDict[ columnsList[ 6] ] = "-"
-                rowDict[ columnsList[ 7] ] = "-"
-                rowDict[ columnsList[ 8] ] = "-"
-                rowDict[ columnsList[ 9] ] = "-"
-                rowDict[ columnsList[10] ] = "-"
-                rowDict[ columnsList[11] ] = "-"
-                rowsList.append( rowDict )
-                continue
+            buyValue  = buy_unit_price * amount
 
-            currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
+            currUnitValue = 0.0
+            sellValue = 0.0
+            currChangePnt = 0.0
+            profit = 0.0
+            profitPnt = 0.0
 
-            currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
-            currChangePnt = 0
-            if currChangeRaw != "-":
-                currChangePnt = float( currChangeRaw )
+            if not (currentStockRow is None or currentStockRow.empty):
+                # stock rate found
+                currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
-            sellValue  = currUnitValue * amount                 ## amount is positive
-            sellValue -= broker_commission( sellValue )
+                currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
+                currChangePnt = 0
+                if currChangeRaw != "-":
+                    currChangePnt = float( currChangeRaw )
+
+                sellValue  = currUnitValue * amount                 ## amount is positive
+                if amount > 0:
+                    sellValue -= broker_commission( sellValue )
+
+                profit    = sellValue - buyValue
+                profitPnt = 0
+                if buyValue != 0:
+                    profitPnt = profit / buyValue * 100.0
 
             ## ( curr_unit_price - ref_unit_price ) * unit_price * amount
             valueChange = currChangePnt / 100.0 * sellValue
 
             participation = sellValue / walletValue * 100.0
 
-            buyValue  = buy_unit_price * amount
-            profit    = sellValue - buyValue
-            profitPnt = 0
-            if buyValue != 0:
-                profitPnt = profit / buyValue * 100.0
-
             totalProfit = transactions.transactionsOverallProfit() + sellValue
+
+            buy_unit_price = round( buy_unit_price, 4 )
+            currUnitValue = round( currUnitValue, 2 )
+            sellValue = round( sellValue, 2 )
+            currChangePnt = round( currChangePnt, 2 )
+            valueChange = round( valueChange, 2 )
+            participation = round( participation, 2 )
+            profitPnt = round( profitPnt, 2 )
+            profit = round( profit, 2 )
+
+            if currentStockRow is None or currentStockRow.empty:
+                # unable to find current stock rate
+                currUnitValue = ""
+                currChangePnt = ""
+                valueChange = ""
+                sellValue = ""
+                participation = ""
+                profit = ""
+                profitPnt = ""
+
+            if amount < 1:
+                # stock sold out
+                buy_unit_price = ""
+                valueChange = ""
+                sellValue = ""
+                participation = ""
+                profitPnt = ""
+                profit = ""
 
             rowDict = {}
             rowDict[ columnsList[ 0] ] = stock_name
             rowDict[ columnsList[ 1] ] = ticker
             rowDict[ columnsList[ 2] ] = amount                         ## liczba
-            rowDict[ columnsList[ 3] ] = round( buy_unit_price, 4 )     ## sredni kurs nabycia
-            rowDict[ columnsList[ 4] ] = round( currUnitValue, 2 )      ## kurs
-            rowDict[ columnsList[ 5] ] = round( currChangePnt, 2 )      ## zm. kur. odn %
-            rowDict[ columnsList[ 6] ] = round( valueChange, 2 )        ## zm. kur. odn. PLN
-            rowDict[ columnsList[ 7] ] = round( sellValue, 2 )          ## wartosc
-            rowDict[ columnsList[ 8] ] = round( participation, 2 )      ## udzial
-            rowDict[ columnsList[ 9] ] = round( profitPnt, 2 )          ## zysk %
-            rowDict[ columnsList[10] ] = round( profit, 2 )             ## zysk PLN
+            rowDict[ columnsList[ 3] ] = buy_unit_price                 ## sredni kurs nabycia
+            rowDict[ columnsList[ 4] ] = currUnitValue                  ## kurs
+            rowDict[ columnsList[ 5] ] = currChangePnt                  ## zm. kur. odn %
+            rowDict[ columnsList[ 6] ] = valueChange                    ## zm. kur. odn. PLN
+            rowDict[ columnsList[ 7] ] = sellValue                      ## wartosc
+            rowDict[ columnsList[ 8] ] = participation                  ## udzial
+            rowDict[ columnsList[ 9] ] = profitPnt                      ## zysk %
+            rowDict[ columnsList[10] ] = profit                         ## zysk PLN
             rowDict[ columnsList[11] ] = round( totalProfit, 2 )        ## zysk calk.
             rowsList.append( rowDict )
 

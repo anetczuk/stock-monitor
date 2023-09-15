@@ -77,7 +77,7 @@ class WalletColorDelegate( TableRowColorDelegate ):
         ## "Zm.do k.odn.[%]" or "Zysk [%]"
         if dataColumn in (5, 9):
             stockChangeString = index.data()
-            if stockChangeString != "-":
+            if stockChangeString not in ("-", ""):
                 stockChange = float(stockChangeString)
                 if stockChange > 0.0:
                     return QtGui.QColor( "green" )

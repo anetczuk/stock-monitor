@@ -26,7 +26,7 @@
 import sys
 import os
 import logging
-import datetime
+# import datetime
 import argparse
 
 from stockmonitor.dataaccess.transactionsloader import load_mb_transactions
