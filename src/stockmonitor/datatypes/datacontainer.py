@@ -417,10 +417,7 @@ class DataContainer():
             rowsList.append( rowDict )
 
 
-        def sort_wallet_profit(item_a, item_b):
-            value_a = item_a[columnsList[9]]
-            value_b = item_b[columnsList[9]]
-
+        def compare_float( value_a, value_b ):
             if isinstance(value_a, str):
                 value_a = -float("inf")
             if isinstance(value_b, str):
@@ -431,6 +428,16 @@ class DataContainer():
             if value_a > value_b:
                 return 1
             return 0
+
+        def sort_wallet_profit(item_a, item_b):
+            value_a = item_a[columnsList[9]]
+            value_b = item_b[columnsList[9]]
+            cmp = compare_float( value_a, value_b )
+            if cmp != 0:
+                return cmp
+            value_a = item_a[columnsList[11]]
+            value_b = item_b[columnsList[11]]
+            return compare_float( value_a, value_b )
 
         rowsList.sort( key=functools.cmp_to_key(sort_wallet_profit), reverse = True )           # sort
         #rowsList.sort( key=lambda x: (not isinstance(x, str), x[columnsList[9]]) )           # sort
