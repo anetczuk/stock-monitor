@@ -92,6 +92,18 @@ def store_dataframe( trans_data, out_trans_path ):
     _LOGGER.info( "transactions stored to file %s", out_trans_path )
 
 
+def import_data( trans_hist_path ):
+    imported_data = load_dataframe( trans_hist_path )
+    if imported_data is None:
+        return None
+
+    data_container = DataContainer()
+    data_container.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
+    data_container.importWalletTransactions( imported_data, False )
+
+    return data_container
+
+
 ## ===================================================================
 
 
@@ -99,13 +111,9 @@ def extract_buysell( args ):
     trans_hist_path = args.transhistory
     out_trans_path = args.trans_out_file
 
-    imported_data = load_dataframe( trans_hist_path )
-    if imported_data is None:
+    data_container = import_data( trans_hist_path )
+    if data_container is None:
         return False
-
-    data_container = DataContainer()
-    data_container.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
-    data_container.importWalletTransactions( imported_data, False )
 
     trans_data = data_container.getWalletSellTransactions()
     _LOGGER.info( "transactions:\n%s", trans_data )
@@ -121,15 +129,29 @@ def extract_current( args ):
     trans_hist_path = args.transhistory
     out_trans_path = args.trans_out_file
 
-    imported_data = load_dataframe( trans_hist_path )
-    if imported_data is None:
+    data_container = import_data( trans_hist_path )
+    if data_container is None:
         return False
 
-    data_container = DataContainer()
-    data_container.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
-    data_container.importWalletTransactions( imported_data, False )
-
     trans_data = data_container.getWalletStock(show_soldout=True)
+    _LOGGER.info( "transactions:\n%s", trans_data )
+
+    store_dataframe( trans_data, out_trans_path )
+    return True
+
+
+## ===================================================================
+
+
+def extract_currentbuy( args ):
+    trans_hist_path = args.transhistory
+    out_trans_path = args.trans_out_file
+
+    data_container = import_data( trans_hist_path )
+    if data_container is None:
+        return False
+
+    trans_data = data_container.getWalletBuyTransactions(sort_data=True)
     _LOGGER.info( "transactions:\n%s", trans_data )
 
     store_dataframe( trans_data, out_trans_path )
@@ -157,6 +179,13 @@ def main():
 
     subparser = subparsers.add_parser('current', help='Extract current state of wallet')
     subparser.set_defaults( func=extract_current )
+    subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
+    subparser.add_argument( '--trans_out_file', action='store', help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
+
+    ## =================================================
+
+    subparser = subparsers.add_parser('currentbuy', help='Extract list of current buy transactions')
+    subparser.set_defaults( func=extract_currentbuy )
     subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
     subparser.add_argument( '--trans_out_file', action='store', help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
 

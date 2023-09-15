@@ -369,7 +369,9 @@ class DataContainer():
             ## ( curr_unit_price - ref_unit_price ) * unit_price * amount
             valueChange = currChangePnt / 100.0 * sellValue
 
-            participation = sellValue / walletValue * 100.0
+            participation = 0.0
+            if walletValue > 0:
+                participation = sellValue / walletValue * 100.0
 
             totalProfit = transactions.transactionsOverallProfit() + sellValue
 
@@ -446,8 +448,8 @@ class DataContainer():
         return dataFrame
 
     # pylint: disable=R0914
-    def getWalletBuyTransactions(self, groupByDay=False) -> DataFrame:
-        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna", "Opłata", "Wartość",
+    def getWalletBuyTransactions(self, groupByDay=False, sort_data=False) -> DataFrame:
+        columnsList = [ "Nazwa", "Ticker", "Liczba", "Kurs kupna", "Opłata", "Wartość K",
                         "Kurs aktualny",
                         "Zysk", "Zysk %", "Data transakcji" ]
 
@@ -482,15 +484,15 @@ class DataContainer():
                 trans_unit_price = item.unitPrice
                 trans_commission = round( item.commission, 2 )
                 trans_date       = item.transTime
-                trans_value      = trans_amount * trans_unit_price
+                buy_value        = trans_amount * trans_unit_price
 
                 currUnitValue = stock_unit_value
                 if currUnitValue:
                     currValue = currUnitValue * trans_amount
-                    profit    = currValue - trans_value
+                    profit    = currValue - buy_value
                     profitPnt = 0
-                    if trans_value != 0:
-                        profitPnt = profit / trans_value * 100.0
+                    if buy_value != 0:
+                        profitPnt = profit / buy_value * 100.0
                     profitPnt      = round( profitPnt, 2 )
                     profit         = round( profit, 2 )
                 else:
@@ -500,10 +502,31 @@ class DataContainer():
                     profitPnt = "-"
 
                 trans_unit_price = round( trans_unit_price, 4 )
+                buy_value = round( buy_value, 2 )
 
                 rowsList.append( [ stock_name, ticker, trans_amount, trans_unit_price, trans_commission,
-                                   round( trans_value, 2 ), currUnitValue,
+                                   buy_value, currUnitValue,
                                    profit, profitPnt, trans_date ] )
+
+        if sort_data:
+            def compare_raw( value_a, value_b ):
+                if value_a < value_b:
+                    return 1
+                if value_a > value_b:
+                    return -1
+                return 0
+    
+            def sort_buy_trans(item_a, item_b):
+                value_a = item_a[0]
+                value_b = item_b[0]
+                cmp = compare_raw( value_a, value_b )
+                if cmp != 0:
+                    return cmp
+                value_a = item_a[-1]
+                value_b = item_b[-1]
+                return compare_raw( value_a, value_b )
+    
+            rowsList.sort( key=functools.cmp_to_key(sort_buy_trans), reverse = True )           # sort
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
