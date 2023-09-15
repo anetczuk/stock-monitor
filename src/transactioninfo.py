@@ -44,17 +44,17 @@ from stockmonitor.datatypes.datatypes import TransactionMatchMode
 _LOGGER = logging.getLogger(__name__)
 
 
-def process_transactions_history( trans_hist_path: str, out_trans_path: str ):
+def process_transactions_history( trans_hist_path: str, out_trans_path: str ) -> bool:
     _LOGGER.info( "opening transactions history: %s", trans_hist_path )
 
     imported_data, data_type = load_mb_transactions( trans_hist_path )
     if imported_data is None:
         _LOGGER.error( "unable to import data from %s", data_type )
-        return -1
+        return False
 
     if data_type != 0:
         _LOGGER.error( "given data type not supported: %s", data_type )
-        return -1
+        return False
 
     data_container = DataContainer()
     data_container.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
@@ -75,7 +75,51 @@ def process_transactions_history( trans_hist_path: str, out_trans_path: str ):
             trans_data.to_csv( out_trans_path, sep=';', encoding='utf-8' )
         _LOGGER.info( "transactions stored to file %s", out_trans_path )
 
-    return 0
+    return True
+
+
+def extract_buysell( args ):
+    return process_transactions_history( args.transhistory, args.trans_out_file )
+
+
+## ===================================================================
+
+
+def extract_current( args ):
+    trans_hist_path = args.transhistory
+    out_trans_path = args.trans_out_file
+
+    _LOGGER.info( "opening transactions history: %s", trans_hist_path )
+
+    imported_data, data_type = load_mb_transactions( trans_hist_path )
+    if imported_data is None:
+        _LOGGER.error( "unable to import data from %s", data_type )
+        return False
+
+    if data_type != 0:
+        _LOGGER.error( "given data type not supported: %s", data_type )
+        return False
+
+    data_container = DataContainer()
+    data_container.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
+    data_container.importWalletTransactions( imported_data, False )
+
+    trans_data = data_container.getWalletStock(show_soldout=True)
+    _LOGGER.info( "transactions:\n%s", trans_data )
+
+    if out_trans_path:
+        if out_trans_path.endswith('.json'):
+            trans_data.to_json( out_trans_path, orient="records" )
+        elif out_trans_path.endswith('.xls'):
+            trans_data.to_excel( out_trans_path )
+        elif out_trans_path.endswith('.xlsx'):
+            trans_data.to_excel( out_trans_path )
+        #elif out_trans_path.endswith('.csv'):
+        else:
+            trans_data.to_csv( out_trans_path, sep=';', encoding='utf-8' )
+        _LOGGER.info( "transactions stored to file %s", out_trans_path )
+
+    return True
 
 
 ## ===================================================================
@@ -85,8 +129,22 @@ def process_transactions_history( trans_hist_path: str, out_trans_path: str ):
 def main():
     parser = argparse.ArgumentParser(description='stock data grabber')
     parser.add_argument( '-la', '--logall', action='store_true', help='Log all messages' )
-    parser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
-    parser.add_argument( '--trans_out_file', action='store', help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
+
+    subparsers = parser.add_subparsers( help='extract mode', description="select one of subcommands", dest='subcommand', required=True )
+
+    ## =================================================
+
+    subparser = subparsers.add_parser('buysell', help='Extract buy and matched sell transactions')
+    subparser.set_defaults( func=extract_buysell )
+    subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
+    subparser.add_argument( '--trans_out_file', action='store', help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
+
+    ## =================================================
+
+    subparser = subparsers.add_parser('current', help='Extract current state of wallet')
+    subparser.set_defaults( func=extract_current )
+    subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
+    subparser.add_argument( '--trans_out_file', action='store', help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
 
     ## =================================================
 
@@ -98,10 +156,19 @@ def main():
     else:
         logging.getLogger().setLevel( logging.INFO )
 
-    ret_code = process_transactions_history( args.transhistory, args.trans_out_file )
-    if ret_code != 0:
+    if "func" not in args:
+        ## no command given
+        return os.EX_USAGE
+
+    _LOGGER.info( "starting data extraction" )
+
+    succeed = args.func( args )
+
+    if not succeed:
+        _LOGGER.info( "unable to process data" )
         return os.EX_DATAERR
 
+    _LOGGER.info( "processing completed" )
     return os.EX_OK
 
 

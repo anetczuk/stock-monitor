@@ -129,7 +129,7 @@ def grab_all( args ):
     if not out_format:
         ## None or empty format
         print( "out_format is required" )
-        return
+        return False
 
     out_dir = args.out_dir
     if out_dir is not None:
@@ -186,13 +186,13 @@ def grab_by_config( parser, args ):
     if not config_path:
         ## None or empty format
         print( "config_path is required" )
-        return
+        return False
 
     try:
         config_dict = read_dict( config_path )
     except Exception as ex:
         _LOGGER.exception( "unable to read configuration file %s, reason: %s", config_path, ex )
-        return
+        return False
 
     for mode, params in config_dict.items():
         params_list = [ mode ] + params.copy()

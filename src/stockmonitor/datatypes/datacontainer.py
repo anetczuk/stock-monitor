@@ -26,6 +26,7 @@ from typing import Dict, List, Tuple
 
 import datetime
 #from datetime import datetime, date, timedelta
+import functools
 
 from pandas.core.frame import DataFrame
 
@@ -306,7 +307,7 @@ class DataContainer():
     ## ======================================================================
 
     # pylint: disable=R0914
-    def getWalletStock(self) -> DataFrame:
+    def getWalletStock(self, show_soldout=True) -> DataFrame:
         columnsList = [ "Nazwa", "Ticker", "Liczba", "Średni kurs nabycia",
                         "Kurs",
                         "Zm.do k.odn.[%]", "Zm.do k.odn.[PLN]",
@@ -320,7 +321,6 @@ class DataContainer():
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
 
-        stockNameIndex  = currentStock.getDataColumnIndex( StockDataType.STOCK_NAME )
         dataChangeIndex = currentStock.getDataColumnIndex( StockDataType.CHANGE_TO_REF )
 
         rowsList = []
@@ -328,14 +328,22 @@ class DataContainer():
         transMode = self.userContainer.transactionsMatchMode
 
         for stock_id, transactions in self.wallet._stockDict.items():
-            ticker = stock_id[1] if stock_id else None
+            stock_name: str = stock_id[0] if stock_id else None
+            ticker: str     = stock_id[1] if stock_id else None
+
             amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
+            if show_soldout is False and amount <= 1:
+                continue
+            
             currentStockRow = currentStock.getRowByTicker( ticker )
+
+            if not ticker:
+                ticker = ""
 
             if currentStockRow is None or currentStockRow.empty:
                 _LOGGER.warning( "could not find stock by ticker: %s", ticker )
                 rowDict = {}
-                rowDict[ columnsList[ 0] ] = "-"
+                rowDict[ columnsList[ 0] ] = stock_name
                 rowDict[ columnsList[ 1] ] = ticker
                 rowDict[ columnsList[ 2] ] = amount                         ## liczba
                 rowDict[ columnsList[ 3] ] = round( buy_unit_price, 4 )     ## sredni kurs nabycia
@@ -349,8 +357,6 @@ class DataContainer():
                 rowDict[ columnsList[11] ] = "-"
                 rowsList.append( rowDict )
                 continue
-
-            stockName = currentStockRow.iloc[ stockNameIndex ]
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
@@ -376,7 +382,7 @@ class DataContainer():
             totalProfit = transactions.transactionsOverallProfit() + sellValue
 
             rowDict = {}
-            rowDict[ columnsList[ 0] ] = stockName
+            rowDict[ columnsList[ 0] ] = stock_name
             rowDict[ columnsList[ 1] ] = ticker
             rowDict[ columnsList[ 2] ] = amount                         ## liczba
             rowDict[ columnsList[ 3] ] = round( buy_unit_price, 4 )     ## sredni kurs nabycia
@@ -389,6 +395,25 @@ class DataContainer():
             rowDict[ columnsList[10] ] = round( profit, 2 )             ## zysk PLN
             rowDict[ columnsList[11] ] = round( totalProfit, 2 )        ## zysk calk.
             rowsList.append( rowDict )
+
+
+        def sort_wallet_profit(item_a, item_b):
+            value_a = item_a[columnsList[9]]
+            value_b = item_b[columnsList[9]]
+
+            if isinstance(value_a, str):
+                value_a = -float("inf")
+            if isinstance(value_b, str):
+                value_b = -float("inf")
+            
+            if value_a < value_b:
+                return -1
+            if value_a > value_b:
+                return 1
+            return 0
+
+        rowsList.sort( key=functools.cmp_to_key(sort_wallet_profit), reverse = True )           # sort
+        #rowsList.sort( key=lambda x: (not isinstance(x, str), x[columnsList[9]]) )           # sort
 
         dataFrame = DataFrame( rowsList )
         return dataFrame
@@ -535,7 +560,7 @@ class DataContainer():
                                    buy_unit_price, sell_unit_price, buyValue, sellValue,
                                    profit, profitPnt, trans_commission, buy_date, sell_date ] )
 
-        rowsList.sort( key=lambda x: x[-1], reverse=False )           ## sort
+        rowsList.sort( key=lambda x: x[-1], reverse=False )           # sort
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
