@@ -28,6 +28,7 @@ import os
 import logging
 # import datetime
 import argparse
+import pandas
 
 from stockmonitor.dataaccess.transactionsloader import load_mb_transactions
 from stockmonitor.datatypes.datacontainer import DataContainer
@@ -44,16 +45,62 @@ from stockmonitor.datatypes.datatypes import TransactionMatchMode
 _LOGGER = logging.getLogger(__name__)
 
 
-def process_transactions_history( trans_hist_path: str, out_trans_path: str ) -> bool:
+## ===================================================================
+
+
+def load_dataframe( trans_hist_path ):
     _LOGGER.info( "opening transactions history: %s", trans_hist_path )
 
     imported_data, data_type = load_mb_transactions( trans_hist_path )
     if imported_data is None:
         _LOGGER.error( "unable to import data from %s", data_type )
-        return False
+        return None
 
     if data_type != 0:
         _LOGGER.error( "given data type not supported: %s", data_type )
+        return None
+
+    return imported_data
+
+
+def store_dataframe( trans_data, out_trans_path ):
+    if not out_trans_path:
+        return
+    if out_trans_path.endswith('.json'):
+        trans_data.to_json( out_trans_path, orient="records" )
+    elif out_trans_path.endswith('.xls'):
+        trans_data.to_excel( out_trans_path )
+    elif out_trans_path.endswith('.xlsx'):
+        # trans_data.to_excel( out_trans_path )
+
+        sheet_name = "data"
+        writer = pandas.ExcelWriter(out_trans_path, engine='xlsxwriter')
+        trans_data.to_excel(writer, sheet_name=sheet_name, index=False)         # send df to writer
+        worksheet = writer.sheets[sheet_name]                                   # pull worksheet object
+        for idx, col in enumerate(trans_data):                                  # loop through all columns
+            series = trans_data[col]
+            max_len = max((
+                series.astype(str).map(len).max(),  # len of largest item
+                len(str(series.name))  # len of column name/header
+                )) + 1  # adding a little extra space
+            worksheet.set_column(idx, idx, max_len)  # set column width
+        writer.save()
+
+    #elif out_trans_path.endswith('.csv'):
+    else:
+        trans_data.to_csv( out_trans_path, sep=';', encoding='utf-8' )
+    _LOGGER.info( "transactions stored to file %s", out_trans_path )
+
+
+## ===================================================================
+
+
+def extract_buysell( args ):
+    trans_hist_path = args.transhistory
+    out_trans_path = args.trans_out_file
+
+    imported_data = load_dataframe( trans_hist_path )
+    if imported_data is None:
         return False
 
     data_container = DataContainer()
@@ -63,23 +110,8 @@ def process_transactions_history( trans_hist_path: str, out_trans_path: str ) ->
     trans_data = data_container.getWalletSellTransactions()
     _LOGGER.info( "transactions:\n%s", trans_data )
 
-    if out_trans_path:
-        if out_trans_path.endswith('.json'):
-            trans_data.to_json( out_trans_path, orient="records" )
-        elif out_trans_path.endswith('.xls'):
-            trans_data.to_excel( out_trans_path )
-        elif out_trans_path.endswith('.xlsx'):
-            trans_data.to_excel( out_trans_path )
-        #elif out_trans_path.endswith('.csv'):
-        else:
-            trans_data.to_csv( out_trans_path, sep=';', encoding='utf-8' )
-        _LOGGER.info( "transactions stored to file %s", out_trans_path )
-
+    store_dataframe( trans_data, out_trans_path )
     return True
-
-
-def extract_buysell( args ):
-    return process_transactions_history( args.transhistory, args.trans_out_file )
 
 
 ## ===================================================================
@@ -89,15 +121,8 @@ def extract_current( args ):
     trans_hist_path = args.transhistory
     out_trans_path = args.trans_out_file
 
-    _LOGGER.info( "opening transactions history: %s", trans_hist_path )
-
-    imported_data, data_type = load_mb_transactions( trans_hist_path )
+    imported_data = load_dataframe( trans_hist_path )
     if imported_data is None:
-        _LOGGER.error( "unable to import data from %s", data_type )
-        return False
-
-    if data_type != 0:
-        _LOGGER.error( "given data type not supported: %s", data_type )
         return False
 
     data_container = DataContainer()
@@ -107,18 +132,7 @@ def extract_current( args ):
     trans_data = data_container.getWalletStock(show_soldout=True)
     _LOGGER.info( "transactions:\n%s", trans_data )
 
-    if out_trans_path:
-        if out_trans_path.endswith('.json'):
-            trans_data.to_json( out_trans_path, orient="records" )
-        elif out_trans_path.endswith('.xls'):
-            trans_data.to_excel( out_trans_path )
-        elif out_trans_path.endswith('.xlsx'):
-            trans_data.to_excel( out_trans_path )
-        #elif out_trans_path.endswith('.csv'):
-        else:
-            trans_data.to_csv( out_trans_path, sep=';', encoding='utf-8' )
-        _LOGGER.info( "transactions stored to file %s", out_trans_path )
-
+    store_dataframe( trans_data, out_trans_path )
     return True
 
 
