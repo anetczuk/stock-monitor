@@ -21,15 +21,13 @@
 # SOFTWARE.
 #
 
-import os
 import logging
 import datetime
 import math
-import multiprocessing.dummy
+import multiprocessing.pool
 import abc
 
 import pandas
-import numpy
 
 from stockdataaccess import persist
 from stockdataaccess.dataaccess import TMP_DIR
@@ -60,7 +58,7 @@ class ActivityIntradayDataProvider():
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
-    def map(self, isinItems, pool: multiprocessing.dummy.Pool):
+    def map(self, isinItems, pool: multiprocessing.pool.ThreadPool):
         raise NotImplementedError('You need to define this method in derived class!')
 
     def getReferenceValue(self, name ):
@@ -126,7 +124,7 @@ class MetaStockIntradayProvider( ActivityIntradayDataProvider ):
         self.accessDate = date
 
     ## returns list
-    def map(self, isinItems, pool: multiprocessing.dummy.Pool):
+    def map(self, isinItems, pool: multiprocessing.pool.ThreadPool):
         dataFrame = pool.apply( self._loadData )
         if dataFrame is None:
             return []
@@ -237,7 +235,7 @@ class ActivityAnalysis:
             try:
                 raiseVal  = maxVal - currVal
             # pylint: disable=W0212
-            except numpy.core._exceptions.UFuncTypeError:
+            except Exception:
                 _LOGGER.warning( "invalid data '%s' and '%s'", maxVal, currVal )
                 raise
 
@@ -303,7 +301,8 @@ class ActivityAnalysis:
 
         return retDataFrame
 
-    def calculateActivityForDay( self, day_stock_list, stats_dict: StatsDict, thresholdPercent, result_stats: StatsDict ):
+    def calculateActivityForDay( self, day_stock_list, stats_dict: StatsDict, thresholdPercent,
+                                 result_stats: StatsDict ):
         for dataFrame in day_stock_list:
             if dataFrame is None:
                 continue

@@ -28,16 +28,8 @@ from typing import Dict
 
 from pandas.core.frame import DataFrame
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
-
-from stockmonitor.datatypes.datatypes import FavData, WalletData,\
-    TransactionMatchMode, MarkersContainer,\
-    MarkerEntry
-from stockmonitor.datatypes.datacontainer import DataContainer
-from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
-    GpwIndexIntradayMap
 
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
     GpwCurrentIndexesData
@@ -48,6 +40,13 @@ from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
 from stockdataaccess.dataaccess.globalindexesdata import GlobalIndexesData
 from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
     HistoryShortSellingsData
+
+from stockmonitor.datatypes.datatypes import FavData, WalletData,\
+    TransactionMatchMode, MarkersContainer,\
+    MarkerEntry
+from stockmonitor.datatypes.datacontainer import DataContainer
+from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
+    GpwIndexIntradayMap
 
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.command.addfavgroupcommand import AddFavGroupCommand

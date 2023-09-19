@@ -24,8 +24,6 @@
 import logging
 import abc
 
-from PyQt5.QtCore import Qt
-
 from stockmonitor.gui.appwindow import ChartAppWindow
 from stockmonitor.gui.utils import set_label_url
 from stockmonitor.gui import threadlist

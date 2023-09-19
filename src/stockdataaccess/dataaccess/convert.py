@@ -25,8 +25,6 @@ import re
 import datetime
 import logging
 
-import pandas
-
 
 _LOGGER = logging.getLogger(__name__)
 

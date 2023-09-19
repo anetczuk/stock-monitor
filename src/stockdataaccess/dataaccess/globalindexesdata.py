@@ -21,7 +21,6 @@
 # SOFTWARE.
 #
 
-import os
 import logging
 
 import pandas

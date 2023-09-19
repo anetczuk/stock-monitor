@@ -3,24 +3,22 @@
 #
 #
 
-import mplfinance as mpf
-import matplotlib.pyplot as plt
-import pandas
 import random
 import datetime
-import numpy
-import matplotlib
-
 from typing import Dict
+import pandas
+
+import matplotlib.pyplot as plt
+import mplfinance as mpf
 
 
 CANDLE_TYPE  = "candle"
 CANDLE_STYLE = "default"
 
 
-def get_date_format( xdata ):
-    if len(xdata) > 1:
-        timeSpan = xdata[-1] - xdata[0]
+def get_date_format( x_data ):
+    if len(x_data) > 1:
+        timeSpan = x_data[-1] - x_data[0]
         if timeSpan > datetime.timedelta( days=2 ):
             ## long format
             return '%d-%m-%Y'

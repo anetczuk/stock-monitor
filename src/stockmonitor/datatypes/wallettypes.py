@@ -23,7 +23,7 @@
 
 from enum import Enum, unique
 import logging
-from datetime import datetime, date, timedelta
+import datetime
 from copy import deepcopy
 
 from typing import List, Tuple
@@ -41,7 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 #Transaction = Tuple[int, float, float, datetime]
 class Transaction:
 
-    def __init__(self, amount, unitPrice, commission, transTime: datetime):
+    def __init__(self, amount, unitPrice, commission, transTime: datetime.datetime):
         self.amount     = amount                ## amount > 0 -- buy transaction, otherwise sell transaction
         self.unitPrice  = unitPrice
         self.commission = commission
@@ -113,7 +113,7 @@ class Transaction:
     def sortKey( tupleValue ):
         retDate = tupleValue.transTime
         if retDate is None:
-            return datetime.min
+            return datetime.datetime.min
         return retDate
 
 
@@ -139,7 +139,7 @@ class TransactionMatchMode(Enum):
         return obj
 
 
-# TRansactions of single stock
+# Transactions of single stock
 class TransHistory():
 
     def __init__(self):
@@ -181,7 +181,7 @@ class TransHistory():
                 stockAmount += item.amount
         return stockAmount
 
-    def append(self, amount, unitPrice, commission, transTime: datetime = None):
+    def append(self, amount, unitPrice, commission, transTime: datetime.datetime = None):
         self.transactions.insert( 0, Transaction(amount, unitPrice, commission, transTime) )
 
     def appendItem(self, item):
@@ -214,7 +214,7 @@ class TransHistory():
     ## =============================================================
 
     ## find transaction pointed by 'findTime'
-    def findIndex( self, findTime: datetime ) -> 'TransHistory':
+    def findIndex( self, findTime: datetime.datetime ) -> int:
         tSize = len( self.transactions )
         for i in range(0, tSize):
             item = self.transactions[ i ]
@@ -224,7 +224,7 @@ class TransHistory():
         return tSize
 
     ## find transaction with date before given date and return it's index
-    def findIndexBefore( self, endDate: date ) -> 'TransHistory':
+    def findIndexBefore( self, endDate: datetime.date ) -> int:
         tSize = len( self.transactions )
         for i in range(0, tSize):
             item = self.transactions[ i ]
@@ -234,12 +234,12 @@ class TransHistory():
                 return i
         return tSize
 
-    def splitTransactions( self, afterIndex, currentAfter = False ) -> 'TransHistory':
+    def splitTransactions( self, afterIndex: int, currentAfter=False ) -> Tuple['TransHistory', 'TransHistory']:
         if currentAfter is True:
             nextIndex = afterIndex + 1
             return self.splitTransactions( nextIndex, False )
 
-        transList   = self.transactions[ afterIndex : ]
+        transList   = self.transactions[ afterIndex: ]
         beforeTrans = TransHistory()
         beforeTrans.appendList( transList )
 
@@ -253,7 +253,7 @@ class TransHistory():
         foundIndex = self.findIndexBefore( endDate )
         if foundIndex >= self.size():
             return TransHistory()
-        transList = self.transactions[ foundIndex : ]
+        transList = self.transactions[ foundIndex: ]
         retTrans  = TransHistory()
         retTrans.appendList( transList )
         return retTrans
@@ -361,7 +361,7 @@ class TransHistory():
             profitValue = -sellProfit - buyCost
             totalGain += profitValue
 
-            entryDate: datetime = sellTrans.transTime
+            entryDate: datetime.datetime = sellTrans.transTime
             if startDate is not None and entryDate < startDate:
                 ## accumulates older values in one entry 'entryDate'
                 entryDate = startDate
@@ -506,7 +506,8 @@ class TransHistory():
         return stockValuesFrame
 
     ## calculate profit of single stock
-    def calculateProfitHistory(self, stockData: DataFrame, transMode: TransactionMatchMode, calculateOverall: bool = True) -> DataFrame:
+    def calculateProfitHistory(self, stockData: DataFrame, transMode: TransactionMatchMode,
+                               calculateOverall: bool = True) -> DataFrame:
         if stockData is None:
             return None
         if stockData.empty:
@@ -559,7 +560,7 @@ class TransHistory():
 
         return stockValuesFrame
 
-    def matchTransactions( self, mode: TransactionMatchMode, matchTime: datetime = None ) -> TransactionsMatch:
+    def matchTransactions( self, mode: TransactionMatchMode, matchTime: datetime.datetime = None ) -> TransactionsMatch:
         ## Buy value raises then current unit price rises
         ## Sell value raises then current unit price decreases
         sellList = []
@@ -694,7 +695,7 @@ class TransHistory():
                 continue
             diff = item.transTime - trans_date
             # print("diff:", item[2], trans_date, diff)
-            if -timedelta( minutes=5 ) < diff < timedelta( minutes=5 ):
+            if -datetime.timedelta( minutes=5 ) < diff < datetime.timedelta( minutes=5 ):
                 return i
         return -1
 
@@ -709,11 +710,11 @@ def broker_commission( value, transTime=None ):
     ## always returns positive value
     minCommission = 3.0
     if transTime is None:
-        transTime = datetime.today().date()
-    elif isinstance(transTime, datetime):
+        transTime = datetime.datetime.today().date()
+    elif isinstance(transTime, datetime.datetime):
         transTime = transTime.date()
 
-    if transTime > date( year=2020, month=10, day=6 ):
+    if transTime > datetime.date( year=2020, month=10, day=6 ):
         minCommission = 5.0
     commission = abs( value ) * 0.0039
     commission = max( commission, minCommission )

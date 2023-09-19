@@ -21,7 +21,6 @@
 # SOFTWARE.
 #
 
-import os
 import logging
 import datetime
 import multiprocessing.dummy

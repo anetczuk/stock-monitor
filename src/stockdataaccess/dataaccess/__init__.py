@@ -113,16 +113,16 @@ def retrieve_url_requests( url, outputPath ):
 # def retrieve_url_list( url_list, outputPath ):
 #     with requests_init_session() as currSession:
 #         content_data = access_url_list( currSession, url_list )
-# 
+#
 #     try:
 #         # _LOGGER.debug( "writing requests response from %s", url )
 #         with open(outputPath, 'wb') as of:
 #             of.write( content_data )
-# 
+#
 #     except UnicodeDecodeError as ex:
 #         _LOGGER.exception( "unable to access: %s %s", url_list[-1], ex, exc_info=False )
 #         raise
-# 
+#
 #     return content_data
 
 
@@ -132,10 +132,10 @@ def access_url_requests( session: requests.Session, url ):
                 # "Accept-Encoding": "br",                          ## causes curl to receive bytes instead of string
                 # "Accept-Encoding": "gzip, deflate, br",            ## causes curl to receive bytes instead of string
                 "Accept-Language": "en-US,en;q=0.5"
-               }
+                }
 
 #         pprint.pprint( dict( session.headers ) )
-    result = session.get( url, headers = headers, timeout = 30 )
+    result = session.get( url, headers=headers, timeout=30 )
     # print( "cccccccccxx:", dict(session.request.headers) )
     result.raise_for_status()
     content_data = result.content
@@ -164,7 +164,8 @@ def retrieve_url_pycurl( url, outputPath ):
 
     with CUrlConnectionRAII() as curl:
         # curl.setopt(pycurl.VERBOSE, 1)
-        # curl.setopt( pycurl.HTTP_VERSION, pycurl.CURL_HTTP_VERSION_1_0 )        ## disable data chunks (causes pycurl to hang)
+        ### disable data chunks (causes pycurl to hang)
+        # curl.setopt( pycurl.HTTP_VERSION, pycurl.CURL_HTTP_VERSION_1_0 )
 
         # Set URL value
         curl.setopt( pycurl.URL, url )
@@ -172,7 +173,7 @@ def retrieve_url_pycurl( url, outputPath ):
         curl.setopt( pycurl.TIMEOUT, 30 )
 
         curl.setopt( pycurl.USERAGENT,
-                    "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" )
+                     "Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" )
 #         curl.setopt( pycurl.USERAGENT,
 #                     "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0" )
 #         curl.setopt( pycurl.USERAGENT, "Mozilla/5.0 (X11; Linux x86_64)" )
@@ -182,8 +183,8 @@ def retrieve_url_pycurl( url, outputPath ):
 
         headers.update( {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-#             "Accept-Encoding": "br",                          ## causes curl to receive bytes instead of string
-            #"Accept-Encoding": "gzip, deflate, br",            ## causes curl to receive bytes instead of string
+            # "Accept-Encoding": "br",                           ## causes curl to receive bytes instead of string
+            # "Accept-Encoding": "gzip, deflate, br",            ## causes curl to receive bytes instead of string
             "Accept-Language": "en-US,en;q=0.5",
         } )
 

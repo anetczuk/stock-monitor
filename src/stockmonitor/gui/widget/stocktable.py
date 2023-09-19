@@ -32,13 +32,12 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QDesktopServices
 
-from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
-from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
-
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
-from stockmonitor.datatypes.datatypes import MarkerEntry
 
+from stockmonitor.datatypes.datatypes import MarkerEntry
+from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
+from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
 from stockmonitor.gui.widget import stockchartwidget, stockmosaicwidget
 from stockmonitor.gui.widget import indexchartwidget
 # import stockmonitor.gui.widget.stocksummarywidget as stocksummarywidget

@@ -26,14 +26,11 @@ import datetime
 import math
 from typing import List
 
-# from typing import List
-
 import mplfinance as fplt
 
 from stockmonitor.gui.widget.mpl.mplbasechart import get_index_float
 from .mplbasechart import MplBaseChart
 from .mplbasechart import _configure_plot
-import matplotlib
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -157,8 +154,10 @@ class PriceValueCandleStickChart( MplBaseChart ):
                     index = y * cols * 2 + (x + 1)
                     if y * cols + x + 1 > limit:
                         return
-                    pricePlot  = self.figure.add_subplot( nrows, ncols, index )            ## matplotlib.axes._subplots.AxesSubplot
-                    volumePlot = self.figure.add_subplot( nrows, ncols, index + cols )     ## matplotlib.axes._subplots.AxesSubplot
+                    # pricePlot: matplotlib.axes._subplots.AxesSubplot
+                    pricePlot  = self.figure.add_subplot( nrows, ncols, index )
+                    # volumePlot: matplotlib.axes._subplots.AxesSubplot
+                    volumePlot = self.figure.add_subplot( nrows, ncols, index + cols )
                     self.plotsList.append( (pricePlot, volumePlot) )
 
         ## fix fitting figure to widget
@@ -200,7 +199,8 @@ class PriceValueCandleStickChart( MplBaseChart ):
         pricePlot, _ = self.plotsList[ index ]
         pricePlot.axhline( y=yvalue, color=color, linestyle=style )
 
-    def addPricePoint( self, xdata: datetime.datetime, ydata, color='r', marker=".", markersize=12, annotation=None, index=0 ):
+    def addPricePoint( self, xdata: datetime.datetime, ydata, color='r', marker=".", markersize=12,
+                       annotation=None, index=0 ):
         pricePlot, _ = self.plotsList[ index ]
         pricePlot.plot_date( xdata, ydata, color, marker=marker, markersize=markersize, antialiased=True )
 
@@ -302,7 +302,7 @@ def _plot_data( dataframe, pricePlot, volumePlot=None, paramsDict=None ):
                  volume=plotVolume,
                  datetime_format=date_format,
                  show_nontrading=True,
-#                      xlim=(start_day, end_day),
+                 # xlim=(start_day, end_day),
                  **additionalParams
                  )
 

@@ -23,11 +23,8 @@
 
 import logging
 
-from typing import Dict, List
+from typing import Dict, Any
 
-import pandas
-
-from PyQt5.QtCore import Qt
 # from PyQt5.QtGui import QCloseEvent
 
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
@@ -37,15 +34,12 @@ from stockmonitor.datatypes.wallettypes import TransHistory
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.appwindow import ChartAppWindow
-from stockmonitor.gui.utils import set_label_url
-from stockmonitor.gui.widget.mpl import mplbasechart
 from stockmonitor.gui.widget.mpl import candlestickchart
+from stockmonitor.gui.widget.stockchartwidget import prepare_candle_data
 
 from .. import uiloader
 
 from .mpl.mpltoolbar import NavigationToolbar
-from stockmonitor.gui.widget.stockchartwidget import prepare_candle_data
-import matplotlib.pyplot
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -170,7 +164,7 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
             ## sort by change
             self._refreshTickersList()
             try:
-                ## there can be float values and string "-" meaning no value available 
+                ## there can be float values and string "-" meaning no value available
                 self.tickerList = sorted( self.tickerList, key=lambda x: str(x[2]) )
             except Exception as ex:
                 _LOGGER.error("exception: %s", ex)
@@ -284,7 +278,7 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
         recentPrice = closeColumn.iloc[-1]
         self.ui.candleChart.addVolumeSecondaryY( recentPrice, index=tickerIndex, set_label=False )
 
-        returnParamsDict = {}
+        returnParamsDict: Dict[Any, Any] = {}
         paramsDict = { "ylabel": "",
                        "ylabel_lower": "",
                        "axtitle": title,
@@ -336,9 +330,11 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
                     amount         = item.amount
                     buy_unit_price = item.unitPrice
                     if amount > 0:
-                        chart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="+", index=tickerIndex )
+                        chart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="+",
+                                             index=tickerIndex )
                     else:
-                        chart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="-", index=tickerIndex )
+                        chart.addPricePoint( trans_time, buy_unit_price, color='blue', annotation="-",
+                                             index=tickerIndex )
 
     def _dataSourceObjectsList(self):
         retList = []
@@ -364,7 +360,7 @@ class StockMosaicWidget(QtBaseClass):                    # type: ignore
         return retList
 
     def _refreshTickersList(self):
-        namesList = list()
+        namesList = []
         currentSource: GpwCurrentStockData = self.getCurrentDataSource()
         for ticker_pair in self.tickerList:
             ticker = ticker_pair[0]

@@ -75,17 +75,18 @@ setup_interrupt_handling()
 random.seed( None )
 
 
-def handleFinished():
+def handle_finished():
     _LOGGER.info( "all finished" )
+
 
 def sleep():
     sleepTime = random.randrange( 3 )
     time.sleep( sleepTime )
 
 
-def createThreadList():
+def create_thread_list():
     threads = ThreadPoolList( app )
-    threads.finished.connect( handleFinished, Qt.QueuedConnection )
+    threads.finished.connect( handle_finished, Qt.QueuedConnection )
     #         threads.finished.connect( self._updateView, Qt.QueuedConnection )
     threads.deleteOnFinish()
 
@@ -97,7 +98,7 @@ def createThreadList():
     threads.start( call_list )
 
 
-createThreadList()
+create_thread_list()
 
 
 exitCode = app.exec_()

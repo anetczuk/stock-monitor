@@ -27,7 +27,6 @@ import datetime
 import abc
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
 
 from stockdataaccess.logger import flush_handlers
 
@@ -56,7 +55,7 @@ class ThreadingList():
             thread = self._appendFunction( func, args )
             threads_list.append( thread )
 
-        for thread in threads_list:    
+        for thread in threads_list:
             thread.start()
 
     def join(self):
@@ -65,7 +64,7 @@ class ThreadingList():
 
     def _appendFunction(self, function, args=None, startThread=False):
         thread = threading.Thread( target=function, args=args )
-        self.append( thread, startThread )
+        self.threads.append( thread, startThread )
         return thread
 
 
@@ -89,8 +88,8 @@ class AbstractWorker( QtCore.QObject ):
 
     workerFinished = QtCore.pyqtSignal()
 
-    def __init__(self, parent=None):
-        super().__init__( parent )
+    # def __init__(self, parent=None):
+    #     super().__init__( parent )
 
 #     def __del__(self):
 #         _LOGGER.info( "object destructor: %s, thread: %s", self, self.threadName )
@@ -131,7 +130,7 @@ class AbstractWorkerList( QtCore.QObject ):
             return self._workersNum()
 
     @abc.abstractmethod
-    def start(self):
+    def start(self, call_list):
         raise NotImplementedError('You need to define this method in derived class!')
 
     def stopExecution(self):
@@ -146,7 +145,7 @@ class AbstractWorkerList( QtCore.QObject ):
             self._workers.append( worker )
         return worker
 
-    def _workerFinished(self):
+    def markWorkerFinished(self):
         with self.workersMutex:
             self.finishCounter += 1
             workersSize = self._workersNum()
@@ -181,6 +180,7 @@ class AbstractWorkerList( QtCore.QObject ):
 class ThreadPoolList( AbstractWorkerList ):
 
     class Worker( QtCore.QRunnable ):
+        """Thread worker wrapping given command."""
 
         def __init__( self, command, pool: 'ThreadPoolList' ):
             super().__init__()
@@ -195,8 +195,7 @@ class ThreadPoolList( AbstractWorkerList ):
             except Exception:
                 _LOGGER.exception( "worker[%s] terminated", id(self) )
             finally:
-                self.pool._workerFinished()
-
+                self.pool.markWorkerFinished()
 
     def __init__(self, parent=None, logs=True):
         super().__init__( parent, logs )
@@ -222,7 +221,8 @@ class ThreadPoolList( AbstractWorkerList ):
             workers_list.append( worker )
 
         if self.logging:
-            _LOGGER.info( "%s: executing threads, stack size: %s max: %s", id(self), self.pool.activeThreadCount(), self.pool.maxThreadCount() )
+            _LOGGER.info( "%s: executing threads, stack size: %s max: %s", id(self), self.pool.activeThreadCount(),
+                          self.pool.maxThreadCount() )
 
         threads_count = len(workers_list)
         thread_num    = 0
@@ -231,7 +231,8 @@ class ThreadPoolList( AbstractWorkerList ):
             _LOGGER.debug( "%s: starting worker[%s] %s / %s", id(self), id(worker), thread_num, threads_count )
             executed = self.pool.start( worker )
             if executed is False:
-                _LOGGER.debug( "%s: worker[%s] added to queue, threads limit: %s", id(self), id(worker), self.pool.maxThreadCount() )
+                _LOGGER.debug( "%s: worker[%s] added to queue, threads limit: %s", id(self), id(worker),
+                               self.pool.maxThreadCount() )
 
     @staticmethod
     def calculate( parent, function, args=None ):
@@ -249,8 +250,8 @@ class ThreadPoolList( AbstractWorkerList ):
 ##
 class SerialList( AbstractWorkerList ):
 
-    def __init__(self, parent=None, logs=True):
-        super().__init__( parent, logs )
+    # def __init__(self, parent=None, logs=True):
+    #     super().__init__( parent, logs )
 
     def start(self, call_list):
         if self.logging:
@@ -273,7 +274,7 @@ class SerialList( AbstractWorkerList ):
             finally:
                 if self.logging:
                     _LOGGER.info( "work finished" )
-                self._workerFinished()
+                self.markWorkerFinished()
 
 
 ## ========================================================

@@ -99,6 +99,7 @@ class WalletData( persist.Versionable ):
             stock_ticker = stock_id[1]
             if stock_ticker == ticker:
                 return hist
+        return None
         #return self._stockDict.get( ticker, None )
 
     def size(self):
@@ -106,6 +107,9 @@ class WalletData( persist.Versionable ):
 
     def clear(self):
         self._stockDict.clear()
+
+    def stockData(self):
+        return self._stockDict
 
     ## return all tickers (even sold)
     def tickers(self):
@@ -144,7 +148,7 @@ class WalletData( persist.Versionable ):
         self.addTransaction( ticker, ticker, amount, unitPrice, transTime, joinSimilar, commission )
 
     def addTransaction( self, stockName, ticker, amount, unitPrice, transTime: datetime = datetime.today(),
-             joinSimilar=True, commission=0.0 ):
+                        joinSimilar=True, commission=0.0 ):
         stock_id = ( stockName, ticker )
         transactions: TransHistory = self._stockDict.get( stock_id, None )
         if transactions is None:
@@ -158,7 +162,7 @@ class WalletData( persist.Versionable ):
                              transaction.transTime, joinSimilar, commission=transaction.commission )
 
     def addWallet(self, wallet: 'WalletData', joinSimilar=True):
-        for stockId, hist in wallet._stockDict.items():
+        for stockId, hist in wallet.stockData().items():
             for trans in hist.transactions:
                 self.addTransactionObject(stockId, trans, joinSimilar)
 

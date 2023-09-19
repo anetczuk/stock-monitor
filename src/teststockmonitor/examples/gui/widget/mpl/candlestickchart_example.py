@@ -34,7 +34,6 @@ except ImportError:
     pass
 
 import random
-from stockmonitor.gui.widget.mpl.mplcanvas import MplCanvas
 
 import sys
 import logging

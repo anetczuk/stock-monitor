@@ -28,7 +28,6 @@ from typing import Dict, List
 import pandas
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
 
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData
 from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentIndexIntradayData

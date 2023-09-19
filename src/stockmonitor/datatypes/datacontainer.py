@@ -243,9 +243,11 @@ class DataContainer():
                 _LOGGER.warning( "could not find stock ticker for name: >%s<", stockName )
 
             if oper == "K":
-                importWallet.addTransaction( stockName, ticker,  amount, unit_price, dateObject, False, commission=commission )
+                importWallet.addTransaction( stockName, ticker,  amount, unit_price, dateObject, False,
+                                             commission=commission )
             elif oper == "S":
-                importWallet.addTransaction( stockName, ticker, -amount, unit_price, dateObject, False, commission=commission )
+                importWallet.addTransaction( stockName, ticker, -amount, unit_price, dateObject, False,
+                                             commission=commission )
 
         if addTransactions:
             ## merge wallets
@@ -327,104 +329,119 @@ class DataContainer():
 
         transMode = self.userContainer.transactionsMatchMode
 
-        for stock_id, transactions in self.wallet._stockDict.items():
+        for stock_id, transactions in self.wallet.stockData().items():
             stock_name: str = stock_id[0] if stock_id else None
             ticker: str     = stock_id[1] if stock_id else None
 
             amount, buy_unit_price = transactions.currentTransactionsAvg( transMode )
-            if show_soldout is False and amount <= 1:
+            if show_soldout is False and amount < 1:
                 continue
-            
+
             currentStockRow = currentStock.getRowByTicker( ticker )
 
             if not ticker:
                 ticker = ""
 
-            buyValue  = buy_unit_price * amount
-
             currUnitValue = 0.0
             sellValue = 0.0
             currChangePnt = 0.0
+            valueChange = 0.0
+            participation = 0.0
             profit = 0.0
             profitPnt = 0.0
+
+            buyValue = buy_unit_price * amount
 
             if not (currentStockRow is None or currentStockRow.empty):
                 # stock rate found
                 currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
 
                 currChangeRaw = currentStockRow.iloc[ dataChangeIndex ]
-                currChangePnt = 0
+                currChangePnt = 0.0
                 if currChangeRaw != "-":
                     currChangePnt = float( currChangeRaw )
 
-                sellValue  = currUnitValue * amount                 ## amount is positive
+                sellValue = currUnitValue * amount                 ## amount is positive
                 if amount > 0:
+                    ## ( curr_unit_price - ref_unit_price ) * unit_price * amount
+                    valueChange = currChangePnt / 100.0 * sellValue
                     sellValue -= broker_commission( sellValue )
 
+                if walletValue > 0:
+                    participation = sellValue / walletValue * 100.0
+
                 profit    = sellValue - buyValue
-                profitPnt = 0
+                profitPnt = 0.0
                 if buyValue != 0:
                     profitPnt = profit / buyValue * 100.0
 
-            ## ( curr_unit_price - ref_unit_price ) * unit_price * amount
-            valueChange = currChangePnt / 100.0 * sellValue
-
-            participation = 0.0
-            if walletValue > 0:
-                participation = sellValue / walletValue * 100.0
-
             totalProfit = transactions.transactionsOverallProfit() + sellValue
+            totalProfit = round( totalProfit, 2 )
 
             buy_unit_price = round( buy_unit_price, 4 )
             currUnitValue = round( currUnitValue, 2 )
-            sellValue = round( sellValue, 2 )
             currChangePnt = round( currChangePnt, 2 )
             valueChange = round( valueChange, 2 )
+            sellValue = round( sellValue, 2 )
             participation = round( participation, 2 )
             profitPnt = round( profitPnt, 2 )
             profit = round( profit, 2 )
 
-            if currentStockRow is None or currentStockRow.empty:
-                # unable to find current stock rate
-                currUnitValue = ""
-                currChangePnt = ""
-                valueChange = ""
-                sellValue = ""
-                participation = ""
-                profit = ""
-                profitPnt = ""
+            row_buy_unit_price = ""
+            row_currUnitValue = ""
+            row_currChangePnt = ""
+            row_valueChange = ""
+            row_sellValue = ""
+            row_participation = ""
+            row_profitPnt = ""
+            row_profit = ""
 
-            if amount < 1:
-                # stock sold out
-                buy_unit_price = ""
-                valueChange = ""
-                sellValue = ""
-                participation = ""
-                profitPnt = ""
-                profit = ""
+            if not (currentStockRow is None or currentStockRow.empty):
+                ## stock rate found
+                if amount > 0:
+                    ## stock in wallet (not sold out)
+                    row_buy_unit_price = buy_unit_price         # type: ignore
+                    row_currUnitValue = currUnitValue           # type: ignore
+                    row_currChangePnt = currChangePnt           # type: ignore
+                    row_valueChange = valueChange               # type: ignore
+                    row_sellValue = sellValue                   # type: ignore
+                    row_participation = participation           # type: ignore
+                    row_profitPnt = profitPnt                   # type: ignore
+                    row_profit = profit                         # type: ignore
+                else:
+                    ## sold out
+                    row_currUnitValue = currUnitValue           # type: ignore
+                    row_currChangePnt = currChangePnt           # type: ignore
+            else:
+                ## stock not found
+                if amount > 0:
+                    ## stock in wallet (not sold out)
+                    row_buy_unit_price = buy_unit_price         # type: ignore
+                else:
+                    ## sold out
+                    pass
 
             rowDict = {}
             rowDict[ columnsList[ 0] ] = stock_name
             rowDict[ columnsList[ 1] ] = ticker
-            rowDict[ columnsList[ 2] ] = amount                         ## liczba
-            rowDict[ columnsList[ 3] ] = buy_unit_price                 ## sredni kurs nabycia
-            rowDict[ columnsList[ 4] ] = currUnitValue                  ## kurs
-            rowDict[ columnsList[ 5] ] = currChangePnt                  ## zm. kur. odn %
-            rowDict[ columnsList[ 6] ] = valueChange                    ## zm. kur. odn. PLN
-            rowDict[ columnsList[ 7] ] = sellValue                      ## wartosc
-            rowDict[ columnsList[ 8] ] = participation                  ## udzial
-            rowDict[ columnsList[ 9] ] = profitPnt                      ## zysk %
-            rowDict[ columnsList[10] ] = profit                         ## zysk PLN
-            rowDict[ columnsList[11] ] = round( totalProfit, 2 )        ## zysk calk.
+            rowDict[ columnsList[ 2] ] = amount                             ## liczba
+            rowDict[ columnsList[ 3] ] = row_buy_unit_price                 ## sredni kurs nabycia
+            rowDict[ columnsList[ 4] ] = row_currUnitValue                  ## kurs
+            rowDict[ columnsList[ 5] ] = row_currChangePnt                  ## zm. kur. odn %
+            rowDict[ columnsList[ 6] ] = row_valueChange                    ## zm. kur. odn. PLN
+            rowDict[ columnsList[ 7] ] = row_sellValue                      ## wartosc
+            rowDict[ columnsList[ 8] ] = row_participation                  ## udzial
+            rowDict[ columnsList[ 9] ] = row_profitPnt                      ## zysk %
+            rowDict[ columnsList[10] ] = row_profit                         ## zysk PLN
+            rowDict[ columnsList[11] ] = totalProfit                        ## zysk calk.
             rowsList.append( rowDict )
-
 
         def compare_float( value_a, value_b ):
             if isinstance(value_a, str):
                 value_a = -float("inf")
             if isinstance(value_b, str):
                 value_b = -float("inf")
-            
+
             if value_a < value_b:
                 return -1
             if value_a > value_b:
@@ -441,7 +458,7 @@ class DataContainer():
             value_b = item_b[columnsList[11]]
             return compare_float( value_a, value_b )
 
-        rowsList.sort( key=functools.cmp_to_key(sort_wallet_profit), reverse = True )           # sort
+        rowsList.sort( key=functools.cmp_to_key(sort_wallet_profit), reverse=True )           # sort
         #rowsList.sort( key=lambda x: (not isinstance(x, str), x[columnsList[9]]) )           # sort
 
         dataFrame = DataFrame( rowsList )
@@ -461,7 +478,7 @@ class DataContainer():
 
         stock_id: Tuple[ str, str ]
         transactions: TransHistory
-        for stock_id, transactions in self.wallet._stockDict.items():
+        for stock_id, transactions in self.wallet.stockData().items():
             stock_name: str = stock_id[0] if stock_id else None
             ticker: str     = stock_id[1] if stock_id else None
 
@@ -490,7 +507,7 @@ class DataContainer():
                 if currUnitValue:
                     currValue = currUnitValue * trans_amount
                     profit    = currValue - buy_value
-                    profitPnt = 0
+                    profitPnt = 0.0
                     if buy_value != 0:
                         profitPnt = profit / buy_value * 100.0
                     profitPnt      = round( profitPnt, 2 )
@@ -499,7 +516,7 @@ class DataContainer():
                     currUnitValue = "-"
                     currValue = "-"
                     profit = "-"
-                    profitPnt = "-"
+                    profitPnt = "-"             # type: ignore
 
                 trans_unit_price = round( trans_unit_price, 4 )
                 buy_value = round( buy_value, 2 )
@@ -515,7 +532,7 @@ class DataContainer():
                 if value_a > value_b:
                     return -1
                 return 0
-    
+
             def sort_buy_trans(item_a, item_b):
                 value_a = item_a[0]
                 value_b = item_b[0]
@@ -525,8 +542,8 @@ class DataContainer():
                 value_a = item_a[-1]
                 value_b = item_b[-1]
                 return compare_raw( value_a, value_b )
-    
-            rowsList.sort( key=functools.cmp_to_key(sort_buy_trans), reverse = True )           # sort
+
+            rowsList.sort( key=functools.cmp_to_key(sort_buy_trans), reverse=True )           # sort
 
         dataFrame = DataFrame.from_records( rowsList, columns=columnsList )
         return dataFrame
@@ -543,7 +560,7 @@ class DataContainer():
 
         stock_id: Tuple[ str, str ]
         transactions: TransHistory
-        for stock_id, transactions in self.wallet._stockDict.items():
+        for stock_id, transactions in self.wallet.stockData().items():
             stock_name: str = stock_id[0] if stock_id else None
             ticker: str     = stock_id[1] if stock_id else None
             if not ticker:
@@ -593,7 +610,7 @@ class DataContainer():
                 sellValue = sell_unit_price * trans_amount
                 buyValue  = buy_unit_price  * trans_amount
                 profit    = sellValue - buyValue
-                profitPnt = 0
+                profitPnt = 0.0
                 if buyValue != 0:
                     profitPnt = profit / buyValue * 100.0
 
@@ -625,7 +642,7 @@ class DataContainer():
 
         rowsList = []
 
-        for stock_id, transactions in self.wallet._stockDict.items():
+        for stock_id, transactions in self.wallet.stockData().items():
             stock_name: str = stock_id[0] if stock_id else None
             ticker: str     = stock_id[1] if stock_id else None
 
@@ -657,27 +674,27 @@ class DataContainer():
                 currUnitValue = stock_unit_value
                 trans_value   = abs( trans_unit_price * trans_amount )
 
-                if currAmount <= 0:
-                    ## sell
-                    if not currUnitValue:
-                        currUnitValue = "-"
-                    profitPnt        = "-"
-                    profit           = "-"
-                else:
+                if currAmount > 0:
                     ## buy
                     if currUnitValue:
                         currValue = abs( currUnitValue * trans_amount )
                         profit    = currValue - trans_value
-                        profitPnt = 0
+                        profitPnt = 0.0
                         if trans_value != 0:
                             profitPnt = profit / trans_value * 100.0
-    
+
                         profit           = round( profit, 2 )
                         profitPnt        = round( profitPnt, 2 )
                     else:
                         currUnitValue = "-"
                         profit    = "-"
-                        profitPnt = "-"
+                        profitPnt = "-"             # type: ignore
+                else:
+                    ## sell
+                    if not currUnitValue:
+                        currUnitValue = "-"
+                    profitPnt        = "-"          # type: ignore
+                    profit           = "-"
 
                 trans_unit_price = round( trans_unit_price, 4 )
 
@@ -709,7 +726,8 @@ class DataContainer():
         rowIndex   = 0
         currAmount = amountBefore
 
-        for item in reversed( transList ):
+        transData = transList.allTransactions()
+        for item in reversed( transData ):
             transTime = item.transTime
             while rowIndex < rowsNum:
                 if dataFrame.at[ rowIndex, "t" ] < transTime:
@@ -735,7 +753,7 @@ class DataContainer():
         refWalletValue = 0.0
         walletProfit   = 0.0
         totalGain      = 0.0
-        for stock_id, tickerTransactions in self.wallet._stockDict.items():
+        for stock_id, tickerTransactions in self.wallet.stockData().items():
             ticker = stock_id[1] if stock_id else None
             amount, buy_unit_price = tickerTransactions.currentTransactionsAvg( transMode )
 
@@ -814,7 +832,7 @@ class DataContainer():
 
         transMode = self.userContainer.transactionsMatchMode
         mergedList = None
-        for _, transactions in self.wallet._stockDict.items():
+        for _, transactions in self.wallet.stockData().items():
             gainList = transactions.transactionsGainHistory( transMode, True, startDateTime )
             stockData = DataFrame( gainList, columns=["t", "c"] )
             mergedList = join_list_dataframe( mergedList, stockData )

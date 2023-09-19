@@ -279,7 +279,7 @@ class BaseWorksheetData():
         try:
             dataColumn = dataFrame.iloc[:, colIndex]
         except IndexError as ex:
-            _LOGGER.error( "invalid access: %s in index %s while accessing %s, dataframe shape: %s\ninvalid data:\n%s", 
+            _LOGGER.error( "invalid access: %s in index %s while accessing %s, dataframe shape: %s\ninvalid data:\n%s",
                            ex, colIndex, columnType, dataFrame.shape, dataFrame )
             raise
         return dataColumn.iloc[ rowIndex ]

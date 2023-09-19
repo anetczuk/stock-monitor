@@ -222,7 +222,11 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
     def connectTable( self, parentTable: 'DataFrameTable' ):
         self.parentTable = parentTable
 
-        model: DFProxyModel = self.parentTable.model()
+        tableModel = self.parentTable.model()
+        if not isinstance( tableModel, DFProxyModel ):
+            raise RuntimeError("model invalid type")
+        model: DFProxyModel = tableModel
+
         self.oldState = model.filterState()                                     # type: ignore
 
         self.updateColumnsCombo()
@@ -552,7 +556,10 @@ class DataFrameTable( QTableView ):
 
     def setSourceModel( self, model: DataFrameTableModel ):
         self.pandaModel = model
-        proxyModel: DFProxyModel = self.model()
+        tableModel = self.model()
+        if not isinstance( tableModel, DFProxyModel ):
+            raise RuntimeError("model invalid type")
+        proxyModel: DFProxyModel = tableModel
         proxyModel.setSourceModel( self.pandaModel )
 
     def addProxyModel(self, nextProxyModel):

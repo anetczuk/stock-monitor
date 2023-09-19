@@ -74,15 +74,15 @@ def store_dataframe( trans_data, out_trans_path ):
         # trans_data.to_excel( out_trans_path )
 
         sheet_name = "data"
-        writer = pandas.ExcelWriter(out_trans_path, engine='xlsxwriter')
+        writer = pandas.ExcelWriter(out_trans_path, engine='xlsxwriter')        # pylint: disable=abstract-class-instantiated
         trans_data.to_excel(writer, sheet_name=sheet_name, index=False)         # send df to writer
         worksheet = writer.sheets[sheet_name]                                   # pull worksheet object
         for idx, col in enumerate(trans_data):                                  # loop through all columns
             series = trans_data[col]
-            max_len = max((
-                series.astype(str).map(len).max(),  # len of largest item
-                len(str(series.name))  # len of column name/header
-                )) + 1  # adding a little extra space
+            max_len = max(( series.astype(str).map(len).max(),  # len of largest item
+                            len(str(series.name))               # len of column name/header
+                            )
+                          ) + 1  # adding a little extra space
             worksheet.set_column(idx, idx, max_len)  # set column width
         writer.save()
 
@@ -165,33 +165,43 @@ def extract_currentbuy( args ):
 def main():
     parser = argparse.ArgumentParser(description='stock data grabber')
     parser.add_argument( '-la', '--logall', action='store_true', help='Log all messages' )
+    parser.add_argument( '--listtools', action='store_true', help='List tools' )
 
-    subparsers = parser.add_subparsers( help='extract mode', description="select one of subcommands", dest='subcommand', required=True )
+    subparsers = parser.add_subparsers( help='extract mode', description="select one of subcommands",
+                                        dest='subcommand', required=False )
 
     ## =================================================
 
     subparser = subparsers.add_parser('buysell', help='Extract buy and matched sell transactions')
     subparser.set_defaults( func=extract_buysell )
     subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
-    subparser.add_argument( '--trans_out_file', action='store', help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
+    subparser.add_argument( '--trans_out_file', action='store',
+                            help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
 
     ## =================================================
 
     subparser = subparsers.add_parser('current', help='Extract current state of wallet')
     subparser.set_defaults( func=extract_current )
     subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
-    subparser.add_argument( '--trans_out_file', action='store', help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
+    subparser.add_argument( '--trans_out_file', action='store',
+                            help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
 
     ## =================================================
 
     subparser = subparsers.add_parser('currentbuy', help='Extract list of current buy transactions')
     subparser.set_defaults( func=extract_currentbuy )
     subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
-    subparser.add_argument( '--trans_out_file', action='store', help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
+    subparser.add_argument( '--trans_out_file', action='store',
+                            help='Path to file with transactions (supported .json, .xls, .xlsx, .csv extensions)' )
 
     ## =================================================
 
     args = parser.parse_args()
+
+    if args.listtools is True:
+        tools_list = list( subparsers.choices.keys() )
+        print( ", ".join( tools_list ) )
+        return
 
     logging.basicConfig()
     if args.logall is True:

@@ -22,14 +22,12 @@
 #
 
 import logging
-import datetime
 
 from typing import Dict, List
 
 import pandas
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
 # from PyQt5.QtGui import QCloseEvent
 
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
@@ -94,14 +92,14 @@ class StockChartWidget(QtBaseClass):                    # type: ignore
         self.ui.refreshPB.clicked.connect( self.refreshData )
         self.ui.rangeCB.currentIndexChanged.connect( self.repaintData )
         self.ui.chartTypeCB.currentIndexChanged.connect( self._changeChartType )
-        
+
         ThreadingListType = threadlist.get_threading_list_class()
         self.threads = ThreadingListType( self )
         self.threads.finished.connect( self._updateView )
         # self.threads.deleteOnFinish()
 
     def connectData(self, dataObject: DataObject, ticker):
-        self.dataObject: DataObject = dataObject
+        self.dataObject = dataObject
         self.ticker     = ticker
         self.dataObject.stockDataChanged.connect( self.updateData )
 #         self.updateData( False )

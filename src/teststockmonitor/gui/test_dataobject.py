@@ -123,9 +123,12 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33),
+                                              commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 5, 15, 41, 33),
+                                              commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33),
+                                              commission=0.1 )
 
         walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
         self.assertEqual( walletVal, 186.36 )
@@ -143,9 +146,12 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33),
+                                              commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33),
+                                              commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33),
+                                              commission=0.1 )
 
         walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
         self.assertEqual( walletVal, 186.36 )
@@ -163,9 +169,12 @@ class DataObjectTest(unittest.TestCase):
         dataobject.gpwCurrentSource.stockData.dao.parseWorksheetFromFile( dataPath )
 
         ## CDP curr price: 360.0 (from recent_data_TKO.xls)
-        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33), commission=0.1 )
-        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33), commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR", -1, 300.0, datetime.datetime(2020, 10, 6, 15, 41, 33),
+                                              commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 5, 15, 41, 33),
+                                              commission=0.1 )
+        dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33),
+                                              commission=0.1 )
 
         walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
         self.assertEqual( walletVal, 186.36 )

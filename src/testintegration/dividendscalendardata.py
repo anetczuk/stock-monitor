@@ -54,7 +54,7 @@ class DividendsCalendarDataTest(unittest.TestCase):
     def test_access(self):
         dataAccess = DividendsCalendarData()
         dataframe  = dataAccess.loadWorksheet()
-        print( "dataframe:\n%s" % dataframe )
+        print( f"dataframe:\n{dataframe}" )
 #         div_stock = dataAccess.getStockName( 0 )
         div_date = dataAccess.getLawDate( 0 )
         self.assertNotEqual( div_date, datetime.date( 1, 1, 1 ) )
