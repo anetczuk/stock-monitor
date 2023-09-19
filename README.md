@@ -41,6 +41,8 @@ Moreover there are two configuration scripts:
 - `src/configure_menu.sh` -- adds application shortcut in OS main menu
 - `src/configure_autostart.sh` -- adds application to OS autostart list
 
+Help output of `startmonitor --help` can be found [here](doc/help_startmonitor.md).
+
 
 ### Requirements
 
@@ -76,6 +78,19 @@ What data can be obtained using the script? Script scraps for example:
 - dividends calendar
 - financial reports calendar
 - global stock indexes
+
+Help output of `grabdata.py --help` can be found [here](doc/help_grabdata.md).
+
+
+## Transactions info
+
+Another command-line script `transactioninfo.py` allows extracting data related to stock transactions. Script reads CSV 
+file with list of transactions and generates various outputs:
+- matches of buy and sell transactions (FIFO order)
+- current state of wallet (stock that is not sold out)
+- detailed list of wallet buy transactions
+
+Help output of `transactioninfo.py --help` can be found [here](doc/help_transactioninfo.md).
 
 
 ## Known issues:
