@@ -352,6 +352,7 @@ class TransHistory():
         return lastItem[1]
 
     ## return list of pairs: [(data, value)]
+    ## return values are calculated by difference: sell value - buy value in date (only already sold stock is considered)
     def transactionsGainHistory(self, mode: TransactionMatchMode, considerCommission=True, startDate=None ):
         ret: List[ List[object] ] = []
         totalGain: float = 0.0
@@ -516,18 +517,9 @@ class TransHistory():
                     # sellValue -= broker_commission( sellValue )
                 stockValuesFrame.at[ rowIndex, "c" ] = sellValue
 
-        numeric_data = stockValuesFrame.loc[:, "c"].values
-        non_zero_index = numpy.argmax(numeric_data != 0, axis=0)
-        if non_zero_index == 0:
-            # it means that first row is non-zero or no row found
-            if numeric_data[non_zero_index] == 0:
-                # no non-zero data found - nothing to add
-                return None
-            return stockValuesFrame
-        
-        # return non-zero data
-        ret_data = stockValuesFrame.iloc[non_zero_index:]
-        ret_data.reset_index( drop=True, inplace=True )
+        ret_data = trim_frame( stockValuesFrame, "c" )
+        if ret_data is not None:
+            ret_data['t'] = ret_data['t'].apply(lambda x: x.date())
         return ret_data
 
     ## calculate profit of single stock
@@ -544,15 +536,16 @@ class TransHistory():
         transBefore, pendingTrans = self.splitTransactions( transStartIndex, True )
         revPending                = pendingTrans[::-1]                           ## reverse list
 
-        stockValuesFrame = stockData[ ["t", "c"] ].copy()
-        rowsNum          = stockData.shape[0]
+        stockValuesFrame = stockData[ ["t"] ].copy()
+        stockValuesFrame["c"] = 0.0
+        rowsNum = stockData.shape[0]
 
-        matchIndexes = pendingTrans.matchStockAfter( stockValuesFrame )
-        matchIndexes.reverse()
+        matchStockIndices = pendingTrans.matchStockAfterIndices( stockValuesFrame )
+        matchStockIndices.reverse()
 
-        matchSize     = len( matchIndexes )
-        matchStockSum = sum( matchIndexes )
-        rowIndex      = rowsNum - matchStockSum - 1     ## -1 because incerment moved in front of loop
+        matchSize = len( matchStockIndices )
+
+        matchStockIndices.append( rowsNum )
 
         ## iterate over transactions
         ## calculate values based on transactions and stock price changes
@@ -561,7 +554,7 @@ class TransHistory():
             transBefore.appendItem( nextTrans )
             transAmount = transBefore.currentAmount()
 
-            transProfit = 0
+            transProfit = 0.0
             if calculateOverall:
                 transProfit = transBefore.transactionsOverallProfit()
             else:
@@ -571,19 +564,26 @@ class TransHistory():
                 transProfit -= buyValue
 
             ## iterate over stock historic prices
-            rowIndexCounter = matchIndexes[ transIndex ]
-            for _ in range(0, rowIndexCounter):
-                rowIndex += 1
+            rowStartIndex = matchStockIndices[ transIndex ]
+            rowStartIndex = max( rowStartIndex, 0 )                 # negative index can occur
+            rowEndIndex = matchStockIndices[ transIndex + 1 ]
+            # _LOGGER.info( f"cccccccccccccccc: {rowStartIndex} {rowEndIndex} - {matchStockIndices}" )
+            for rowIndex in range(rowStartIndex, rowEndIndex):
                 sellValue = 0
                 if transAmount > 0:
                     ## calculate hypotetical profit if stock would be sold out
-                    stockTime  = stockValuesFrame.at[ rowIndex, "t" ]
-                    stockPrice = stockValuesFrame.at[ rowIndex, "c" ]
+                    stockTime  = stockData.at[ rowIndex, "t" ]
+                    stockPrice = stockData.at[ rowIndex, "c" ]
                     sellValue  = stockPrice * transAmount
                     sellValue -= broker_commission( sellValue, stockTime )
-                stockValuesFrame.at[ rowIndex, "c" ] = transProfit + sellValue
+                profit_value = transProfit + sellValue
+                # _LOGGER.info( f"aaaaaaaa: {rowIndex} {stockData.at[ rowIndex, 't' ]} x {transProfit} {sellValue} y {profit_value}" )
+                stockValuesFrame.at[ rowIndex, "c" ] = profit_value
 
-        return stockValuesFrame
+        ret_data = trim_frame( stockValuesFrame, "c" )
+        if ret_data is not None:
+            ret_data['t'] = ret_data['t'].apply(lambda x: x.date())
+        return ret_data
 
     def matchTransactions( self, mode: TransactionMatchMode, matchTime: datetime.datetime = None ) -> TransactionsMatch:
         ## Buy value raises then current unit price rises
@@ -744,3 +744,19 @@ def broker_commission( value, transTime=None ):
     commission = abs( value ) * 0.0039
     commission = max( commission, minCommission )
     return commission
+
+
+def trim_frame( stockValuesFrame, column_name ):
+    numeric_data = stockValuesFrame.loc[:, column_name].values
+    non_zero_index = numpy.argmax(numeric_data != 0, axis=0)
+    if non_zero_index == 0:
+        # it means that first row is non-zero or no row found
+        if numeric_data[non_zero_index] == 0:
+            # no non-zero data found - nothing to add
+            return None
+        return stockValuesFrame
+
+    # return non-zero data
+    ret_data = stockValuesFrame.iloc[non_zero_index:]
+    ret_data.reset_index( drop=True, inplace=True )
+    return ret_data

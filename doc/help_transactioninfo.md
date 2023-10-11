@@ -1,7 +1,8 @@
 ## <a name="main_help"></a> transactioninfo.py --help
 ```
 usage: transactioninfo.py [-h] [-la] [--listtools]
-                          {buysell,current,currentbuy,walletvaluehistory} ...
+                          {buysell,current,currentbuy,walletvaluehistory,walletprofithistory}
+                          ...
 
 stock data grabber
 
@@ -13,12 +14,14 @@ optional arguments:
 subcommands:
   select one of subcommands
 
-  {buysell,current,currentbuy,walletvaluehistory}
+  {buysell,current,currentbuy,walletvaluehistory,walletprofithistory}
                         extract mode
     buysell             Extract buy and matched sell transactions
     current             Extract current state of wallet
     currentbuy          Extract list of current buy transactions
     walletvaluehistory  Extract history of wallet value
+    walletprofithistory
+                        Extract history of wallet profit
 ```
 
 
@@ -80,6 +83,23 @@ optional arguments:
   -h, --help            show this help message and exit
   -th TRANSHISTORY, --transhistory TRANSHISTORY
                         Path to file with history of transactions
+  --out_file OUT_FILE   Path to file with output (supported .json, .xls,
+                        .xlsx, .csv extensions)
+```
+
+
+
+## <a name="walletprofithistory_help"></a> transactioninfo.py walletprofithistory --help
+```
+usage: transactioninfo.py walletprofithistory [-h] [-th TRANSHISTORY]
+                                              [--overall]
+                                              [--out_file OUT_FILE]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -th TRANSHISTORY, --transhistory TRANSHISTORY
+                        Path to file with history of transactions
+  --overall             Include gain of sold transactions
   --out_file OUT_FILE   Path to file with output (supported .json, .xls,
                         .xlsx, .csv extensions)
 ```

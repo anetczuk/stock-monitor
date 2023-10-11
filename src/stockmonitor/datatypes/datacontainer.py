@@ -803,10 +803,10 @@ class DataContainer():
     ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
     ## 'rangeCode' - values such as: "1D", "14D", "1M", "3M", "6M", "1R", "2R", "3R", "MAX"
     def getWalletValueHistory(self, rangeCode, tickerList=None) -> DataFrame:
-        mergedList = None
         if not tickerList:
             tickerList = self.wallet.tickers()
         _LOGGER.info( "calculating history for tickers: %s", tickerList )
+        mergedList = None
         for ticker in tickerList:
             _LOGGER.info( "calculating history for ticker: %s", ticker )
             stockData = self.getWalletStockValueHistory( ticker, rangeCode )
@@ -850,9 +850,13 @@ class DataContainer():
         return retData
 
     ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
-    def getWalletProfitHistory(self, rangeCode, calculateOverall: bool = True) -> DataFrame:
+    def getWalletProfitHistory(self, rangeCode, calculateOverall: bool = True, tickerList=None) -> DataFrame:
+        if not tickerList:
+            tickerList = self.wallet.tickers()
+        _LOGGER.info( "calculating history for tickers: %s", tickerList )
         mergedList = None
-        for ticker in self.wallet.tickers():
+        for ticker in tickerList:
+            _LOGGER.info( "calculating history for ticker: %s", ticker )
             stockData = self.getWalletStockProfitHistory( ticker, rangeCode, calculateOverall )
             if stockData is None:
                 continue
@@ -868,8 +872,12 @@ class DataContainer():
             return None
 
         isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
+        if isin is None:
+            # happens in case of companies removed from stock exchange
+            return None
         intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
-        stockData = intraSource.getWorksheetData()
+        stockData = intraSource.accessWorksheetData()
+        # stockData = intraSource.getWorksheetData()
         if stockData is None:
             return None
 
