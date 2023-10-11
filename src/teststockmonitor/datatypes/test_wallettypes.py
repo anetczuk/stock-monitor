@@ -346,10 +346,10 @@ class TransHistoryTest(unittest.TestCase):
         self.assertEqual( valueFrame.empty, False )
 
         self.assertEqual( valueFrame.at[0, "t"], pandas.Timestamp('2020-10-05 12:00:00') )
-        self.assertEqual( valueFrame.at[0, "c"], 995.0 )
+        self.assertEqual( valueFrame.at[0, "c"], 2000.0 )
 
         self.assertEqual( valueFrame.at[1, "t"], pandas.Timestamp('2020-10-10 12:00:00') )
-        self.assertEqual( valueFrame.at[1, "c"], 2390.64 )
+        self.assertEqual( valueFrame.at[1, "c"], 3600.0 )
 
     def test_matchTransactionsFirst01(self):
         data = TransHistory()

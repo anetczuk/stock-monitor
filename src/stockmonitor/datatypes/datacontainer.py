@@ -799,14 +799,19 @@ class DataContainer():
 
     ## =========================================================================
 
+    ##TODO: make enum from values of 'rangeCode'
     ## returns DataFrame with two columns: 't' (timestamp) and 'c' (value)
-    def getWalletValueHistory(self, rangeCode) -> DataFrame:
+    ## 'rangeCode' - values such as: "1D", "14D", "1M", "3M", "6M", "1R", "2R", "3R", "MAX"
+    def getWalletValueHistory(self, rangeCode, tickerList=None) -> DataFrame:
         mergedList = None
-        for ticker in self.wallet.tickers():
+        if not tickerList:
+            tickerList = self.wallet.tickers()
+        _LOGGER.info( "calculating history for tickers: %s", tickerList )
+        for ticker in tickerList:
+            _LOGGER.info( "calculating history for ticker: %s", ticker )
             stockData = self.getWalletStockValueHistory( ticker, rangeCode )
             if stockData is None:
                 continue
-#             _LOGGER.info( "wallet state: %s %s", ticker, stockData.iloc[ -1, 1 ] )
             mergedList = join_list_dataframe( mergedList, stockData )
 
         retData = DataFrame( mergedList, columns=["t", "c"] )
@@ -818,9 +823,13 @@ class DataContainer():
         if transactions is None:
             return None
 
-        isin        = self.gpwCurrentData.getStockIsinFromTicker( ticker )
+        isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
+        if isin is None:
+            # happens in case of companies removed from stock exchange
+            return None
         intraSource = self.gpwStockIntradayData.getSource( isin, rangeCode )
-        stockData   = intraSource.getWorksheetData()
+        stockData   = intraSource.accessWorksheetData()
+        # stockData   = intraSource.getWorksheetData()
         if stockData is None:
             return None
 

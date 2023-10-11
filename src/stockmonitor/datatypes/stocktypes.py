@@ -132,7 +132,8 @@ class WorksheetMap( StockDataProvider ):
     def getSource(self, isin, rangeCode=None):
         if rangeCode is None:
             rangeCode = "1D"
-        return self.dataDict.getData( isin, rangeCode )
+        ret_data = self.dataDict.getData( isin, rangeCode )
+        return ret_data
 
     ## override
     def getData(self, forceRefresh=True):
