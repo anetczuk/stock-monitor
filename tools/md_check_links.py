@@ -24,7 +24,6 @@ import re
 from glob import glob
 import markdown
 import validators
-from pathlib import Path
 
 from bs4 import BeautifulSoup
 
@@ -200,7 +199,8 @@ def main():
     parser = argparse.ArgumentParser(description='dump tools')
     parser.add_argument( '-la', '--logall', action='store_true', help='Log all messages' )
     parser.add_argument( '-d', '--dir', action='store', help='Path to directory to search .md files and check' )
-    parser.add_argument( '-i', '--ignore', action='store', help='Semicolon separated list of regex expressions to ignore items' )
+    parser.add_argument( '-i', '--ignore', action='store',
+                         help='Semicolon separated list of regex expressions to ignore items' )
     parser.add_argument( '-f', '--file', action='store', help='Path to file to check' )
 
     args = parser.parse_args()

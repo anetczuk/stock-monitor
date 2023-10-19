@@ -520,6 +520,7 @@ class TransHistory():
         ret_data = trim_frame( stockValuesFrame, "c" )
         if ret_data is not None:
             ret_data['t'] = ret_data['t'].apply(lambda x: x.date())
+            # ret_data.loc[:,'t'] = ret_data['t'].apply(lambda x: x.date())
         return ret_data
 
     ## calculate profit of single stock
@@ -583,6 +584,7 @@ class TransHistory():
         ret_data = trim_frame( stockValuesFrame, "c" )
         if ret_data is not None:
             ret_data['t'] = ret_data['t'].apply(lambda x: x.date())
+            # ret_data.loc[:,'t'] = ret_data['t'].apply(lambda x: x.date())
         return ret_data
 
     def matchTransactions( self, mode: TransactionMatchMode, matchTime: datetime.datetime = None ) -> TransactionsMatch:
