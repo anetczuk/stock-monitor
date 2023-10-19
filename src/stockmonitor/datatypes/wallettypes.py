@@ -351,8 +351,8 @@ class TransHistory():
         lastItem = totalGain[-1]
         return lastItem[1]
 
-    ## return list of pairs: [(data, value)]
-    ## return values are calculated by difference: sell value - buy value in date (only already sold stock is considered)
+    # return list of pairs: [(data, value)]
+    # return values are calculated by difference: sell value - buy value in date (only already sold stock is considered)
     def transactionsGainHistory(self, mode: TransactionMatchMode, considerCommission=True, startDate=None ):
         ret: List[ List[object] ] = []
         totalGain: float = 0.0
@@ -578,7 +578,6 @@ class TransHistory():
                     sellValue  = stockPrice * transAmount
                     sellValue -= broker_commission( sellValue, stockTime )
                 profit_value = transProfit + sellValue
-                # _LOGGER.info( f"aaaaaaaa: {rowIndex} {stockData.at[ rowIndex, 't' ]} x {transProfit} {sellValue} y {profit_value}" )
                 stockValuesFrame.at[ rowIndex, "c" ] = profit_value
 
         ret_data = trim_frame( stockValuesFrame, "c" )

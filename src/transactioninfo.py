@@ -286,7 +286,7 @@ def main():
     if args.listtools is True:
         tools_list = list( subparsers.choices.keys() )
         print( ", ".join( tools_list ) )
-        return
+        return os.EX_OK
 
     logging.basicConfig()
     if args.logall is True:
