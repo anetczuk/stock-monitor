@@ -181,6 +181,25 @@ def extract_walletvaluehistory( args ):
 ## ===================================================================
 
 
+def extract_walletgainhistory( args ):
+    trans_hist_path = args.transhistory
+    out_path = args.out_file
+
+    data_container: DataContainer = import_data( trans_hist_path )
+    if data_container is None:
+        return False
+
+    _LOGGER.info( "preparing wallet gain history" )
+    values_data = data_container.getWalletGainHistory( "MAX" )
+    _LOGGER.info( "values:\n%s", values_data )
+
+    store_dataframe( values_data, out_path )
+    return True
+
+
+## ===================================================================
+
+
 def extract_walletprofithistory( args ):
     trans_hist_path = args.transhistory
     out_path = args.out_file
@@ -239,6 +258,14 @@ def main():
 
     subparser = subparsers.add_parser('walletvaluehistory', help='Extract history of wallet value')
     subparser.set_defaults( func=extract_walletvaluehistory )
+    subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
+    subparser.add_argument( '--out_file', action='store',
+                            help='Path to file with output (supported .json, .xls, .xlsx, .csv extensions)' )
+
+    ## =================================================
+
+    subparser = subparsers.add_parser('walletgainhistory', help='Extract history of wallet gain of sold stock')
+    subparser.set_defaults( func=extract_walletgainhistory )
     subparser.add_argument( '-th', '--transhistory', action='store', help='Path to file with history of transactions' )
     subparser.add_argument( '--out_file', action='store',
                             help='Path to file with output (supported .json, .xls, .xlsx, .csv extensions)' )
