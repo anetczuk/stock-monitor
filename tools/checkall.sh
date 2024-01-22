@@ -13,3 +13,10 @@ cd $SCRIPT_DIR
 ./typecheck.sh
 ./codecheck.sh
 ./doccheck.sh
+
+
+echo -e "\nchecking links in MD files"
+./mdcheck.sh
+
+
+echo "everything is fine"
