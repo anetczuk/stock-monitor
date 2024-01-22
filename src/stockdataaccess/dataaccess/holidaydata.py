@@ -31,6 +31,7 @@ from stockdataaccess.dataaccess import TMP_DIR
 _LOGGER = logging.getLogger(__name__)
 
 
+# Calendar with days without GPW
 class HolidayData():
 
     def __init__(self):
@@ -49,8 +50,7 @@ class HolidayData():
         self.storeHolidays()
 
     def isHoliday(self, day_date: datetime.date ):
-        dayOfWeek = day_date.weekday()
-        if dayOfWeek > 4:
+        if HolidayData.isWeekend(day_date):
             return True
         if day_date < datetime.date( year=1991, month=4, day=16 ):
             ## first day of stock
@@ -77,6 +77,13 @@ class HolidayData():
 
     def _storageFile(self):
         return f"{TMP_DIR}data/gpw/holidays.pickle"
+
+    @staticmethod
+    def isWeekend( day_date: datetime.date ):
+        dayOfWeek = day_date.weekday()
+        if dayOfWeek > 4:
+            return True
+        return False
 
 
 def is_stock_holiday( day_date: datetime.date ):

@@ -34,6 +34,7 @@ from stockdataaccess.dataaccess import TMP_DIR, download_html_content
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetData,\
     WorksheetDAO
+from stockdataaccess.dataaccess.holidaydata import HolidayData
 from stockdataaccess.synchronized import synchronized
 
 
@@ -57,6 +58,10 @@ class GpwArchiveData( BaseWorksheetData ):
             date_year = self.day.year
             date_str  = self.day.strftime("%Y-%m-%d")
             return f"{TMP_DIR}data/gpw/arch/{date_year}/{date_str}.xls"
+
+        def loadData(self, dayDate: datetime.date = None):
+            self.day = dayDate
+            self.storage.clear()
 
         ## override
         def downloadData(self, filePath):
@@ -137,14 +142,47 @@ class GpwArchiveData( BaseWorksheetData ):
         values = worksheet.iloc[:, colIndex]
         return dict( zip(names, values) )
 
+    def getDataByDate(self, day: datetime.date):
+        self.dao = GpwArchiveData.GpwArchiveDAO( day )
+        return self.accessWorksheetData()
+
+    def getPrevDayData(self, day: datetime.date = None):
+        prev_day = self.getPrevValidDay(day)
+        if prev_day is None:
+            return None
+        return self.getDataByDate(prev_day)
+
     ## check valid stock day starting from "day" and going past
     def getRecentValidDay(self, day: datetime.date) -> datetime.date:
         currDay = day
         worksheet = None
         while True:
+            if HolidayData.isWeekend(currDay):
+                currDay -= datetime.timedelta(days=1)
+                continue
             self.dao = GpwArchiveData.GpwArchiveDAO( currDay )
             worksheet = self.accessWorksheetData()
 #             worksheet = self.getWorksheetData()        ## causes 'recent day' to be calculated badly
+            if worksheet is not None:
+                return currDay
+            currDay -= datetime.timedelta(days=1)
+        return None
+
+    def getPrevValidDay(self, day: datetime.date = None):
+        currDay = day
+        dayToday = datetime.date.today()
+        if currDay is None:
+            currDay = dayToday
+            currDay = dayToday - datetime.timedelta(days=1)
+        if currDay >= dayToday:
+            return None
+        worksheet = None
+        while True:
+            if HolidayData.isWeekend(currDay):
+                currDay -= datetime.timedelta(days=1)
+                continue
+            self.dao = GpwArchiveData.GpwArchiveDAO( currDay )
+            worksheet = self.accessWorksheetData()
             if worksheet is not None:
                 return currDay
             currDay -= datetime.timedelta(days=1)
@@ -155,6 +193,9 @@ class GpwArchiveData( BaseWorksheetData ):
         dayToday = datetime.date.today()
         worksheet = None
         while currDay < dayToday:
+            if HolidayData.isWeekend(currDay):
+                currDay += datetime.timedelta(days=1)
+                continue
             self.dao = GpwArchiveData.GpwArchiveDAO( currDay )
             worksheet = self.getWorksheetData()
             if worksheet is not None:
@@ -175,6 +216,14 @@ class GpwArchiveData( BaseWorksheetData ):
     ## override
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:
         return self.getColumnIndex( columnType )
+
+    @staticmethod
+    def getClosingFromRow( row ):
+        columnIndex = GpwArchiveData.getColumnIndex(StockDataType.CLOSING)
+        valueRaw = row.iloc[columnIndex]
+        if valueRaw != "-":
+            return float( valueRaw )
+        return 0.0
 
     @staticmethod
     def getColumnIndex( columnType: StockDataType ) -> int:

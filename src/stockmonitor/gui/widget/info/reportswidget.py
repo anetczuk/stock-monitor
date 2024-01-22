@@ -30,7 +30,6 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from stockmonitor.gui.widget.stocktable import StockTable, stock_background_color
-# import stockmonitor.gui.widget.stocktable as stocktable
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.utils import set_label_url

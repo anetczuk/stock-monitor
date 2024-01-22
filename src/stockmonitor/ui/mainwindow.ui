@@ -559,6 +559,9 @@
       </item>
       <item>
        <widget class="QLabel" name="label_10">
+        <property name="toolTip">
+         <string>Wallet change related to closing value on previous stock day</string>
+        </property>
         <property name="text">
          <string>Change to ref:</string>
         </property>
@@ -566,6 +569,9 @@
       </item>
       <item>
        <widget class="QLabel" name="changeToRefLabel">
+        <property name="toolTip">
+         <string>Wallet change related to closing value on previous stock day</string>
+        </property>
         <property name="text">
          <string>None</string>
         </property>

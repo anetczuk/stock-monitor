@@ -35,6 +35,7 @@ from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess.gpw.gpwdata import GpwIndicatorsData
 from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData, GpwCurrentIndexesData
 from stockdataaccess.dataaccess.gpw.gpwespidata import GpwESPIData
+from stockdataaccess.dataaccess.gpw.gpwarchivedata import GpwArchiveData
 
 from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
 from stockdataaccess.dataaccess.finreportscalendardata import PublishedFinRepsCalendarData, FinRepsCalendarData
@@ -61,6 +62,8 @@ class DataContainer():
         self.userContainer        = UserContainer()                   ## user data
 
         self.gpwCurrentSource     = StockDataWrapper( GpwCurrentStockData() )
+        self.gpwArchiveSource     = GpwArchiveData()
+
         self.gpwStockIntradayData = GpwStockIntradayMap()
         self.gpwIndexIntradayData = GpwIndexIntradayMap()
 
@@ -482,16 +485,20 @@ class DataContainer():
             stock_name: str = stock_id[0] if stock_id else None
             ticker: str     = stock_id[1] if stock_id else None
 
-            stock_unit_value = None
-            currentStockRow = currentStock.getRowByTicker( ticker )
-            if currentStockRow is None or currentStockRow.empty:
-                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
-            else:
-                stock_unit_value = GpwCurrentStockData.unitPrice( currentStockRow )
-
             currTransactions = transactions.currentTransactions( transMode )
             if groupByDay:
                 currTransactions = TransHistory.groupTransactionsByDay( currTransactions )
+
+            if not currTransactions:
+                # all stock sold out
+                continue
+
+            stock_unit_value = None
+            currentStockRow = currentStock.getRowByTicker( ticker )
+            if currentStockRow is None or currentStockRow.empty:
+                _LOGGER.warning( "could not find stock by ticker: %s name: %s", ticker, stock_name )
+            else:
+                stock_unit_value = GpwCurrentStockData.unitPrice( currentStockRow )
 
             if not ticker:
                 ticker = ""
@@ -745,6 +752,8 @@ class DataContainer():
 
     ## wallet summary: wallet value, wallet profit, ref change, gain, overall profit
     def getWalletState(self):
+        self.gpwArchiveSource.getPrevDayData()  # loads data
+
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
 
         transMode = self.userContainer.transactionsMatchMode
@@ -754,7 +763,8 @@ class DataContainer():
         walletProfit   = 0.0
         totalGain      = 0.0
         for stock_id, tickerTransactions in self.wallet.stockData().items():
-            ticker = stock_id[1] if stock_id else None
+            stock_name: str = stock_id[0] if stock_id else None
+            ticker: str     = stock_id[1] if stock_id else None
             amount, buy_unit_price = tickerTransactions.currentTransactionsAvg( transMode )
 
             stockGain  = tickerTransactions.transactionsGain( transMode, True )
@@ -765,7 +775,7 @@ class DataContainer():
 
             currentStockRow = currentStock.getRowByTicker( ticker )
             if currentStockRow is None or currentStockRow.empty:
-                _LOGGER.warning( "could not find stock by ticker: %s", ticker )
+                _LOGGER.warning( "could not find stock by ticker: %s name: %s", ticker, stock_name )
                 continue
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )
@@ -779,7 +789,17 @@ class DataContainer():
             walletValue   += sellValue
             walletProfit  += sellValue - buyValue
 
-            refUnitValue  = GpwCurrentStockData.unitReferencePrice( currentStockRow )
+            refUnitValue = None
+            # returns None in case of companies removed from stock exchange
+            isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
+            if isin:
+                prev_day_row = self.gpwArchiveSource.getRowByIsin(isin)
+                if prev_day_row.shape[0] > 0:
+                    refUnitValue = GpwArchiveData.getClosingFromRow(prev_day_row)
+
+            if refUnitValue is None:
+                refUnitValue = GpwCurrentStockData.unitReferencePrice( currentStockRow )
+
             referenceValue = refUnitValue * amount
             refWalletValue += referenceValue
 

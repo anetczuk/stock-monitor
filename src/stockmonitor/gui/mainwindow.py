@@ -61,7 +61,7 @@ class MainWindow( QtBaseClass ):           # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-        self.data = DataObject( self )
+        self.data: DataObject = DataObject( self )
         self.appSettings = AppSettings()
 
         self.ui.actionRefresh_All.triggered.connect( self.refreshStockDataForce )

@@ -202,7 +202,8 @@ def extract_current( args ):
     trans_data: DataFrame = data_container.getWalletStock(show_soldout=True)
     _LOGGER.info( "transactions:\n%s", trans_data )
 
-    store_dataframe( trans_data, out_trans_path, description="summary of current amounts of stock with sold-out stocks" )
+    store_dataframe( trans_data, out_trans_path,
+                     description="summary of current amounts of stock with sold-out stocks" )
     return True
 
 

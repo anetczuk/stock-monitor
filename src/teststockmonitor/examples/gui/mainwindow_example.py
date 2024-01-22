@@ -106,12 +106,12 @@ else:
 #     window.data.wallet.addTransactionData( "AAA3", 300, 10 )
 #     window.data.wallet.addTransactionData( "AAA4", 300, 10 )
 
-    window.data.markers.addTransactionData( "ABC", 11, 22, MarkerEntry.OperationType.BUY )
-    window.data.markers.addTransactionData( "XYZ", 33, 44, MarkerEntry.OperationType.BUY )
-    window.data.markers.addTransactionData( "AAA1", 20, 100, MarkerEntry.OperationType.BUY )
-    window.data.markers.addTransactionData( "AAA2",  5, 100, MarkerEntry.OperationType.BUY )
-    window.data.markers.addTransactionData( "AAA3", 20, 100, MarkerEntry.OperationType.SELL, "red" )
-    window.data.markers.addTransactionData( "AAA4",  5, 100, MarkerEntry.OperationType.SELL, "yellow" )
+    window.data.markers.addMarker( "ABC", 11, 22, MarkerEntry.OperationType.BUY )
+    window.data.markers.addMarker( "XYZ", 33, 44, MarkerEntry.OperationType.BUY )
+    window.data.markers.addMarker( "AAA1", 20, 100, MarkerEntry.OperationType.BUY )
+    window.data.markers.addMarker( "AAA2",  5, 100, MarkerEntry.OperationType.BUY )
+    window.data.markers.addMarker( "AAA3", 20, 100, MarkerEntry.OperationType.SELL, "red" )
+    window.data.markers.addMarker( "AAA4",  5, 100, MarkerEntry.OperationType.SELL, "yellow" )
 
     window.data.notes["notes"] = "example note"
     window.data.notes["aaa note"] = "notes example"
