@@ -130,7 +130,7 @@ class DataObjectTest(unittest.TestCase):
         dataobject.wallet.addTransactionData( "CDR",  1, 260.0, datetime.datetime(2020, 10, 4, 15, 41, 33),
                                               commission=0.1 )
 
-        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState(False)
         self.assertEqual( walletVal, 186.36 )
         self.assertEqual( walletProfit, -13.74 )
         self.assertEqual( change, '-3.46%' )
@@ -153,7 +153,7 @@ class DataObjectTest(unittest.TestCase):
         dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33),
                                               commission=0.1 )
 
-        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState(False)
         self.assertEqual( walletVal, 186.36 )
         self.assertEqual( walletProfit, -73.74 )
         self.assertEqual( change, '-3.46%' )
@@ -176,14 +176,14 @@ class DataObjectTest(unittest.TestCase):
         dataobject.wallet.addTransactionData( "CDR",  1, 200.0, datetime.datetime(2020, 10, 4, 15, 41, 33),
                                               commission=0.1 )
 
-        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState()
+        walletVal, walletProfit, change, gain, overallProfit = dataobject.getWalletState(False)
         self.assertEqual( walletVal, 186.36 )
         self.assertEqual( walletProfit, -13.74 )
         self.assertEqual( change, '-3.46%' )
         self.assertEqual( gain, 39.8 )
         self.assertEqual( overallProfit, 26.06 )
 
-    def test_importWalletTransactions(self):
+    def test_importWalletTransactions_repeated(self):
         importedData = DataFrame( {'trans_time': ['28.10.2020 09:10:07'],
                                    'name': ["CCC"],
                                    'k_s': ['S'],

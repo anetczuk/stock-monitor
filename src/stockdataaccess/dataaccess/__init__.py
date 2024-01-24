@@ -281,16 +281,16 @@ retrieve_url = retrieve_url_pycurl
 ## =========================================================
 
 
-def download_html_content( url, outputPath ):
+def download_html_content( url, outputPath ) -> str:
     try:
-        content = retrieve_url( url, outputPath )
+        content: str = retrieve_url( url, outputPath )
         # _LOGGER.debug( "content grabbed successfully to %s", outputPath )
         return content
 
-    except urllib.error.HTTPError:
+    except urllib.error.HTTPError:          # type: ignore
         _LOGGER.exception( "exception when accessing: %s", url, exc_info=False )
         raise
-    except urllib.error.URLError as ex:
+    except urllib.error.URLError as ex:     # type: ignore
         _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
         raise
     except ConnectionResetError as ex:

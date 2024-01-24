@@ -1,0 +1,14 @@
+_desc: "can happen that there are two identical transactions in the same time (the difference is in milliseconds, but is lost in time resolution)"
+_stockDict:
+  ? !!python/tuple
+  - ALIOR
+  - ALR
+  : transactions:
+    - amount: 50
+      commission: 5.00
+      transTime: 2023-09-06 15:40:01
+      unitPrice: 50.00
+    - amount: 50
+      commission: 5.00
+      transTime: 2023-09-06 15:40:01
+      unitPrice: 50.00

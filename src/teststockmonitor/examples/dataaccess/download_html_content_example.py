@@ -23,6 +23,5 @@ if __name__ == '__main__':
     ##
 
     url = "https://httpbin.org/anything"
-    content = download_html_content( url, None )
-    response = content.decode()
+    response = download_html_content( url, None )
     print( response )

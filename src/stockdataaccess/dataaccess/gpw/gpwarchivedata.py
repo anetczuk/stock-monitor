@@ -212,6 +212,9 @@ class GpwArchiveData( BaseWorksheetData ):
     def getIsinField(self, rowIndex: int):
         return self.getDataByIndex( StockDataType.ISIN, rowIndex )
 
+    # def getTickerFromName(self, stockName):
+    #     return self.getDataByValue( StockDataType.STOCK_NAME, stockName, StockDataType.TICKER )
+
     ## get column index
     ## override
     def getDataColumnIndex( self, columnType: StockDataType ) -> int:

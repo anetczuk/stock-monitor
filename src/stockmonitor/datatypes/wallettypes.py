@@ -199,18 +199,28 @@ class TransHistory():
             self.append( amount, unitPrice, commission, transTime )
             self.sort()
             return
+        # # it causes bugs, because two transactions can be in the same time
+        # sameIndex = self._findSame( unitPrice, transTime, amount, commission )
+        # if sameIndex > -1:
+        #     return
+
+        # # do not merge transactions
+        # similarIndex = self._findSimilar( unitPrice, transTime )
+        # if similarIndex >= 0:
+        #     ## _LOGGER.debug( "joining transaction: %s %s %s %s", amount, unitPrice, commission, transTime )
+        #     item = self.transactions[ similarIndex ]
+        #     item.add( amount, commission )
+        #     return
+
+        # _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
+        self.append( amount, unitPrice, commission, transTime )
+        self.sort()
+
+    def rem(self, amount, unitPrice, commission, transTime=None):
         sameIndex = self._findSame( unitPrice, transTime, amount, commission )
-        if sameIndex > -1:
+        if sameIndex < 0:
             return
-        similarIndex = self._findSimilar( unitPrice, transTime )
-        if similarIndex < 0:
-#                 _LOGGER.debug( "adding transaction: %s %s %s", amount, unitPrice, transTime )
-            self.append( amount, unitPrice, commission, transTime )
-            self.sort()
-            return
-        ## _LOGGER.debug( "joining transaction: %s %s %s %s", amount, unitPrice, commission, transTime )
-        item = self.transactions[ similarIndex ]
-        item.add( amount, commission )
+        del self.transactions[sameIndex]
 
     ## =============================================================
 
@@ -699,7 +709,6 @@ class TransHistory():
         return self.findCheapest()
 
     def _findSame(self, unit_price, trans_date, amount, commission):
-#         for i in range( len( self.transactions ) ):
         for i, item in enumerate( self.transactions ):
             itemAmount, itemPrice, itemCommission, itemTime = item
             if itemAmount != amount:
@@ -713,17 +722,17 @@ class TransHistory():
             return i
         return -1
 
-    def _findSimilar(self, unit_price, trans_date):
-#         for i in range( len( self.transactions ) ):
-#             item = self.transactions[i]
-        for i, item in enumerate( self.transactions ):
-            if item.unitPrice != unit_price:
-                continue
-            diff = item.transTime - trans_date
-            # print("diff:", item[2], trans_date, diff)
-            if -datetime.timedelta( minutes=5 ) < diff < datetime.timedelta( minutes=5 ):
-                return i
-        return -1
+#     def _findSimilar(self, unit_price, trans_date):
+# #         for i in range( len( self.transactions ) ):
+# #             item = self.transactions[i]
+#         for i, item in enumerate( self.transactions ):
+#             if item.unitPrice != unit_price:
+#                 continue
+#             diff = item.transTime - trans_date
+#             # print("diff:", item[2], trans_date, diff)
+#             if -datetime.timedelta( minutes=5 ) < diff < datetime.timedelta( minutes=5 ):
+#                 return i
+#         return -1
 
     def sort(self):
         self.transactions.sort( key=Transaction.sortKey, reverse=True )

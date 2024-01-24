@@ -1,0 +1,27 @@
+_desc:
+  - "transactions with sold-out stock"
+_stockDict:
+  ? !!python/tuple
+  - AGORA
+  - AGO
+  : transactions:
+    - amount: -32
+      commission: 0.94
+      transTime: 2020-05-26 11:03:06
+      unitPrice: 7.5
+    - amount: -228
+      commission: 6.67
+      transTime: 2020-05-26 11:02:23
+      unitPrice: 7.5
+    - amount: 95
+      commission: 0.43
+      transTime: 2020-05-18 16:04:51
+      unitPrice: 6.76
+    - amount: 35
+      commission: 3.0
+      transTime: 2020-05-18 16:01:12
+      unitPrice: 6.76
+    - amount: 130
+      commission: 3.65
+      transTime: 2020-05-04 09:28:34
+      unitPrice: 7.2

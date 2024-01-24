@@ -27,6 +27,7 @@ import datetime
 
 from stockmonitor.datatypes.datatypes import WalletData
 from stockmonitor.datatypes.wallettypes import TransactionMatchMode
+from teststockmonitor.data import load_yaml
 
 
 class WalletDataTest(unittest.TestCase):
@@ -81,7 +82,7 @@ class WalletDataTest(unittest.TestCase):
         dataobject.addTransactionData( "xxx", 1, 20.0, commission=1.0 )
         dataobject.addTransactionData( "xxx", 3, 20.0, commission=3.0 )
 
-        self.assertEqual( dataobject.transactions("xxx").size(), 1 )
+        self.assertEqual( dataobject.transactions("xxx").size(), 2 )
 
         items = dataobject.currentItems( matchMode )
         ticker, amount, unit_price = items[0]
@@ -125,7 +126,7 @@ class WalletDataTest(unittest.TestCase):
         ticker, amount, unit_price = items[0]
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
-        self.assertEqual( unit_price, 11.0 )
+        self.assertEqual( unit_price, 21.0 )
 
     def test_add_sell_3(self):
         dataobject = WalletData()
@@ -161,3 +162,14 @@ class WalletDataTest(unittest.TestCase):
         self.assertEqual( ticker, "xxx" )
         self.assertEqual( amount, 1 )
         self.assertEqual( unit_price, 11.0 )
+
+    def test_importDataFromDict(self):
+        trans_dict = load_yaml("trans_agora.yaml")
+        wallet = WalletData()
+        wallet.importDataFromDict( trans_dict )
+
+        self.assertEqual( wallet.size(), 1 )
+        self.assertEqual( wallet.tickers(), {'AGO'} )
+        self.assertEqual( wallet.currentItems(TransactionMatchMode.OLDEST), [('AGO', 0, 0)] )
+        trans_list = wallet.transactions('AGO')
+        self.assertEqual( len(trans_list), 5 )

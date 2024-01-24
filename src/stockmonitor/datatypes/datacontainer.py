@@ -21,6 +21,7 @@
 # SOFTWARE.
 #
 
+import os
 import logging
 from typing import Dict, List, Tuple
 
@@ -62,7 +63,6 @@ class DataContainer():
         self.userContainer        = UserContainer()                   ## user data
 
         self.gpwCurrentSource     = StockDataWrapper( GpwCurrentStockData() )
-        self.gpwArchiveSource     = GpwArchiveData()
 
         self.gpwStockIntradayData = GpwStockIntradayMap()
         self.gpwIndexIntradayData = GpwIndexIntradayMap()
@@ -88,6 +88,7 @@ class DataContainer():
         return self.userContainer.store( outputDir )
 
     def load( self, inputDir ):
+        inputDir = os.path.expanduser(inputDir)
         self.userContainer.load( inputDir )
         inputFile = inputDir + "/gpwcurrentheaders.obj"
         headers = persist.load_object_simple( inputFile, {} )
@@ -215,6 +216,22 @@ class DataContainer():
         self.userContainer.wallet = WalletData()
         self.updateWalletFavGroup()
 
+    def importWalletDict(self, wallet_dict, addTransactions=False):
+        if wallet_dict is None:
+            _LOGGER.warning( "None dataframe given" )
+            return False
+
+        importWallet = WalletData()
+        importWallet.importDataFromDict(wallet_dict)
+
+        if addTransactions:
+            ## merge wallets
+            self.wallet.addWallet( importWallet )
+        else:
+            ## replace wallet
+            self.userContainer.wallet = importWallet
+        return True
+
     # return True if data changed, otherwise False
     def importWalletTransactions(self, dataFrame: DataFrame, addTransactions=False):
         if dataFrame is None:
@@ -241,16 +258,18 @@ class DataContainer():
             except ValueError:
                 dateObject = None
 
+            # gpwArchiveSource = GpwArchiveData()
+            # gpwArchiveSource.getTickerFromName()
+
             ticker = self.gpwCurrentData.getTickerFromName( stockName )
             if ticker is None:
                 _LOGGER.warning( "could not find stock ticker for name: >%s<", stockName )
 
             if oper == "K":
-                importWallet.addTransaction( stockName, ticker,  amount, unit_price, dateObject, False,
-                                             commission=commission )
+                importWallet.addTransaction( stockName, ticker,  amount, unit_price, dateObject, commission, False )
+
             elif oper == "S":
-                importWallet.addTransaction( stockName, ticker, -amount, unit_price, dateObject, False,
-                                             commission=commission )
+                importWallet.addTransaction( stockName, ticker, -amount, unit_price, dateObject, commission, False )
 
         if addTransactions:
             ## merge wallets
@@ -751,8 +770,11 @@ class DataContainer():
         return dataFrame
 
     ## wallet summary: wallet value, wallet profit, ref change, gain, overall profit
-    def getWalletState(self):
-        self.gpwArchiveSource.getPrevDayData()  # loads data
+    def getWalletState(self, prev_day_ref=True):
+        gpwArchiveSource = None
+        if prev_day_ref:
+            gpwArchiveSource = GpwArchiveData()
+            gpwArchiveSource.getPrevDayData()  # loads data
 
         currentStock: GpwCurrentStockData = self.gpwCurrentSource.stockData
 
@@ -790,12 +812,13 @@ class DataContainer():
             walletProfit  += sellValue - buyValue
 
             refUnitValue = None
-            # returns None in case of companies removed from stock exchange
-            isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
-            if isin:
-                prev_day_row = self.gpwArchiveSource.getRowByIsin(isin)
-                if prev_day_row.shape[0] > 0:
-                    refUnitValue = GpwArchiveData.getClosingFromRow(prev_day_row)
+            if prev_day_ref:
+                # returns None in case of companies removed from stock exchange
+                isin = self.gpwCurrentData.getStockIsinFromTicker( ticker )
+                if isin:
+                    prev_day_row = gpwArchiveSource.getRowByIsin(isin)
+                    if prev_day_row.shape[0] > 0:
+                        refUnitValue = GpwArchiveData.getClosingFromRow(prev_day_row)
 
             if refUnitValue is None:
                 refUnitValue = GpwCurrentStockData.unitReferencePrice( currentStockRow )

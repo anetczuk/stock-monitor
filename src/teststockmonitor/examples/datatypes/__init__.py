@@ -21,29 +21,9 @@
 # SOFTWARE.
 #
 
+import sys
 import os
-import json
-import yaml
 
-
-SCRIPT_DIR = os.path.dirname(__file__)
-
-
-def get_data_root_path() -> str:
-    return SCRIPT_DIR
-
-
-def get_data_path( fileName: str ) -> str:
-    return os.path.join( SCRIPT_DIR, fileName )
-
-
-def load_json( fileName: str ):
-    data_path = get_data_path(fileName)
-    with open( data_path, encoding="utf-8" ) as data_file:
-        return json.load(data_file)
-
-
-def load_yaml( fileName: str ):
-    data_path = get_data_path(fileName)
-    with open( data_path, encoding="utf-8" ) as data_file:
-        return yaml.full_load(data_file)
+#### append source root
+sys.path.append(os.path.abspath( os.path.join( os.path.dirname(__file__),
+                                               os.pardir, os.pardir, os.pardir ) ))

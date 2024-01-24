@@ -158,14 +158,14 @@ def store_dataframe_list(out_file_path, numpy_data_list, horizontal=True):
         raise RuntimeError(f"unknown store format: {out_file_path}")
 
 
-def import_data( trans_hist_path ):
+def import_data( trans_hist_path, join_day=False ):
     imported_data = load_dataframe( trans_hist_path )
     if imported_data is None:
         return None
 
     data_container = DataContainer()
     data_container.userContainer.transactionsMatchMode = TransactionMatchMode.OLDEST
-    data_container.importWalletTransactions( imported_data, False )
+    data_container.importWalletTransactions( imported_data, join_day )
 
     return data_container
 
@@ -237,8 +237,7 @@ def extract_walletvaluehistory( args ):
         return False
 
     _LOGGER.info( "preparing wallet value history" )
-    ticker_list = None
-    values_data: DataFrame = data_container.getWalletValueHistory( "MAX", ticker_list )
+    values_data: DataFrame = data_container.getWalletValueHistory( "MAX" )
     _LOGGER.info( "values:\n%s", values_data )
 
     store_dataframe( values_data, out_path, description="history of value (capitalization) of wallet" )

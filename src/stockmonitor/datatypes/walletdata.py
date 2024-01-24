@@ -119,6 +119,16 @@ class WalletData( persist.Versionable ):
             tickers_set.add( stock_ticker )
         return tickers_set
 
+    ## get current tickers
+    def getCurrentStock(self) -> List[ str ]:
+        ret = []
+        for stockId, hist in self._stockDict.items():
+            amount = hist.currentAmount()
+            if amount > 0:
+                ticker = stockId[1] if stockId else None
+                ret.append( ticker )
+        return ret
+
     def transactions(self, ticker) -> TransHistory:
         return self[ ticker ]
 
@@ -144,11 +154,11 @@ class WalletData( persist.Versionable ):
 
     # for backward compatibility
     def addTransactionData( self, ticker, amount, unitPrice, transTime: datetime = datetime.today(),
-                            joinSimilar=True, commission=0.0 ):
-        self.addTransaction( ticker, ticker, amount, unitPrice, transTime, joinSimilar, commission )
+                            commission=0.0, joinSimilar=True ):
+        self.addTransaction( ticker, ticker, amount, unitPrice, transTime, commission, joinSimilar )
 
     def addTransaction( self, stockName, ticker, amount, unitPrice, transTime: datetime = datetime.today(),
-                        joinSimilar=True, commission=0.0 ):
+                        commission=0.0, joinSimilar=True ):
         stock_id = ( stockName, ticker )
         transactions: TransHistory = self._stockDict.get( stock_id, None )
         if transactions is None:
@@ -159,19 +169,39 @@ class WalletData( persist.Versionable ):
 
     def addTransactionObject( self, stockId: StockId, transaction: Transaction, joinSimilar=True ):
         self.addTransaction( stockId[0], stockId[1], transaction.amount, transaction.unitPrice,
-                             transaction.transTime, joinSimilar, commission=transaction.commission )
+                             transaction.transTime, transaction.commission, joinSimilar )
+
+    def remTransactionObject( self, stockId: StockId, transaction: Transaction ):
+        transactions: TransHistory = self._stockDict.get( stockId, None )
+        if transactions is None:
+            return
+        transactions.rem( transaction.amount, transaction.unitPrice, transaction.commission, transaction.transTime )
 
     def addWallet(self, wallet: 'WalletData', joinSimilar=True):
+        # remove repeated transactions
+        for stockId, hist in wallet.stockData().items():
+            for trans in hist.transactions:
+                self.remTransactionObject(stockId, trans)
+
+        # add new transactions
         for stockId, hist in wallet.stockData().items():
             for trans in hist.transactions:
                 self.addTransactionObject(stockId, trans, joinSimilar)
 
-    ## get current tickers
-    def getCurrentStock(self) -> List[ str ]:
-        ret = []
-        for stockId, hist in self._stockDict.items():
-            amount = hist.currentAmount()
-            if amount > 0:
-                ticker = stockId[1] if stockId else None
-                ret.append( ticker )
-        return ret
+    def importDataFromDict(self, wallet_dict):
+        if not wallet_dict:
+            _LOGGER.warning( "empty dict given" )
+            return
+
+        wallet_dict = wallet_dict.get("_stockDict", wallet_dict)    # extract subdict
+
+        for stock_id, data_dict in wallet_dict.items():
+            stock_name = stock_id[0]
+            stock_ticker = stock_id[1]
+            trans_list = data_dict["transactions"]
+            for trans_item in trans_list:
+                amount = trans_item['amount']
+                unitPrice = trans_item['unitPrice']
+                transTime = trans_item['transTime']
+                commission = trans_item['commission']
+                self.addTransaction(stock_name, stock_ticker, amount, unitPrice, transTime, commission, False )
