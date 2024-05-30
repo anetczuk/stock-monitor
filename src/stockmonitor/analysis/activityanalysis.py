@@ -362,7 +362,12 @@ class ActivityAnalysis:
 
         dataPair = None
         if self.forceRecalc is False:
-            dataPair = persist.load_object_simple( picklePath, None, silent=True )
+            try:
+                dataPair = persist.load_object_simple( picklePath, None, silent=True )
+            except EOFError:
+                # pickle file corrupt - download and store new file
+                _LOGGER.warning(f"pickle file {picklePath} is corrupted - downloading and storing new file")
+                dataPair = None
 
         if dataPair is None or len(dataPair[0]) < 1:
             ## happens in two cases: loaded cache data is invalid or self.forceRecalc is True
