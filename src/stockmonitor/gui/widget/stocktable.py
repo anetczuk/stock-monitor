@@ -40,7 +40,6 @@ from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
 from stockmonitor.gui.widget.dataframetable import DataFrameTable, TableRowColorDelegate
 from stockmonitor.gui.widget import stockchartwidget, stockmosaicwidget
 from stockmonitor.gui.widget import indexchartwidget
-# import stockmonitor.gui.widget.stocksummarywidget as stocksummarywidget
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,10 +69,10 @@ class StockTable( DataFrameTable ):
         if self.dataObject is not None:
             self._addOpenChartAction( contextMenu )
 
-#            stockSummaryAction = contextMenu.addAction("Stock summary")
-#            isinsList = self._getSelectedIsins()
-#            stockSummaryAction.setData( isinsList )
-#            stockSummaryAction.triggered.connect( self._stockSummaryAction )
+            stockSummaryAction = contextMenu.addAction("Stock summary")
+            isinsList = self._getSelectedIsins()
+            stockSummaryAction.setData( isinsList )
+            stockSummaryAction.triggered.connect( self._stockSummaryAction )
 
             gpwLinks     = self._getGpwInfoLinks()
             bankierLinks = self._getBankierInfoLinks()
@@ -125,15 +124,18 @@ class StockTable( DataFrameTable ):
 
         return contextMenu
 
-#     def _stockSummaryAction(self):
-#         if self.dataObject is None:
-#             return
-#         parentAction = self.sender()
-#         isinList = parentAction.data()
-#         if is_iterable( isinList ) is False:
-#             isinList = list( isinList )
-#         for isin in isinList:
-#             stocksummarywidget.create_window( self.dataObject, isin, self )
+    def _stockSummaryAction(self):
+        # ugly but prevents circular dependency
+        from stockmonitor.gui.widget.stocksummarywidget import create_window as stocksummary_create_window
+
+        if self.dataObject is None:
+            return
+        parentAction = self.sender()
+        isinList = parentAction.data()
+        if is_iterable( isinList ) is False:
+            isinList = list( isinList )
+        for isin in isinList:
+            stocksummary_create_window( self.dataObject, isin, self )
 
     def _createActionOpenUrl(self, text, link ):
         action = QAction( text )

@@ -162,7 +162,7 @@ class WorksheetStorage():
 
         try:
             picklePath = dataPath + ".pickle"
-            self.worksheet = persist.load_object_simple( picklePath, None )
+            self.worksheet = persist.load_object_simple( picklePath, None, silent=True )
             if self.worksheet is None:
                 self.clear()
                 return self.worksheet

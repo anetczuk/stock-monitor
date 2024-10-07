@@ -4,7 +4,7 @@ usage: startmonitor [-h] [--minimized]
 
 Stock Monitor
 
-optional arguments:
+options:
   -h, --help   show this help message and exit
   --minimized  Start minimized
 ```

@@ -288,13 +288,13 @@ def download_html_content( url, outputPath ) -> str:
         return content
 
     except urllib.error.HTTPError:          # type: ignore
-        _LOGGER.exception( "exception when accessing: %s", url, exc_info=False )
+        _LOGGER.exception( "exception when accessing: %s", url )
         raise
     except urllib.error.URLError as ex:     # type: ignore
-        _LOGGER.exception( "unable to access: %s %s", url, ex, exc_info=False )
+        _LOGGER.exception( "unable to access: %s %s", url, ex )
         raise
     except ConnectionResetError as ex:
-        _LOGGER.exception( "unable to access -- connection reset: %s %s", url, ex, exc_info=False )
+        _LOGGER.exception( "unable to access -- connection reset: %s %s", url, ex )
         raise
 
 

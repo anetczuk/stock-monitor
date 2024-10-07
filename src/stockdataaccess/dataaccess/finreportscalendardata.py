@@ -57,7 +57,7 @@ class FinRepsCalendarData( BaseWorksheetData ):
             try:
                 download_html_content( url, filePath )
             except BaseException as ex:
-                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex )
                 raise
 
         @synchronized
@@ -101,7 +101,7 @@ class PublishedFinRepsCalendarData( BaseWorksheetData ):
 
         ## override
         def downloadData(self, filePath):
-            url = ("https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
+            url = ("https://strefainwestorow.pl/dane/raporty/lista-publikacji-raportow-okresowych/opublikowane"
                    "?sort=desc&order=Data%20publikacji" )
 
             relPath = os.path.relpath( filePath )
@@ -128,7 +128,7 @@ class PublishedFinRepsCalendarData( BaseWorksheetData ):
         super().__init__( dao )
 
     def sourceLink(self):
-        return "https://strefainwestorow.pl/dane/raporty/lista-dat-publikacji-raportow-okresowych/opublikowane"
+        return "https://strefainwestorow.pl/dane/raporty/lista-publikacji-raportow-okresowych/opublikowane"
 
     def getTicker(self, rowIndex):
         return self.getDataByIndex( StockDataType.TICKER, rowIndex )

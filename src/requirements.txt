@@ -1,5 +1,6 @@
 xlrd
 openpyxl
+numpy==1.26.4
 pandas>=1.1.2, <1.4.0
 lxml>=4.5
 bs4>=0.0.1

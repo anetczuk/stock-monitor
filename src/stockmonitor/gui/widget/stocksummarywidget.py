@@ -25,6 +25,7 @@ import logging
 
 from pandas.core.frame import DataFrame
 
+from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.appwindow import AppWindow
 
 from .. import uiloader
@@ -46,13 +47,15 @@ class StockSummaryWidget(QtBaseClass):                    # type: ignore
         self.ui = UiTargetClass()
         self.ui.setupUi(self)
 
-        self.dataObject = None
+        self.dataObject: DataObject = None
         self.isin = None
 
     def connectData(self, dataObject, isin):
         self.isin       = isin
         self.dataObject = dataObject
         self.ui.espiList.connectData( dataObject )
+        self.ui.reportswidget.connectData( dataObject )
+        self.ui.reportswidget.dataTable.filteringEnabled = False
         self.dataObject.stockDataChanged.connect( self.updateView )
         self.dataObject.walletDataChanged.connect( self.updateView )
         self.updateView()
@@ -68,8 +71,12 @@ class StockSummaryWidget(QtBaseClass):                    # type: ignore
             return
         dataFrame: DataFrame = espiData.getWorksheetData()
         if dataFrame is not None:
-            dataFrame = dataFrame[ dataFrame['ISIN'] == self.isin ]
+            dataFrame = dataFrame[ dataFrame['isin'] == self.isin ]
         self.ui.espiList.setData( dataFrame )
+
+        self.ui.reportswidget.refreshData()
+        stock_ticker = self.dataObject.getTickerFromIsin( self.isin )
+        self.ui.reportswidget.dataTable.setDataFilter(1, 1, stock_ticker)
 
 
 def create_window( dataObject, isin, parent=None ):

@@ -645,7 +645,7 @@ class TransHistory():
                 ## if this happens then it means there is problem with importing transactions history
                 ## perhaps the importer didn't recognized or badly merged transactions
                 ## or exported history is not completed (e.g. exported only last year)
-                _LOGGER.error( "invalid index %s %s %s", bestIndex, self.size(), len(retList) )
+                _LOGGER.error( "invalid index %s %s %s trans: %s %s", bestIndex, self.size(), len(retList), sellTransaction, mode )
                 return retList
 
             ## reduce amount

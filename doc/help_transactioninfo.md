@@ -6,7 +6,7 @@ usage: transactioninfo.py [-h] [-la] [--listtools]
 
 stock data grabber
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -la, --logall         Log all messages
   --listtools           List tools
@@ -32,7 +32,7 @@ subcommands:
 usage: transactioninfo.py buysell [-h] [-th TRANSHISTORY]
                                   [--trans_out_file TRANS_OUT_FILE]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -th TRANSHISTORY, --transhistory TRANSHISTORY
                         Path to file with history of transactions
@@ -48,7 +48,7 @@ optional arguments:
 usage: transactioninfo.py current [-h] [-th TRANSHISTORY]
                                   [--trans_out_file TRANS_OUT_FILE]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -th TRANSHISTORY, --transhistory TRANSHISTORY
                         Path to file with history of transactions
@@ -64,7 +64,7 @@ optional arguments:
 usage: transactioninfo.py currentbuy [-h] [-th TRANSHISTORY]
                                      [--trans_out_file TRANS_OUT_FILE]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -th TRANSHISTORY, --transhistory TRANSHISTORY
                         Path to file with history of transactions
@@ -80,7 +80,7 @@ optional arguments:
 usage: transactioninfo.py walletvaluehistory [-h] [-th TRANSHISTORY]
                                              [--out_file OUT_FILE]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -th TRANSHISTORY, --transhistory TRANSHISTORY
                         Path to file with history of transactions
@@ -95,7 +95,7 @@ optional arguments:
 usage: transactioninfo.py walletgainhistory [-h] [-th TRANSHISTORY]
                                             [--out_file OUT_FILE]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -th TRANSHISTORY, --transhistory TRANSHISTORY
                         Path to file with history of transactions
@@ -111,7 +111,7 @@ usage: transactioninfo.py walletprofithistory [-h] [-th TRANSHISTORY]
                                               [--overall]
                                               [--out_file OUT_FILE]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -th TRANSHISTORY, --transhistory TRANSHISTORY
                         Path to file with history of transactions

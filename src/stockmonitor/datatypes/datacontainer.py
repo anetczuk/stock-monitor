@@ -515,7 +515,7 @@ class DataContainer():
             stock_unit_value = None
             currentStockRow = currentStock.getRowByTicker( ticker )
             if currentStockRow is None or currentStockRow.empty:
-                _LOGGER.warning( "could not find stock by ticker: %s name: %s", ticker, stock_name )
+                _LOGGER.info( "could not find stock by ticker: %s name: %s", ticker, stock_name )
             else:
                 stock_unit_value = GpwCurrentStockData.unitPrice( currentStockRow )
 
@@ -797,7 +797,7 @@ class DataContainer():
 
             currentStockRow = currentStock.getRowByTicker( ticker )
             if currentStockRow is None or currentStockRow.empty:
-                _LOGGER.warning( "could not find stock by ticker: %s name: %s", ticker, stock_name )
+                _LOGGER.info( "could not find stock by ticker: %s name: %s", ticker, stock_name )
                 continue
 
             currUnitValue = GpwCurrentStockData.unitPrice( currentStockRow )

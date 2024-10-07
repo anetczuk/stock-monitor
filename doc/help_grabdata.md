@@ -6,7 +6,7 @@ usage: grabdata.py [-h] [-la] [--listtools]
 
 stock data grabber
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -la, --logall         Log all messages
   --listtools           List tools
@@ -45,7 +45,7 @@ subcommands:
 ```
 usage: grabdata.py config_mode [-h] -cp CONFIG_PATH
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -cp CONFIG_PATH, --config_path CONFIG_PATH
                         Path for config file.
@@ -57,7 +57,7 @@ optional arguments:
 ```
 usage: grabdata.py all_current [-h] [-f] -of OUT_FORMAT [-od OUT_DIR]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -74,7 +74,7 @@ optional arguments:
 ```
 usage: grabdata.py gpw_curr_stock [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -91,7 +91,7 @@ optional arguments:
 ```
 usage: grabdata.py gpw_curr_indexes [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -108,7 +108,7 @@ optional arguments:
 ```
 usage: grabdata.py gpw_isin_data [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -126,7 +126,7 @@ optional arguments:
 usage: grabdata.py gpw_stock_indicators [-h] [-f] [-of OUT_FORMAT]
                                         [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -143,7 +143,7 @@ optional arguments:
 ```
 usage: grabdata.py gpw_espi [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -161,7 +161,7 @@ optional arguments:
 usage: grabdata.py gpw_curr_stock_intra [-h] --isin ISIN [-f] [-of OUT_FORMAT]
                                         [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --isin ISIN           ISIN
   -f, --force           Force refresh data
@@ -180,7 +180,7 @@ optional arguments:
 usage: grabdata.py gpw_curr_index_intra [-h] --isin ISIN [-f] [-of OUT_FORMAT]
                                         [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --isin ISIN           ISIN
   -f, --force           Force refresh data
@@ -200,7 +200,7 @@ usage: grabdata.py gpw_archive_data [-h] [-d DATE] [-dr DATE_RANGE] [-f]
                                     [-of OUT_FORMAT] [-op OUT_PATH]
                                     [-od OUT_DIR]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -d DATE, --date DATE  Archive date
   -dr DATE_RANGE, --date_range DATE_RANGE
@@ -222,7 +222,7 @@ optional arguments:
 ```
 usage: grabdata.py div_cal [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -239,7 +239,7 @@ optional arguments:
 ```
 usage: grabdata.py fin_reps_cal [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -256,7 +256,7 @@ optional arguments:
 ```
 usage: grabdata.py pub_fin_reps_cal [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -273,7 +273,7 @@ optional arguments:
 ```
 usage: grabdata.py global_indexes [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -292,7 +292,7 @@ usage: grabdata.py metastock_intraday [-h] -d DATE [-dr DATE_RANGE] [-f]
                                       [-of OUT_FORMAT] [-op OUT_PATH]
                                       [-od OUT_DIR]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -d DATE, --date DATE  Archive date
   -dr DATE_RANGE, --date_range DATE_RANGE
@@ -314,7 +314,7 @@ optional arguments:
 ```
 usage: grabdata.py curr_short_sell [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT
@@ -331,7 +331,7 @@ optional arguments:
 ```
 usage: grabdata.py hist_short_sell [-h] [-f] [-of OUT_FORMAT] [-op OUT_PATH]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f, --force           Force refresh data
   -of OUT_FORMAT, --out_format OUT_FORMAT

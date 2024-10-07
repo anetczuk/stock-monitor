@@ -269,23 +269,14 @@ class TableFiltersDialog(TableFiltersDialogBaseClass):           # type: ignore
         self.updateFilter()
 
     def updateFilter(self):
-        model: DFProxyModel = self.parentTable.model()
-
         columnCBIndex = self.ui.columnCB.currentIndex()
         columnIndex = self.ui.columnCB.itemData( columnCBIndex )
         if columnIndex is None:
             return
-        if columnIndex < 0:
-            model.clearFilter()
-            return
-
-        model.setFilterKeyColumn( columnIndex )
-
         conditionIndex = self.ui.conditionCB.currentIndex()
-        model.setFilterCondition( conditionIndex )
-
         filterText = self.ui.valueLE.text()
-        model.setFilterFixedString( filterText )
+
+        self.parentTable.setDataFilter( columnIndex, conditionIndex, filterText )
 
     def settingsAccepted(self):
         pass
@@ -554,6 +545,8 @@ class DataFrameTable( QTableView ):
 
         self.installEventFilter( self )
 
+        self.filteringEnabled: bool = True
+
     def setSourceModel( self, model: DataFrameTableModel ):
         self.pandaModel = model
         tableModel = self.model()
@@ -567,6 +560,17 @@ class DataFrameTable( QTableView ):
         sourceModel = sinkModel.sourceModel()
         nextProxyModel.setSourceModel( sourceModel )
         sinkModel.setSourceModel( nextProxyModel )
+
+    def setDataFilter(self, columnIndex, conditionIndex, filterText):
+        model: DFProxyModel = self.model()
+
+        if columnIndex < 0:
+            model.clearFilter()
+            return
+
+        model.setFilterKeyColumn( columnIndex )
+        model.setFilterCondition( conditionIndex )
+        model.setFilterFixedString( filterText )
 
     @property
     def headersText(self):
@@ -613,10 +617,12 @@ class DataFrameTable( QTableView ):
 
     def contextMenuEvent( self, _ ):
         contextMenu         = QMenu(self)
-        filterDataAction    = contextMenu.addAction("Filter data")
-        configColumnsAction = contextMenu.addAction("Configure columns")
 
+        filterDataAction    = contextMenu.addAction("Filter data")
         filterDataAction.triggered.connect( self.showFilterConfiguration )
+        filterDataAction.setEnabled( self.filteringEnabled )
+
+        configColumnsAction = contextMenu.addAction("Configure columns")
         configColumnsAction.triggered.connect( self.showColumnsConfiguration )
 
         if self._rawData is None:

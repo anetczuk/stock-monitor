@@ -23,10 +23,8 @@
 
 import os
 import logging
-import pandas
+import json
 from pandas.core.frame import DataFrame
-
-from bs4 import BeautifulSoup
 
 from stockdataaccess.dataaccess import TMP_DIR, requests_init_session
 from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, BaseWorksheetData
@@ -38,63 +36,45 @@ from stockdataaccess.pprint import fullname
 _LOGGER = logging.getLogger(__name__)
 
 
-def grab_content( url, button ):
+def grab_shorts_current():
+    return grab_shorts_data("Default")
+
+
+def grab_shorts_hist():
+    return grab_shorts_data("RssHTable")
+
+    
+def grab_shorts_data(method):
     with requests_init_session() as currSession:
-        resp = currSession.get( url )
-        resp.raise_for_status()
-        content = resp.content
 
-        soup = BeautifulSoup( content, "html.parser" )
+        postUrl = "https://rss.knf.gov.pl/rss_pub/JSON"
 
-# POST /RssOuterView/faces/start2OuterView.xhtml HTTP/1.1
-# Host: rss.knf.gov.pl
-# User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0
-# Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-# Accept-Language: en-US,en;q=0.5
-# Accept-Encoding: gzip, deflate, br
-# Content-Type: application/x-www-form-urlencoded
-# Content-Length: 174
-# Origin: https://rss.knf.gov.pl
-# Connection: keep-alive
-# Referer: https://rss.knf.gov.pl/RssOuterView/faces/start2OuterView.xhtml
-# Cookie: JSESSIONID=592cd6515489808fc6441df4fcb8; __utmc=209674056; cookiesession1=61A38EB6ATSUTV1491ISM9V9A7H0D358
-# Upgrade-Insecure-Requests: 1
-# Sec-Fetch-Dest: document
-# Sec-Fetch-Mode: navigate
-# Sec-Fetch-Site: same-origin
-# Sec-Fetch-User: ?1
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
 
-# j_idt8=j_idt8
-# j_idt8-j_idt14=Lista pozycji aktualnych
-# tokenv=N0MMSW708JZG602RFTNFYJF700RU3VS0EGB669MAYB5SNC8V
-# javax.faces.ViewState=9187231122682369284:-2736673537589052604
+        postData = {
+            "cmd": "get",
+            "language": "pl",
+            "search": [],
+            "limit": 200,
+            "offset": 0,
+            "method": method,
+            "sort": [
+                {
+                    "field": "POSITION_DATE",
+                    "direction": "desc"
+                }
+            ],
+            "searchLogic": "AND",
+            "searchValue": ""
+        }
 
-        postUrl = "https://rss.knf.gov.pl/RssOuterView/faces/start2OuterView.xhtml"
-        postData = {}
-        postData["j_idt8"]                = soup.find( 'input', {'name': 'j_idt8'} ).get('value')
-        postData[ button ]                = soup.find( 'input', {'name': button} ).get('value')
-        postData["tokenv"]                = soup.find( 'input', {'name': 'tokenv'} ).get('value')
-        postData["javax.faces.ViewState"] = soup.find( 'input', {'name': 'javax.faces.ViewState'} ).get('value')
+        raw_data = { 'request': json.dumps(postData) }
 
-#         _LOGGER.debug( "content:\n%s", soup )
-#         _LOGGER.debug( "POST data: %s\n%s", postUrl, postData )
-
-        resp = currSession.post( postUrl, data=postData )
-#         req = requests.Request('POST', postUrl, data=postData )
-#         prepped = req.prepare()
-#
-#         resp = currSession.send( prepped )
+        resp = currSession.post( postUrl, headers=headers, data=raw_data )
         resp.raise_for_status()
 
         strcontent = resp.content.decode( "utf-8" )
         return strcontent
-
-    ## old version
-#         session = dryscrape.Session()
-#         session.visit( url )
-#         loadButton = session.at_xpath('//*[@name="j_idt8-j_idt14"]')        ## aktualne
-#         loadButton.click()
-#         return session.body()
 
 
 ## https://rss.knf.gov.pl/RssOuterView/
@@ -105,7 +85,7 @@ class CurrentShortSellingsData( BaseWorksheetData ):
 
         ## override
         def getDataPath(self):
-            return TMP_DIR + "data/knf/shortsellings-current.html"
+            return TMP_DIR + "data/knf/shortsellings-current.json"
 
         ## override
         def getDataUrl(self):
@@ -120,7 +100,7 @@ class CurrentShortSellingsData( BaseWorksheetData ):
             _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
-                response = grab_content( url, "j_idt8-j_idt14" )
+                response = grab_shorts_current()
                 with open( filePath, "w", encoding="utf-8" ) as text_file:
                     text_file.write( response )
             except BaseException as ex:
@@ -131,18 +111,14 @@ class CurrentShortSellingsData( BaseWorksheetData ):
         @synchronized
         def _parseDataFromFile(self, dataFile) -> DataFrame:
 #             _LOGGER.debug( "parsing data file: %s", dataFile )
-            dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
-            #_LOGGER.debug( "dataFrame: %s", dataFrame )
-            if len(dataFrame) < 3:
-                _LOGGER.warning( "unable to parse data file: %s", dataFile )
-                return None
-            dataFrame = dataFrame[3]
+            with open( dataFile, "r", encoding="utf-8" ) as json_file:
+                json_data = json.load(json_file)
 
-    #         print( "raw dataframe:\n", dataFrame )
-            dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
-            dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
+            records = json_data["records"]
+            dataFrame = DataFrame.from_records(records)
 
-            dataFrame = dataFrame.fillna("-")
+    #         dataFrame = dataFrame.fillna("-")
+            dataFrame.drop( "recid", axis=1, inplace=True )             ## remove column
             return dataFrame
 
     ## ==========================================================
@@ -185,7 +161,7 @@ class HistoryShortSellingsData( BaseWorksheetData ):
 
         ## override
         def getDataUrl(self):
-            url = "https://rss.knf.gov.pl/RssOuterView/"
+            url = "https://rss.knf.gov.pl/rss_pub/rssH.html"
             return url
 
         ## override
@@ -196,7 +172,7 @@ class HistoryShortSellingsData( BaseWorksheetData ):
             _LOGGER.debug( "grabbing data from url[%s] as file[%s]", url.split("?", maxsplit=1)[0], relPath )
 
             try:
-                response = grab_content( url, "j_idt8-j_idt16" )
+                response = grab_shorts_hist()
                 with open( filePath, "w", encoding="utf-8" ) as text_file:
                     text_file.write( response )
             except BaseException as ex:
@@ -206,16 +182,14 @@ class HistoryShortSellingsData( BaseWorksheetData ):
         ## override
         def _parseDataFromFile(self, dataFile) -> DataFrame:
 #             _LOGGER.debug( "parsing data file: %s", dataFile )
-            dataFrame = pandas.read_html( dataFile, thousands='', decimal=',', encoding='utf-8' )
-            if len( dataFrame ) < 3:
-                _LOGGER.warning( "received unexpected data while parsing: %s", dataFile )
-                return None
-            dataFrame = dataFrame[3]
+            with open( dataFile, "r", encoding="utf-8" ) as json_file:
+                json_data = json.load(json_file)
 
-            dataFrame.drop( dataFrame.columns[0], axis=1, inplace=True )        ## remove first column
-            dataFrame.drop( dataFrame.tail(1).index, inplace=True )             ## remove last row (navigation bar)
+            records = json_data["records"]
+            dataFrame = DataFrame.from_records(records)
 
-            dataFrame = dataFrame.fillna("-")
+    #         dataFrame = dataFrame.fillna("-")
+            dataFrame.drop( "recid", axis=1, inplace=True )             ## remove column
             return dataFrame
 
     ## ==========================================================
