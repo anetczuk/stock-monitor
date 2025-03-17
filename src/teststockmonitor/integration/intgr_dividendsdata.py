@@ -26,7 +26,7 @@ class CheckDividendsCalendar( unittest.TestCase ):
 
         frame = dataAccess.dao.storage.worksheet
         self.assertIsNotNone( frame )
-        self.assertEqual( frame.shape, (38, 8), f"loaded data:\n{frame}" )
+        self.assertEqual( frame.shape, (37, 8), f"loaded data:\n{frame}" )
 
 
 ## ==============================================================

@@ -33,14 +33,13 @@ except ImportError:
     ## in this case __init__ is already loaded
     pass
 
+import sys
 import os
 
 import logging
 import unittest
 import re
 import argparse
-
-from stockdataaccess import logger
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -50,82 +49,85 @@ _LOGGER = logging.getLogger(__name__)
 FILE_PATTERN  = "intgr_*.py"
 
 
-def get_loader():
-    loader = unittest.TestLoader()
-#     loader.testMethodPrefix = "check"
-    return loader
-
-
-def match_tests( pattern: str ):
+def match_tests(pattern: str):
     if pattern.find("*") < 0:
         ## regular module
-        loader = get_loader()
-        return loader.loadTestsFromName( pattern )
+        loader = unittest.TestLoader()
+        return loader.loadTestsFromName(pattern)
 
     ## wildcarded
     rePattern = pattern
     # pylint: disable=W1401
-    rePattern = rePattern.replace( "/", "." )
-    rePattern = rePattern.replace( ".", r"\." )
-    rePattern = rePattern.replace( "*", ".*" )
+    rePattern = rePattern.replace("/", ".")
+    rePattern = rePattern.replace(".", r"\.")
+    rePattern = rePattern.replace("*", ".*")
     ## rePattern = "^" + rePattern + "$"
-    _LOGGER.info( "searching test cases with pattern: %s", rePattern )
-    loader = get_loader()
-    testsSuite = loader.discover( SCRIPT_DIR, pattern=FILE_PATTERN )
+    _LOGGER.info("searching test cases with pattern: %s", rePattern)
+    loader = unittest.TestLoader()
+    testsSuite = loader.discover(SCRIPT_DIR, pattern=FILE_PATTERN)
     return match_test_suites(testsSuite, rePattern)
 
 
-def match_test_suites( testsList, rePattern: str ):
+def match_test_suites(testsList, rePattern: str):
     retSuite = unittest.TestSuite()
     for testObject in testsList:
         if isinstance(testObject, unittest.TestSuite):
-            subTests = match_test_suites( testObject, rePattern )
-            retSuite.addTest( subTests )
+            subTests = match_test_suites(testObject, rePattern)
+            retSuite.addTest(subTests)
             continue
         if isinstance(testObject, unittest.TestCase):
-            classobj         = testObject.__class__
+            classobj = testObject.__class__
             # pylint: disable=W0212,
-            testCaseFullName = ".".join([ classobj.__module__, classobj.__name__,
-                                          testObject._testMethodName ] )
+            testCaseFullName = ".".join([classobj.__module__, classobj.__name__, testObject._testMethodName])
             matched = re.search(rePattern, testCaseFullName)
             if matched is not None:
                 ## _LOGGER.info("test case matched: %s", testCaseFullName )
-                retSuite.addTest( testObject )
+                retSuite.addTest(testObject)
             continue
-        _LOGGER.warning("unknown type: %s", type( testObject ))
+        _LOGGER.warning("unknown type: %s", type(testObject))
     return retSuite
+
+
+def get_test_cases(run_test):
+    if run_test:
+        ## not empty
+        return match_tests(run_test)
+    testsLoader = unittest.TestLoader()
+    return testsLoader.discover(SCRIPT_DIR, pattern=FILE_PATTERN)
 
 
 ## ============================= main section ===================================
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Test runner')
-    parser.add_argument('-la', '--logall', action='store_true', help='Log all messages' )
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Test runner")
+    parser.add_argument("-la", "--logall", action="store_true", help="Log all messages")
     # pylint: disable=C0301
-    parser.add_argument('-rt', '--run_test', action='store', required=False, default="",
-                        help='Module with tests, e.g. module.submodule.test_file.test_class.test_method, wildcard * allowed' )
-    parser.add_argument('-r', '--repeat', action='store', type=int, default=0, help='Repeat tests given number of times' )
-    parser.add_argument('-ut', '--untilfailure', action="store_true", help='Run tests in loop until failure' )
-    parser.add_argument('-v', '--verbose', action="store_true", help='Verbose output' )
+    parser.add_argument(
+        "-rt",
+        "--run_test",
+        action="store",
+        required=False,
+        default="",
+        help="Module with tests, e.g. module.submodule.test_file.test_class.test_method, wildcard * allowed",
+    )
+    parser.add_argument(
+        "-r", "--repeat", action="store", type=int, default=0, help="Repeat tests given number of times"
+    )
+    parser.add_argument("-ut", "--untilfailure", action="store_true", help="Run tests in loop until failure")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
 
+    logging.basicConfig()
     if args.logall is True:
-        logger.configure_console( logging.DEBUG )
+        logging.getLogger().setLevel(logging.DEBUG)
     else:
-        logger.configure_console( logging.ERROR )
+        logging.getLogger().setLevel(logging.ERROR)
 
     verbosity = 1
     if args.verbose:
         verbosity = 2
-
-    if args.run_test:
-        ## not empty
-        suite = match_tests( args.run_test )
-    else:
-        testLoader = get_loader()
-        suite = testLoader.discover( SCRIPT_DIR, pattern=FILE_PATTERN )
 
     testsRepeats = int(args.repeat)
 
@@ -133,18 +135,23 @@ if __name__ == '__main__':
     if args.untilfailure is True:
         counter = 1
         while True:
-            print( "Tests iteration:", counter )
+            print("Tests iteration:", counter)
             counter += 1
+            suite = get_test_cases(args.run_test)
             testResult = unittest.TextTestRunner(verbosity=verbosity).run(suite)
             if testResult.wasSuccessful() is False:
-                break
-            print( "\n" )
+                sys.exit(1)
+            print("\n")
     elif testsRepeats > 0:
         for counter in range(1, testsRepeats + 1):
-            print( "Tests iteration:", counter )
+            print("Tests iteration:", counter)
+            suite = get_test_cases(args.run_test)
             testResult = unittest.TextTestRunner(verbosity=verbosity).run(suite)
             if testResult.wasSuccessful() is False:
-                break
-            print( "\n" )
+                sys.exit(1)
+            print("\n")
     else:
-        unittest.TextTestRunner(verbosity=verbosity).run(suite)
+        suite = get_test_cases(args.run_test)
+        testResult = unittest.TextTestRunner(verbosity=verbosity).run(suite)
+        if testResult.wasSuccessful() is False:
+            sys.exit(1)

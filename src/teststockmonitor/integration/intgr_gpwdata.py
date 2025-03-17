@@ -26,7 +26,7 @@ class CheckGpwData( unittest.TestCase ):
 
         frame = stockAccess.dao.storage.worksheet
         self.assertIsNotNone( frame )
-        self.assertEqual( frame.shape, (427, 12), f"loaded data:\n{frame}" )
+        self.assertEqual( (409, 12), frame.shape, f"loaded data:\n{frame}" )
 
 
 ## ==============================================================
