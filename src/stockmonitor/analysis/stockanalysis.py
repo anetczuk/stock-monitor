@@ -35,7 +35,7 @@ import pandas
 from stockdataaccess.dataaccess.datatype import StockDataType
 from stockdataaccess.dataaccess import TMP_DIR
 
-from stockmonitor.analysis.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader,\
+from stockmonitor.analysis.stockanalysisdata import CounterDict, StockDict, GpwCurrentIntradayDataLoader, \
     VarCalc
 from stockmonitor.analysis.stockanalysisdata import StockAnalysisData
 

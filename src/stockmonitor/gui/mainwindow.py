@@ -457,7 +457,6 @@ class MainWindow( QtBaseClass ):           # type: ignore
 
     ## ====================================================================
 
-    # pylint: disable=R0201
     def closeApplication(self):
         _LOGGER.info("received close request")
         ##self.close()

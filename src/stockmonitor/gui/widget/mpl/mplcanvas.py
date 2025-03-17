@@ -40,7 +40,7 @@ class MplCanvas(FigureCanvas):
 
     ## fix fitting figure to widget
     def setTightAuto( self, enable: bool = True ):
-        self.figure.set_tight_layout( enable )
+        self.figure.set_tight_layout( enable )              # type: ignore
 
     def setBackgroundByRGB(self, r, g, b):
         rgbColor = ( r / 255, g / 255, b / 255, 1.0 )

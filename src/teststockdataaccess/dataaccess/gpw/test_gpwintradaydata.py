@@ -25,7 +25,7 @@ import unittest
 import datetime
 
 from teststockdataaccess.data import get_data_path
-from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData,\
+from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData, \
     GpwCurrentIndexIntradayData
 from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 

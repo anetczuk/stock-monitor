@@ -35,9 +35,9 @@ from pandas.core.frame import DataFrame
 
 from stockdataaccess.dataaccess import TMP_DIR
 from stockdataaccess.dataaccess.datatype import StockDataType
-from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO,\
+from stockdataaccess.dataaccess.worksheetdata import WorksheetDAO, \
     BaseWorksheetDAO, BaseWorksheetData
-from stockdataaccess.dataaccess.convert import apply_on_column, convert_float,\
+from stockdataaccess.dataaccess.convert import apply_on_column, convert_float, \
     convert_int, cleanup_column
 from stockdataaccess.dataaccess import download_html_content
 from stockdataaccess.synchronized import synchronized

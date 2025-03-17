@@ -32,7 +32,7 @@ from PyQt5.QtGui import QDesktopServices
 from stockdataaccess.dataaccess import TMP_DIR
 
 from stockmonitor.analysis.stockanalysis import StockAnalysis
-from stockmonitor.analysis.activityanalysis import GpwCurrentIntradayProvider,\
+from stockmonitor.analysis.activityanalysis import GpwCurrentIntradayProvider, \
     ActivityAnalysis, MetaStockIntradayProvider
 from stockmonitor.gui import threadlist
 from stockmonitor.gui.utils import set_label_url

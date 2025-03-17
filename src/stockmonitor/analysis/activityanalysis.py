@@ -366,7 +366,7 @@ class ActivityAnalysis:
                 dataPair = persist.load_object_simple( picklePath, None, silent=True )
             except EOFError:
                 # pickle file corrupt - download and store new file
-                _LOGGER.warning(f"pickle file {picklePath} is corrupted - downloading and storing new file")
+                _LOGGER.warning("pickle file %s is corrupted - downloading and storing new file", picklePath)
                 dataPair = None
 
         if dataPair is None or len(dataPair[0]) < 1:

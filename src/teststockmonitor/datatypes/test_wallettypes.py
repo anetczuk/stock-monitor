@@ -26,7 +26,7 @@ import unittest
 import datetime
 import pandas
 
-from stockmonitor.datatypes.wallettypes import TransHistory, Transaction,\
+from stockmonitor.datatypes.wallettypes import TransHistory, Transaction, \
     TransactionMatchMode, TransactionsMatch, BuyTransactionsMatch, SellTransactionsMatch
 
 

@@ -34,7 +34,7 @@ from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData
 from stockmonitor.datatypes.datatypes import MarkerEntry
 from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.markerdialog import MarkerDialog
-from stockmonitor.gui.widget.dataframetable import DataFrameTableModel,\
+from stockmonitor.gui.widget.dataframetable import DataFrameTableModel, \
     TableRowColorDelegate
 from stockmonitor.gui.widget.stocktable import StockTable, insert_new_action
 

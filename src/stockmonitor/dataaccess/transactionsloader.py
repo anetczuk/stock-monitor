@@ -27,7 +27,7 @@ import codecs
 
 import pandas
 
-from stockdataaccess.dataaccess.convert import convert_float, convert_int,\
+from stockdataaccess.dataaccess.convert import convert_float, convert_int, \
     apply_on_column
 
 

@@ -32,7 +32,7 @@ from stockmonitor.gui.dataobject import DataObject
 from stockmonitor.gui.widget.stocktable import StockTable
 from stockmonitor.gui.widget.stocktable import marker_background_color
 from stockmonitor.gui.widget.stocktable import insert_new_action, is_iterable
-from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window,\
+from stockmonitor.gui.widget.valuechartwidget import create_stockprofit_window, \
     create_wallet_profit_window, create_walletgain_window, create_wallet_value_window
 from stockmonitor.gui.widget.dataframetable import TableRowColorDelegate
 from stockmonitor.gui.widget import stockmosaicwidget

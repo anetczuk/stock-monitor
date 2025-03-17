@@ -16,11 +16,11 @@ y = 3. * np.sin( x * 2. * np.pi / 100. )
 plt.subplots_adjust( hspace=0.001 )
 
 for i in range(5):
-    temp = 511 + i
-    ax = plt.subplot( temp )
+    pos = 511 + i
+    ax = plt.subplot( pos )
     plt.plot( x, y )
-    temp = tic.MaxNLocator(3)
-    ax.yaxis.set_major_locator(temp)
+    nloc = tic.MaxNLocator(3)
+    ax.yaxis.set_major_locator(nloc)
     ax.set_xticklabels(())
     ax.title.set_visible(False)
 

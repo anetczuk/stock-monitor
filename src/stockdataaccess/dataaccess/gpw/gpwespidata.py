@@ -101,12 +101,12 @@ class GpwESPIData( BaseWorksheetData ):
 
                     title = row.p.string.strip()
 
-                    url = "https://www.gpw.pl/" + row.a['href']
+                    url = "https://www.gpw.pl/" + str( row.a['href'] )
 
                     row_dict = {}
                     row_dict["name"]  = name
                     row_dict["isin"]  = isin
-                    row_dict["date"]  = dateObj
+                    row_dict["date"]  = dateObj             # type: ignore
                     row_dict["title"] = title
                     row_dict["url"]   = url
 

@@ -32,7 +32,7 @@ from pandas.core.frame import DataFrame
 
 from stockdataaccess.dataaccess import TMP_DIR, download_html_content
 from stockdataaccess.dataaccess.datatype import StockDataType
-from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetData,\
+from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetData, \
     WorksheetDAO
 from stockdataaccess.dataaccess.holidaydata import HolidayData
 from stockdataaccess.synchronized import synchronized

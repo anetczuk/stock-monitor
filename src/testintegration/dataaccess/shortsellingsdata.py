@@ -36,7 +36,7 @@ except ImportError:
 import sys
 import unittest
 
-from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
+from stockdataaccess.dataaccess.shortsellingsdata import HistoryShortSellingsData
 
 
 # class CurrentShortSellingsDataTest(unittest.TestCase):

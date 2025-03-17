@@ -17,7 +17,7 @@ import unittest
 
 import logging
 
-from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
+from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData, \
     HistoryShortSellingsData
 
 

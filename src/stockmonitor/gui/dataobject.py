@@ -31,21 +31,21 @@ from pandas.core.frame import DataFrame
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QUndoStack
 
-from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData,\
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentStockData, \
     GpwCurrentIndexesData
 from stockdataaccess.dataaccess.gpw.gpwdata import GpwIndicatorsData
 from stockdataaccess.dataaccess.gpw.gpwespidata import GpwESPIData
 from stockdataaccess.dataaccess.finreportscalendardata import FinRepsCalendarData, PublishedFinRepsCalendarData
 from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
 from stockdataaccess.dataaccess.globalindexesdata import GlobalIndexesData
-from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
+from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData, \
     HistoryShortSellingsData
 
-from stockmonitor.datatypes.datatypes import FavData, WalletData,\
-    TransactionMatchMode, MarkersContainer,\
+from stockmonitor.datatypes.datatypes import FavData, WalletData, \
+    TransactionMatchMode, MarkersContainer, \
     MarkerEntry
 from stockmonitor.datatypes.datacontainer import DataContainer
-from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
+from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap, \
     GpwIndexIntradayMap
 
 from stockmonitor.gui import threadlist

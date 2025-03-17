@@ -43,11 +43,11 @@ from stockdataaccess.dataaccess.finreportscalendardata import PublishedFinRepsCa
 from stockdataaccess.dataaccess.globalindexesdata import GlobalIndexesData
 from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData, HistoryShortSellingsData
 
-from stockmonitor.datatypes.datatypes import UserContainer,\
+from stockmonitor.datatypes.datatypes import UserContainer, \
     FavData, WalletData, MarkersContainer, MarkerEntry
-from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap,\
+from stockmonitor.datatypes.stocktypes import BaseWorksheetDAOProvider, GpwStockIntradayMap, \
     GpwIndexIntradayMap, StockDataProvider, StockDataWrapper
-from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory,\
+from stockmonitor.datatypes.wallettypes import broker_commission, TransHistory, \
     Transaction
 
 

@@ -291,12 +291,12 @@ class StockTable( DataFrameTable ):
         return ret
 
     ## returns list of tickers
-    def _getSelectedTickers(self) -> List[str]:                         # pylint: disable=R0201
+    def _getSelectedTickers(self) -> List[str]:
         ## reimplement if needed
         return []
 
     ## returns list of tickers
-    def _getSelectedNames(self) -> List[str]:                         # pylint: disable=R0201
+    def _getSelectedNames(self) -> List[str]:
         ## reimplement if needed
         tickerList = self._getSelectedTickers()
         if not tickerList:
@@ -687,5 +687,4 @@ def is_iterable(obj):
     # pylint: disable=W0703
     except Exception:
         return False
-    else:
-        return True
+    return True

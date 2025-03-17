@@ -24,7 +24,7 @@
 import unittest
 from teststockdataaccess.data import get_data_path
 
-from stockdataaccess.dataaccess.finreportscalendardata import FinRepsCalendarData,\
+from stockdataaccess.dataaccess.finreportscalendardata import FinRepsCalendarData, \
     PublishedFinRepsCalendarData
 from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
 

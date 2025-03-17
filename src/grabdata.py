@@ -38,18 +38,18 @@ from stockdataaccess.persist import store_object_simple
 from stockdataaccess.dataaccess.worksheetdata import BaseWorksheetData
 from stockdataaccess.dataaccess.gpw.gpwarchivedata import GpwArchiveData
 from stockdataaccess.dataaccess.gpw.gpwespidata import GpwESPIData
-from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData,\
+from stockdataaccess.dataaccess.gpw.gpwcurrentdata import GpwCurrentIndexesData, \
     GpwCurrentStockData
-from stockdataaccess.dataaccess.gpw.gpwdata import GpwIsinMapData,\
+from stockdataaccess.dataaccess.gpw.gpwdata import GpwIsinMapData, \
     GpwIndicatorsData
-from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData,\
+from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData, \
     GpwCurrentIndexIntradayData
 from stockdataaccess.dataaccess.dividendsdata import DividendsCalendarData
-from stockdataaccess.dataaccess.finreportscalendardata import FinRepsCalendarData,\
+from stockdataaccess.dataaccess.finreportscalendardata import FinRepsCalendarData, \
     PublishedFinRepsCalendarData
 from stockdataaccess.dataaccess.globalindexesdata import GlobalIndexesData
 from stockdataaccess.dataaccess.metastockdata import MetaStockIntradayData
-from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData,\
+from stockdataaccess.dataaccess.shortsellingsdata import CurrentShortSellingsData, \
     HistoryShortSellingsData
 
 
@@ -271,7 +271,7 @@ def date_pair_type( arg: str ):
     string_list = list( arg.split(',') )
     date_list   = [ datetime.datetime.strptime( x, "%Y-%m-%d").date() for x in string_list ]
     if len(date_list) != 2:
-        raise argparse.ArgumentError( arg, "comma separated pair of values expected" )
+        raise argparse.ArgumentError( arg, "comma separated pair of values expected" )      # type: ignore
     return date_list
 
 

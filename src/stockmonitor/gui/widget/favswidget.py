@@ -31,7 +31,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMenu, QInputDialog
 from PyQt5.QtWidgets import QLineEdit
 
 from stockmonitor.gui.dataobject import DataObject, READONLY_FAV_GROUPS
-from stockmonitor.gui.widget.stocktable import wallet_background_color, insert_new_action,\
+from stockmonitor.gui.widget.stocktable import wallet_background_color, insert_new_action, \
     marker_background_color
 
 from stockdataaccess.dataaccess.datatype import StockDataType

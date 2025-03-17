@@ -61,7 +61,7 @@ class DividendsCalendarData( BaseWorksheetData ):
             try:
                 download_html_content( url, filePath )
             except BaseException as ex:
-                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex, exc_info=False )
+                _LOGGER.exception( "unable to load object data -- %s: %s", fullname(ex), ex )
                 raise
 
         @synchronized

@@ -30,7 +30,7 @@ from teststockdataaccess.data import get_data_path
 from stockdataaccess.dataaccess.gpw.gpwintradaydata import GpwCurrentStockIntradayData
 from stockdataaccess.dataaccess.metastockdata import MetaStockIntradayData
 from stockdataaccess.dataaccess.worksheetdata import WorksheetStorageMock
-from stockmonitor.analysis.activityanalysis import GpwCurrentIntradayProvider,\
+from stockmonitor.analysis.activityanalysis import GpwCurrentIntradayProvider, \
     ActivityAnalysis, MetaStockIntradayProvider
 
 

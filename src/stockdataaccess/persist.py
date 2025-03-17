@@ -207,9 +207,9 @@ class Versionable( metaclass=abc.ABCMeta ):
 
     def __getstate__(self):
         if not hasattr(self, "_class_version"):
-            raise Exception("Your class must define _class_version class variable")
+            raise RuntimeError("Your class must define _class_version class variable")
         # pylint: disable=E1101
-        return dict(_class_version=self._class_version, **self.__dict__)
+        return {"_class_version": self._class_version, **self.__dict__}
 
     def __setstate__(self, dict_):
         version_present_in_pickle = dict_.pop("_class_version", None)

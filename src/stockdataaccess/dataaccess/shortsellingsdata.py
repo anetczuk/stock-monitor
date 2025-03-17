@@ -43,7 +43,7 @@ def grab_shorts_current():
 def grab_shorts_hist():
     return grab_shorts_data("RssHTable")
 
-    
+
 def grab_shorts_data(method):
     with requests_init_session() as currSession:
 
